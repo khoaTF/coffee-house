@@ -429,6 +429,38 @@ function closeModal() {
     const fab = document.querySelector('.fab-container');
     if (fab) fab.style.display = 'flex';
 }
+
+function openPaymentModal() {
+    const paymentModal = document.getElementById('payment-modal');
+    if (!paymentModal) return;
+    
+    // Calculate total for memo
+    const subtotal = cart.reduce((sum, item) => {
+        const itemOptionsPrice = (item.selectedOptions || []).reduce((s, o) => s + o.priceExtra, 0);
+        return sum + ((item.price + itemOptionsPrice) * item.quantity);
+    }, 0);
+    const totalPrice = Math.max(0, subtotal - currentDiscountAmount);
+    
+    document.getElementById('payment-total-amount').textContent = totalPrice.toLocaleString('vi-VN') + ' đ';
+    document.getElementById('payment-transfer-memo').textContent = `Thanh toan Ban ${TABLE_NUMBER}`;
+    
+    // Update QR Code Image with Dynamic Amount and Memo
+    const qrImage = document.getElementById('qr-image');
+    // Using a generic VietQR API. Replace `accountName` and the bank mapping with real ones when provided.
+    const bankId = '970415'; // VietinBank (Example)
+    const accountNo = '113333666999'; 
+    const memo = `Thanh toan Ban ${TABLE_NUMBER}`;
+    qrImage.src = `https://img.vietqr.io/image/${bankId}-${accountNo}-compact2.png?amount=${totalPrice}&addInfo=${encodeURIComponent(memo)}&accountName=QUAN%20CAFE%20NOHOPE`;
+
+    cartModal.classList.remove('active'); // Hide cart
+    paymentModal.classList.add('active'); // Show QR
+}
+
+function closePaymentModal() {
+    const paymentModal = document.getElementById('payment-modal');
+    if (paymentModal) paymentModal.classList.remove('active');
+    cartModal.classList.add('active'); // Back to cart
+}
 function openHistoryModal() {
     renderHistoryModal();
     historyModal.classList.add('active');
@@ -536,15 +568,22 @@ function attachEventListeners() {
         closeOptionsModal();
     });
 
-    // Mock Checkout
-    checkoutBtn.addEventListener('click', () => {
-        checkoutBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...';
-        checkoutBtn.disabled = true;
+    // Listeners for new Payment Modal
+    const btnClosePayment = document.getElementById('close-payment-modal');
+    if (btnClosePayment) btnClosePayment.addEventListener('click', closePaymentModal);
 
-        // Simulate payment delay
-        setTimeout(() => {
+    const btnConfirmPayment = document.getElementById('confirm-payment-btn');
+    if (btnConfirmPayment) {
+        btnConfirmPayment.addEventListener('click', () => {
+            btnConfirmPayment.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xác nhận...';
+            btnConfirmPayment.disabled = true;
             placeOrder();
-        }, 1500);
+        });
+    }
+
+    // Checkout button now opens QR Modal
+    checkoutBtn.addEventListener('click', () => {
+        openPaymentModal();
     });
 
 }
@@ -597,7 +636,12 @@ async function placeOrder() {
     } catch (error) {
         console.error("placeOrder ERROR:", error);
         await customerAlert('Có lỗi xảy ra khi đặt món. Vui lòng thử lại.');
-        checkoutBtn.innerHTML = '<i class="fa-brands fa-apple-pay"></i> Thanh toán (Thử lại)';
+        
+        const btnConfirmPayment = document.getElementById('confirm-payment-btn');
+        if (btnConfirmPayment) {
+            btnConfirmPayment.innerHTML = '<i class="fa-solid fa-check-circle"></i> Tôi đã chuyển khoản xong';
+            btnConfirmPayment.disabled = false;
+        }
         checkoutBtn.disabled = false;
         fetchMenu();
     }
@@ -614,7 +658,17 @@ function handleOrderConfirmed(savedOrder) {
     
     updateCartUI();
     closeModal();
-    checkoutBtn.innerHTML = '<i class="fa-brands fa-apple-pay"></i> Thanh toán';
+    const paymentModal = document.getElementById('payment-modal');
+    if (paymentModal) paymentModal.classList.remove('active');
+    
+    // Reset payment button state
+    const btnConfirmPayment = document.getElementById('confirm-payment-btn');
+    if (btnConfirmPayment) {
+        btnConfirmPayment.innerHTML = '<i class="fa-solid fa-check-circle"></i> Tôi đã chuyển khoản xong';
+        btnConfirmPayment.disabled = false;
+    }
+    
+    checkoutBtn.innerHTML = '<i class="fa-brands fa-apple-pay"></i> Tiếp tục thanh toán';
     
     // Add to session history
     sessionOrders.unshift(savedOrder);

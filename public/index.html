@@ -157,11 +157,36 @@
                 </div>
                 <!-- Mock Payment Button -->
                 <button id="checkout-btn" class="btn btn-primary btn-block btn-lg" disabled>
-                    <i class="fa-brands fa-apple-pay"></i> Thanh toán
+                    <i class="fa-brands fa-apple-pay"></i> Tiếp tục thanh toán
                 </button>
             </div>
         </div>
     </div> <!-- Ensure cart-modal is properly closed -->
+
+    <!-- Modal: QR Payment & Confirmation -->
+    <div class="cart-modal" id="payment-modal">
+        <div class="cart-modal-content" style="max-height: 85vh;">
+            <div class="cart-modal-header flex-between">
+                <h2>Thanh toán chuyển khoản</h2>
+                <button id="close-payment-modal" class="btn-icon"><i class="fa-solid fa-arrow-left"></i></button>
+            </div>
+            <div class="cart-modal-body text-center" style="background: var(--bg-color);">
+                <p class="text-muted mb-3">Vui lòng quét mã QR dưới đây để thanh toán cho đơn hàng của bạn.</p>
+                <div style="background: #FFF; padding: 20px; border-radius: var(--radius); display: inline-block; box-shadow: var(--shadow-sm); border: 1px solid var(--border);">
+                    <img id="qr-image" src="https://img.vietqr.io/image/970415-113333666999-compact2.jpg?amount=0&addInfo=Thanh%20toan%20Hoa%20don&accountName=QUAN%20CAFE%20NOHOPE" alt="Bank QR Code" style="width: 250px; height: 250px; border-radius: 8px;">
+                </div>
+                <div class="mt-4 text-start p-3" style="background: var(--surface-glass); border: 1px dashed var(--primary); border-radius: var(--radius-sm);">
+                    <div class="mb-2"><span class="text-muted">Tổng cộng:</span> <strong class="text-primary float-end" id="payment-total-amount">0 đ</strong></div>
+                    <div class="mb-2"><span class="text-muted">Nội dung CK:</span> <strong class="float-end" id="payment-transfer-memo">Thanh toan Ban 5</strong></div>
+                </div>
+            </div>
+            <div class="cart-modal-footer">
+                <button id="confirm-payment-btn" class="btn btn-primary btn-block btn-lg">
+                    <i class="fa-solid fa-check-circle"></i> Tôi đã chuyển khoản xong
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal: Order History -->
     <div class="cart-modal" id="order-history-modal">
