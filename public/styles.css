@@ -1,38 +1,38 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
 
-/* Nohope Coffee Design System - Brutalist/Neo-Retro */
+/* Nohope Coffee Design System - Premium Organic */
 :root {
     /* Color Palette */
-    --primary: #1A1A1A; /* Pure Dark */
-    --primary-light: #2D2D2D;
-    --primary-glow: rgba(0, 0, 0, 0);
-    --primary-gradient: #1A1A1A; /* Solid brutalist black */
+    --primary: #5C4033; /* Deep Espresso Brown */
+    --primary-light: #8B5A2B;
+    --primary-glow: rgba(92, 64, 51, 0.15);
+    --primary-gradient: linear-gradient(135deg, #7b5138 0%, #5C4033 100%);
     
-    --secondary: #F0F0F0; /* Off-white for secondary blocks */
-    --accent: #FF3300; /* Neon Orange CTA */
+    --secondary: #F5EFEB; /* Warm Cream */
+    --accent: #E67E22; /* Warm Orange/Amber CTA */
     
-    --bg-color: #FFFFFF; /* Stark white background */
+    --bg-color: #FAFAFA; /* Off-white background */
     --surface-color: #FFFFFF;
-    --surface-glass: #FFFFFF; /* No glassmorphism */
-    --surface-glass-border: #000000;
+    --surface-glass: rgba(255, 255, 255, 0.95);
+    --surface-glass-border: rgba(92, 64, 51, 0.08);
     
-    --text-main: #0A0A0A; /* Heavy Black Text */
-    --text-muted: #555555;
-    --border: #000000; /* Harsh black borders */
+    --text-main: #2C241E; /* Very Dark Brown */
+    --text-muted: #7A6F68;
+    --border: rgba(92, 64, 51, 0.1); 
     
-    --success: #000000; /* Brutalist positive */
-    --danger: #FF0000;
+    --success: #2E7D32; 
+    --danger: #D32F2F;
     
-    /* SHARP GEOMETRY (0px radius) */
-    --radius: 0px;
-    --radius-lg: 0px;
-    --radius-sm: 0px;
+    /* SOFT GEOMETRY */
+    --radius: 16px;
+    --radius-lg: 24px;
+    --radius-sm: 8px;
     
-    /* HARD SHADOWS FOR DEPTH */
-    --shadow-sm: 2px 2px 0px #000000;
-    --shadow-md: 4px 4px 0px #000000;
-    --shadow-lg: 8px 8px 0px #000000;
-    --glass-blur: none;
+    /* SOFT SHADOWS FOR PREMIUM FEEL */
+    --shadow-sm: 0 2px 8px rgba(92, 64, 51, 0.06);
+    --shadow-md: 0 8px 24px rgba(92, 64, 51, 0.08);
+    --shadow-lg: 0 16px 48px rgba(92, 64, 51, 0.12);
+    --glass-blur: blur(12px);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'DM Sans', sans-serif; }
@@ -41,7 +41,7 @@ body {
     background-color: var(--bg-color); 
     color: var(--text-main); 
     -webkit-tap-highlight-color: transparent; 
-    background: var(--bg-color);
+    background: radial-gradient(circle at 10% 10%, #FFFFFF 0%, #F5EFEB 100%);
     background-attachment: fixed;
     min-height: 100vh;
 }
@@ -74,30 +74,30 @@ body {
 /* Buttons */
 .btn {
     padding: 12px 20px;
-    border-radius: 0px;
-    border: 2px solid #000;
-    font-weight: 700;
+    border-radius: var(--radius-sm);
+    border: none;
+    font-weight: 600;
     font-size: 1rem;
     cursor: pointer;
-    transition: all 0.1s;
-    letter-spacing: 0.5px;
-    box-shadow: 3px 3px 0px #000;
+    transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+    letter-spacing: 0.2px;
 }
-.btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0px #000; }
+.btn:active { transform: scale(0.97); }
 
 .btn-primary { 
     background: var(--primary-gradient); 
     color: white; 
+    box-shadow: 0 4px 12px var(--primary-glow);
 }
 .btn-primary:hover {
-    background: #000;
-    color: white;
-    transform: translate(-2px, -2px);
-    box-shadow: 5px 5px 0px var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px var(--primary-glow);
+    opacity: 0.95;
+    background: var(--primary-gradient); 
 }
-.btn-primary:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0px #000; }
+.btn-primary:active { transform: scale(0.98); box-shadow: 0 2px 4px var(--primary-glow); }
 .btn-primary:disabled { 
-    background: #E0E0E0; 
+    background: var(--border); 
     color: var(--text-muted);
     box-shadow: none;
     cursor: not-allowed; 
@@ -105,15 +105,15 @@ body {
 }
 .btn-outline { 
     background: transparent; 
-    border: 2px solid #000; 
-    color: #000; 
+    border: 1px solid var(--border); 
+    color: var(--primary); 
 }
 .btn-outline:hover {
-    background: #000;
-    color: #FFF;
+    background: var(--secondary);
+    border-color: var(--primary-light);
 }
 .btn-block { width: 100%; }
-.btn-lg { padding: 16px; font-size: 1.15rem; }
+.btn-lg { padding: 16px; font-size: 1.15rem; border-radius: var(--radius-sm); }
 .btn-sm { padding: 6px 12px; font-size: 0.9rem; }
 .btn-icon { 
     background: none; 
@@ -125,14 +125,16 @@ body {
 }
 .btn-icon:hover { color: var(--text-main); }
 
-/* Header - Brutalist */
+/* Header - Glassmorphism Restored */
 .app-header { 
     background: var(--surface-glass); 
-    border-bottom: 2px solid #000;
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border-bottom: 1px solid var(--surface-glass-border);
     position: sticky; 
     top: 0; 
     z-index: 100; 
-    box-shadow: 0px 4px 0px #000;
+    box-shadow: var(--shadow-sm);
 }
 .header-content { 
     display: flex; 
@@ -156,14 +158,13 @@ body {
     -webkit-text-fill-color: var(--primary);
 }
 .table-info { 
-    background: var(--primary-light); 
+    background: var(--secondary); 
     padding: 8px 16px; 
-    border-radius: 0px; 
-    font-weight: 800; 
+    border-radius: 30px; 
+    font-weight: 600; 
     font-size: 0.95rem; 
-    border: 2px solid #000; 
-    color: #FFF;
-    box-shadow: 3px 3px 0px #000;
+    border: 1px solid var(--border); 
+    color: var(--primary);
 }
 
 /* Categories */
@@ -183,31 +184,30 @@ body {
 .category-pills::-webkit-scrollbar { display: none; }
 .pill { 
     padding: 10px 24px; 
-    border-radius: 0px; 
-    background: var(--bg-color); 
-    border: 2px solid #000; 
+    border-radius: 30px; 
+    background: var(--surface-color); 
+    border: 1px solid var(--border); 
     white-space: nowrap; 
     font-size: 0.95rem; 
-    font-weight: 700; 
-    color: #000; 
+    font-weight: 500; 
+    color: var(--text-muted); 
     cursor: pointer; 
-    transition: all 0.1s; 
-    box-shadow: 3px 3px 0px #000;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-sm);
 }
 .pill:hover {
-    background: var(--primary-light);
-    color: #FFF;
-    transform: translate(-2px, -2px);
-    box-shadow: 5px 5px 0px var(--accent);
+    background: var(--secondary);
+    color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
 }
 .pill.active { 
     background: var(--primary-gradient); 
     color: white; 
-    border-color: #000; 
-    font-weight: 800;
-    box-shadow: inset 0 0 0 2px var(--accent);
-    transform: translate(2px, 2px);
-    box-shadow: 1px 1px 0px #000;
+    border-color: transparent; 
+    font-weight: 600;
+    box-shadow: 0 4px 12px var(--primary-glow);
+    transform: translateY(-2px);
 }
 
 /* Menu Grid */
@@ -299,41 +299,40 @@ body {
 .add-btn { 
     width: 44px; 
     height: 44px; 
-    border-radius: 0px; 
-    border: 2px solid #000; 
-    background: var(--accent); 
+    border-radius: 50%; 
+    border: none; 
+    background: var(--primary-gradient); 
     color: #FFF; 
     font-size: 1.4rem; 
     cursor: pointer; 
-    box-shadow: 3px 3px 0px #000;
-    transition: all 0.1s;
+    box-shadow: 0 4px 12px rgba(230, 126, 34, 0.4);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-.add-btn:hover { background: #000; color: #FFF; box-shadow: 5px 5px 0px var(--accent); transform: translate(-2px, -2px); }
-.add-btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0px #000; }
+.add-btn:hover { background: var(--accent); color: #FFF; box-shadow: 0 6px 16px rgba(230, 126, 34, 0.6); transform: translateY(-2px); }
+.add-btn:active { transform: scale(0.95); box-shadow: 0 2px 4px rgba(230, 126, 34, 0.4); }
 
 /* Controls */
 .qty-controls { 
     display: flex; 
     align-items: center; 
-    background: var(--bg-color); 
-    border-radius: 0px; 
+    background: var(--surface-color); 
+    border-radius: 30px; 
     padding: 4px;
-    border: 2px solid #000;
+    border: 1px solid var(--border);
 }
 .qty-btn { 
     width: 32px; 
     height: 32px; 
-    border-radius: 0px;
-    border: 2px solid #000; 
-    background: var(--surface-color); 
-    color: #000; 
+    border-radius: 50%;
+    border: none; 
+    background: var(--secondary); 
+    color: var(--primary); 
     font-size: 1.1rem; 
     cursor: pointer; 
-    font-weight: 800;
-    transition: all 0.1s;
-    box-shadow: 2px 2px 0px #000;
+    font-weight: 600;
+    transition: all 0.2s;
 }
-.qty-btn:hover { background: #000; color: #FFF; }
+.qty-btn:hover { background: var(--primary-light); color: white; }
 .qty-num { width: 28px; text-align: center; font-weight: 700; font-size: 1rem; }
 
 .floating-cart { 
@@ -343,11 +342,13 @@ body {
     right: 20px; 
     max-width: 610px; 
     margin: 0 auto; 
-    background: var(--surface-color); 
-    border: 2px solid #000; 
-    border-radius: 0px; 
+    background: var(--surface-glass); 
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--surface-glass-border); 
+    border-radius: 20px; 
     padding: 16px 20px; 
-    box-shadow: 6px 6px 0px #000;
+    box-shadow: var(--shadow-lg);
     animation: slideUpFade 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
     z-index: 90;
     color: var(--text-main);
@@ -377,11 +378,13 @@ body {
     position: fixed; 
     top: 0; left: 0; 
     width: 100%; height: 100%; 
-    background: rgba(0,0,0,0.9); 
+    background: rgba(44, 36, 30, 0.7); 
     z-index: 2000; /* Must be higher than floating actions (998) */
     display: none; 
     align-items: flex-end; 
     justify-content: center; 
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 .cart-modal.active { display: flex; animation: fadeIn 0.3s; }
 .cart-modal-content { 
@@ -389,11 +392,12 @@ body {
     width: 100%; 
     max-width: 650px; 
     height: 90vh; 
-    border-radius: 0px; 
+    border-radius: 32px 32px 0 0; 
     display: flex; 
     flex-direction: column; 
     animation: slideUpModal 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
-    border-top: 4px solid #000;
+    border-top: 1px solid var(--surface-glass-border);
+    box-shadow: 0 -10px 40px rgba(92, 64, 51, 0.3);
 }
 .cart-modal-header { 
     padding: 24px; 
