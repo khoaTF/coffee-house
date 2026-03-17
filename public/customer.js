@@ -690,6 +690,41 @@ function handleOrderConfirmed(savedOrder) {
     renderMenu(activeCategory);
 }
 
+// User Action: Call Staff
+async function requestStaffService(type) {
+    // Prevent spamming
+    if (localStorage.getItem(`last_req_${type}_${sessionId}`)) {
+        const lastCall = new Date(localStorage.getItem(`last_req_${type}_${sessionId}`));
+        if ((new Date() - lastCall) < 60000) {
+            await customerAlert("Vui lòng đợi một lát trước khi gửi yêu cầu mới.");
+            return;
+        }
+    }
+
+    try {
+        const { error } = await supabase.from('staff_requests').insert([{
+            table_number: TABLE_NUMBER.toString(),
+            session_id: sessionId,
+            request_type: type,
+            status: 'Pending'
+        }]);
+
+        if (error) throw error;
+        
+        localStorage.setItem(`last_req_${type}_${sessionId}`, new Date().toISOString());
+        
+        let msg = "Đã gọi nhân viên hỗ trợ.";
+        if (type === 'water') msg = "Đã gửi yêu cầu thêm nước lọc.";
+        if (type === 'checkout') msg = "Đã gửi yêu cầu thanh toán.";
+        
+        await customerAlert(msg);
+        
+    } catch (e) {
+        console.error("Staff Request Error:", e);
+        await customerAlert("Chưa thể gửi yêu cầu. Vui lòng thử lại.");
+    }
+}
+
 // Custom confirm for customer page (avoid native confirm() which can be blocked)
 let customerConfirmModalInstance = null;
 function customerConfirm(message) {

@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Màn Hình Nhân Viên - Nohope Coffee</title>
+    <!-- FontAwesome for standard UI icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Liquid Glass CSS -->
+    <link rel="stylesheet" href="styles.css?v=2.0">
+    <style>
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+        }
+
+        .staff-nav {
+            background: var(--surface-glass);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border-bottom: 1px solid var(--surface-glass-border);
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .staff-brand {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary);
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .staff-container {
+            padding: 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .request-grid {
+            display: grid;
+            gap: 24px;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        }
+
+        /* Order Card - Liquid Glass styling */
+        .order-card {
+            background: var(--surface-glass);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+            transition: all 400ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .order-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-4px);
+            border-color: var(--primary);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px dashed var(--border);
+            padding-bottom: 12px;
+        }
+
+        .table-badge {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 12px var(--primary-glow);
+        }
+
+        .time-badge {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .order-status {
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+        .status-unpaid { background: #fee2e2; color: #b91c1c; }
+        .status-paid { background: #dcfce7; color: #15803d; }
+        .status-ready { background: #fef3c7; color: #b45309; }
+
+        .items-list { list-style: none; margin-bottom: 10px; }
+        .item-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-weight: 600; color: var(--text-main); }
+        .item-qty { color: var(--accent); font-weight: 800; min-width: 30px; }
+        
+        .action-row {
+            display: flex;
+            gap: 12px;
+            margin-top: auto;
+            border-top: 1px dashed var(--border);
+            padding-top: 16px;
+        }
+        
+    </style>
+</head>
+<body>
+
+    <nav class="staff-nav">
+        <div class="staff-brand">
+            <i class="fa-solid fa-mug-hot"></i> Dịch Vụ - Nohope
+        </div>
+        <div style="display: flex; gap: 16px; align-items: center;">
+            <button class="btn btn-outline" id="refresh-btn">
+                <i class="fa-solid fa-rotate-right"></i> Làm mới
+            </button>
+            <button class="btn" style="background: var(--surface-color); border: 1px solid var(--border);" id="logout-btn">
+                <i class="fa-solid fa-right-from-bracket"></i> Thoát
+            </button>
+        </div>
+    </nav>
+
+    <div class="staff-container">
+        
+        <div style="margin-bottom: 24px; border-bottom: 2px solid var(--border); padding-bottom: 12px; display: flex; gap: 20px;">
+            <h2 id="tab-orders" style="cursor: pointer; color: var(--primary); font-weight: 800;">Đơn Hàng & Phục Vụ</h2>
+            <h2 id="tab-requests" style="cursor: pointer; color: var(--text-muted); font-weight: 600;">Yêu Cầu Hỗ Trợ <span id="req-badge" style="background: var(--danger); color: white; border-radius: 50%; padding: 4px 8px; font-size: 0.8rem; display: none;">0</span></h2>
+        </div>
+
+        <!-- Orders Section -->
+        <div id="section-orders">
+            <div id="status-bar" style="margin-bottom: 20px; font-weight: 600; color: var(--success); display: none;">
+                Đã kết nối với hệ thống thời gian thực.
+            </div>
+            
+            <div id="loader" class="text-center mt-4">
+                <i class="fa-solid fa-spinner fa-spin fa-2x text-primary"></i>
+                <p class="mt-2 text-muted">Đang lấy dữ liệu đơn hàng...</p>
+            </div>
+
+            <div class="request-grid" id="orders-container">
+                <!-- Orders injected by JS -->
+            </div>
+        </div>
+
+        <!-- Requests Section -->
+        <div id="section-requests" style="display: none;">
+            <div class="request-grid" id="requests-container">
+                <!-- Requests injected by JS -->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modals -->
+    <!-- ... Confirmation Modals to be added later if needed via JS ... -->
+
+    <!-- Scripts -->
+    <!-- Supabase Core -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    
+    <script>
+        // --- 1. Authentication Check ---
+        if (localStorage.getItem('nohope_staff_auth') !== 'true') {
+            window.location.href = 'staff-login.html';
+        }
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            localStorage.removeItem('nohope_staff_auth');
+            localStorage.removeItem('nohope_staff_name');
+            window.location.href = 'staff-login.html';
+        });
+
+        // --- 2. Global State ---
+        let currentTab = 'orders';
+        const ordersContainer = document.getElementById('orders-container');
+        const requestsContainer = document.getElementById('requests-container');
+        const loader = document.getElementById('loader');
+
+        // Tab Switching
+        document.getElementById('tab-orders').addEventListener('click', () => switchTab('orders'));
+        document.getElementById('tab-requests').addEventListener('click', () => switchTab('requests'));
+
+        function switchTab(tab) {
+            currentTab = tab;
+            if (tab === 'orders') {
+                document.getElementById('tab-orders').style.color = 'var(--primary)';
+                document.getElementById('tab-orders').style.fontWeight = '800';
+                document.getElementById('tab-requests').style.color = 'var(--text-muted)';
+                document.getElementById('tab-requests').style.fontWeight = '600';
+                
+                document.getElementById('section-orders').style.display = 'block';
+                document.getElementById('section-requests').style.display = 'none';
+                fetchOrders();
+            } else {
+                document.getElementById('tab-requests').style.color = 'var(--primary)';
+                document.getElementById('tab-requests').style.fontWeight = '800';
+                document.getElementById('tab-orders').style.color = 'var(--text-muted)';
+                document.getElementById('tab-orders').style.fontWeight = '600';
+                
+                document.getElementById('section-orders').style.display = 'none';
+                document.getElementById('section-requests').style.display = 'block';
+                fetchRequests();
+            }
+        }
+
+        document.getElementById('refresh-btn').addEventListener('click', () => {
+             if(currentTab === 'orders') fetchOrders();
+             else fetchRequests();
+        });
+
+        // --- 3. Supabase Realtime ---
+        // Setup channels for Orders and Staff Requests
+        function setupRealtime() {
+            supabase
+                .channel('staff-orders')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, payload => {
+                    if(currentTab === 'orders') fetchOrders();
+                })
+                .subscribe((status) => {
+                    if (status === 'SUBSCRIBED') {
+                        document.getElementById('status-bar').style.display = 'block';
+                    }
+                });
+
+            supabase
+                .channel('staff-requests')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'staff_requests' }, payload => {
+                    fetchRequestsBadge(); // Always update badge
+                    if(currentTab === 'requests') fetchRequests();
+                })
+                .subscribe();
+        }
+
+        // --- 4. Fetch Data logic ---
+        
+        // Orders Fetch
+        async function fetchOrders() {
+            loader.style.display = 'block';
+            ordersContainer.innerHTML = '';
+            
+            try {
+                // Fetch orders that are NOT Completed or Cancelled. Include 'Ready' and 'Pending'
+                const { data, error } = await supabase
+                    .from('orders')
+                    .select('*')
+                    .in('status', ['Pending', 'Processing', 'Ready'])
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+                
+                loader.style.display = 'none';
+
+                if (!data || data.length === 0) {
+                    ordersContainer.innerHTML = '<div class="text-center text-muted col-span-full">Không có đơn hàng nào cần xử lý.</div>';
+                    return;
+                }
+
+                data.forEach(order => {
+                    const card = createOrderCard(order);
+                    ordersContainer.appendChild(card);
+                });
+
+            } catch (error) {
+                console.error("Error fetching orders:", error);
+                loader.style.display = 'none';
+                ordersContainer.innerHTML = '<div class="text-danger">Lỗi khi tải dữ liệu!</div>';
+            }
+        }
+
+        // Staff Requests Fetch
+        async function fetchRequests() {
+            requestsContainer.innerHTML = '<div class="text-center text-muted"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải...</div>';
+            try {
+                const { data, error } = await supabase
+                    .from('staff_requests')
+                    .select('*')
+                    .eq('status', 'Pending')
+                    .order('created_at', { ascending: true });
+
+                if (error) throw error;
+                requestsContainer.innerHTML = '';
+                
+                if (!data || data.length === 0) {
+                    requestsContainer.innerHTML = '<div class="text-center text-muted col-span-full">Tuyệt vời! Không có yêu cầu hỗ trợ nào.</div>';
+                    return;
+                }
+
+                data.forEach(req => {
+                    requestsContainer.appendChild(createRequestCard(req));
+                });
+                
+            } catch (e) {
+                console.error("Fetch requests error:", e);
+                requestsContainer.innerHTML = '<div class="text-danger">Lỗi khi tải dữ liệu!</div>';
+            }
+        }
+
+        // Requests Badge Update
+        async function fetchRequestsBadge() {
+             try {
+                const { count, error } = await supabase
+                    .from('staff_requests')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('status', 'Pending');
+                    
+                const badge = document.getElementById('req-badge');
+                if(!error && count > 0) {
+                    badge.style.display = 'inline-block';
+                    badge.textContent = count;
+                } else {
+                    badge.style.display = 'none';
+                }
+             } catch(e) {}
+        }
+
+
+        // --- 5. UI Renderers ---
+        function createOrderCard(order) {
+            const timeDiff = Math.floor((new Date() - new Date(order.created_at)) / 60000);
+            const timeStr = timeDiff === 0 ? "Vừa xong" : `${timeDiff} phút trước`;
+            let statusBadge = '';
+            
+            // Note: 'status' refers to Kitchen state, 'is_paid' refers to Payment state
+            
+            const isPaid = order.is_paid;
+            const hasBankTransfer = order.payment_method === 'bank_transfer';
+            
+            let paymentStr = `<span class="order-status ${isPaid ? 'status-paid' : 'status-unpaid'}">${isPaid ? 'Đã TToán' : 'Chưa TToán'}</span>`;
+            if(!isPaid && hasBankTransfer) {
+                paymentStr = `<span class="order-status" style="background:#e0e7ff; color:#3730a3;"><i class="fa-solid fa-qrcode"></i> Đợi xác nhận CK</span>`;
+            }
+
+            let kitchenStr = `<span class="order-status" style="background:#f3f4f6; color:#4b5563;">${order.status}</span>`;
+            if(order.status === 'Ready') {
+                kitchenStr = `<span class="order-status status-ready"><i class="fa-solid fa-bell"></i> Sẵn sàng phục vụ</span>`;
+            }
+
+            const div = document.createElement('div');
+            div.className = 'order-card';
+            
+            let itemsHtml = '<ul class="items-list">';
+            order.items.forEach(item => {
+                itemsHtml += `
+                    <li class="item-row">
+                        <span><span class="item-qty">${item.quantity}x</span> ${item.name}</span>
+                    </li>`;
+                if(item.selectedOptions && item.selectedOptions.length > 0) {
+                     itemsHtml += `<li style="font-size:0.85rem; color:var(--text-muted); margin-left: 30px; margin-bottom: 8px;">
+                                     + ${item.selectedOptions.map(o => o.choiceName).join(', ')}
+                                   </li>`;
+                }
+            });
+            itemsHtml += '</ul>';
+
+            let noteHtml = order.order_note ? 
+                `<div style="background:#fefce8; border-left:3px solid #eab308; padding:8px; font-size:0.9rem; border-radius:4px; margin-bottom:12px;">
+                    <strong><i class="fa-regular fa-comment"></i> Ghi chú:</strong> ${order.order_note}
+                 </div>` : '';
+
+            // Generate Action Buttons based on states
+            let actionHtml = '';
+            
+            // Confirm Transfer Button
+            if(!isPaid) {
+                actionHtml += `<button class="btn btn-primary" style="flex:1;" onclick="confirmPayment('${order.id}')">Đã Thu Tiền</button>`;
+            }
+
+            // Mark Delivered Button (if ready)
+            if(order.status === 'Ready') {
+                actionHtml += `<button class="btn" style="flex:1; background:var(--success); color:white; border:none;" onclick="markDelivered('${order.id}')">Hoàn Thành</button>`;
+            } else {
+                 if(isPaid) {
+                     actionHtml += `<div style="text-align:center; flex:1; color:var(--text-muted); padding:10px;">Đang chờ Bếp chế biến...</div>`;
+                 }
+            }
+
+            div.innerHTML = `
+                <div class="order-header">
+                    <div class="table-badge">Bàn ${order.table_number}</div>
+                    <div class="time-badge">${timeStr}</div>
+                </div>
+                
+                <div style="display:flex; gap:8px;">
+                     ${paymentStr}
+                     ${kitchenStr}
+                </div>
+
+                <div style="font-size: 1.1rem; font-weight: 700; color: var(--text-main);">
+                    Tổng: ${order.total_price.toLocaleString('vi-VN')} đ
+                </div>
+
+                ${noteHtml}
+                ${itemsHtml}
+
+                <div class="action-row">
+                    ${actionHtml}
+                </div>
+            `;
+            return div;
+        }
+
+        function createRequestCard(req) {
+            const timeDiff = Math.floor((new Date() - new Date(req.created_at)) / 60000);
+            const timeStr = timeDiff === 0 ? "Vừa xong" : `${timeDiff} phút trước`;
+            
+            const div = document.createElement('div');
+            div.className = 'order-card';
+            div.style.borderLeft = '4px solid var(--danger)';
+            
+            let icon = 'fa-bell';
+            let title = 'Gọi Nhân Viên';
+            if(req.request_type === 'checkout') { icon = 'fa-money-bill'; title = 'Yêu Cầu Thanh Toán'; }
+            else if(req.request_type === 'water') { icon = 'fa-glass-water'; title = 'Thêm Nước Lọc'; }
+            
+            div.innerHTML = `
+                <div class="order-header">
+                    <div class="table-badge" style="background:var(--bg-color); color:var(--text-main); border:1px solid var(--border); box-shadow:none;">Bàn ${req.table_number}</div>
+                    <div class="time-badge">${timeStr}</div>
+                </div>
+                
+                <div style="font-size: 1.2rem; font-weight: 800; color: var(--danger); margin: 10px 0;">
+                    <i class="fa-solid ${icon}"></i> ${title}
+                </div>
+
+                <div class="action-row">
+                    <button class="btn btn-primary" style="flex:1; background:var(--danger); box-shadow:0 4px 12px rgba(239, 68, 68, 0.3);" onclick="completeRequest('${req.id}')">
+                        <i class="fa-solid fa-check"></i> Đã xử lý
+                    </button>
+                </div>
+            `;
+            return div;
+        }
+
+        // --- 6. Event Handlers ---
+        
+        async function confirmPayment(orderId) {
+            if(!confirm("Xác nhận đã thu thành công tiền order này?")) return;
+            try {
+                const { error } = await supabase.from('orders').update({ is_paid: true }).eq('id', orderId);
+                if(error) throw error;
+                fetchOrders();
+            } catch(e) {
+                alert("Lỗi: " + e.message);
+            }
+        }
+
+        async function markDelivered(orderId) {
+            // Once served, mark as Completed so it leaves the active terminal.
+            if(!confirm("Đồng ý: Khách đã nhận đủ món và đơn hoàn tất?")) return;
+            try {
+                const { error } = await supabase.from('orders').update({ status: 'Completed' }).eq('id', orderId);
+                if(error) throw error;
+                fetchOrders();
+            } catch(e) {
+                alert("Lỗi: " + e.message);
+            }
+        }
+
+        async function completeRequest(reqId) {
+            try {
+                const { error } = await supabase.from('staff_requests').update({ status: 'Completed' }).eq('id', reqId);
+                if(error) throw error;
+                fetchRequests();
+                fetchRequestsBadge();
+            } catch(e) {
+                alert("Lỗi: " + e.message);
+            }
+        }
+
+
+        // Initialization
+        setupRealtime();
+        fetchOrders();
+        fetchRequestsBadge();
+
+        setInterval(() => {
+            if(currentTab === 'orders') fetchOrders();
+        }, 30000); // 30s auto-refresh fallback
+
+    </script>
+</body>
+</html>
