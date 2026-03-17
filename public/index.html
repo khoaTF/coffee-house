@@ -131,13 +131,13 @@
             </div>
             <div class="cart-modal-body" style="padding-top: 0;">
                 <label for="order-note" class="font-bold text-muted" style="display: block; margin-bottom: 5px;">Ghi chú (Tùy chọn):</label>
-                <textarea id="order-note" placeholder="Vd: Ít đường, nhiều đá..." rows="2" style="width: 100%; border-radius: 8px; border: 1px solid #ddd; padding: 10px; font-family: inherit; font-size: 0.95rem; resize: none;"></textarea>
+                <textarea id="order-note" class="input-glass" placeholder="Vd: Ít đường, nhiều đá..." rows="2" style="width: 100%; resize: none;"></textarea>
                 
-                <div class="promo-section mt-3" style="background: rgba(var(--primary-color-rgb), 0.05); padding: 10px; border-radius: 8px; border: 1px dashed var(--primary-color);">
+                <div class="promo-section mt-3" style="background: rgba(var(--primary-color-rgb), 0.05); padding: 10px; border-radius: var(--radius-sm); border: 1px dashed var(--primary);">
                     <label class="font-bold text-muted" style="display: block; margin-bottom: 5px;"><i class="fa-solid fa-ticket-simple text-primary"></i> Mã khuyến mãi:</label>
                     <div style="display: flex; gap: 8px;">
-                        <input type="text" id="promo-code-input" placeholder="Nhập mã ở đây..." style="flex: 1; border-radius: 6px; border: 1px solid #ddd; padding: 8px 12px; text-transform: uppercase; font-family: inherit; font-size: 0.95rem;">
-                        <button id="apply-promo-btn" onclick="applyPromo()" class="btn btn-outline-primary" style="padding: 8px 16px; border-radius: 6px; white-space: nowrap;">Áp dụng</button>
+                        <input type="text" id="promo-code-input" class="input-glass" placeholder="Nhập mã..." style="flex: 1; text-transform: uppercase;">
+                        <button id="apply-promo-btn" onclick="applyPromo()" class="btn btn-outline-primary" style="padding: 8px 16px; border-radius: var(--radius-sm); white-space: nowrap;">Áp dụng</button>
                     </div>
                     <div id="promo-message" style="display: none; font-size: 0.85rem; margin-top: 6px; font-weight: 500;"></div>
                 </div>
