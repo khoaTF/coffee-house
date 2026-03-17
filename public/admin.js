@@ -628,6 +628,12 @@ function renderHistoryTable() {
             btn.textContent = 'Hủy';
             btn.onclick = () => cancelOrder(order._id);
             tdAction.appendChild(btn);
+        } else if (order.status === 'Completed') {
+            const btnPrint = document.createElement('button');
+            btnPrint.className = 'btn btn-sm btn-outline-secondary ms-1';
+            btnPrint.innerHTML = '<i class="fa-solid fa-print"></i> In Bill';
+            btnPrint.onclick = () => printInvoice(order._id);
+            tdAction.appendChild(btnPrint);
         }
         
         tr.append(tdId, tdDate, tdTable, tdItems, tdPrice, tdStatus, tdAction);
@@ -659,6 +665,126 @@ window.cancelOrder = async (orderId) => {
         console.error(error);
         alert('Lỗi kết nối máy chủ.');
     }
+};
+
+window.printInvoice = (orderId) => {
+    const order = orderHistory.find(o => o._id === orderId);
+    if (!order) return;
+
+    const printWindow = document.createElement('iframe');
+    printWindow.style.position = 'absolute';
+    printWindow.style.top = '-10000px';
+    document.body.appendChild(printWindow);
+
+    const doc = printWindow.contentWindow.document;
+    
+    // Receipt styling (80mm width standard)
+    const style = `
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
+            body { 
+                font-family: 'Roboto Mono', monospace; 
+                color: #000; 
+                margin: 0; 
+                padding: 10px;
+                width: 72mm; /* ~80mm wrapper */
+                font-size: 12px;
+            }
+            .text-center { text-align: center; }
+            .text-right { text-align: right; }
+            .font-bold { font-weight: bold; }
+            .mb-1 { margin-bottom: 5px; }
+            .mb-2 { margin-bottom: 15px; }
+            .divider { border-bottom: 1px dashed #000; margin: 10px 0; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { padding: 4px 0; vertical-align: top; }
+            .header-info { font-size: 11px; margin-bottom: 3px; }
+            .total-row { font-size: 14px; font-weight: bold; }
+        </style>
+    `;
+
+    let itemsHtml = '';
+    order.items.forEach(item => {
+        let optionsStr = '';
+        if(item.selectedOptions && item.selectedOptions.length > 0) {
+            optionsStr = `<br><span style="font-size: 10px; padding-left: 10px;">+ ${item.selectedOptions.map(o => o.choiceName).join(', ')}</span>`;
+        }
+        
+        itemsHtml += `
+            <tr>
+                <td style="width: 15%;">${item.quantity}</td>
+                <td style="width: 50%;">${item.name}${optionsStr}</td>
+                <td style="width: 35%;" class="text-right">${(item.price * item.quantity).toLocaleString('vi-VN')}</td>
+            </tr>
+        `;
+    });
+
+    const dateStr = new Date(order.createdAt).toLocaleString('vi-VN');
+    const noteHtml = order.orderNote ? `<div class="divider"></div><div><strong>Ghi chú:</strong> ${order.orderNote}</div>` : '';
+    const discountStr = order.discountAmount ? `
+        <tr>
+            <td colspan="2" class="text-right pb-1">Khuyến mãi:</td>
+            <td class="text-right pb-1">-${order.discountAmount.toLocaleString('vi-VN')}</td>
+        </tr>` : '';
+
+    const html = `
+        <html>
+        <head>
+            <title>Receipt</title>
+            ${style}
+        </head>
+        <body>
+            <div class="text-center mb-2">
+                <h2 style="margin: 0; font-size: 18px;">NOHOPE COFFEE</h2>
+                <div class="header-info">Hóa đơn thanh toán</div>
+            </div>
+            
+            <div class="header-info">Ngày: ${dateStr}</div>
+            <div class="header-info">Bàn: ${order.tableNumber}</div>
+            <div class="header-info">Mã đơn: ${order._id.substring(0, 8).toUpperCase()}</div>
+            
+            <div class="divider"></div>
+            
+            <table>
+                <tr style="border-bottom: 1px solid #000;">
+                    <th class="text-left" style="width: 15%;">SL</th>
+                    <th class="text-left" style="width: 50%;">Món</th>
+                    <th class="text-right" style="width: 35%;">T.Tiền</th>
+                </tr>
+                ${itemsHtml}
+            </table>
+            
+            <div class="divider"></div>
+            
+            <table>
+                ${discountStr}
+                <tr class="total-row">
+                    <td colspan="2" class="text-right pt-2">TỔNG CỘNG:</td>
+                    <td class="text-right pt-2">${order.totalPrice.toLocaleString('vi-VN')}</td>
+                </tr>
+            </table>
+            
+            ${noteHtml}
+            
+            <div class="divider"></div>
+            <div class="text-center mb-1" style="font-size: 11px;">Cảm ơn quý khách!</div>
+            <div class="text-center" style="font-size: 11px;">Hẹn gặp lại.</div>
+            
+            <script>
+                window.onload = function() {
+                    window.print();
+                    setTimeout(function() {
+                        window.parent.document.body.removeChild(window.frameElement);
+                    }, 500);
+                }
+            </script>
+        </body>
+        </html>
+    `;
+
+    doc.open();
+    doc.write(html);
+    doc.close();
 };
 
 // --- Analytics / Charts ---
