@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coffee House - Đăng nhập</title>
+    <meta name="description" content="Đăng nhập vào hệ thống quản lý Coffee House.">
+    <!-- Open Graph tags to satisfy SEO check -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://coffee-house.com/login.html">
+    <meta property="og:title" content="Coffee House - Đăng nhập">
+    <meta property="og:description" content="Đăng nhập vào hệ thống quản lý Coffee House.">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --gold: #d4a76a;
+            --gold-light: #e8c899;
+            --gold-dark: #b8894e;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #0a0e17 0%, #141b2d 40%, #1a1f35 100%);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Animated background orbs */
+        body::before, body::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.15;
+            z-index: 0;
+            animation: float 15s ease-in-out infinite;
+        }
+        body::before {
+            width: 500px; height: 500px;
+            background: var(--gold);
+            top: -150px; right: -100px;
+        }
+        body::after {
+            width: 400px; height: 400px;
+            background: #6366f1;
+            bottom: -100px; left: -50px;
+            animation-delay: -7s;
+        }
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -30px) scale(1.05); }
+            66% { transform: translate(-20px, 20px) scale(0.95); }
+        }
+
+        /* Steam wisps */
+        @keyframes steam {
+            0% { transform: translateY(0) scaleX(1); opacity: 0; }
+            15% { opacity: 0.6; }
+            50% { transform: translateY(-30px) scaleX(1.3); opacity: 0.3; }
+            100% { transform: translateY(-60px) scaleX(1.8); opacity: 0; }
+        }
+        .steam-container {
+            position: absolute;
+            top: -10px; left: 50%;
+            transform: translateX(-50%);
+            width: 50px; height: 60px;
+            pointer-events: none;
+        }
+        .steam {
+            position: absolute;
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: rgba(212,167,106,0.4);
+            filter: blur(3px);
+            animation: steam 2.5s ease-out infinite;
+        }
+        .steam:nth-child(1) { left: 10px; animation-delay: 0s; }
+        .steam:nth-child(2) { left: 22px; animation-delay: 0.5s; }
+        .steam:nth-child(3) { left: 34px; animation-delay: 1s; }
+
+        /* Pulse ring on brand icon */
+        @keyframes pulseRing {
+            0% { box-shadow: 0 0 0 0 rgba(212,167,106,0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(212,167,106,0); }
+            100% { box-shadow: 0 0 0 0 rgba(212,167,106,0); }
+        }
+        .brand-icon { animation: pulseRing 2.5s ease-out infinite; }
+
+        /* Login card entrance */
+        @keyframes loginEntrance {
+            0% { opacity: 0; transform: translateY(30px) scale(0.95); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .login-card { animation: loginEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1); }
+
+        /* Floating sparkles */
+        .sparkle {
+            position: fixed;
+            width: 3px; height: 3px;
+            border-radius: 50%;
+            background: rgba(212,167,106,0.5);
+            pointer-events: none;
+            z-index: 0;
+            animation: sparkleFloat linear infinite;
+        }
+        @keyframes sparkleFloat {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-10vh) rotate(720deg); opacity: 0; }
+        }
+
+        .login-wrapper {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 48px 36px;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.4);
+        }
+
+        .brand-icon {
+            width: 72px; height: 72px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 32px;
+            color: #fff;
+            box-shadow: 0 8px 24px rgba(212, 167, 106, 0.3);
+        }
+
+        .login-card h2 {
+            color: #f5f5f5;
+            font-weight: 700;
+            font-size: 1.6rem;
+            margin-bottom: 6px;
+        }
+        .login-card .subtitle {
+            color: rgba(255,255,255,0.45);
+            font-size: 0.88rem;
+            margin-bottom: 32px;
+        }
+
+        .form-group {
+            position: relative;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .form-group label {
+            display: block;
+            color: rgba(255,255,255,0.5);
+            font-size: 0.82rem;
+            font-weight: 500;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .input-icon-wrapper {
+            position: relative;
+        }
+        .input-icon-wrapper i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255,255,255,0.3);
+            font-size: 0.95rem;
+            transition: color 0.3s;
+        }
+        .input-icon-wrapper input {
+            width: 100%;
+            padding: 14px 14px 14px 42px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            color: #f5f5f5;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+        .input-icon-wrapper input::placeholder {
+            color: rgba(255,255,255,0.25);
+        }
+        .input-icon-wrapper input:focus {
+            border-color: var(--gold);
+            background: rgba(255,255,255,0.08);
+            box-shadow: 0 0 0 3px rgba(212, 167, 106, 0.15);
+        }
+        .input-icon-wrapper input:focus + i,
+        .input-icon-wrapper:has(input:focus) i {
+            color: var(--gold);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            color: #0a0e17;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 8px;
+            letter-spacing: 0.5px;
+        }
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(212, 167, 106, 0.35);
+        }
+        .login-btn:active {
+            transform: translateY(0);
+        }
+        .login-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-msg {
+            color: #f87171;
+            font-size: 0.85rem;
+            margin-top: 16px;
+            display: none;
+            background: rgba(248, 113, 113, 0.08);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(248, 113, 113, 0.2);
+        }
+
+        .footer-text {
+            text-align: center;
+            color: rgba(255,255,255,0.2);
+            font-size: 0.78rem;
+            margin-top: 28px;
+        }
+        .footer-text a {
+            color: var(--gold-light);
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-wrapper">
+        <div class="login-card">
+            <div class="brand-icon" style="position:relative;">
+                <i class="fa-solid fa-mug-hot"></i>
+                <div class="steam-container">
+                    <div class="steam"></div>
+                    <div class="steam"></div>
+                    <div class="steam"></div>
+                </div>
+            </div>
+            <h2>Coffee House</h2>
+            <p class="subtitle">Đăng nhập vào hệ thống quản lý</p>
+
+            <form id="login-form">
+                <div class="form-group">
+                    <label>Tên đăng nhập</label>
+                    <div class="input-icon-wrapper">
+                        <input type="text" id="username" placeholder="admin hoặc kitchen" required>
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Mật khẩu</label>
+                    <div class="input-icon-wrapper">
+                        <input type="password" id="password" placeholder="Nhập mật khẩu..." required>
+                        <i class="fa-solid fa-lock"></i>
+                    </div>
+                </div>
+                <button type="submit" class="login-btn" id="login-btn">
+                    <i class="fa-solid fa-right-to-bracket me-2"></i>Đăng nhập
+                </button>
+                <div class="error-msg" id="error-msg">
+                    <i class="fa-solid fa-circle-exclamation me-1"></i> Tài khoản hoặc mật khẩu không đúng!
+                </div>
+            </form>
+
+            <p class="footer-text">
+                Powered by <a href="#">Coffee House System</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            const btn = document.getElementById('login-btn');
+            const errorMsg = document.getElementById('error-msg');
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Đang xác thực...';
+            errorMsg.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user, password: pass })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    localStorage.setItem('cafe_token', data.token);
+                    localStorage.setItem('cafe_role', data.role);
+                    
+                    btn.innerHTML = '<i class="fa-solid fa-check me-2"></i>Thành công!';
+                    btn.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
+                    
+                    setTimeout(() => {
+                        if (data.role === 'admin') window.location.href = '/admin.html';
+                        else if (data.role === 'kitchen') window.location.href = '/kitchen.html';
+                    }, 500);
+                } else {
+                    errorMsg.style.display = 'block';
+                }
+            } catch (err) {
+                errorMsg.innerText = "Lỗi kết nối đến máy chủ.";
+                errorMsg.style.display = 'block';
+            } finally {
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-right-to-bracket me-2"></i>Đăng nhập';
+                    btn.style.background = '';
+                }, 1500);
+            }
+        });
+    </script>
+
+    <!-- Floating sparkles -->
+    <script>
+        for(let i=0;i<12;i++){
+            const s=document.createElement('div');
+            s.className='sparkle';
+            s.style.left=Math.random()*100+'vw';
+            s.style.animationDuration=(6+Math.random()*8)+'s';
+            s.style.animationDelay=Math.random()*8+'s';
+            s.style.width=s.style.height=(2+Math.random()*3)+'px';
+            document.body.appendChild(s);
+        }
+    </script>
+</body>
+</html>

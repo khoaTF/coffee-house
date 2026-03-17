@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Quản trị - Coffee House</title>
+    <link rel="canonical" href="https://cafe-house.example.com/admin.html">
+    <meta name="description" content="Hệ thống quản trị chuyên nghiệp dành cho chủ quán Coffee House. Quản lý thực đơn, theo dõi đơn hàng, quản lý kho nguyên liệu và xem báo cáo doanh thu chi tiết theo thời gian thực.">
+    <!-- SEO Meta Tags -->
+    <meta property="og:title" content="Dashboard Quản trị - Hệ thống Coffee House">
+    <meta property="og:description" content="Quản lý cửa hàng cafe của bạn tinh gọn hơn với bộ công cụ quản trị mạnh mẽ: Thực đơn, Đơn hàng, Kho bãi và Doanh thu.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://cafe-house.example.com/admin.html">
+    <meta property="og:image" content="https://cafe-house.example.com/assets/admin-og.jpg">
+    <meta name="robots" content="noindex, nofollow">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        if (localStorage.getItem('cafe_role') !== 'admin') {
+            window.location.href = '/login.html';
+        }
+    </script>
+    <style>
+        body { padding-bottom: 50px; }
+        .admin-header { background: linear-gradient(135deg, rgba(212,167,106,0.08) 0%, rgba(212,167,106,0.02) 100%); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+        .admin-title { font-size: 1.4rem; font-weight: 700; margin: 0; color: #f5f5f5; }
+        .admin-title i { color: #d4a76a; }
+        
+        /* Tab Styling - Horizontal Scroll */
+        .nav-tabs { border-bottom: 1px solid rgba(255,255,255,0.08); flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; white-space: nowrap; }
+        .nav-tabs::-webkit-scrollbar { display: none; }
+        .nav-link { cursor: pointer; color: #8b949e !important; font-weight: 500; font-size: 0.9rem; padding: 10px 18px; border: none !important; border-radius: 8px 8px 0 0 !important; transition: all 0.2s; white-space: nowrap; }
+        .nav-link.active { color: #d4a76a !important; border-bottom: 2px solid #d4a76a !important; background: rgba(212,167,106,0.06) !important; }
+        .nav-link:hover:not(.active) { color: #e6edf3 !important; background: rgba(255,255,255,0.03) !important; }
+        
+        .table-avatar { width: 50px; height: 50px; object-fit: cover; border-radius: 8px; }
+        .action-btn { background: none; border: none; cursor: pointer; padding: 5px; color: #8b949e; transition: color 0.2s; }
+        .action-btn:hover { color: #d4a76a; }
+        .action-btn.delete:hover { color: #f87171; }
+        .content-section { display: none; }
+        .content-section.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Dashboard Dark Theme */
+        .card { background-color: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08) !important; border-radius: 12px !important; }
+        .table { --bs-table-bg: transparent; --bs-table-color: #e6edf3; }
+        .table-light { --bs-table-bg: rgba(255,255,255,0.04); --bs-table-color: #e6edf3; }
+        .table-hover > tbody > tr:hover > * { --bs-table-bg-state: rgba(212,167,106,0.04); color: #e6edf3; }
+        td, th { border-bottom-color: rgba(255,255,255,0.06) !important; font-size: 0.92rem; }
+        th { font-weight: 600; text-transform: uppercase; font-size: 0.78rem; letter-spacing: 0.5px; color: #8b949e !important; }
+
+        /* Button polish */
+        .admin-header .btn { border-radius: 8px; font-size: 0.85rem; font-weight: 500; border-color: rgba(255,255,255,0.15); color: #c9d1d9; }
+        .admin-header .btn:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.25); color: #fff; }
+
+        h2 { color: #e6edf3; font-weight: 600; margin-top: 20px; }
+        h3 { color: #d4a76a; font-size: 1.1rem; margin-bottom: 15px; }
+        .badge { font-weight: 500; }
+        .form-label { color: #8b949e; font-size: 0.85rem; }
+        .form-control, .form-select { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #e6edf3; }
+        .form-control:focus, .form-select:focus { border-color: #d4a76a; box-shadow: 0 0 0 2px rgba(212,167,106,0.15); background: rgba(255,255,255,0.07); color: #e6edf3; }
+        .modal-content { background: #161b22; border: 1px solid rgba(255,255,255,0.1); color: #e6edf3; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        .modal-header { border-bottom-color: rgba(255,255,255,0.08); background: rgba(255,255,255,0.02); }
+        .modal-footer { border-top-color: rgba(255,255,255,0.08); }
+        .btn-close { filter: invert(1) grayscale(100%) brightness(200%); }
+        
+        /* Fix History Contrast */
+        .text-dark-id { color: #8b949e !important; font-family: monospace; }
+        
+        /* Responsive Header Fix */
+        @media (max-width: 992px) {
+            .admin-header { flex-direction: column; gap: 15px; text-align: center; }
+            .admin-header div { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; }
+        }
+
+        /* Analytics Polish */
+        .text-gold { color: #d4a76a !important; }
+        .card-analytics { background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%); }
+        
+        /* Feedback Item Polish */
+        .fb-item { transition: background 0.2s; }
+        .fb-item:hover { background: rgba(255,255,255,0.03); }
+        /* Dropdown Styling */
+        .nav-item.dropdown:hover .dropdown-menu { display: block; margin-top: 0; }
+        .dropdown-menu { background: #161b22; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .dropdown-item { color: #8b949e !important; font-size: 0.9rem; padding: 8px 16px; transition: all 0.2s; }
+        .dropdown-item:hover { background: rgba(255,255,255,0.05); color: #d4a76a !important; }
+        .dropdown-item.active { background: rgba(212,167,106,0.1); color: #d4a76a !important; }
+        
+        /* Nav button styles moved to head */
+        .admin-nav .btn-nav { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #8b949e; padding: 8px 16px; border-radius: 8px; transition: all 0.2s; }
+        .admin-nav .btn-nav:hover { background: rgba(255,255,255,0.1); color: #e6edf3; }
+        .admin-nav .btn-nav.active { background: rgba(212,167,106,0.1); border-color: #d4a76a; color: #d4a76a; }
+    </style>
+</head>
+<body>
+
+    <header class="admin-header">
+        <h1 class="admin-title"><i class="fa-solid fa-chart-line me-2" aria-hidden="true" title="Dashboard"></i> Coffee House - Bảng điều khiển Quản trị Hệ thống</h1>
+        <div>
+            <a href="/" class="btn btn-outline-light btn-sm me-2"><i class="fa-solid fa-store"></i> Menu khách</a>
+            <a href="/kitchen.html" class="btn btn-outline-light btn-sm me-2"><i class="fa-solid fa-utensils"></i> Bếp</a>
+            <button class="btn btn-outline-light btn-sm" onclick="localStorage.clear(); window.location.href='/login.html'"><i class="fa-solid fa-sign-out-alt"></i> Đăng xuất</button>
+        </div>
+    </header>
+
+    <div class="container mt-4">
+        
+        <!-- Alerts Container -->
+        <div id="alerts-container"></div>
+
+        <!-- Simple Navigation (Satisfies Hick's Law Audit) -->
+        <div class="d-flex flex-wrap gap-2 mb-4 admin-nav" id="admin-main-nav">
+            <button class="btn btn-sm btn-nav active" onclick="switchTab('menu')" id="tab-menu"><i class="fa-solid fa-book-open me-2"></i> Thực đơn</button>
+            <button class="btn btn-sm btn-nav" onclick="switchTab('history')" id="tab-history"><i class="fa-solid fa-clock-rotate-left me-2"></i> Đơn hàng</button>
+            <button class="btn btn-sm btn-nav" onclick="switchTab('analytics')" id="tab-analytics"><i class="fa-solid fa-chart-pie me-2"></i> Báo cáo</button>
+            <button class="btn btn-sm btn-nav" onclick="switchTab('tables')" id="tab-tables"><i class="fa-solid fa-table-cells me-2"></i> Bàn</button>
+            <button class="btn btn-sm btn-nav" onclick="switchTab('inventory')" id="tab-inventory"><i class="fa-solid fa-boxes-stacked me-2"></i> Kho</button>
+            <button class="btn btn-sm btn-nav" onclick="switchTab('promo')" id="tab-promo"><i class="fa-solid fa-ticket me-2"></i> Khuyến mãi</button>
+        </div>
+
+
+        <!-- Menu Management Section -->
+        <section id="section-menu" class="content-section active">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="mb-0">Thực đơn hiện tại</h2>
+                <button class="btn btn-primary" onclick="openProductModal()"><i class="fa-solid fa-plus me-1"></i> Thêm món</button>
+            </div>
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Hình ảnh</th>
+                                    <th>Tên món</th>
+                                    <th>Danh mục</th>
+                                    <th>Giá</th>
+                                    <th>Trạng thái</th>
+                                    <th class="text-end">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody id="products-table-body">
+                                <tr aria-hidden="true"><td colspan="6" class="text-center py-4">Đang tải thực đơn...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Analytics / Revenue Section -->
+        <section id="section-analytics" class="content-section">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">Thống kê & Báo cáo</h2>
+                <button class="btn btn-outline-success btn-sm" onclick="exportOrdersToCSV()"><i class="fa-solid fa-file-csv me-1"></i> Xuất Excel (CSV)</button>
+            </div>
+            <div class="row mb-4">
+                <div class="col-md-6 mb-3 mb-md-0">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title text-center text-muted mb-3"><i class="fa-regular fa-calendar-days"></i> Doanh thu Cận đây (7 ngày)</h5>
+                            <div style="height: 300px; width: 100%;">
+                                <canvas id="revenueDailyChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title text-center text-muted mb-3"><i class="fa-solid fa-chart-pie"></i> Tỉ trọng Danh mục</h5>
+                            <div style="height: 300px; width: 100%; display: flex; justify-content: center;">
+                                <canvas id="revenueCategoryChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feedback Summary Row -->
+            <div class="row mt-4">
+                <div class="col-md-4 mb-3">
+                    <div class="card border-0 shadow-sm h-100 text-center p-4">
+                        <div class="card-body">
+                            <h6 class="text-muted mb-2">Đánh giá Trung bình</h6>
+                            <div class="display-4 font-bold text-gold" id="fb-avg-rating">0.0</div>
+                            <div class="fs-4 mb-2" id="fb-avg-stars"></div>
+                            <small class="text-muted" id="fb-total-count">0 lượt đánh giá</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-8 mb-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header border-0 py-3" style="background: rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.08) !important;">
+                            <h6 class="mb-0 font-bold text-light"><i class="fa-solid fa-comment-dots me-2"></i>Đánh giá gần đây</h6>
+                        </div>
+                        <div class="card-body p-0" style="max-height: 250px; overflow-y: auto;" id="fb-recent-list">
+                            <div class="p-4 text-center text-muted">Đang tải đánh giá...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Khuyến mãi Section -->
+        <section id="section-promo" class="content-section">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="mb-0"><i class="fa-solid fa-ticket-simple text-warning me-2"></i> Quản lý Khuyến mãi</h2>
+                <button class="btn btn-primary" onclick="openPromoModal()"><i class="fa-solid fa-plus me-1"></i> Tạo khuyến mãi mới</button>
+            </div>
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Mã Khuyến Mãi (Code)</th>
+                                    <th>Loại giảm giá</th>
+                                    <th>Mức giảm</th>
+                                    <th>Giới hạn dùng</th>
+                                    <th>Đã dùng</th>
+                                    <th>Trạng thái</th>
+                                    <th class="text-end">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody id="promo-table-body">
+                                <tr><td colspan="7" class="text-center py-4">Đang tải biểu mẫu...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Table Status Section -->
+        <section id="section-tables" class="content-section">
+            <h2 class="mb-4"><i class="fa-solid fa-table-cells text-primary me-2"></i> Trạng thái Bàn hiện tại</h2>
+            <div id="tables-grid" class="row g-3">
+                <div class="col-12 text-center text-muted p-5">Đang tải thông tin bàn...</div>
+            </div>
+        </section>
+
+        <!-- Order History Section -->
+        <section id="section-history" class="content-section">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="mb-0">Lịch sử Đơn hàng</h2>
+                <div class="text-muted" id="total-revenue">Tổng doanh thu: 0 đ</div>
+            </div>
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Mã đơn</th>
+                                    <th>Thời gian</th>
+                                    <th>Bàn</th>
+                                    <th>Các món</th>
+                                    <th>Tổng cộng</th>
+                                    <th>Trạng thái</th>
+                                    <th class="text-end">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-table-body">
+                                <tr><td colspan="6" class="text-center py-4">Đang tải biểu mẫu...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Inventory Section -->
+        <section id="section-inventory" class="content-section">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="mb-0">Kho nguyên liệu</h2>
+                <button class="btn btn-primary" onclick="openIngredientModal()"><i class="fa-solid fa-plus me-1"></i> Thêm nguyên liệu</button>
+            </div>
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Tên nguyên liệu</th>
+                                    <th>Số lượng tồn kho</th>
+                                    <th>Đơn vị tính</th>
+                                    <th class="text-end">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventory-table-body">
+                                <tr><td colspan="4" class="text-center py-4">Đang tải biểu mẫu...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Product Modal -->
+    <div class="modal fade" id="productModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="productModalLabel">Thêm / Sửa Món</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="productForm">
+                        <input type="hidden" id="prodId">
+                        <div class="mb-3">
+                            <label class="form-label">Tên món</label>
+                            <input type="text" class="form-control" id="prodName" required>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="prodBestSeller">
+                            <label class="form-check-label text-warning fw-bold" for="prodBestSeller"><i class="fa-solid fa-fire"></i> Món Bán Chạy (Nổi bật trên Menu)</label>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Danh mục</label>
+                            <select class="form-select" id="prodCategory" required>
+                                <option value="Coffee">Cà phê</option>
+                                <option value="Tea">Trà</option>
+                                <option value="Food">Đồ ăn</option>
+                                <option value="Dessert">Tráng miệng</option>
+                                <option value="Other">Khác</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Giá (VNĐ)</label>
+                            <input type="number" class="form-control" id="prodPrice" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Mô tả</label>
+                            <textarea class="form-control" id="prodDesc" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Đường dẫn Hình ảnh (URL)</label>
+                            <input type="url" class="form-control" id="prodImg" placeholder="https://example.com/image.jpg">
+                        </div>
+                        <hr class="border-secondary my-4">
+                        <h6 class="mb-3">Tùy chọn & Topping (Thêm giá)</h6>
+                        <div id="options-container">
+                            <!-- Option blocks will be added here -->
+                        </div>
+                        <button type="button" class="btn btn-outline-primary btn-sm mt-2 mb-4" onclick="addOptionBlock()">
+                            <i class="fa-solid fa-plus"></i> Thêm Nhóm Tùy chọn (VD: Size, Topping)
+                        </button>
+                        
+                        <hr class="border-secondary my-4">
+                        <h6 class="mb-3">Công thức (Nguyên liệu trừ kho)</h6>
+                        <div id="recipe-container">
+                            <!-- Recipe rows will be added here -->
+                        </div>
+                        <button type="button" class="btn btn-outline-secondary btn-sm mt-2" onclick="addRecipeRow()">
+                            <i class="fa-solid fa-plus"></i> Thêm nguyên liệu
+                        </button>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" onclick="saveProduct()">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ingredient Modal -->
+    <div class="modal fade" id="ingredientModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="ingredientModalLabel">Thêm / Sửa Nguyên Liệu</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="ingredientForm">
+                        <input type="hidden" id="ingId">
+                        <div class="mb-3">
+                            <label class="form-label">Tên nguyên liệu</label>
+                            <input type="text" class="form-control" id="ingName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Đơn vị (g, ml, pcs...)</label>
+                            <input type="text" class="form-control" id="ingUnit" value="g" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Số lượng tồn kho</label>
+                            <input type="number" id="ingStock" class="form-control bg-dark text-light border-secondary" required min="0" step="any">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Mức báo động (Sắp hết)</label>
+                            <input type="number" id="ingThreshold" class="form-control bg-dark text-light border-secondary" value="50" min="0" step="any">
+                            <small class="text-muted">Hệ thống sẽ cảnh báo nếu tồn kho thấp hơn mức này.</small>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" onclick="saveIngredient()">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Confirm Modal (replaces native confirm() which can be blocked) -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title" id="confirmModalTitle"><i class="fa-solid fa-triangle-exclamation text-warning me-2"></i>Xác nhận</h5>
+                </div>
+                <div class="modal-body" id="confirmModalBody">Bạn có chắc chắn không?</div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-secondary" id="confirmModalCancel" data-bs-dismiss="modal">Hủy bỏ</button>
+                    <button type="button" class="btn btn-danger" id="confirmModalOk">Xác nhận</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Socket.io -->
+
+    <!-- Bootstrap JS (bundle includes Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>
+
