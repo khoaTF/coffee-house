@@ -1169,7 +1169,7 @@ document.getElementById('call-staff-btn')?.addEventListener('click', async () =>
         await customerAlert("Đã gửi yêu cầu gọi nhân viên!");
     } catch(e) {
         console.error(e);
-        await customerAlert("Lỗi khi gửi yêu cầu.");
+        await customerAlert(`Lỗi: ${e.message || JSON.stringify(e)}`);
     }
 });
 
@@ -1187,7 +1187,7 @@ document.getElementById('call-bill-btn')?.addEventListener('click', async () => 
         await customerAlert("Đã gửi yêu cầu thanh toán!");
     } catch(e) {
         console.error(e);
-        await customerAlert("Lỗi khi gửi yêu cầu.");
+        await customerAlert(`Lỗi: ${e.message || JSON.stringify(e)}`);
     }
 });
 
