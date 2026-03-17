@@ -932,23 +932,50 @@ input, select, textarea {
     border: 1px solid rgba(212, 167, 106, 0.3) !important; 
 }
 
+/* ===== Responsive Adjustments (Tablet & iPad) ===== */
+@media (min-width: 600px) and (max-width: 1024px) {
+    .container {
+        max-width: 90%;
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+    .menu-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 20px;
+    }
+    .menu-item-img {
+        height: 180px;
+    }
+}
+
 /* ===== PC / DESKTOP OPTIMIZATIONS ===== */
-@media (min-width: 768px) {
+@media (min-width: 1025px) {
     body {
         /* Darker, softer wood/coffee tone for large screens to avoid glaring white */
         background: radial-gradient(circle at top center, #3A2F28 0%, #1A1512 100%);
         color: #E6D5C3;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
     }
     
     .container {
         /* Add a floating glass effect for the main app container on PC */
         background: var(--surface-color);
-        box-shadow: 0 24px 64px rgba(0,0,0,0.4);
+        box-shadow: 0 24px 64px rgba(0,0,0,0.6);
         border-radius: var(--radius-lg);
         margin-top: 40px;
         margin-bottom: 40px;
         min-height: calc(100vh - 80px);
-        border: 1px solid rgba(255,255,255,0.05);
+        max-width: 800px; /* Slightly wider for PC but still constrained */
+        border: 1px solid rgba(255,255,255,0.08);
         color: var(--text-main); /* Keep inside text dark roast */
+        position: relative;
+        overflow: hidden;
+    }
+
+    .menu-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
     }
 }
