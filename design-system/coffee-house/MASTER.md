@@ -6,7 +6,7 @@
 
 ---
 
-**Project:** Coffee House
+**Project:** Nohope Coffee
 **Generated:** 2026-03-17 16:21:32
 **Category:** Coffee Shop
 

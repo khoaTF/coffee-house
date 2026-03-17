@@ -1,6 +1,6 @@
-# Serenity Cafe - Project Handover
+# Nohope Coffee - Project Handover
 
-This folder contains the complete source code for the Serenity Cafe real-time ordering system.
+This folder contains the complete source code for the Nohope Coffee real-time ordering system.
 
 ## Project Features
 - **Real-time Kitchen/Admin Sync**: Orders appear instantly across all dashboards.

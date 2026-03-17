@@ -1,7 +1,7 @@
 {
-  "name": "Serenity Cafe Ordering",
-  "short_name": "Serenity Cafe",
-  "description": "Premium real-time ordering for Serenity Cafe",
+  "name": "Nohope Coffee Ordering",
+  "short_name": "Nohope Coffee",
+  "description": "Premium real-time ordering for Nohope Coffee",
   "start_url": "/?pwa=true",
   "display": "standalone",
   "background_color": "#0d1117",

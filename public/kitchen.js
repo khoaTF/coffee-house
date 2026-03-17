@@ -410,7 +410,7 @@ window.printReceipt = (orderId) => {
             </head>
             <body>
                 <div class="header">
-                    <h2>Serenity Cafe</h2>
+                    <h2>Nohope Coffee</h2>
                     <div>Hóa đơn thanh toán</div>
                     <div>Bàn số: <strong>${order.tableNumber}</strong></div>
                     <div>Thời gian: ${timeStr}</div>

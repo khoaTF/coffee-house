@@ -14,7 +14,7 @@ let currentFeedbackOrderId = null;
 
 const translations = {
     'VI': {
-        'app_title': '<i class="fa-solid fa-mug-hot"></i> Serenity Cafe',
+        'app_title': '<i class="fa-solid fa-mug-hot"></i> Nohope Coffee',
         'my_orders': 'Đơn của tôi',
         'search_placeholder': 'Tìm kiếm món ăn...',
         'no_items': 'Không tìm thấy món.',
@@ -24,7 +24,7 @@ const translations = {
         'checkout': 'Thanh toán'
     },
     'EN': {
-        'app_title': '<i class="fa-solid fa-mug-hot"></i> Serenity Cafe',
+        'app_title': '<i class="fa-solid fa-mug-hot"></i> Nohope Coffee',
         'my_orders': 'My Orders',
         'search_placeholder': 'Search for dishes...',
         'no_items': 'No items found.',
