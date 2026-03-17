@@ -931,3 +931,24 @@ input, select, textarea {
 .border-gold-light { 
     border: 1px solid rgba(212, 167, 106, 0.3) !important; 
 }
+
+/* ===== PC / DESKTOP OPTIMIZATIONS ===== */
+@media (min-width: 768px) {
+    body {
+        /* Darker, softer wood/coffee tone for large screens to avoid glaring white */
+        background: radial-gradient(circle at top center, #3A2F28 0%, #1A1512 100%);
+        color: #E6D5C3;
+    }
+    
+    .container {
+        /* Add a floating glass effect for the main app container on PC */
+        background: var(--surface-color);
+        box-shadow: 0 24px 64px rgba(0,0,0,0.4);
+        border-radius: var(--radius-lg);
+        margin-top: 40px;
+        margin-bottom: 40px;
+        min-height: calc(100vh - 80px);
+        border: 1px solid rgba(255,255,255,0.05);
+        color: var(--text-main); /* Keep inside text dark roast */
+    }
+}
