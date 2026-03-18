@@ -48,6 +48,8 @@ CREATE TABLE IF NOT EXISTS orders (
     discount_amount NUMERIC DEFAULT 0,
     order_note TEXT,
     is_paid BOOLEAN DEFAULT false,
+    payment_method TEXT,
+    payment_status TEXT DEFAULT 'unpaid',
     status TEXT DEFAULT 'Pending' CHECK (status IN ('Pending', 'Preparing', 'Ready', 'Completed', 'Cancelled')),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
