@@ -142,12 +142,24 @@
     <div class="staff-container">
         
         <div style="margin-bottom: 24px; border-bottom: 2px solid var(--border); padding-bottom: 12px; display: flex; gap: 20px;">
-            <h2 id="tab-orders" style="cursor: pointer; color: var(--primary); font-weight: 800;">Đơn Hàng & Phục Vụ</h2>
+            <h2 id="tab-tables" style="cursor: pointer; color: var(--primary); font-weight: 800;">Sơ Đồ Bàn</h2>
+            <h2 id="tab-orders" style="cursor: pointer; color: var(--text-muted); font-weight: 600;">Đơn & Món</h2>
             <h2 id="tab-requests" style="cursor: pointer; color: var(--text-muted); font-weight: 600;">Yêu Cầu Hỗ Trợ <span id="req-badge" style="background: var(--danger); color: white; border-radius: 50%; padding: 4px 8px; font-size: 0.8rem; display: none;">0</span></h2>
+        </div>
+        
+        <!-- Tables Section -->
+        <div id="section-tables">
+            <div id="tables-loader" class="text-center mt-4">
+                <i class="fa-solid fa-spinner fa-spin fa-2x text-primary"></i>
+                <p class="mt-2 text-muted">Đang tải sơ đồ bàn...</p>
+            </div>
+            <div id="tables-grid">
+                <!-- Tables injected by JS -->
+            </div>
         </div>
 
         <!-- Orders Section -->
-        <div id="section-orders">
+        <div id="section-orders" style="display: none;">
             <div id="status-bar" style="margin-bottom: 20px; font-weight: 600; color: var(--success); display: none;">
                 Đã kết nối với hệ thống thời gian thực.
             </div>
@@ -172,7 +184,19 @@
     </div>
 
     <!-- Modals -->
-    <!-- ... Confirmation Modals to be added later if needed via JS ... -->
+    <!-- Table Action Modal -->
+    <div id="tableModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);">
+        <div class="order-card" style="width: 90%; max-width: 400px; padding: 24px; position:relative; animation: slideIn 0.3s ease;">
+            <button onclick="closeTableModal()" style="position:absolute; right:15px; top:15px; background:transparent; border:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;"><i class="fa-solid fa-times"></i></button>
+            <h3 id="modal-table-title" style="color:var(--primary); margin-top:0;">Bàn X</h3>
+            <p id="modal-table-status" style="color:var(--text-muted);">Trạng thái</p>
+            
+            <div style="margin-top: 20px; display:flex; flex-direction:column; gap:12px;">
+                <button id="btn-modal-checkout" class="btn btn-primary" onclick="handleTableCheckout()" style="padding:12px; font-size:1.1rem; border-radius:12px;"><i class="fa-solid fa-money-bill-wave me-2"></i> Kế toán / Thu Tiền</button>
+                <button id="btn-modal-move" class="btn btn-outline" onclick="handleTableMove()" style="padding:12px; font-size:1.1rem; border-radius:12px;"><i class="fa-solid fa-people-arrows me-2"></i> Đổi Bàn Ngồi</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Scripts -->
     <!-- Supabase Core -->
@@ -192,40 +216,48 @@
         });
 
         // --- 2. Global State ---
-        let currentTab = 'orders';
+        let currentTab = 'tables';
         const ordersContainer = document.getElementById('orders-container');
         const requestsContainer = document.getElementById('requests-container');
         const loader = document.getElementById('loader');
+        
+        // CSS for pulse overlay
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @keyframes pulse-border {
+                0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4); }
+                70% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); }
+                100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+            }
+            .pulse-border { animation: pulse-border 1.5s infinite; }
+            @keyframes slideIn {
+                from { transform: translateY(20px); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
 
         // Tab Switching
+        document.getElementById('tab-tables').addEventListener('click', () => switchTab('tables'));
         document.getElementById('tab-orders').addEventListener('click', () => switchTab('orders'));
         document.getElementById('tab-requests').addEventListener('click', () => switchTab('requests'));
 
         function switchTab(tab) {
             currentTab = tab;
-            if (tab === 'orders') {
-                document.getElementById('tab-orders').style.color = 'var(--primary)';
-                document.getElementById('tab-orders').style.fontWeight = '800';
-                document.getElementById('tab-requests').style.color = 'var(--text-muted)';
-                document.getElementById('tab-requests').style.fontWeight = '600';
-                
-                document.getElementById('section-orders').style.display = 'block';
-                document.getElementById('section-requests').style.display = 'none';
-                fetchOrders();
-            } else {
-                document.getElementById('tab-requests').style.color = 'var(--primary)';
-                document.getElementById('tab-requests').style.fontWeight = '800';
-                document.getElementById('tab-orders').style.color = 'var(--text-muted)';
-                document.getElementById('tab-orders').style.fontWeight = '600';
-                
-                document.getElementById('section-orders').style.display = 'none';
-                document.getElementById('section-requests').style.display = 'block';
-                fetchRequests();
-            }
+            ['tables', 'orders', 'requests'].forEach(t => {
+                document.getElementById(`tab-${t}`).style.color = (t === tab) ? 'var(--primary)' : 'var(--text-muted)';
+                document.getElementById(`tab-${t}`).style.fontWeight = (t === tab) ? '800' : '600';
+                document.getElementById(`section-${t}`).style.display = (t === tab) ? 'block' : 'none';
+            });
+            
+            if (tab === 'tables') fetchTablesStatus();
+            if (tab === 'orders') fetchOrders();
+            if (tab === 'requests') fetchRequests();
         }
 
         document.getElementById('refresh-btn').addEventListener('click', () => {
-             if(currentTab === 'orders') fetchOrders();
+             if(currentTab === 'tables') fetchTablesStatus();
+             else if(currentTab === 'orders') fetchOrders();
              else fetchRequests();
         });
 
@@ -236,6 +268,7 @@
                 .channel('staff-orders')
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, payload => {
                     if(currentTab === 'orders') fetchOrders();
+                    if(currentTab === 'tables') fetchTablesStatus();
                 })
                 .subscribe((status) => {
                     if (status === 'SUBSCRIBED') {
@@ -254,6 +287,175 @@
 
         // --- 4. Fetch Data logic ---
         
+        let activeTableOrders = {};
+        let currentSelectedTable = null;
+
+        async function fetchTablesStatus() {
+            document.getElementById('tables-loader').style.display = 'block';
+            document.getElementById('tables-grid').innerHTML = '';
+            try {
+                const { data, error } = await supabase
+                    .from('orders')
+                    .select('*')
+                    .in('status', ['Pending', 'Processing', 'Ready']);
+                    
+                if (error) throw error;
+                
+                document.getElementById('tables-loader').style.display = 'none';
+                
+                const grid = document.getElementById('tables-grid');
+                grid.innerHTML = '';
+                grid.style.display = 'grid';
+                grid.style.gap = '16px';
+                grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(130px, 1fr))';
+                
+                activeTableOrders = {};
+
+                const maxTable = 15;
+                for (let i = 1; i <= maxTable; i++) {
+                    const tableOrders = data.filter(o => parseInt(o.table_number) === i || o.table_number == i);
+                    activeTableOrders[i] = tableOrders;
+                    const isOccupied = tableOrders.length > 0;
+                    const hasUnpaid = tableOrders.some(o => !o.is_paid);
+                    
+                    let statusConfig = { color: 'rgba(255,255,255,0.02)', icon: 'fa-chair', text: 'Trống', border: 'rgba(255,255,255,0.1)', pulse: false };
+                    if (isOccupied) {
+                        if (hasUnpaid) {
+                            statusConfig = { color: 'rgba(231, 76, 60, 0.1)', icon: 'fa-money-bill-wave', text: 'Chưa tính tiền', border: '#e74c3c', pulse: true };
+                        } else {
+                            statusConfig = { color: 'rgba(52, 152, 219, 0.1)', icon: 'fa-utensils', text: 'Đang dùng bữa', border: '#3498db', pulse: false };
+                        }
+                    }
+                    
+                    const card = document.createElement('div');
+                    card.className = `order-card ${statusConfig.pulse ? 'pulse-border' : ''}`;
+                    card.style.background = statusConfig.color;
+                    card.style.border = `1px solid ${statusConfig.border}`;
+                    card.style.textAlign = 'center';
+                    card.style.padding = '20px 10px';
+                    card.style.cursor = 'pointer';
+                    
+                    card.onclick = () => openTableModal(i, isOccupied, hasUnpaid);
+
+                    const iconContainer = document.createElement('div');
+                    iconContainer.style.fontSize = '1.8rem';
+                    iconContainer.style.color = statusConfig.border;
+                    iconContainer.style.marginBottom = '12px';
+                    iconContainer.innerHTML = `<i class="fa-solid ${statusConfig.icon}"></i>`;
+
+                    const idText = document.createElement('div');
+                    idText.style.fontWeight = '800';
+                    idText.style.fontSize = '1.1rem';
+                    idText.textContent = `Bàn ${i}`;
+                    idText.style.color = isOccupied ? 'var(--text-main)' : 'var(--text-muted)';
+
+                    const statusText = document.createElement('div');
+                    statusText.style.color = statusConfig.border;
+                    statusText.style.fontSize = '0.8rem';
+                    statusText.style.marginTop = '4px';
+                    statusText.style.fontWeight = '600';
+                    statusText.textContent = statusConfig.text;
+                    
+                    card.append(iconContainer, idText, statusText);
+                    
+                    if (isOccupied) {
+                        const badgeContainer = document.createElement('div');
+                        badgeContainer.style.marginTop = '10px';
+                        badgeContainer.innerHTML = `<span style="background:${hasUnpaid?'#e74c3c':'#3498db'}; color:#fff; padding:4px 10px; border-radius:12px; font-size:0.75rem; font-weight:800;">${tableOrders.length} Đơn</span>`;
+                        card.appendChild(badgeContainer);
+                    }
+                    
+                    grid.appendChild(card);
+                }
+            } catch (e) {
+                console.error("Error fetching tables:", e);
+                document.getElementById('tables-loader').innerHTML = '<div class="text-danger">Lỗi dữ liệu ngầm!</div>';
+            }
+        }
+
+        function openTableModal(tableNum, isOccupied, hasUnpaid) {
+            currentSelectedTable = tableNum;
+            document.getElementById('modal-table-title').innerHTML = `<i class="fa-solid fa-chair text-primary"></i> Quản Lý Bàn ${tableNum}`;
+            
+            const btnCheckout = document.getElementById('btn-modal-checkout');
+            const btnMove = document.getElementById('btn-modal-move');
+            
+            if (!isOccupied) {
+                document.getElementById('modal-table-status').innerHTML = '✅ Bàn hiện tại đang <strong>Trống</strong> và sạch sẽ.';
+                btnCheckout.style.display = 'none';
+                btnMove.style.display = 'none';
+            } else {
+                const orderCount = activeTableOrders[tableNum].length;
+                document.getElementById('modal-table-status').innerHTML = `Bàn đang có <strong>${orderCount} đơn hàng</strong> chờ hoàn tất.`;
+                btnMove.style.display = 'block';
+                
+                if (hasUnpaid) {
+                    btnCheckout.style.display = 'block';
+                    btnCheckout.innerHTML = `<i class="fa-solid fa-money-bill-wave me-2"></i> Xác Nhận Đã Thu Tiền toàn bộ (${activeTableOrders[tableNum].filter(o=>!o.is_paid).length} đơn)`;
+                } else {
+                    btnCheckout.style.display = 'none';
+                }
+            }
+            
+            document.getElementById('tableModal').style.display = 'flex';
+        }
+
+        function closeTableModal() {
+            document.getElementById('tableModal').style.display = 'none';
+            currentSelectedTable = null;
+        }
+
+        async function handleTableCheckout() {
+            if(!currentSelectedTable) return;
+            const unpaidOrders = activeTableOrders[currentSelectedTable].filter(o => !o.is_paid);
+            if(unpaidOrders.length === 0) return;
+            
+            if(!confirm(`Xác nhận đã thu thành công tiền của bàn này? Hệ thống sẽ báo bếp làm món và tự động dọn bàn ghế.`)) return;
+            
+            const btn = document.getElementById('btn-modal-checkout');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang hoàn tất...';
+            btn.disabled = true;
+            
+            try {
+                for (const ord of unpaidOrders) {
+                    await supabase.from('orders').update({ is_paid: true }).eq('id', ord.id);
+                }
+                // Cleans the table session so QR unlocks
+                await supabase.from('table_sessions').delete().eq('table_number', currentSelectedTable.toString());
+                
+                closeTableModal();
+                fetchTablesStatus();
+            } catch (e) {
+                alert("Lỗi: " + e.message);
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            }
+        }
+
+        async function handleTableMove() {
+            if(!currentSelectedTable) return;
+            const newTable = prompt(`Khách Bàn ${currentSelectedTable} muốn chuyển sang Bàn nào? \n(Nhập số Bàn mới)`);
+            if (newTable && newTable.trim() !== '' && newTable != currentSelectedTable) {
+                try {
+                    const orderIds = activeTableOrders[currentSelectedTable].map(o => o.id);
+                    for (const oid of orderIds) {
+                        await supabase.from('orders').update({ table_number: newTable.toString() }).eq('id', oid);
+                    }
+                    const sessionIds = [...new Set(activeTableOrders[currentSelectedTable].map(o => o.session_id))];
+                    for (const sid of sessionIds) {
+                        await supabase.from('table_sessions').update({ table_number: newTable.toString() }).eq('session_id', sid).eq('table_number', currentSelectedTable.toString());
+                    }
+                    
+                    alert(`Đã chuyển khách cũ sang Bàn ${newTable}!`);
+                    closeTableModal();
+                    fetchTablesStatus();
+                } catch(e) {
+                    alert("Lỗi khi chuyển bàn: " + e.message);
+                }
+            }
+        }
+
         // Orders Fetch
         async function fetchOrders() {
             loader.style.display = 'block';
@@ -497,11 +699,12 @@
 
         // Initialization
         setupRealtime();
-        fetchOrders();
+        fetchTablesStatus(); // Boot tab tables
         fetchRequestsBadge();
 
         setInterval(() => {
-            if(currentTab === 'orders') fetchOrders();
+            if(currentTab === 'tables') fetchTablesStatus();
+            else if(currentTab === 'orders') fetchOrders();
         }, 30000); // 30s auto-refresh fallback
 
     </script>
