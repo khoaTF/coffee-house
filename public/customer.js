@@ -457,17 +457,18 @@ function openPaymentModal(order) {
     if (!paymentModal) return;
     
     const totalPrice = Math.max(0, order.totalPrice || order.total_price || 0);
+    const orderId = order._id || order.id || '';
+    const memo = `${orderId.slice(0, 8).toUpperCase()}`;
     
     document.getElementById('payment-total-amount').textContent = totalPrice.toLocaleString('vi-VN') + ' đ';
-    document.getElementById('payment-transfer-memo').textContent = `${(order.id || '').slice(0, 8).toUpperCase()}`;
+    document.getElementById('payment-transfer-memo').textContent = memo;
     
     // Update QR Code Image with Dynamic Amount and Memo
     const qrImage = document.getElementById('qr-image');
     // Using a generic VietQR API. Replace `accountName` and the bank mapping with real ones when provided.
     const bankId = '970415'; // VietinBank (Example)
     const accountNo = '113333666999'; 
-    const memo = `${(order.id || '').slice(0, 8).toUpperCase()}`;
-    qrImage.src = `https://img.vietqr.io/image/${bankId}-${accountNo}-compact2.png?amount=${totalPrice}&addInfo=${encodeURIComponent(memo)}&accountName=QUAN%20CAFE%20NOHOPE`;
+    qrImage.src = `https://img.vietqr.io/image/${bankId}-${accountNo}-compact2.jpg?amount=${totalPrice}&addInfo=${encodeURIComponent(memo)}&accountName=QUAN%20CAFE%20NOHOPE`;
 
     cartModal.classList.remove('active'); // Hide cart
     paymentModal.classList.add('active'); // Show QR
