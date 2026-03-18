@@ -653,6 +653,32 @@ function setupRealtimeSubscription() {
               }
               currentInSession.payment_status = updatedOrder.payment_status;
               currentInSession.status = updatedOrder.status;
+              currentInSession.is_paid = updatedOrder.is_paid;
+              
+              const currentId = updatedOrder.id || updatedOrder._id;
+              if (trackedOrderId === currentId) {
+                  let statusText = statusMap[updatedOrder.status] ? statusMap[updatedOrder.status].text : updatedOrder.status;
+                  let statusClass = statusMap[updatedOrder.status] ? statusMap[updatedOrder.status].class : 'text-primary';
+                  let statusColor = (statusMap[updatedOrder.status] && statusMap[updatedOrder.status].color) ? statusMap[updatedOrder.status].color : '';
+
+                  if (updatedOrder.status === 'Pending') {
+                      if (!updatedOrder.is_paid) {
+                          statusText = 'Chưa thanh toán (Chờ xác nhận)';
+                          statusClass = 'text-danger font-bold';
+                          statusColor = '#e74c3c';
+                      } else {
+                          statusText = 'Đã thanh toán (Chờ bếp làm)';
+                          statusClass = 'text-primary font-bold';
+                          statusColor = '#3498db';
+                      }
+                  }
+                  
+                  if (liveStatus) {
+                      liveStatus.textContent = statusText;
+                      liveStatus.className = statusClass;
+                      if (statusColor) liveStatus.style.color = statusColor;
+                  }
+              }
           }
           
           // Call global handleOrderStatusUpdate if exists
