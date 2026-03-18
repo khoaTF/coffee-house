@@ -737,8 +737,8 @@ async function placeOrder(method = 'cash') {
         }
     } catch (error) {
         console.error("placeOrder ERROR:", error);
-        await customerAlert('Có lỗi xảy ra khi đặt món. Vui lòng thử lại.');
         
+        // Ngay lập tức Reset UI Buttons để tránh treo
         const btnConfirmPayment = document.getElementById('confirm-payment-btn');
         if (btnConfirmPayment) {
             btnConfirmPayment.innerHTML = '<i class="fa-solid fa-check-circle"></i> Tôi đã chuyển khoản xong';
@@ -752,6 +752,11 @@ async function placeOrder(method = 'cash') {
             checkoutTransferBtn.disabled = false;
             checkoutTransferBtn.innerHTML = '<i class="fa-solid fa-qrcode"></i> Chuyển khoản (Duyệt TĐ)';
         }
+
+        // Hiển thị lỗi chi tiết để debug
+        const errDetail = error.message || JSON.stringify(error) || 'Lỗi không xác định';
+        alert('Xin lỗi, không thể tạo đơn hàng! Mã lỗi: ' + errDetail);
+        
         fetchMenu();
     }
 }
