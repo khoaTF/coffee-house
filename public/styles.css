@@ -1,77 +1,80 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap');
 
-/* Nohope Coffee Design System - Neo-Brutalist */
+/* Nohope Coffee Design System - Asymmetric Espresso Flow */
 :root {
     /* Color Palette */
-    --primary: #1A1A1A; /* Stark Black for high contrast */
-    --primary-light: #333333;
-    --primary-glow: rgba(26, 26, 26, 0.1);
-    --primary-gradient: #1A1A1A; /* solid black instead of gradient */
+    --primary: #1E1A18; /* Deep Espresso */
+    --primary-light: #4A3F35;
+    --primary-glow: rgba(30, 26, 24, 0.08);
+    --primary-gradient: #1E1A18;
     
-    --secondary: #F0F0F0; /* Off-white for stark contrast */
-    --accent: #FF4500; /* Signal Orange for high-visibility CTAs */
+    --secondary: #FAF8F5; /* Warm Cream for areas */
+    --accent: #C58C62; /* Caramel Accent CTA */
     
-    --bg-color: #FAFAFA; /* True white/off-white background */
-    --surface-color: #FFFFFF;
-    --surface-glass: #FFFFFF; /* No glass, solid white */
-    --surface-glass-border: #1A1A1A; /* Thick, high contrast border */
+    --bg-color: #FAF8F5; /* True background */
+    --surface-color: #FFFFFF; /* White cards */
+    --surface-glass: rgba(255, 255, 255, 0.95);
+    --surface-glass-border: rgba(30, 26, 24, 0.05);
     
-    --text-main: #000000; /* Pure black text */
-    --text-muted: #666666;
-    --border: #1A1A1A; /* Harsh, visible borders everywhere */
+    --text-main: #1E1A18;
+    --text-muted: #8C8279;
+    --border: rgba(30, 26, 24, 0.08); /* Soft organic borders */
     
-    --success: #00C853; 
-    --danger: #D50000;
+    --success: #2E5A44; 
+    --danger: #9B3D3D;
     
-    /* SHARP GEOMETRY */
-    --radius: 0px;
-    --radius-lg: 0px;
-    --radius-sm: 0px;
+    /* ORGANIC GEOMETRY */
+    --radius: 16px;
+    --radius-lg: 24px;
+    --radius-sm: 8px;
     
-    /* NEO-BRUTALIST SOLID SHADOWS */
-    --shadow-sm: 2px 2px 0px 0px rgba(26, 26, 26, 1);
-    --shadow-md: 4px 4px 0px 0px rgba(26, 26, 26, 1);
-    --shadow-lg: 8px 8px 0px 0px rgba(26, 26, 26, 1);
-    --shadow-xl: 12px 12px 0px 0px rgba(26, 26, 26, 1);
-    --glass-blur: blur(0px); /* Disabled */
+    /* ELEGANT SHADOWS */
+    --shadow-sm: 0 4px 12px rgba(30, 26, 24, 0.03);
+    --shadow-md: 0 8px 24px rgba(30, 26, 24, 0.05);
+    --shadow-lg: 0 16px 48px rgba(30, 26, 24, 0.08);
+    --shadow-xl: 0 24px 64px rgba(30, 26, 24, 0.12);
+    --glass-blur: blur(16px);
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'DM Sans', sans-serif; }
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+h1, h2, h3, h4, h5, h6, .serif-text { font-family: 'Playfair Display', serif; }
 
 body { 
     background-color: var(--bg-color); 
     color: var(--text-main); 
     -webkit-tap-highlight-color: transparent; 
-    background: radial-gradient(circle at top right, #FFFFFF 0%, #F8FAFC 100%);
-    background-attachment: fixed;
+    background: var(--bg-color);
     min-height: 100vh;
-}
-
-/* General Base */
-body {
-    background-color: var(--secondary);
-    display: block; /* Override any body flex/grid that ruins wrapper */
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
+    display: block;
 }
 
 /* Utilities */
 .app-wrapper {
     width: 100%;
-    max-width: 600px !important;
-    margin: 0 auto !important;
+    margin: 0 auto;
     background-color: var(--bg-color);
     min-height: 100vh;
-    box-shadow: var(--shadow-xl);
     position: relative;
-    border-left: 2px solid var(--border);
-    border-right: 2px solid var(--border);
     overflow-x: hidden;
-    overflow-y: auto; /* Allow scrolling within wrapper if needed */
+    overflow-y: hidden; /* we handle scrolling inside main-flow */
     display: flex;
     flex-direction: column;
 }
+
+.desktop-sidebar {
+    background: var(--surface-color);
+    box-shadow: 1px 0 0 var(--border);
+    z-index: 100;
+}
+
+.main-flow {
+    flex: 1;
+    overflow-y: auto;
+    background: var(--bg-color);
+    scrollbar-width: none; /* Firefox */
+}
+.main-flow::-webkit-scrollbar { display: none; }
+
 .container { padding: 20px; width: 100%; box-sizing: border-box; }
 .flex-between { display: flex; justify-content: space-between; align-items: center; }
 .flex-center { display: flex; justify-content: center; align-items: center; }
@@ -206,32 +209,28 @@ body {
 }
 .category-pills::-webkit-scrollbar { display: none; }
 .pill { 
-    padding: 10px 24px; 
-    border-radius: 30px; 
-    background: var(--surface-color); 
-    border: 1px solid var(--border); 
+    padding: 12px 28px; 
+    border-radius: 40px; 
+    background: transparent; 
+    border: 1px solid transparent; 
     white-space: nowrap; 
-    font-size: 0.95rem; 
+    font-size: 1.05rem; 
     font-weight: 500; 
     color: var(--text-muted); 
     cursor: pointer; 
-    transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: var(--shadow-sm);
+    transition: all 400ms cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: none;
 }
 .pill:hover {
-    background: var(--bg-color);
     color: var(--text-main);
     transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-    border-color: var(--primary-light);
 }
 .pill.active { 
-    background: var(--primary); 
-    color: var(--secondary); 
-    border-color: var(--primary); 
+    background: var(--surface-color); 
+    color: var(--text-main); 
+    border-color: var(--border); 
     font-weight: 700;
     box-shadow: var(--shadow-sm);
-    transform: translateY(-2px);
 }
 
 /* Menu List/Grid */
@@ -243,35 +242,33 @@ body {
 
 .menu-item { 
     background: var(--surface-color); 
-    border: 2px solid var(--border);
-    border-radius: var(--radius); 
+    border: none;
+    border-radius: var(--radius-lg); 
     overflow: hidden; 
     display: flex; 
-    flex-direction: row;
+    flex-direction: column;
     box-shadow: var(--shadow-sm); 
-    transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1); 
-    animation: slideUpFade 0.6s ease-out backwards;
+    transition: all 400ms cubic-bezier(0.16, 1, 0.3, 1); 
+    animation: slideUpFade 0.7s ease-out backwards;
     cursor: pointer;
 }
 .menu-item:hover { 
-    transform: translateY(-2px) scale(1.01); 
+    transform: translateY(-6px); 
     box-shadow: var(--shadow-lg);
-    border-color: var(--primary);
 }
 
 .menu-item > div:first-child {
     flex-shrink: 0;
-    width: 120px;
-    display: flex;
+    width: 100%;
+    height: 200px; /* Big imagery focus */
+    display: block;
 }
 
 .menu-img { 
     width: 100%; 
     height: 100%; 
-    min-height: 120px;
     object-fit: cover;
-    background: rgba(255,255,255,0.03);
-    /* Broken image fallback */
+    background: var(--bg-color);
 }
 .menu-img[alt]::after {
     content: attr(alt);
@@ -280,24 +277,27 @@ body {
     justify-content: center;
     position: absolute;
     inset: 0;
-    background: #1A1A1A;
-    color: #FFFFFF;
+    background: var(--bg-color);
+    color: var(--text-muted);
     font-size: 0.85rem;
     font-family: monospace;
 }
 .menu-details { 
-    padding: 16px; 
+    padding: 24px; 
     flex: 1; 
     display: flex; 
     flex-direction: column; 
     justify-content: space-between; 
-    gap: 8px;
+    gap: 12px;
 }
 .menu-title { 
-    font-size: 1.15rem; 
+    font-size: 1.35rem;     
+    font-family: 'Playfair Display', serif;
     font-weight: 700; 
     margin-bottom: 4px; 
     color: var(--text-main);
+    line-height: 1.2;
+
     line-height: 1.3;
     letter-spacing: -0.2px;
 }
@@ -1000,23 +1000,92 @@ input, select, textarea {
     }
 }
 
-/* ===== PC / DESKTOP OPTIMIZATIONS ===== */
-@media (min-width: 1025px) {
+/* ===== PC / DESKTOP OPTIMIZATIONS (Asymmetric Espresso Flow) ===== */
+@media (min-width: 1024px) {
     body {
-        /* Darker, softer wood/coffee tone for large screens to avoid glaring white */
-        background: radial-gradient(circle at top center, #3A2F28 0%, #1A1512 100%);
+        background: #EAE6DF; /* Darker backdrop to make the wrapper pop */
+        padding: 40px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
     
     .app-wrapper {
-        margin-top: 40px;
-        margin-bottom: 40px;
-        min-height: calc(100vh - 80px);
-        box-shadow: 0 24px 64px rgba(0,0,0,0.6);
-        border: 2px solid var(--border);
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        max-width: 1200px;
+        width: 100%;
+        height: calc(100vh - 80px);
+        margin: 0;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        overflow: hidden; /* Contains the scroll inside main-flow */
+        flex-direction: row;
+        border: 1px solid var(--border);
+    }
+
+    .desktop-sidebar {
+        border-right: 1px solid var(--border);
+        box-shadow: none;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        position: relative;
+    }
+
+    .app-header {
+        position: static;
+        background: transparent;
+        box-shadow: none;
+        border-bottom: none;
+    }
+
+    .header-content {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 40px 30px;
+        gap: 30px;
+    }
+
+    .main-flow {
+        padding: 40px 60px;
+        height: 100%;
+        overflow-y: auto;
     }
 
     .menu-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 24px;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 32px;
+    }
+
+    /* Move search bar into harmony */
+    .container.search-container {
+        padding-left: 0;
+        padding-right: 0;
+        max-width: 100%; 
+        margin-left: 0;
+    }
+
+    /* Pin Floating Cart to the Sidebar Bottom */
+    .floating-cart {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%; /* Relative to sidebar */
+        background: var(--surface-glass);
+        backdrop-filter: var(--glass-blur);
+        box-shadow: 0 -4px 12px rgba(30, 26, 24, 0.05);
+        border: none;
+        border-top: 1px solid var(--border);
+        border-radius: 0; /* Corner masked by wrapper */
+        margin: 0;
+    }
+    
+    /* Remove brutalist shadows from modals on desktop */
+    .cart-modal-content {
+        box-shadow: 0 40px 100px rgba(30, 26, 24, 0.2) !important;
+        border-radius: var(--radius-lg) !important;
+        border: 1px solid var(--border) !important;
     }
 }
