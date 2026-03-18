@@ -6,8 +6,8 @@ const jwt = require('jsonwebtoken');
 const { createClient } = require('@supabase/supabase-js');
 
 // Supabase Setup
-const supabaseUrl = process.env.SUPABASE_URL || 'https://placeholder.supabase.co';
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'YOUR_SUPABASE_KEY';
+const supabaseUrl = process.env.SUPABASE_URL || 'https://xvghmwfmjxramrsptxfh.supabase.co';
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || 'sb_publishable_DWoSSz1TRKd_UBvfE_5FoQ_qnJxLScL';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 const app = express();
@@ -66,17 +66,20 @@ app.post('/api/webhook/payment', async (req, res) => {
 
             if (match) {
                 const shortId = match[0].toLowerCase();
-                
+                console.log("shortId extracted:", shortId);
                 // Fetch unpaid orders and filter in JS (PostgreSQL UUID ilike throws error)
                 const { data: unpaidOrders, error: fetchErr } = await supabase
                     .from('orders')
                     .select('id, total_price, is_paid')
                     .eq('is_paid', false);
                     
+                console.log("Fetch unpaid:", { count: unpaidOrders ? unpaidOrders.length : 0, fetchErr });
                 if (!fetchErr && unpaidOrders && unpaidOrders.length > 0) {
                     const order = unpaidOrders.find(o => o.id.toLowerCase().startsWith(shortId));
+                    console.log("Found order matching shortId:", order);
                     
-                    if (order && amount >= order.total_price) {
+                    if (order && amount >= parseFloat(order.total_price)) {
+                        console.log("Amount sufficient, marking as paid...");
                         // Mark as paid
                         const { error: updateErr } = await supabase
                             .from('orders')
