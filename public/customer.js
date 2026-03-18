@@ -480,11 +480,13 @@ function openOptionsModal(item) {
     container.innerHTML = '';
     
     item.options.forEach((opt, optIndex) => {
+        const optName = opt.name || opt.optionName;
         const group = document.createElement('div');
         group.className = 'option-group mb-3';
-        group.innerHTML = `<h3 style="font-size: 1.1rem; margin-bottom: 10px;">${opt.name}</h3>`;
+        group.innerHTML = `<h3 style="font-size: 1.1rem; margin-bottom: 10px;">${optName}</h3>`;
         
         opt.choices.forEach((choice, choiceIndex) => {
+            const choiceName = choice.name || choice.choiceName;
             const row = document.createElement('label');
             row.style.display = 'flex';
             row.style.justifyContent = 'space-between';
@@ -499,8 +501,8 @@ function openOptionsModal(item) {
             
             row.innerHTML = `
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <input type="radio" name="opt_${optIndex}" value="${choice.name}" data-price="${choice.priceExtra}" ${isChecked} style="accent-color: var(--primary);">
-                    <span>${choice.name}</span>
+                    <input type="radio" name="opt_${optIndex}" value="${choiceName}" data-price="${choice.priceExtra}" ${isChecked} style="accent-color: var(--primary);">
+                    <span>${choiceName}</span>
                 </div>
                 <span class="text-muted">${choice.priceExtra > 0 ? '+' + choice.priceExtra.toLocaleString('vi-VN') + ' đ' : ''}</span>
             `;
@@ -553,10 +555,11 @@ function attachEventListeners() {
         const selectedOptions = [];
         const container = document.getElementById('options-container');
         currentOptionsItem.options.forEach((opt, optIndex) => {
+            const optName = opt.name || opt.optionName;
             const selectedRadio = container.querySelector(`input[name="opt_${optIndex}"]:checked`);
             if (selectedRadio) {
                 selectedOptions.push({
-                    optionName: opt.name,
+                    optionName: optName,
                     choiceName: selectedRadio.value,
                     priceExtra: parseInt(selectedRadio.dataset.price) || 0
                 });

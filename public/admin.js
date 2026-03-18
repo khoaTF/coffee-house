@@ -251,9 +251,9 @@ function editProduct(id) {
     optionsContainer.replaceChildren();
     if (product.options && product.options.length > 0) {
         product.options.forEach(opt => {
-            const block = addOptionBlock(opt.name);
+            const block = addOptionBlock(opt.name || opt.optionName);
             opt.choices.forEach(ch => {
-                addChoiceRow(block, ch.name, ch.priceExtra);
+                addChoiceRow(block, ch.name || ch.choiceName, ch.priceExtra);
             });
         });
     }
@@ -423,12 +423,12 @@ async function saveProduct() {
             const cName = row.querySelector('.choice-name').value.trim();
             const cPrice = parseInt(row.querySelector('.choice-price').value) || 0;
             if (cName) {
-                choices.push({ choiceName: cName, priceExtra: cPrice });
+                choices.push({ name: cName, priceExtra: cPrice });
             }
         });
 
         if (choices.length > 0) {
-            options.push({ optionName: optName, choices: choices });
+            options.push({ name: optName, choices: choices });
         }
     });
 
