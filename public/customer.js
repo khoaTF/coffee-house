@@ -465,10 +465,9 @@ function openPaymentModal(order) {
     
     // Update QR Code Image with Dynamic Amount and Memo
     const qrImage = document.getElementById('qr-image');
-    // Using a generic VietQR API. Replace `accountName` and the bank mapping with real ones when provided.
-    const bankId = '970415'; // VietinBank (Example)
-    const accountNo = '113333666999'; 
-    qrImage.src = `https://img.vietqr.io/image/${bankId}-${accountNo}-compact2.jpg?amount=${totalPrice}&addInfo=${encodeURIComponent(memo)}&accountName=QUAN%20CAFE%20NOHOPE`;
+    const bankId = 'tpbank'; // TPBank
+    const accountNo = '89607102002'; 
+    qrImage.src = `https://img.vietqr.io/image/${bankId}-${accountNo}-compact2.jpg?amount=${totalPrice}&addInfo=${encodeURIComponent(memo)}&accountName=LE%20ANH%20KHOA`;
 
     cartModal.classList.remove('active'); // Hide cart
     paymentModal.classList.add('active'); // Show QR
