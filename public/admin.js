@@ -1637,43 +1637,69 @@ async function fetchTablesStatus() {
         const activeOrders = data.map(o => ({
             ...o,
             _id: o.id,
-            tableNumber: o.table_number
+            tableNumber: parseInt(o.table_number) || o.table_number
         }));
 
         const grid = document.getElementById('tables-grid');
-            grid.replaceChildren();
+        grid.innerHTML = '';
         
-        // Find maximum table number or assume up to 15
         const maxTable = 15;
         
         for (let i = 1; i <= maxTable; i++) {
-            const tableOrders = activeOrders.filter(o => o.tableNumber === i);
+            const tableOrders = activeOrders.filter(o => o.tableNumber == i);
             const isOccupied = tableOrders.length > 0;
+            const hasUnpaid = tableOrders.some(o => !o.is_paid);
+            
+            let statusConfig = { color: 'rgba(255,255,255,0.05)', icon: 'fa-chair', text: 'Trống', border: 'rgba(255,255,255,0.1)', pulse: false };
+            if (isOccupied) {
+                if (hasUnpaid) {
+                    statusConfig = { color: 'rgba(231, 76, 60, 0.15)', icon: 'fa-money-bill-wave', text: 'Chưa TToán', border: '#e74c3c', pulse: true };
+                } else {
+                    statusConfig = { color: 'rgba(52, 152, 219, 0.15)', icon: 'fa-utensils', text: 'Đang làm/chờ món', border: '#3498db', pulse: false };
+                }
+            }
             
             const col = document.createElement('div');
-            col.className = 'col-6 col-md-3 col-lg-2';
+            col.className = 'col-6 col-md-4 col-lg-3 mb-3';
             
             const card = document.createElement('div');
-            card.className = `card text-center p-3 h-100 ${isOccupied ? 'border-primary' : 'border-secondary opacity-50'}`;
-            
-            const title = document.createElement('div');
-            title.className = `fs-4 font-bold ${isOccupied ? 'text-primary' : 'text-muted'}`;
-            title.textContent = `Bàn ${i}`;
-            
-            const badgeContainer = document.createElement('div');
-            badgeContainer.className = 'small mt-1';
-            const badge = document.createElement('span');
-            badge.className = isOccupied ? 'badge bg-primary' : 'badge bg-light text-dark';
-            badge.textContent = isOccupied ? `Đang dùng (${tableOrders.length} đơn)` : 'Trống';
-            badgeContainer.appendChild(badge);
-            
-            card.append(title, badgeContainer);
+            card.className = `card h-100 text-center p-3 table-card ${statusConfig.pulse ? 'pulse-border' : ''}`;
+            card.style.transition = 'all 0.3s';
+            card.style.background = statusConfig.color;
+            card.style.border = `1px solid ${statusConfig.border}`;
+            card.style.cursor = isOccupied ? 'pointer' : 'default';
             
             if (isOccupied) {
-                const idDiv = document.createElement('div');
-                idDiv.className = 'mt-2 small text-muted';
-                idDiv.textContent = `ID: ...${tableOrders[0]._id.slice(-5)}`;
-                card.appendChild(idDiv);
+                card.onclick = () => window.showTableActions(i, tableOrders);
+            }
+
+            const iconContainer = document.createElement('div');
+            iconContainer.className = 'icon-container fs-1 mb-2';
+            iconContainer.style.color = statusConfig.border;
+            const icon = document.createElement('i');
+            icon.className = `fa-solid ${statusConfig.icon}`;
+            iconContainer.appendChild(icon);
+
+            const idText = document.createElement('h5');
+            idText.className = 'mb-1 table-id-text';
+            idText.textContent = `Bàn ${i}`;
+            idText.style.color = isOccupied ? '#fff' : 'rgba(255,255,255,0.5)';
+
+            const statusText = document.createElement('small');
+            statusText.className = 'status-text';
+            statusText.style.color = statusConfig.border;
+            statusText.textContent = statusConfig.text;
+            
+            card.append(iconContainer, idText, statusText);
+            
+            if (isOccupied) {
+                const badgeContainer = document.createElement('div');
+                badgeContainer.className = 'small mt-2';
+                const badge = document.createElement('span');
+                badge.className = hasUnpaid ? 'badge bg-danger' : 'badge bg-primary';
+                badge.textContent = `${tableOrders.length} đơn hàng`;
+                badgeContainer.appendChild(badge);
+                card.appendChild(badgeContainer);
             }
             
             col.appendChild(card);
@@ -1681,6 +1707,50 @@ async function fetchTablesStatus() {
         }
     } catch (e) {
         console.error('Error fetching table status:', e);
+    }
+}
+
+window.showTableActions = async (tableNum, tableOrders) => {
+    const hasUnpaid = tableOrders.some(o => !o.is_paid);
+    let msg = `Bàn ${tableNum} đang có ${tableOrders.length} đơn hàng.\nBạn muốn làm gì?\n\n1. Chuyển Bàn\n`;
+    if (hasUnpaid) msg += `2. Xác nhận Đã Thanh Toán toàn bộ\n`;
+    msg += `\nNhập phím (1${hasUnpaid ? " hoặc 2" : ""}):`;
+    
+    const action = window.prompt(msg);
+    if (!action) return;
+    
+    if (action === '1') {
+        const newTable = window.prompt(`Nhập số Bàn mới cho Bàn ${tableNum}:`);
+        if (newTable && newTable.trim() !== '' && newTable != tableNum) {
+            try {
+                const orderIds = tableOrders.map(o => o._id);
+                for (const oid of orderIds) {
+                    await supabase.from('orders').update({ table_number: newTable.toString() }).eq('id', oid);
+                }
+                const sessionIds = [...new Set(tableOrders.map(o => o.session_id))];
+                for (const sid of sessionIds) {
+                    await supabase.from('table_sessions').update({ table_number: newTable.toString() }).eq('session_id', sid).eq('table_number', tableNum.toString());
+                }
+                alert(`Đã chuyển sang Bàn ${newTable}!`);
+                fetchTablesStatus();
+            } catch(e) {
+                alert("Lỗi khi chuyển bàn: " + e.message);
+            }
+        }
+    } else if (action === '2' && hasUnpaid) {
+        if (confirm(`Xác nhận đã thu tiền cho toàn bộ đơn của Bàn ${tableNum}?\n(Sau khi thu, các đơn sẽ gửi xuống Bếp và dọn Bàn tự động để khách mới có thể quét mã)`)) {
+            try {
+                 const unpaidOrders = tableOrders.filter(o=>!o.is_paid);
+                 for(const ord of unpaidOrders) {
+                     await supabase.from('orders').update({ is_paid: true }).eq('id', ord._id);
+                 }
+                 await supabase.from('table_sessions').delete().eq('table_number', tableNum.toString());
+                 alert("Thanh toán thành công!");
+                 fetchTablesStatus();
+            } catch(e) {
+                 alert("Lỗi thanh toán: " + e.message);
+            }
+        }
     }
 }
 

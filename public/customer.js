@@ -218,11 +218,25 @@ async function fetchMenu() {
             trackedOrderId = displayOrder._id;
             
             liveOrderBanner.style.display = 'block';
-            liveStatus.textContent = statusMap[displayOrder.status] ? statusMap[displayOrder.status].text : displayOrder.status;
-            liveStatus.className = statusMap[displayOrder.status] ? statusMap[displayOrder.status].class : 'text-primary';
-            if (statusMap[displayOrder.status] && statusMap[displayOrder.status].color) {
-               liveStatus.style.color = statusMap[displayOrder.status].color;
+            let statusText = statusMap[displayOrder.status] ? statusMap[displayOrder.status].text : displayOrder.status;
+            let statusClass = statusMap[displayOrder.status] ? statusMap[displayOrder.status].class : 'text-primary';
+            let statusColor = (statusMap[displayOrder.status] && statusMap[displayOrder.status].color) ? statusMap[displayOrder.status].color : '';
+
+            if (displayOrder.status === 'Pending') {
+                if (!displayOrder.is_paid) {
+                    statusText = 'Chưa thanh toán (Chờ xác nhận)';
+                    statusClass = 'text-danger font-bold';
+                    statusColor = '#e74c3c';
+                } else {
+                    statusText = 'Đã thanh toán (Chờ bếp làm)';
+                    statusClass = 'text-primary font-bold';
+                    statusColor = '#3498db';
+                }
             }
+            
+            liveStatus.textContent = statusText;
+            liveStatus.className = statusClass;
+            if (statusColor) liveStatus.style.color = statusColor;
         } else {
             activeOrderId = null;
             trackedOrderId = null;
@@ -675,6 +689,7 @@ async function placeOrder(method = 'cash') {
         discount_code: appliedPromo ? appliedPromo.code : null,
         discount_amount: currentDiscountAmount,
         order_note: orderNote,
+        is_paid: false,
         status: 'Pending',
         payment_method: method,
         payment_status: 'unpaid'
@@ -765,8 +780,9 @@ function handleOrderConfirmed(savedOrder) {
     liveOrderBanner.style.display = 'block';
     
     // Reset Timeline
-    document.getElementById('live-status').textContent = 'Đang chờ';
-    document.getElementById('live-status').className = 'text-primary banner-status';
+    document.getElementById('live-status').textContent = 'Chưa thanh toán';
+    document.getElementById('live-status').className = 'text-danger banner-status';
+    document.getElementById('live-status').style.color = '#e74c3c';
     document.querySelectorAll('.timeline-step').forEach(el => el.className = 'timeline-step');
     document.querySelectorAll('.timeline-line').forEach(el => el.className = 'timeline-line');
     document.getElementById('step-pending').classList.add('active');

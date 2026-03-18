@@ -455,10 +455,16 @@
         // --- 6. Event Handlers ---
         
         async function confirmPayment(orderId) {
-            if(!confirm("Xác nhận đã thu thành công tiền order này?")) return;
+            if(!confirm("Xác nhận đã thu thành công tiền order này? Bàn sẽ được dọn tự động để khách mới quét mã.")) return;
             try {
-                const { error } = await supabase.from('orders').update({ is_paid: true }).eq('id', orderId);
-                if(error) throw error;
+                const { error: ordErr, data: ordData } = await supabase.from('orders').update({ is_paid: true }).eq('id', orderId).select('table_number').single();
+                if(ordErr) throw ordErr;
+                
+                // Auto-clear table session for new customers
+                if (ordData && ordData.table_number) {
+                    await supabase.from('table_sessions').delete().eq('table_number', ordData.table_number);
+                }
+                
                 fetchOrders();
             } catch(e) {
                 alert("Lỗi: " + e.message);

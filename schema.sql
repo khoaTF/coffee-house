@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS orders (
     discount_code TEXT,
     discount_amount NUMERIC DEFAULT 0,
     order_note TEXT,
+    is_paid BOOLEAN DEFAULT false,
     status TEXT DEFAULT 'Pending' CHECK (status IN ('Pending', 'Preparing', 'Ready', 'Completed', 'Cancelled')),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
