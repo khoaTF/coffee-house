@@ -67,17 +67,16 @@ app.post('/api/webhook/payment', async (req, res) => {
             if (match) {
                 const shortId = match[0].toLowerCase();
                 
-                // Fetch the order from Supabase
-                const { data: orders, error: fetchErr } = await supabase
+                // Fetch unpaid orders and filter in JS (PostgreSQL UUID ilike throws error)
+                const { data: unpaidOrders, error: fetchErr } = await supabase
                     .from('orders')
                     .select('id, total_price, is_paid')
-                    .ilike('id', `${shortId}%`)
-                    .limit(1);
+                    .eq('is_paid', false);
                     
-                if (!fetchErr && orders && orders.length > 0) {
-                    const order = orders[0];
+                if (!fetchErr && unpaidOrders && unpaidOrders.length > 0) {
+                    const order = unpaidOrders.find(o => o.id.toLowerCase().startsWith(shortId));
                     
-                    if (!order.is_paid && amount >= order.total_price) {
+                    if (order && amount >= order.total_price) {
                         // Mark as paid
                         const { error: updateErr } = await supabase
                             .from('orders')
@@ -86,9 +85,15 @@ app.post('/api/webhook/payment', async (req, res) => {
                             
                         if (!updateErr) {
                             processedCount++;
-                            // Thích hợp để tích điểm Loyalty luôn tại đây nếu cần (có thể gom API sau)
+                            // Thích hợp để tích điểm Loyalty lúc này
+                        } else {
+                            console.error("Webhook Update Error:", updateErr);
                         }
+                    } else if (!order) {
+                        console.log("No matching unpaid order found for shortId:", shortId);
                     }
+                } else if (fetchErr) {
+                    console.error("Webhook Fetch Error:", fetchErr);
                 }
             }
         }
