@@ -419,7 +419,8 @@
             
             try {
                 for (const ord of unpaidOrders) {
-                    await supabase.from('orders').update({ is_paid: true }).eq('id', ord.id);
+                    const { error } = await supabase.from('orders').update({ is_paid: true }).eq('id', ord.id);
+                    if (error) throw new Error("Cập nhật DB thất bại: " + error.message);
                 }
                 // Cleans the table session so QR unlocks
                 await supabase.from('table_sessions').delete().eq('table_number', currentSelectedTable.toString());

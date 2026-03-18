@@ -983,6 +983,19 @@ function handleOrderStatusUpdate(updatedOrderData) {
         const liveStatusEl = document.getElementById('live-status');
         if (!liveStatusEl) return;
         
+        // Sync Payment status immediately if pending
+        if (updatedOrder.status === 'Pending') {
+            if (updatedOrder.is_paid) {
+                liveStatusEl.textContent = 'Đã thanh toán (Chờ bếp làm)';
+                liveStatusEl.className = 'text-primary font-bold banner-status';
+                liveStatusEl.style.color = '#3498db';
+            } else {
+                liveStatusEl.textContent = 'Chưa thanh toán (Chờ xác nhận)';
+                liveStatusEl.className = 'text-danger font-bold banner-status';
+                liveStatusEl.style.color = '#e74c3c';
+            }
+        }
+        
         // Color coding based on status
         if (updatedOrder.status === 'Preparing') {
             liveStatusEl.textContent = 'Đang làm';
