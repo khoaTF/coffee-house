@@ -1002,7 +1002,7 @@ input, select, textarea {
 
 /* ===== PC / DESKTOP OPTIMIZATIONS (Asymmetric Espresso Flow) ===== */
 @media (min-width: 1024px) {
-    body {
+    body.customer-order-page {
         background: #EAE6DF; /* Darker backdrop to make the wrapper pop */
         padding: 40px;
         display: flex;
