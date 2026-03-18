@@ -99,17 +99,21 @@ function renderOrders() {
                     ${itemsHtml}
                 </ul>
                 ${order.orderNote ? `<div style="padding: 10px; background: #fff3cd; color: #856404; font-size: 0.9em; border-radius: 4px; margin-top: 10px; font-weight: bold;"><i class="fa-solid fa-note-sticky"></i> Ghi chú: ${order.orderNote}</div>` : ''}
-                <div class="mt-3">
-                    <select class="status-select" onchange="updateOrderStatus('${order._id}', this.value)" style="margin-bottom: 8px;">
-                        <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>⏳ Chờ xác nhận</option>
-                        <option value="Preparing" ${order.status === 'Preparing' ? 'selected' : ''}>🍳 Đang chế biến</option>
-                        <option value="Ready" ${order.status === 'Ready' ? 'selected' : ''}>✅ Đã xong</option>
-                        <option value="Completed" ${order.status === 'Completed' ? 'selected' : ''}>🎉 Hoàn thành</option>
-                        <option value="Cancelled" ${order.status === 'Cancelled' ? 'selected' : ''}>❌ Hủy đơn (Hết món)</option>
-                    </select>
-                    <button class="btn btn-sm btn-outline-secondary w-100 mt-1" onclick="printReceipt('${order._id}')">
-                        <i class="fa-solid fa-print"></i> In Hóa Đơn
-                    </button>
+                <!-- Payment Badge -->
+                <div class="mb-2">
+                    ${order.payment_method === 'transfer' ? '<span class="badge bg-info text-dark" style="font-size: 0.8rem;"><i class="fa-solid fa-qrcode"></i> Chuyển khoản</span>' : '<span class="badge" style="background: rgba(255,255,255,0.1); color: #c9d1d9; font-size: 0.8rem;"><i class="fa-solid fa-money-bill-wave"></i> Tại quầy</span>'}
+                    ${order.payment_status === 'paid' ? '<span class="badge bg-success ms-1" style="font-size: 0.8rem;"><i class="fa-solid fa-check"></i> Đã TT</span>' : '<span class="badge bg-warning text-dark ms-1" style="font-size: 0.8rem;"><i class="fa-solid fa-clock"></i> Chưa TT</span>'}
+                </div>
+                <!-- Linear Action Buttons -->
+                <div class="mt-2 text-center">
+                    ${order.status === 'Pending' ? `<button class="btn btn-primary w-100 fw-bold mb-2" onclick="updateOrderStatus('${order._id}', 'Preparing', this)"><i class="fa-solid fa-fire"></i> Nhận đơn & Chế biến</button>` : ''}
+                    ${order.status === 'Preparing' ? `<button class="btn btn-success w-100 fw-bold mb-2" onclick="updateOrderStatus('${order._id}', 'Completed', this)"><i class="fa-solid fa-check-double"></i> Đã làm xong & Giao</button>` : ''}
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-secondary flex-grow-1" onclick="printReceipt('${order._id}')">
+                            <i class="fa-solid fa-print"></i> In Bill
+                        </button>
+                        ${order.status === 'Pending' ? `<button class="btn btn-sm btn-outline-danger" onclick="updateOrderStatus('${order._id}', 'Cancelled', this)"><i class="fa-solid fa-times"></i> Hủy</button>` : ''}
+                    </div>
                 </div>
             `;
 
@@ -182,13 +186,23 @@ function renderGroupedOrders() {
 }
 
 // Update Order Status via Supabase
-window.updateOrderStatus = async (orderId, newStatus) => {
+window.updateOrderStatus = async (orderId, newStatus, btn) => {
+    let originalHtml = '';
+    if (btn) {
+        originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Xử lý...';
+        btn.disabled = true;
+    }
     try {
         const { error } = await supabase.from('orders').update({ status: newStatus }).eq('id', orderId);
         if (error) throw error;
     } catch (error) {
         console.error("Lỗi cập nhật trạng thái:", error);
         alert("Lỗi khi cập nhật trạng thái đơn hàng");
+        if(btn) {
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        }
     }
 
     // Optimistic update locally

@@ -74,7 +74,8 @@ const cartModal = document.getElementById('cart-modal');
 const closeModalBtn = document.getElementById('close-modal');
 const cartItemsContainer = document.getElementById('cart-items-container');
 const checkoutTotal = document.getElementById('checkout-total');
-const checkoutBtn = document.getElementById('checkout-btn');
+const checkoutCashBtn = document.getElementById('checkout-cash-btn');
+const checkoutTransferBtn = document.getElementById('checkout-transfer-btn');
 
 // Success / Banner DOM
 const liveOrderBanner = document.getElementById('live-order-banner');
@@ -351,7 +352,8 @@ function renderModalCart() {
     if (cart.length === 0) {
         cartItemsContainer.innerHTML = '<div class="empty-cart text-center text-muted">Giỏ hàng đang trống.</div>';
         checkoutTotal.textContent = "0";
-        checkoutBtn.disabled = true;
+        if(checkoutCashBtn) checkoutCashBtn.disabled = true;
+        if(checkoutTransferBtn) checkoutTransferBtn.disabled = true;
         return;
     }
 
@@ -411,7 +413,8 @@ function renderModalCart() {
     }
 
     checkoutTotal.textContent = total.toLocaleString('vi-VN') + ' đ';
-    checkoutBtn.disabled = false;
+    if(checkoutCashBtn) checkoutCashBtn.disabled = false;
+    if(checkoutTransferBtn) checkoutTransferBtn.disabled = false;
 }
 
 const optionsModal = document.getElementById('options-modal');
@@ -430,26 +433,21 @@ function closeModal() {
     if (fab) fab.style.display = 'flex';
 }
 
-function openPaymentModal() {
+function openPaymentModal(order) {
     const paymentModal = document.getElementById('payment-modal');
     if (!paymentModal) return;
     
-    // Calculate total for memo
-    const subtotal = cart.reduce((sum, item) => {
-        const itemOptionsPrice = (item.selectedOptions || []).reduce((s, o) => s + o.priceExtra, 0);
-        return sum + ((item.price + itemOptionsPrice) * item.quantity);
-    }, 0);
-    const totalPrice = Math.max(0, subtotal - currentDiscountAmount);
+    const totalPrice = Math.max(0, order.totalPrice || order.total_price || 0);
     
     document.getElementById('payment-total-amount').textContent = totalPrice.toLocaleString('vi-VN') + ' đ';
-    document.getElementById('payment-transfer-memo').textContent = `Thanh toan Ban ${TABLE_NUMBER}`;
+    document.getElementById('payment-transfer-memo').textContent = `${(order.id || '').slice(0, 8).toUpperCase()}`;
     
     // Update QR Code Image with Dynamic Amount and Memo
     const qrImage = document.getElementById('qr-image');
     // Using a generic VietQR API. Replace `accountName` and the bank mapping with real ones when provided.
     const bankId = '970415'; // VietinBank (Example)
     const accountNo = '113333666999'; 
-    const memo = `Thanh toan Ban ${TABLE_NUMBER}`;
+    const memo = `${(order.id || '').slice(0, 8).toUpperCase()}`;
     qrImage.src = `https://img.vietqr.io/image/${bankId}-${accountNo}-compact2.png?amount=${totalPrice}&addInfo=${encodeURIComponent(memo)}&accountName=QUAN%20CAFE%20NOHOPE`;
 
     cartModal.classList.remove('active'); // Hide cart
@@ -580,14 +578,35 @@ function attachEventListeners() {
         btnConfirmPayment.addEventListener('click', () => {
             btnConfirmPayment.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xác nhận...';
             btnConfirmPayment.disabled = true;
-            placeOrder();
+            if (activeOrderId && currentPaymentMethod === 'transfer') {
+                // Customer manually confirms transfer fallback
+                supabase.from('orders').update({ payment_status: 'paid' }).eq('id', activeOrderId).then(() => {
+                    const orderToConfirm = sessionOrders.find(o => o.id === activeOrderId || o._id === activeOrderId) || sessionOrders[0];
+                    handleOrderConfirmed(orderToConfirm);
+                });
+            } else {
+                placeOrder('transfer');
+            }
         });
     }
 
-    // Checkout button now opens QR Modal
-    checkoutBtn.addEventListener('click', () => {
-        openPaymentModal();
-    });
+    if(checkoutCashBtn) {
+        checkoutCashBtn.addEventListener('click', () => {
+            checkoutCashBtn.disabled = true;
+            checkoutCashBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...';
+            if (checkoutTransferBtn) checkoutTransferBtn.disabled = true;
+            placeOrder('cash');
+        });
+    }
+    
+    if(checkoutTransferBtn) {
+        checkoutTransferBtn.addEventListener('click', () => {
+            checkoutTransferBtn.disabled = true;
+            checkoutTransferBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang tạo mã QR...';
+            if (checkoutCashBtn) checkoutCashBtn.disabled = true;
+            placeOrder('transfer');
+        });
+    }
 
 }
 
@@ -596,13 +615,40 @@ function setupRealtimeSubscription() {
     supabase
       .channel('customer-orders')
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders', filter: `session_id=eq.${sessionId}` }, payload => {
-          handleOrderStatusUpdate(payload.new);
+          const updatedOrder = payload.new;
+          const currentInSession = sessionOrders.find(o => o.id === updatedOrder.id || o._id === updatedOrder.id);
+          
+          if (currentInSession) {
+              if (currentInSession.payment_status === 'unpaid' && updatedOrder.payment_status === 'paid' && currentPaymentMethod === 'transfer') {
+                  const paymentModal = document.getElementById('payment-modal');
+                  if (paymentModal && paymentModal.classList.contains('active')) {
+                       const btnConfirmPayment = document.getElementById('confirm-payment-btn');
+                       if(btnConfirmPayment) {
+                           btnConfirmPayment.innerHTML = '<i class="fa-solid fa-check-double"></i> Thanh toán thành công!';
+                           btnConfirmPayment.classList.replace('btn-primary', 'btn-success');
+                       }
+                       setTimeout(() => {
+                           handleOrderConfirmed({ ...updatedOrder, _id: updatedOrder.id, createdAt: updatedOrder.created_at, totalPrice: updatedOrder.total_price, orderNote: updatedOrder.order_note });
+                       }, 1500);
+                  }
+              }
+              currentInSession.payment_status = updatedOrder.payment_status;
+              currentInSession.status = updatedOrder.status;
+          }
+          
+          // Call global handleOrderStatusUpdate if exists
+          if (typeof handleOrderStatusUpdate === 'function') {
+              handleOrderStatusUpdate(updatedOrder);
+          }
       })
       .subscribe();
 }
 
+let currentPaymentMethod = 'cash';
+
 // Supabase Communication
-async function placeOrder() {
+async function placeOrder(method = 'cash') {
+    currentPaymentMethod = method;
     const subtotal = cart.reduce((sum, item) => {
         const itemOptionsPrice = (item.selectedOptions || []).reduce((s, o) => s + o.priceExtra, 0);
         return sum + ((item.price + itemOptionsPrice) * item.quantity);
@@ -629,13 +675,33 @@ async function placeOrder() {
         discount_code: appliedPromo ? appliedPromo.code : null,
         discount_amount: currentDiscountAmount,
         order_note: orderNote,
-        status: 'Pending'
+        status: 'Pending',
+        payment_method: method,
+        payment_status: 'unpaid'
     };
 
     try {
         const { data, error } = await supabase.from('orders').insert([orderData]).select().single();
         if (error) throw error;
-        handleOrderConfirmed(data);
+        
+        const savedOrder = { ...data, _id: data.id, createdAt: data.created_at, totalPrice: data.total_price, orderNote: data.order_note };
+        
+        if (method === 'transfer') {
+            activeOrderId = savedOrder._id;
+            trackedOrderId = savedOrder._id;
+            sessionOrders.unshift(savedOrder);
+            
+            cart = [];
+            appliedPromo = null;
+            currentDiscountAmount = 0;
+            if(document.getElementById('promo-code-input')) document.getElementById('promo-code-input').value = '';
+            if(document.getElementById('promo-message')) document.getElementById('promo-message').style.display = 'none';
+            updateCartUI();
+            
+            openPaymentModal(savedOrder);
+        } else {
+            handleOrderConfirmed(savedOrder);
+        }
     } catch (error) {
         console.error("placeOrder ERROR:", error);
         await customerAlert('Có lỗi xảy ra khi đặt món. Vui lòng thử lại.');
@@ -645,14 +711,21 @@ async function placeOrder() {
             btnConfirmPayment.innerHTML = '<i class="fa-solid fa-check-circle"></i> Tôi đã chuyển khoản xong';
             btnConfirmPayment.disabled = false;
         }
-        checkoutBtn.disabled = false;
+        if(checkoutCashBtn) {
+            checkoutCashBtn.disabled = false;
+            checkoutCashBtn.innerHTML = '<i class="fa-solid fa-money-bill-wave"></i> Thanh toán tại quầy';
+        }
+        if(checkoutTransferBtn) {
+            checkoutTransferBtn.disabled = false;
+            checkoutTransferBtn.innerHTML = '<i class="fa-solid fa-qrcode"></i> Chuyển khoản (Duyệt TĐ)';
+        }
         fetchMenu();
     }
 }
 
 // Handle confirm after insert
 function handleOrderConfirmed(savedOrder) {
-    savedOrder._id = savedOrder.id; // Compatibility
+    savedOrder._id = savedOrder.id || savedOrder._id; // Compatibility
     cart = [];
     appliedPromo = null;
     currentDiscountAmount = 0;
@@ -669,12 +742,22 @@ function handleOrderConfirmed(savedOrder) {
     if (btnConfirmPayment) {
         btnConfirmPayment.innerHTML = '<i class="fa-solid fa-check-circle"></i> Tôi đã chuyển khoản xong';
         btnConfirmPayment.disabled = false;
+        btnConfirmPayment.classList.replace('btn-success', 'btn-primary');
     }
     
-    checkoutBtn.innerHTML = '<i class="fa-brands fa-apple-pay"></i> Tiếp tục thanh toán';
+    if(checkoutCashBtn) {
+        checkoutCashBtn.disabled = false;
+        checkoutCashBtn.innerHTML = '<i class="fa-solid fa-money-bill-wave"></i> Thanh toán tại quầy';
+    }
+    if(checkoutTransferBtn) {
+        checkoutTransferBtn.disabled = false;
+        checkoutTransferBtn.innerHTML = '<i class="fa-solid fa-qrcode"></i> Chuyển khoản (Duyệt TĐ)';
+    }
     
-    // Add to session history
-    sessionOrders.unshift(savedOrder);
+    // Add to session history if not already there
+    if (!sessionOrders.find(o => o.id === savedOrder._id || o._id === savedOrder._id)) {
+        sessionOrders.unshift(savedOrder);
+    }
     
     // Convert to Tracking Banner
     activeOrderId = savedOrder._id;

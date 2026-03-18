@@ -521,7 +521,9 @@ async function fetchHistory() {
             tableNumber: o.table_number,
             orderNote: o.order_note,
             totalPrice: o.total_price,
-            discountAmount: o.discount_amount
+            discountAmount: o.discount_amount,
+            paymentMethod: o.payment_method,
+            paymentStatus: o.payment_status
         }));
         
         renderHistoryTable();
@@ -615,9 +617,17 @@ function renderHistoryTable() {
         
         const tdStatus = document.createElement('td');
         const statusBadge = document.createElement('span');
-        statusBadge.className = `badge status-badge ${badgeClass}`;
+        statusBadge.className = `badge status-badge ${badgeClass} d-block mb-1`;
         statusBadge.textContent = statusMap[order.status] || order.status;
+        
+        const paymentBadge = document.createElement('span');
+        const isPaid = order.paymentStatus === 'paid';
+        const methodTxt = order.paymentMethod === 'transfer' ? 'CK' : 'Tại quầy';
+        paymentBadge.className = `badge ${isPaid ? 'bg-success' : 'bg-warning text-dark'}`;
+        paymentBadge.innerHTML = `<i class="fa-solid ${isPaid ? 'fa-check' : 'fa-clock'}"></i> ${methodTxt}: ${isPaid ? 'Đã TT' : 'Chưa TT'}`;
+        
         tdStatus.appendChild(statusBadge);
+        tdStatus.appendChild(paymentBadge);
         
         const tdAction = document.createElement('td');
         tdAction.className = 'text-end action-cell';
@@ -628,6 +638,16 @@ function renderHistoryTable() {
             btn.textContent = 'Hủy';
             btn.onclick = () => cancelOrder(order._id);
             tdAction.appendChild(btn);
+            
+            // For Cash/Transfer orders, if unpaid, we can click Check mark directly in Admin
+            if (order.paymentStatus !== 'paid') {
+                 const btnPaid = document.createElement('button');
+                 btnPaid.className = 'btn btn-sm btn-success ms-1';
+                 btnPaid.innerHTML = '<i class="fa-solid fa-check"></i> Thu tiền';
+                 btnPaid.title = "Xác nhận đã nhận tiền (Tiền mặt/Chuyển khoản)";
+                 btnPaid.onclick = () => markOrderPaid(order._id);
+                 tdAction.appendChild(btnPaid);
+            }
         } else if (order.status === 'Completed') {
             const btnPrint = document.createElement('button');
             btnPrint.className = 'btn btn-sm btn-outline-secondary ms-1';
@@ -664,6 +684,17 @@ window.cancelOrder = async (orderId) => {
     } catch (error) {
         console.error(error);
         alert('Lỗi kết nối máy chủ.');
+    }
+};
+
+window.markOrderPaid = async (orderId) => {
+    try {
+        const { error } = await supabase.from('orders').update({ payment_status: 'paid' }).eq('id', orderId);
+        if (error) throw error;
+        fetchHistory();
+    } catch (e) {
+        console.error(e);
+        alert('Lỗi xác nhận thanh toán.');
     }
 };
 
@@ -788,6 +819,110 @@ window.printInvoice = (orderId) => {
 };
 
 // --- Analytics / Charts ---
+
+// --- Tables View ---
+async function fetchTablesStatus() {
+    const grid = document.getElementById('tables-grid');
+    if (!grid) return;
+    
+    grid.innerHTML = '<div class="col-12 text-center text-muted p-5"><i class="fa-solid fa-spinner fa-spin fs-3"></i><br>Đang tải dữ liệu bàn...</div>';
+    
+    try {
+        // Fetch active table_sessions
+        const { data: sessions, error: sessionErr } = await supabase
+            .from('table_sessions')
+            .select('*');
+        if (sessionErr) throw sessionErr;
+
+        // Fetch active orders for these tables
+        const { data: activeOrders, error: orderErr } = await supabase
+            .from('orders')
+            .select('*')
+            .in('status', ['Pending', 'Preparing', 'Ready']);
+        if (orderErr) throw orderErr;
+        
+        const maxTables = 20;
+        let html = '';
+        
+        for (let i = 1; i <= maxTables; i++) {
+            const tableNo = i.toString();
+            const session = sessions.find(s => s.table_number === tableNo);
+            
+            let isStale = false;
+            let timeAgo = '';
+            if (session && session.last_seen) {
+                 const ageMs = Date.now() - new Date(session.last_seen).getTime();
+                 const ageMins = Math.floor(ageMs / 60000);
+                 isStale = ageMs > 5 * 60 * 1000;
+                 if (ageMins === 0) timeAgo = 'Vừa xong';
+                 else if (ageMins < 60) timeAgo = `${ageMins} phút trước`;
+                 else timeAgo = `Hơn 1 giờ trước`;
+            }
+            
+            const isOccupied = session && !isStale;
+            const ordersForTable = activeOrders.filter(o => o.table_number === tableNo);
+            const hasUnpaid = ordersForTable.some(o => o.payment_status !== 'paid');
+            
+            let badgeHtml = '';
+            let btnHtml = '';
+            let bgClass = 'bg-dark border-secondary';
+            
+            if (isOccupied) {
+                bgClass = 'bg-primary border-primary';
+                badgeHtml = '<div class="badge bg-light text-primary mb-2">Đang có khách</div>';
+                
+                if (ordersForTable.length > 0) {
+                    badgeHtml += `<div class="badge bg-warning text-dark mb-2 ms-1">${ordersForTable.length} Đơn chờ</div>`;
+                }
+                btnHtml = `
+                    <div class="mt-3">
+                        <small class="text-light d-block mb-2"><i class="fa-solid fa-wifi"></i> Online: ${timeAgo || 'Vừa xong'}</small>
+                        <button class="btn btn-sm btn-outline-light w-100" onclick="clearTableSession('${tableNo}')"><i class="fa-solid fa-broom"></i> Dọn bàn</button>
+                    </div>
+                `;
+            } else {
+                badgeHtml = '<div class="badge bg-secondary mb-2">Bàn trống</div>';
+                bgClass = 'bg-dark border-secondary';
+            }
+            
+            if (hasUnpaid) {
+                badgeHtml += '<div class="badge bg-danger mb-2 ms-1">Chưa TT</div>';
+                bgClass = 'bg-dark border-danger';
+            }
+            
+            html += `
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="card ${bgClass} h-100 text-center shadow-sm" style="border-width: 2px;">
+                        <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                            <h3 class="text-white mb-2">Bàn ${i}</h3>
+                            <div>${badgeHtml}</div>
+                            ${btnHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        grid.innerHTML = html;
+        
+    } catch (e) {
+        console.error(e);
+        grid.innerHTML = '<div class="col-12 text-center text-danger p-5">Lỗi tải dữ liệu bàn.</div>';
+    }
+}
+
+window.clearTableSession = async (tableNo) => {
+    const confirmed = await customConfirm(`Bạn có chắc muốn xóa phiên truy cập của Bàn ${tableNo} không?`, 'Dọn bàn');
+    if (!confirmed) return;
+    try {
+        await supabase.from('table_sessions').delete().eq('table_number', tableNo);
+        fetchTablesStatus();
+    } catch(e) {
+        console.error(e);
+        alert('Lỗi khi dọn bàn');
+    }
+};
+
 let dailyChartInstance = null;
 let categoryChartInstance = null;
 

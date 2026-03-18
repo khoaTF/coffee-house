@@ -22,7 +22,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="styles.css?v=1.4">
+    <link rel="stylesheet" href="styles.css?v=1.5">
     <!-- Supabase Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js?v=1.1"></script>
@@ -52,14 +52,14 @@
         <div class="main-flow">
         <!-- Search Section -->
         <div class="container" style="position: relative; z-index: 10; margin-top: -10px; padding-bottom: 5px;">
-            <div style="padding: 10px 18px; display: flex; align-items: center; gap: 12px; border-radius: 0px; border: 2px solid var(--border); background: var(--surface-color); box-shadow: var(--shadow-sm);">
+            <div style="padding: 10px 18px; display: flex; align-items: center; gap: 12px; border-radius: var(--radius-lg); border: 1px solid var(--border); background: var(--surface-color); box-shadow: var(--shadow-sm);">
                 <i class="fa-solid fa-search text-muted"></i>
                 <input type="text" id="menu-search" class="form-control border-0 bg-transparent text-dark p-0" placeholder="Tìm kiếm món ăn..." style="box-shadow: none; font-size: 0.95rem; font-weight: 500;">
             </div>
         </div>
 
         <!-- Live Order Banner -->
-        <div id="live-order-banner" class="live-order-banner" style="display: none; border: 2px solid var(--border); border-radius: 0px; box-shadow: var(--shadow-md);">
+        <div id="live-order-banner" class="live-order-banner" style="display: none; border-bottom: 1px solid var(--border); box-shadow: var(--shadow-sm);">
             <div class="banner-content" style="flex-direction: column; align-items: stretch; gap: 12px;">
                 <div class="flex-between">
                     <div>
@@ -85,13 +85,13 @@
                 
                 <!-- Service Actions -->
                 <div style="display: flex; gap: 8px; margin-top: 16px;">
-                    <button class="btn btn-outline" style="flex: 1; font-size: 0.85rem; padding: 10px; border-radius: 0; box-shadow: 2px 2px 0px 0px var(--border);" onclick="requestStaffService('staff')">
+                    <button class="btn btn-outline" style="flex: 1; font-size: 0.85rem; padding: 10px; border-radius: var(--radius-sm);" onclick="requestStaffService('staff')">
                         <i class="fa-solid fa-bell text-primary"></i> Gọi NV
                     </button>
-                    <button class="btn btn-outline" style="flex: 1; font-size: 0.85rem; padding: 10px; border-radius: 0; box-shadow: 2px 2px 0px 0px var(--border);" onclick="requestStaffService('water')">
-                        <i class="fa-solid fa-glass-water text-primary"></i> Thêm Nước
+                    <button class="btn btn-outline" style="flex: 1; font-size: 0.85rem; padding: 10px; border-radius: var(--radius-sm);" onclick="requestStaffService('water')">
+                        <i class="fa-solid fa-glass-water text-primary"></i> Nước
                     </button>
-                    <button class="btn btn-outline" style="flex: 1; font-size: 0.85rem; padding: 10px; border-radius: 0; box-shadow: 2px 2px 0px 0px var(--border);" onclick="requestStaffService('checkout')">
+                    <button class="btn btn-outline" style="flex: 1; font-size: 0.85rem; padding: 10px; border-radius: var(--radius-sm);" onclick="requestStaffService('checkout')">
                         <i class="fa-solid fa-money-bill text-danger"></i> Tính Tiền
                     </button>
                 </div>
@@ -120,21 +120,21 @@
         </div> <!-- END main-flow -->
 
         <!-- Floating Cart Summary -->
-        <div class="floating-cart" id="floating-cart" style="display: none; border-radius: 0px; border: 2px solid var(--border); box-shadow: var(--shadow-xl); background: var(--surface-color);">
+        <div class="floating-cart" id="floating-cart" style="display: none; border-radius: var(--radius-lg); border: 1px solid var(--surface-glass-border); box-shadow: var(--shadow-xl); background: var(--surface-color);">
             <div class="cart-summary flex-between">
                 <div>
-                    <span id="cart-item-count" class="badge bg-dark" style="border-radius: 0;">0</span> Món
+                    <span id="cart-item-count" class="badge bg-dark">0</span> Món
                 </div>
                 <div class="font-bold">
                     Tổng: <span id="cart-total-price">0</span>
                 </div>
-                <button id="view-cart-btn" class="btn btn-primary" style="border-radius: 0px; box-shadow: 2px 2px 0px 0px #000;">Xem giỏ hàng</button>
+                <button id="view-cart-btn" class="btn btn-primary" style="border-radius: var(--radius-sm);">Xem giỏ hàng</button>
             </div>
         </div>
 
         <!-- Modal: Cart & Checkout -->
         <div class="cart-modal" id="cart-modal">
-            <div class="cart-modal-content" style="border-radius: 0px; box-shadow: -10px -10px 0px 0px rgba(0,0,0,1);">
+            <div class="cart-modal-content">
                 <div class="cart-modal-header flex-between">
                     <h2>Đơn hàng của bạn</h2>
                     <button id="close-modal" class="btn-icon"><i class="fa-solid fa-times"></i></button>
@@ -145,9 +145,9 @@
                 </div>
                 <div class="cart-modal-body" style="padding-top: 0;">
                     <label for="order-note" class="font-bold text-main" style="display: block; margin-bottom: 5px;">Ghi chú (Tùy chọn):</label>
-                    <textarea id="order-note" class="input-glass" placeholder="Vd: Ít đường, nhiều đá..." rows="2" style="width: 100%; resize: none; border-radius: 0px; box-shadow: inset 2px 2px 0px rgba(0,0,0,0.1); border: 2px solid var(--border);"></textarea>
+                    <textarea id="order-note" class="input-glass" placeholder="Vd: Ít đường, nhiều đá..." rows="2" style="width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--border);"></textarea>
                     
-                    <div class="promo-section mt-3" style="background: var(--secondary); padding: 10px; border: 2px solid var(--border);">
+                    <div class="promo-section mt-3" style="background: var(--bg-color); padding: 16px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
                         <label class="font-bold text-main" style="display: block; margin-bottom: 5px;"><i class="fa-solid fa-ticket-simple text-accent"></i> Mã khuyến mãi:</label>
                         <div style="display: flex; gap: 8px;">
                             <input type="text" id="promo-code-input" class="input-glass" placeholder="Nhập mã..." style="flex: 1; text-transform: uppercase; border-radius: 0px; border: 2px solid var(--border);">
@@ -169,10 +169,15 @@
                         <span class="font-bold" style="font-size: 1.1rem;">Tổng thanh toán:</span>
                         <span class="font-bold text-primary" style="font-size: 1.2rem;"><span id="checkout-total">0</span></span>
                     </div>
-                    <!-- Mock Payment Button -->
-                    <button id="checkout-btn" class="btn btn-primary btn-block btn-lg" disabled style="border-radius: 0px; box-shadow: 4px 4px 0px 0px #000;">
-                        <i class="fa-brands fa-apple-pay"></i> Tiếp tục thanh toán
-                    </button>
+                    <!-- Payment Options -->
+                    <div class="d-grid gap-2 mb-2 pt-3" style="border-top: 2px dashed var(--border);">
+                        <button id="checkout-cash-btn" class="btn btn-outline" disabled style="border-radius: 0px; box-shadow: 2px 2px 0px 0px var(--border); border: 2px solid var(--border); font-weight: 600;">
+                            <i class="fa-solid fa-money-bill-wave"></i> Thanh toán tại quầy
+                        </button>
+                        <button id="checkout-transfer-btn" class="btn btn-primary" disabled style="border-radius: 0px; box-shadow: 4px 4px 0px 0px #000; font-weight: bold;">
+                            <i class="fa-solid fa-qrcode"></i> Chuyển khoản (Duyệt TĐ)
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -190,8 +195,9 @@
                         <img id="qr-image" src="https://img.vietqr.io/image/970415-113333666999-compact2.jpg?amount=0&addInfo=Thanh%20toan%20Hoa%20don&accountName=QUAN%20CAFE%20NOHOPE" alt="Bank QR Code" style="width: 250px; height: 250px;">
                     </div>
                     <div class="mt-4 text-start p-3" style="background: var(--surface-color); border: 2px dashed var(--border);">
-                        <div class="mb-2"><span class="text-muted">Tổng cộng:</span> <strong class="float-end" id="payment-total-amount">0 đ</strong></div>
-                        <div class="mb-2"><span class="text-muted">Nội dung CK:</span> <strong class="float-end" id="payment-transfer-memo">Thanh toan Ban 5</strong></div>
+                        <div class="mb-2"><span class="text-muted">Tổng cộng:</span> <strong class="float-end text-success" id="payment-total-amount" style="font-size: 1.1rem;">0 đ</strong></div>
+                        <div class="mb-2"><span class="text-muted">Nội dung CK bắt buộc:</span> <strong class="float-end" id="payment-transfer-memo">...</strong></div>
+                        <div class="text-center mt-3"><small class="text-warning"><i class="fa-solid fa-spinner fa-spin"></i> Đang chờ hệ thống tự động xác nhận chuyển khoản...</small></div>
                     </div>
                 </div>
                 <div class="cart-modal-footer">
