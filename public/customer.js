@@ -43,6 +43,11 @@ let sessionId = sessionStorage.getItem(sessionKey);
 let appliedPromo = null;
 let currentDiscountAmount = 0;
 
+window.currentCustomerPhone = null;
+window.currentCustomerPoints = 0;
+window.loyaltyDiscountApplied = false;
+window.upsellShown = false;
+
 // Generate unique session ID for this device/tab if not exists
 if (!sessionId) {
     sessionId = 'sess_' + TABLE_NUMBER + '_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
@@ -680,10 +685,13 @@ async function placeOrder(method = 'cash') {
     }));
 
     const orderNote = document.getElementById('order-note') ? document.getElementById('order-note').value : '';
+    const earnedPts = Math.floor(Math.max(0, totalPrice) / 1000);
 
     const orderData = {
         table_number: TABLE_NUMBER.toString(),
         session_id: sessionId,
+        customer_phone: window.currentCustomerPhone,
+        earned_points: earnedPts,
         items: formattedItems,
         total_price: Math.max(0, totalPrice),
         discount_code: appliedPromo ? appliedPromo.code : null,
@@ -716,6 +724,15 @@ async function placeOrder(method = 'cash') {
             openPaymentModal(savedOrder);
         } else {
             handleOrderConfirmed(savedOrder);
+        }
+        
+        // Deduct points virtually if they used loyalty promo
+        if (window.loyaltyDiscountApplied && window.currentCustomerPhone) {
+            supabase.from('customers').select('id, current_points').eq('phone', window.currentCustomerPhone).maybeSingle().then(({data}) => {
+                if (data) {
+                    supabase.from('customers').update({ current_points: Math.max(0, data.current_points - 100) }).eq('id', data.id).then();
+                }
+            });
         }
     } catch (error) {
         console.error("placeOrder ERROR:", error);
@@ -1120,6 +1137,87 @@ function handleCartUpdate(cartKey, baseItem, change, selectedOptions) {
     updateCartUI();
     const activeCategory = document.querySelector('.pill.active').dataset.category;
     renderMenu(activeCategory);
+
+    // Upsell popup logic
+    if (change > 0 && !window.upsellShown) {
+        const hasDrink = cart.some(c => c.category === 'Coffee' || c.category === 'Tea');
+        const hasCroissant = cart.some(c => c.name.includes('Sừng Trâu') || c.name.toLowerCase().includes('croissant'));
+        if (hasDrink && !hasCroissant) {
+            window.upsellShown = true;
+            const um = document.getElementById('upsell-modal');
+            if (um) um.classList.add('active');
+        }
+    }
+}
+
+// --- Loyalty & Upsell Functions ---
+async function verifyCustomerPhone() {
+    const phoneInput = document.getElementById('customer-phone-input').value.trim();
+    const msg = document.getElementById('loyalty-message');
+    const discountBtn = document.getElementById('loyalty-discount-btn');
+    
+    if (!phoneInput || !phoneInput.match(/^[0-9]{9,11}$/)) {
+        msg.textContent = 'Số điện thoại không hợp lệ!';
+        msg.style.display = 'block';
+        msg.style.color = 'var(--danger)';
+        return;
+    }
+    
+    msg.style.color = '#d35400';
+    msg.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang kiểm tra...';
+    msg.style.display = 'block';
+    
+    try {
+        const { data, error } = await supabase.from('customers').select('*').eq('phone', phoneInput).maybeSingle();
+        if (error) throw error;
+        
+        window.currentCustomerPhone = phoneInput;
+        
+        if (data) {
+            window.currentCustomerPoints = data.current_points || 0;
+            msg.innerHTML = `<i class="fa-solid fa-check-circle"></i> Xin chào, SĐT chuẩn! Bạn đang có <strong>${window.currentCustomerPoints} điểm</strong>.`;
+            if (window.currentCustomerPoints >= 100 && !window.loyaltyDiscountApplied) {
+                discountBtn.style.display = 'block';
+            } else {
+                discountBtn.style.display = 'none';
+            }
+        } else {
+            window.currentCustomerPoints = 0;
+            msg.innerHTML = `<i class="fa-solid fa-star"></i> SĐT mới! Bạn sẽ tự động trở thành Thành Viên sau đơn này.`;
+            discountBtn.style.display = 'none';
+        }
+    } catch (e) {
+        msg.textContent = 'Lỗi hệ thống: ' + e.message;
+        msg.style.color = 'var(--danger)';
+    }
+}
+
+window.verifyCustomerPhone = verifyCustomerPhone;
+
+window.applyLoyaltyPoints = function() {
+    if (window.currentCustomerPoints >= 100 && !window.loyaltyDiscountApplied) {
+        window.currentCustomerPoints -= 100;
+        window.loyaltyDiscountApplied = true;
+        document.getElementById('loyalty-discount-btn').style.display = 'none';
+        document.getElementById('loyalty-message').innerHTML = '<i class="fa-solid fa-check-circle"></i> Đã dùng 100 điểm để đổi Voucher Giảm 10.000đ!';
+        
+        appliedPromo = { code: 'LOYALTY_100', discountType: 'FIXED', value: 10000 };
+        updateCartUI(); 
+    }
+}
+
+window.closeUpsellModal = function() {
+    const um = document.getElementById('upsell-modal');
+    if (um) um.classList.remove('active');
+}
+
+window.addUpsellItem = function() {
+    const dummyCroissant = {
+        id: 'upsell-croissant', _id: 'upsell-croissant', name: 'Bánh Sừng Trâu', price: 15000, category: 'Food', options: [], imageUrl: 'https://images.unsplash.com/photo-1555507036-ab1f40ce88cb?auto=format&fit=crop&w=300&q=80'
+    };
+    const cartKey = generateCartKey(dummyCroissant.id, []);
+    handleCartUpdate(cartKey, dummyCroissant, 1, []);
+    closeUpsellModal();
 }
 
 // Generate unique cart key based on options

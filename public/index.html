@@ -147,6 +147,18 @@
                     <label for="order-note" class="font-bold text-main" style="display: block; margin-bottom: 5px;">Ghi chú (Tùy chọn):</label>
                     <textarea id="order-note" class="input-glass" placeholder="Vd: Ít đường, nhiều đá..." rows="2" style="width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--border);"></textarea>
                     
+                    <div class="loyalty-section mt-3 mb-3" style="background: rgba(243, 156, 18, 0.05); padding: 16px; border-radius: var(--radius-sm); border: 1px solid #f39c12;">
+                        <label class="font-bold" style="display: block; margin-bottom: 5px; color: #d35400;"><i class="fa-solid fa-crown"></i> Tích điểm / Thành viên:</label>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="tel" id="customer-phone-input" class="input-glass" placeholder="Nhập SĐT..." style="flex: 1; border-radius: 0px; border: 2px solid #e67e22;">
+                            <button id="verify-phone-btn" onclick="verifyCustomerPhone()" class="btn btn-primary" style="padding: 8px 16px; border-radius: 0px; box-shadow: 2px 2px 0px 0px #d35400; white-space: nowrap; background: #e67e22; border: none;">Nhận diện</button>
+                        </div>
+                        <div id="loyalty-message" style="display: none; font-size: 0.85rem; margin-top: 6px; font-weight: 600; color: #d35400;"></div>
+                        <div id="loyalty-discount-btn" style="display: none; margin-top: 10px;">
+                            <button onclick="applyLoyaltyPoints()" class="btn btn-outline" style="width: 100%; font-size: 0.85rem; border-color: #d35400; color: #d35400;"><i class="fa-solid fa-gift"></i> Đổi 100 điểm = Giảm 10.000đ</button>
+                        </div>
+                    </div>
+
                     <div class="promo-section mt-3" style="background: var(--bg-color); padding: 16px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
                         <label class="font-bold text-main" style="display: block; margin-bottom: 5px;"><i class="fa-solid fa-ticket-simple text-accent"></i> Mã khuyến mãi:</label>
                         <div style="display: flex; gap: 8px;">
@@ -236,6 +248,25 @@
                     <button id="confirm-options-btn" class="btn btn-primary btn-block btn-lg" style="border-radius: 0; box-shadow: 4px 4px 0px 0px #000;">
                         Cập nhật Giá & Thêm vào Giỏ
                     </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Upsell / Cross-sell -->
+        <div class="cart-modal" id="upsell-modal" style="z-index: 1065;">
+            <div class="cart-modal-content" style="border-radius: 0px; box-shadow: -10px -10px 0px 0px rgba(0,0,0,1); background: radial-gradient(circle at top right, #fff5e6 0%, #FFFFFF 100%);">
+                <div class="cart-modal-header border-0 pb-0 flex-between">
+                    <h2 class="text-accent" style="font-weight: 800;"><i class="fa-solid fa-fire text-danger"></i> Dùng thêm bánh chứ?</h2>
+                    <button onclick="closeUpsellModal()" class="btn-icon text-muted"><i class="fa-solid fa-times"></i></button>
+                </div>
+                <div class="cart-modal-body text-center">
+                    <img src="https://images.unsplash.com/photo-1555507036-ab1f40ce88cb?auto=format&fit=crop&w=300&q=80" alt="Bánh sừng trâu" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; margin-bottom: 15px; border: 3px solid var(--accent); box-shadow: 4px 4px 0px rgba(0,0,0,0.1);">
+                    <p class="font-bold text-main" style="font-size: 1.1rem; margin-bottom: 5px;">Bánh Sừng Trâu (Croissant)</p>
+                    <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 15px;">Thưởng thức cùng đồ uống sẽ ngon hơn rất nhiều! Trải nghiệm chỉ với <strong class="text-danger">15.000đ</strong>.</p>
+                    <div class="d-grid gap-2">
+                        <button onclick="addUpsellItem()" class="btn btn-primary" style="box-shadow: 4px 4px 0px 0px #000; font-weight: 800; font-size: 1.1rem;"><i class="fa-solid fa-plus-circle"></i> Thêm vào giỏ (+15K)</button>
+                        <button onclick="closeUpsellModal()" class="btn btn-link text-muted" style="text-decoration: none; font-weight: 600;">Không, cảm ơn</button>
+                    </div>
                 </div>
             </div>
         </div>

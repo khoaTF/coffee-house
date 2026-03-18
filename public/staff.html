@@ -392,6 +392,13 @@
                 if (hasUnpaid) {
                     btnCheckout.style.display = 'block';
                     btnCheckout.innerHTML = `<i class="fa-solid fa-money-bill-wave me-2"></i> Xác Nhận Đã Thu Tiền toàn bộ (${activeTableOrders[tableNum].filter(o=>!o.is_paid).length} đơn)`;
+                    
+                    let loyaltyMsg = '';
+                    const phones = [...new Set(activeTableOrders[tableNum].filter(o=>!o.is_paid && o.customer_phone).map(o=>`${o.customer_phone} (+${o.earned_points || 0}đ)`))];
+                    if (phones.length > 0) {
+                        loyaltyMsg = `<div class="mt-2" style="color: #f39c12; font-weight: 800;"><i class="fa-solid fa-crown"></i> Sẽ Tích điểm cho KH: ${phones.join(', ')}</div>`;
+                        document.getElementById('modal-table-status').innerHTML += loyaltyMsg;
+                    }
                 } else {
                     btnCheckout.style.display = 'none';
                 }
@@ -421,6 +428,24 @@
                 for (const ord of unpaidOrders) {
                     const { error } = await supabase.from('orders').update({ is_paid: true }).eq('id', ord.id);
                     if (error) throw new Error("Cập nhật DB thất bại: " + error.message);
+                    
+                    // --- Cộng điểm Thành viên ---
+                    if (ord.customer_phone && ord.earned_points > 0) {
+                        const { data: cData } = await supabase.from('customers').select('*').eq('phone', ord.customer_phone).maybeSingle();
+                        if (cData) {
+                            await supabase.from('customers').update({ 
+                                current_points: (cData.current_points || 0) + ord.earned_points,
+                                total_spent: (cData.total_spent || 0) + ord.total_price 
+                            }).eq('id', cData.id);
+                        } else {
+                            await supabase.from('customers').insert([{ 
+                                phone: ord.customer_phone, 
+                                name: 'Khách Tích Điểm', 
+                                current_points: ord.earned_points, 
+                                total_spent: ord.total_price 
+                            }]);
+                        }
+                    }
                 }
                 // Cleans the table session so QR unlocks
                 await supabase.from('table_sessions').delete().eq('table_number', currentSelectedTable.toString());

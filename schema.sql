@@ -25,11 +25,23 @@ CREATE TABLE IF NOT EXISTS ingredients (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
+-- Customers Table (Loyalty Program)
+CREATE TABLE IF NOT EXISTS customers (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    phone TEXT UNIQUE NOT NULL,
+    name TEXT,
+    current_points INTEGER DEFAULT 0,
+    total_spent NUMERIC DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
 -- Orders Table
 CREATE TABLE IF NOT EXISTS orders (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     table_number TEXT,
     session_id TEXT,
+    customer_phone TEXT,
+    earned_points INTEGER DEFAULT 0,
     items JSONB DEFAULT '[]',
     total_price NUMERIC,
     discount_code TEXT,
