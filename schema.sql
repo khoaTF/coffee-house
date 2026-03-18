@@ -81,6 +81,19 @@ CREATE TABLE IF NOT EXISTS staff_requests (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
+-- Users Table (for Staff & Admin Auth)
+CREATE TABLE IF NOT EXISTS users (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL,
+    pin TEXT UNIQUE NOT NULL,
+    role TEXT DEFAULT 'staff' CHECK (role IN ('staff', 'admin')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- Khởi tạo tài khoản nhân viên mặc định (Mã PIN: 1234)
+-- Bỏ comment dòng dưới để chạy:
+-- INSERT INTO users (name, pin, role) VALUES ('Nhân viên Lễ Tân', '1234', 'staff');
+
 -- Enable Row Level Security (RLS) - Optional but recommended
 -- By default, for simplicity during initial fix, we assume public access or already configured RLS.
 -- ALTER TABLE staff_requests ENABLE ROW LEVEL SECURITY;
