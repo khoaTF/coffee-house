@@ -1,39 +1,39 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
 
-/* Nohope Coffee Design System - Liquid Glass (Premium Organic) */
+/* Nohope Coffee Design System - Neo-Brutalist */
 :root {
     /* Color Palette */
-    --primary: #5C4033; /* Deep Espresso Brown */
-    --primary-light: #8B5A2B;
-    --primary-glow: rgba(92, 64, 51, 0.15);
-    --primary-gradient: linear-gradient(135deg, #8B5A2B 0%, #5C4033 100%);
+    --primary: #1A1A1A; /* Stark Black for high contrast */
+    --primary-light: #333333;
+    --primary-glow: rgba(26, 26, 26, 0.1);
+    --primary-gradient: #1A1A1A; /* solid black instead of gradient */
     
-    --secondary: #F5EFEB; /* Warm Cream */
-    --accent: #F97316; /* Modern CTA Orange (from DS) */
+    --secondary: #F0F0F0; /* Off-white for stark contrast */
+    --accent: #FF4500; /* Signal Orange for high-visibility CTAs */
     
-    --bg-color: #F8FAFC; /* Slate-50 background for clean contrast */
+    --bg-color: #FAFAFA; /* True white/off-white background */
     --surface-color: #FFFFFF;
-    --surface-glass: rgba(255, 255, 255, 0.85);
-    --surface-glass-border: rgba(92, 64, 51, 0.08);
+    --surface-glass: #FFFFFF; /* No glass, solid white */
+    --surface-glass-border: #1A1A1A; /* Thick, high contrast border */
     
-    --text-main: #1E293B; /* Slate-800 for stark contrast */
-    --text-muted: #64748B; /* Slate-500 */
-    --border: #E2E8F0; /* Slate-200 */
+    --text-main: #000000; /* Pure black text */
+    --text-muted: #666666;
+    --border: #1A1A1A; /* Harsh, visible borders everywhere */
     
-    --success: #10B981; 
-    --danger: #EF4444;
+    --success: #00C853; 
+    --danger: #D50000;
     
-    /* SOFT GEOMETRY */
-    --radius: 12px;
-    --radius-lg: 24px;
-    --radius-sm: 8px;
+    /* SHARP GEOMETRY */
+    --radius: 0px;
+    --radius-lg: 0px;
+    --radius-sm: 0px;
     
-    /* LIQUID GLASS SHADOWS */
-    --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-    --shadow-md: 0 4px 6px rgba(0,0,0,0.05), 0 10px 15px -3px rgba(92, 64, 51, 0.05); /* Soft, colored depth */
-    --shadow-lg: 0 10px 15px rgba(0,0,0,0.05), 0 20px 25px -5px rgba(92, 64, 51, 0.08);
-    --shadow-xl: 0 25px 50px -12px rgba(92, 64, 51, 0.15);
-    --glass-blur: blur(20px);
+    /* NEO-BRUTALIST SOLID SHADOWS */
+    --shadow-sm: 2px 2px 0px 0px rgba(26, 26, 26, 1);
+    --shadow-md: 4px 4px 0px 0px rgba(26, 26, 26, 1);
+    --shadow-lg: 8px 8px 0px 0px rgba(26, 26, 26, 1);
+    --shadow-xl: 12px 12px 0px 0px rgba(26, 26, 26, 1);
+    --glass-blur: blur(0px); /* Disabled */
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'DM Sans', sans-serif; }
@@ -47,8 +47,32 @@ body {
     min-height: 100vh;
 }
 
+/* General Base */
+body {
+    background-color: var(--secondary);
+    display: block; /* Override any body flex/grid that ruins wrapper */
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+}
+
 /* Utilities */
-.container { padding: 20px; max-width: 1200px; margin: 0 auto; }
+.app-wrapper {
+    width: 100%;
+    max-width: 600px !important;
+    margin: 0 auto !important;
+    background-color: var(--bg-color);
+    min-height: 100vh;
+    box-shadow: var(--shadow-xl);
+    position: relative;
+    border-left: 2px solid var(--border);
+    border-right: 2px solid var(--border);
+    overflow-x: hidden;
+    overflow-y: auto; /* Allow scrolling within wrapper if needed */
+    display: flex;
+    flex-direction: column;
+}
+.container { padding: 20px; width: 100%; box-sizing: border-box; }
 .flex-between { display: flex; justify-content: space-between; align-items: center; }
 .flex-center { display: flex; justify-content: center; align-items: center; }
 .text-center { text-align: center; }
@@ -125,12 +149,10 @@ body {
 }
 .btn-icon:hover { color: var(--text-main); }
 
-/* Header - Glassmorphism Restored */
+/* Header - Solid High Contrast */
 .app-header { 
     background: var(--surface-glass); 
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
-    border-bottom: 1px solid var(--surface-glass-border);
+    border-bottom: 2px solid var(--surface-glass-border);
     position: sticky; 
     top: 0; 
     z-index: 100; 
@@ -155,18 +177,16 @@ body {
 }
 /* For the icon to keep its color despite text gradient */
 .header-content h1 i {
-    -webkit-text-fill-color: var(--primary);
+    color: var(--primary);
 }
 .table-info { 
-    background: var(--surface-glass); 
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
+    background: var(--surface-color); 
     padding: 8px 16px; 
-    border-radius: 30px; 
-    font-weight: 600; 
+    border-radius: var(--radius); 
+    font-weight: 700; 
     font-size: 0.95rem; 
-    border: 1px solid var(--surface-glass-border); 
-    color: var(--primary);
+    border: 2px solid var(--border); 
+    color: var(--text-main);
     box-shadow: var(--shadow-sm);
 }
 
@@ -206,11 +226,11 @@ body {
     border-color: var(--primary-light);
 }
 .pill.active { 
-    background: var(--primary-gradient); 
-    color: white; 
-    border-color: transparent; 
-    font-weight: 600;
-    box-shadow: 0 4px 12px var(--primary-glow);
+    background: var(--primary); 
+    color: var(--secondary); 
+    border-color: var(--primary); 
+    font-weight: 700;
+    box-shadow: var(--shadow-sm);
     transform: translateY(-2px);
 }
 
@@ -222,10 +242,8 @@ body {
 }
 
 .menu-item { 
-    background: var(--surface-glass); 
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid var(--surface-glass-border);
+    background: var(--surface-color); 
+    border: 2px solid var(--border);
     border-radius: var(--radius); 
     overflow: hidden; 
     display: flex; 
@@ -347,17 +365,15 @@ body {
 .qty-num { width: 28px; text-align: center; font-weight: 700; font-size: 1rem; }
 
 .floating-cart { 
-    position: fixed; 
+    position: absolute; 
     bottom: 24px; 
     left: 20px; 
     right: 20px; 
-    max-width: 610px; 
+    max-width: calc(100% - 40px); 
     margin: 0 auto; 
-    background: var(--surface-glass); 
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--surface-glass-border); 
-    border-radius: 20px; 
+    background: var(--surface-color); 
+    border: 2px solid var(--border); 
+    border-radius: 0px; 
     padding: 16px 20px; 
     box-shadow: var(--shadow-lg);
     animation: slideUpFade 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
@@ -386,16 +402,14 @@ body {
 
 /* Cart Modal */
 .cart-modal { 
-    position: fixed; 
+    position: absolute; 
     top: 0; left: 0; 
     width: 100%; height: 100%; 
-    background: rgba(44, 36, 30, 0.7); 
-    z-index: 2000; /* Must be higher than floating actions (998) */
+    background: rgba(26, 26, 26, 0.9); 
+    z-index: 2000; 
     display: none; 
     align-items: flex-end; 
     justify-content: center; 
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
 }
 .cart-modal.active { display: flex; animation: fadeIn 0.3s; }
 .cart-modal-content { 
@@ -470,12 +484,18 @@ textarea#order-note:focus {
     box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
 }
 
+/* Override Bootstrap Modal Positioning for Wrapper Constraints */
+.modal {
+    position: absolute !important;
+}
+.modal-backdrop {
+    position: absolute !important;
+}
+
 /* Live Order Tracking Banner */
 .live-order-banner {
-    background: var(--surface-glass);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
-    border-bottom: 1px solid var(--surface-glass-border);
+    background: var(--surface-color);
+    border-bottom: 2px solid var(--border);
     position: sticky;
     top: 60px; /* Right below the header */
     z-index: 9;
@@ -985,25 +1005,14 @@ input, select, textarea {
     body {
         /* Darker, softer wood/coffee tone for large screens to avoid glaring white */
         background: radial-gradient(circle at top center, #3A2F28 0%, #1A1512 100%);
-        color: #E6D5C3;
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
     }
     
-    .container {
-        /* Add a floating glass effect for the main app container on PC */
-        background: var(--surface-color);
-        box-shadow: 0 24px 64px rgba(0,0,0,0.6);
-        border-radius: var(--radius-lg);
+    .app-wrapper {
         margin-top: 40px;
         margin-bottom: 40px;
         min-height: calc(100vh - 80px);
-        max-width: 800px; /* Slightly wider for PC but still constrained */
-        border: 1px solid rgba(255,255,255,0.08);
-        color: var(--text-main); /* Keep inside text dark roast */
-        position: relative;
-        overflow: hidden;
+        box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+        border: 2px solid var(--border);
     }
 
     .menu-grid {

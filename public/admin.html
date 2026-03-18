@@ -123,11 +123,11 @@
         <!-- Simple Navigation (Satisfies Hick's Law Audit) -->
         <div class="d-flex flex-wrap gap-2 mb-4 admin-nav" id="admin-main-nav">
             <button class="btn btn-sm btn-nav active" onclick="switchTab('menu')" id="tab-menu"><i class="fa-solid fa-book-open me-2"></i> Thực đơn</button>
+            <button class="btn btn-sm btn-nav" onclick="switchTab('inventory')" id="tab-inventory"><i class="fa-solid fa-boxes-stacked me-2"></i> Kho</button>
+            <button class="btn btn-sm btn-nav" onclick="switchTab('promo')" id="tab-promo"><i class="fa-solid fa-ticket me-2"></i> Khuyến mãi</button>
             <button class="btn btn-sm btn-nav" onclick="switchTab('history')" id="tab-history"><i class="fa-solid fa-clock-rotate-left me-2"></i> Đơn hàng</button>
             <button class="btn btn-sm btn-nav" onclick="switchTab('analytics')" id="tab-analytics"><i class="fa-solid fa-chart-pie me-2"></i> Báo cáo</button>
             <button class="btn btn-sm btn-nav" onclick="switchTab('tables')" id="tab-tables"><i class="fa-solid fa-table-cells me-2"></i> Bàn</button>
-            <button class="btn btn-sm btn-nav" onclick="switchTab('inventory')" id="tab-inventory"><i class="fa-solid fa-boxes-stacked me-2"></i> Kho</button>
-            <button class="btn btn-sm btn-nav" onclick="switchTab('promo')" id="tab-promo"><i class="fa-solid fa-ticket me-2"></i> Khuyến mãi</button>
         </div>
 
 
@@ -135,7 +135,7 @@
         <section id="section-menu" class="content-section active">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h2 class="mb-0">Thực đơn hiện tại</h2>
-                <button class="btn btn-primary" onclick="openProductModal()"><i class="fa-solid fa-plus me-1"></i> Thêm món</button>
+                <button class="btn btn-success" onclick="openProductModal()"><i class="fa-solid fa-plus me-1"></i> Thêm món</button>
             </div>
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-0">
@@ -218,7 +218,7 @@
         <section id="section-promo" class="content-section">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h2 class="mb-0"><i class="fa-solid fa-ticket-simple text-warning me-2"></i> Quản lý Khuyến mãi</h2>
-                <button class="btn btn-primary" onclick="openPromoModal()"><i class="fa-solid fa-plus me-1"></i> Tạo khuyến mãi mới</button>
+                <button class="btn btn-success" onclick="openPromoModal()"><i class="fa-solid fa-plus me-1"></i> Tạo khuyến mãi mới</button>
             </div>
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-0">
@@ -286,7 +286,7 @@
         <section id="section-inventory" class="content-section">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h2 class="mb-0">Kho nguyên liệu</h2>
-                <button class="btn btn-primary" onclick="openIngredientModal()"><i class="fa-solid fa-plus me-1"></i> Thêm nguyên liệu</button>
+                <button class="btn btn-success" onclick="openIngredientModal()"><i class="fa-solid fa-plus me-1"></i> Thêm nguyên liệu</button>
             </div>
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-0">
@@ -373,7 +373,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="button" class="btn btn-primary" onclick="saveProduct()">Lưu</button>
+                    <button type="button" class="btn btn-success" onclick="saveProduct()">Lưu</button>
                 </div>
             </div>
         </div>
@@ -411,7 +411,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="button" class="btn btn-primary" onclick="saveIngredient()">Lưu</button>
+                    <button type="button" class="btn btn-success" onclick="saveIngredient()">Lưu</button>
                 </div>
             </div>
         </div>

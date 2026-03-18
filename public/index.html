@@ -29,309 +29,307 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#6F4E37">
 </head>
-<body class="bg-light">
-    <style>
-        /* Ambient float removed for Brutalist aesthetic */
-    </style>
-
-    <!-- Header -->
-    <header class="app-header">
-        <div class="header-content">
-            <h1 data-i18n="app_title"><i class="fa-solid fa-mug-hot"></i> Nohope Coffee</h1>
-            <div style="display: flex; gap: 8px; align-items: center;">
-                <button id="lang-toggle" class="btn-icon" title="Toggle Language" style="font-size: 0.9rem; padding: 4px 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #888;">
-                    EN
-                </button>
-                <button id="my-orders-btn" class="pill" style="padding: 6px 10px; background: rgba(212,175,55,0.1); border-color: rgba(212,175,55,0.3); color: var(--primary); font-size: 0.85rem;">
-                    <i class="fa-solid fa-list-ul"></i> <span data-i18n="my_orders">Đơn của tôi</span>
-                </button>
-                <div class="table-info">Bàn <span id="table-number-display">5</span></div>
-            </div>
-        </div>
-    </header>
-
-    <!-- Search Section -->
-    <div class="container" style="position: relative; z-index: 10; margin-top: -10px; padding-bottom: 5px;">
-        <div style="padding: 10px 18px; display: flex; align-items: center; gap: 12px; border-radius: 20px; border: 1px solid rgba(92, 64, 51, 0.1); background: var(--surface-glass); box-shadow: var(--shadow-sm); backdrop-filter: var(--glass-blur);">
-            <i class="fa-solid fa-search text-muted"></i>
-            <input type="text" id="menu-search" class="form-control border-0 bg-transparent text-dark p-0" placeholder="Tìm kiếm món ăn..." style="box-shadow: none; font-size: 0.95rem; font-weight: 500;">
-        </div>
-    </div>
-
-    <!-- Live Order Banner -->
-    <div id="live-order-banner" class="live-order-banner" style="display: none;">
-        <div class="banner-content" style="flex-direction: column; align-items: stretch; gap: 12px;">
-            <div class="flex-between">
-                <div>
-                   <div class="banner-title"><i class="fa-solid fa-clock pulse-icon text-primary me-2"></i> Trạng thái đơn hàng</div>
-                   <div class="banner-status text-primary" id="live-status">Đang chờ</div>
-                </div>
-                <button class="btn-icon text-muted" onclick="trackedOrderId=null; document.getElementById('live-order-banner').style.display='none'"><i class="fa-solid fa-times"></i></button>
-            </div>
-            
-            <div class="order-timeline">
-                <div class="timeline-step" id="step-pending">
-                    <div class="step-icon"><i class="fa-solid fa-receipt"></i></div>
-                </div>
-                <div class="timeline-line" id="line-1"></div>
-                <div class="timeline-step" id="step-preparing">
-                    <div class="step-icon"><i class="fa-solid fa-fire-burner"></i></div>
-                </div>
-                <div class="timeline-line" id="line-2"></div>
-                <div class="timeline-step" id="step-ready">
-                    <div class="step-icon"><i class="fa-solid fa-check"></i></div>
+<body style="background-color: var(--secondary);">
+    <div class="app-wrapper">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1 data-i18n="app_title"><i class="fa-solid fa-mug-hot"></i> Nohope Coffee</h1>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <button id="lang-toggle" class="btn-icon" title="Toggle Language" style="font-size: 0.9rem; padding: 4px 8px; background: rgba(0,0,0,0.05); border: 1px solid var(--border); border-radius: 0px; color: var(--text-main);">
+                        EN
+                    </button>
+                    <button id="my-orders-btn" class="btn btn-outline" style="padding: 6px 10px; font-size: 0.85rem; border-radius: 0px; box-shadow: 2px 2px 0px 0px var(--border);">
+                        <i class="fa-solid fa-list-ul"></i> <span data-i18n="my_orders">Đơn của tôi</span>
+                    </button>
+                    <div class="table-info">Bàn <span id="table-number-display">5</span></div>
                 </div>
             </div>
-            
-            <!-- Service Actions -->
-            <div style="display: flex; gap: 8px; margin-top: 16px;">
-                <button class="btn btn-outline" style="flex: 1; font-size: 0.85rem; padding: 10px;" onclick="requestStaffService('staff')">
-                    <i class="fa-solid fa-bell text-primary"></i> Gọi NV
-                </button>
-                <button class="btn btn-outline" style="flex: 1; font-size: 0.85rem; padding: 10px;" onclick="requestStaffService('water')">
-                    <i class="fa-solid fa-glass-water text-primary"></i> Thêm Nước
-                </button>
-                <button class="btn btn-outline" style="flex: 1; font-size: 0.85rem; padding: 10px;" onclick="requestStaffService('checkout')">
-                    <i class="fa-solid fa-money-bill text-danger"></i> Tính Tiền
-                </button>
+        </header>
+
+        <!-- Search Section -->
+        <div class="container" style="position: relative; z-index: 10; margin-top: -10px; padding-bottom: 5px;">
+            <div style="padding: 10px 18px; display: flex; align-items: center; gap: 12px; border-radius: 0px; border: 2px solid var(--border); background: var(--surface-color); box-shadow: var(--shadow-sm);">
+                <i class="fa-solid fa-search text-muted"></i>
+                <input type="text" id="menu-search" class="form-control border-0 bg-transparent text-dark p-0" placeholder="Tìm kiếm món ăn..." style="box-shadow: none; font-size: 0.95rem; font-weight: 500;">
             </div>
         </div>
-    </div>
 
-    <!-- Main Content: Menu -->
-    <main class="container mb-padding">
-        
-        <!-- Categories (Hardcoded for prototype simplicity) -->
-        <div class="category-pills">
-            <button class="pill active" data-category="All">Tất cả</button>
-            <button class="pill" data-category="Coffee">Cà phê</button>
-            <button class="pill" data-category="Tea">Trà</button>
-            <button class="pill" data-category="Food">Đồ ăn</button>
-        </div>
-
-        <div id="loader" class="text-center mt-4">Đang tải thực đơn...</div>
-
-        <!-- Menu Grid -->
-        <div class="menu-grid" id="menu-container">
-            <!-- Menu items will be injected here via JS -->
-        </div>
-
-    </main>
-
-    <!-- Floating Cart Summary -->
-    <div class="floating-cart" id="floating-cart" style="display: none;">
-        <div class="cart-summary flex-between">
-            <div>
-                <span id="cart-item-count" class="badge">0</span> Món
-            </div>
-            <div class="font-bold">
-                Tổng: <span id="cart-total-price">0</span>
-            </div>
-            <button id="view-cart-btn" class="btn btn-primary">Xem giỏ hàng</button>
-        </div>
-    </div>
-
-    <!-- Modal: Cart & Checkout -->
-    <div class="cart-modal" id="cart-modal">
-        <div class="cart-modal-content">
-            <div class="cart-modal-header flex-between">
-                <h2>Đơn hàng của bạn</h2>
-                <button id="close-modal" class="btn-icon"><i class="fa-solid fa-times"></i></button>
-            </div>
-            <div class="cart-modal-body" id="cart-items-container">
-                <!-- Cart items list -->
-                <div class="empty-cart text-center text-muted">Giỏ hàng đang trống.</div>
-            </div>
-            <div class="cart-modal-body" style="padding-top: 0;">
-                <label for="order-note" class="font-bold text-muted" style="display: block; margin-bottom: 5px;">Ghi chú (Tùy chọn):</label>
-                <textarea id="order-note" class="input-glass" placeholder="Vd: Ít đường, nhiều đá..." rows="2" style="width: 100%; resize: none;"></textarea>
+        <!-- Live Order Banner -->
+        <div id="live-order-banner" class="live-order-banner" style="display: none; border: 2px solid var(--border); border-radius: 0px; box-shadow: var(--shadow-md);">
+            <div class="banner-content" style="flex-direction: column; align-items: stretch; gap: 12px;">
+                <div class="flex-between">
+                    <div>
+                    <div class="banner-title"><i class="fa-solid fa-clock pulse-icon text-primary me-2"></i> Trạng thái đơn hàng</div>
+                    <div class="banner-status text-primary" id="live-status">Đang chờ</div>
+                    </div>
+                    <button class="btn-icon text-muted" onclick="trackedOrderId=null; document.getElementById('live-order-banner').style.display='none'"><i class="fa-solid fa-times"></i></button>
+                </div>
                 
-                <div class="promo-section mt-3" style="background: rgba(var(--primary-color-rgb), 0.05); padding: 10px; border-radius: var(--radius-sm); border: 1px dashed var(--primary);">
-                    <label class="font-bold text-muted" style="display: block; margin-bottom: 5px;"><i class="fa-solid fa-ticket-simple text-primary"></i> Mã khuyến mãi:</label>
-                    <div style="display: flex; gap: 8px;">
-                        <input type="text" id="promo-code-input" class="input-glass" placeholder="Nhập mã..." style="flex: 1; text-transform: uppercase;">
-                        <button id="apply-promo-btn" onclick="applyPromo()" class="btn btn-outline-primary" style="padding: 8px 16px; border-radius: var(--radius-sm); white-space: nowrap;">Áp dụng</button>
+                <div class="order-timeline">
+                    <div class="timeline-step" id="step-pending">
+                        <div class="step-icon"><i class="fa-solid fa-receipt"></i></div>
                     </div>
-                    <div id="promo-message" style="display: none; font-size: 0.85rem; margin-top: 6px; font-weight: 500;"></div>
+                    <div class="timeline-line" id="line-1"></div>
+                    <div class="timeline-step" id="step-preparing">
+                        <div class="step-icon"><i class="fa-solid fa-fire-burner"></i></div>
+                    </div>
+                    <div class="timeline-line" id="line-2"></div>
+                    <div class="timeline-step" id="step-ready">
+                        <div class="step-icon"><i class="fa-solid fa-check"></i></div>
+                    </div>
+                </div>
+                
+                <!-- Service Actions -->
+                <div style="display: flex; gap: 8px; margin-top: 16px;">
+                    <button class="btn btn-outline" style="flex: 1; font-size: 0.85rem; padding: 10px; border-radius: 0; box-shadow: 2px 2px 0px 0px var(--border);" onclick="requestStaffService('staff')">
+                        <i class="fa-solid fa-bell text-primary"></i> Gọi NV
+                    </button>
+                    <button class="btn btn-outline" style="flex: 1; font-size: 0.85rem; padding: 10px; border-radius: 0; box-shadow: 2px 2px 0px 0px var(--border);" onclick="requestStaffService('water')">
+                        <i class="fa-solid fa-glass-water text-primary"></i> Thêm Nước
+                    </button>
+                    <button class="btn btn-outline" style="flex: 1; font-size: 0.85rem; padding: 10px; border-radius: 0; box-shadow: 2px 2px 0px 0px var(--border);" onclick="requestStaffService('checkout')">
+                        <i class="fa-solid fa-money-bill text-danger"></i> Tính Tiền
+                    </button>
                 </div>
             </div>
-            <div class="cart-modal-footer">
-                <div class="flex-between mb-1" id="cart-subtotal-row" style="display: none;">
-                    <span class="text-muted">Tạm tính:</span>
-                    <span class="text-muted"><span id="checkout-subtotal">0</span></span>
+        </div>
+
+        <!-- Main Content: Menu -->
+        <main class="container mb-padding">
+            
+            <!-- Categories -->
+            <div class="category-pills">
+                <button class="pill active" data-category="All">Tất cả</button>
+                <button class="pill" data-category="Coffee">Cà phê</button>
+                <button class="pill" data-category="Tea">Trà</button>
+                <button class="pill" data-category="Food">Đồ ăn</button>
+            </div>
+
+            <div id="loader" class="text-center mt-4">Đang tải thực đơn...</div>
+
+            <!-- Menu Grid -->
+            <div class="menu-grid" id="menu-container">
+                <!-- Menu items will be injected here via JS -->
+            </div>
+
+        </main>
+
+        <!-- Floating Cart Summary -->
+        <div class="floating-cart" id="floating-cart" style="display: none; border-radius: 0px; border: 2px solid var(--border); box-shadow: var(--shadow-xl); background: var(--surface-color);">
+            <div class="cart-summary flex-between">
+                <div>
+                    <span id="cart-item-count" class="badge bg-dark" style="border-radius: 0;">0</span> Món
                 </div>
-                <div class="flex-between mb-1" id="cart-discount-row" style="display: none; color: var(--success);">
-                    <span><i class="fa-solid fa-tag"></i> Giảm giá:</span>
-                    <span>-<span id="checkout-discount">0</span></span>
+                <div class="font-bold">
+                    Tổng: <span id="cart-total-price">0</span>
                 </div>
-                <div class="flex-between mb-2 mt-2 pt-2" style="border-top: 1px solid var(--border);">
-                    <span class="font-bold" style="font-size: 1.1rem;">Tổng thanh toán:</span>
-                    <span class="font-bold text-primary" style="font-size: 1.2rem;"><span id="checkout-total">0</span></span>
+                <button id="view-cart-btn" class="btn btn-primary" style="border-radius: 0px; box-shadow: 2px 2px 0px 0px #000;">Xem giỏ hàng</button>
+            </div>
+        </div>
+
+        <!-- Modal: Cart & Checkout -->
+        <div class="cart-modal" id="cart-modal">
+            <div class="cart-modal-content" style="border-radius: 0px; box-shadow: -10px -10px 0px 0px rgba(0,0,0,1);">
+                <div class="cart-modal-header flex-between">
+                    <h2>Đơn hàng của bạn</h2>
+                    <button id="close-modal" class="btn-icon"><i class="fa-solid fa-times"></i></button>
                 </div>
-                <!-- Mock Payment Button -->
-                <button id="checkout-btn" class="btn btn-primary btn-block btn-lg" disabled>
-                    <i class="fa-brands fa-apple-pay"></i> Tiếp tục thanh toán
+                <div class="cart-modal-body" id="cart-items-container">
+                    <!-- Cart items list -->
+                    <div class="empty-cart text-center text-muted">Giỏ hàng đang trống.</div>
+                </div>
+                <div class="cart-modal-body" style="padding-top: 0;">
+                    <label for="order-note" class="font-bold text-main" style="display: block; margin-bottom: 5px;">Ghi chú (Tùy chọn):</label>
+                    <textarea id="order-note" class="input-glass" placeholder="Vd: Ít đường, nhiều đá..." rows="2" style="width: 100%; resize: none; border-radius: 0px; box-shadow: inset 2px 2px 0px rgba(0,0,0,0.1); border: 2px solid var(--border);"></textarea>
+                    
+                    <div class="promo-section mt-3" style="background: var(--secondary); padding: 10px; border: 2px solid var(--border);">
+                        <label class="font-bold text-main" style="display: block; margin-bottom: 5px;"><i class="fa-solid fa-ticket-simple text-accent"></i> Mã khuyến mãi:</label>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" id="promo-code-input" class="input-glass" placeholder="Nhập mã..." style="flex: 1; text-transform: uppercase; border-radius: 0px; border: 2px solid var(--border);">
+                            <button id="apply-promo-btn" onclick="applyPromo()" class="btn btn-outline" style="padding: 8px 16px; border-radius: 0px; box-shadow: 2px 2px 0px 0px var(--border); white-space: nowrap;">Áp dụng</button>
+                        </div>
+                        <div id="promo-message" style="display: none; font-size: 0.85rem; margin-top: 6px; font-weight: 500;"></div>
+                    </div>
+                </div>
+                <div class="cart-modal-footer">
+                    <div class="flex-between mb-1" id="cart-subtotal-row" style="display: none;">
+                        <span class="text-muted">Tạm tính:</span>
+                        <span class="text-muted"><span id="checkout-subtotal">0</span></span>
+                    </div>
+                    <div class="flex-between mb-1" id="cart-discount-row" style="display: none; color: var(--success);">
+                        <span><i class="fa-solid fa-tag"></i> Giảm giá:</span>
+                        <span>-<span id="checkout-discount">0</span></span>
+                    </div>
+                    <div class="flex-between mb-2 mt-2 pt-2" style="border-top: 2px solid var(--border);">
+                        <span class="font-bold" style="font-size: 1.1rem;">Tổng thanh toán:</span>
+                        <span class="font-bold text-primary" style="font-size: 1.2rem;"><span id="checkout-total">0</span></span>
+                    </div>
+                    <!-- Mock Payment Button -->
+                    <button id="checkout-btn" class="btn btn-primary btn-block btn-lg" disabled style="border-radius: 0px; box-shadow: 4px 4px 0px 0px #000;">
+                        <i class="fa-brands fa-apple-pay"></i> Tiếp tục thanh toán
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: QR Payment & Confirmation -->
+        <div class="cart-modal" id="payment-modal">
+            <div class="cart-modal-content" style="max-height: 85vh; border-radius: 0px; box-shadow: -10px -10px 0px 0px rgba(0,0,0,1);">
+                <div class="cart-modal-header flex-between">
+                    <h2>Thanh toán chuyển khoản</h2>
+                    <button id="close-payment-modal" class="btn-icon"><i class="fa-solid fa-arrow-left"></i></button>
+                </div>
+                <div class="cart-modal-body text-center" style="background: var(--bg-color);">
+                    <p class="text-main mb-3">Vui lòng quét mã QR dưới đây để thanh toán cho đơn hàng của bạn.</p>
+                    <div style="background: #FFF; padding: 20px; display: inline-block; border: 2px solid var(--border); box-shadow: 4px 4px 0px rgba(0,0,0,1);">
+                        <img id="qr-image" src="https://img.vietqr.io/image/970415-113333666999-compact2.jpg?amount=0&addInfo=Thanh%20toan%20Hoa%20don&accountName=QUAN%20CAFE%20NOHOPE" alt="Bank QR Code" style="width: 250px; height: 250px;">
+                    </div>
+                    <div class="mt-4 text-start p-3" style="background: var(--surface-color); border: 2px dashed var(--border);">
+                        <div class="mb-2"><span class="text-muted">Tổng cộng:</span> <strong class="float-end" id="payment-total-amount">0 đ</strong></div>
+                        <div class="mb-2"><span class="text-muted">Nội dung CK:</span> <strong class="float-end" id="payment-transfer-memo">Thanh toan Ban 5</strong></div>
+                    </div>
+                </div>
+                <div class="cart-modal-footer">
+                    <button id="confirm-payment-btn" class="btn btn-primary btn-block btn-lg" style="border-radius: 0px; box-shadow: 4px 4px 0px 0px #000;">
+                        <i class="fa-solid fa-check-circle"></i> Tôi đã chuyển khoản xong
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Order History -->
+        <div class="cart-modal" id="order-history-modal">
+            <div class="cart-modal-content" style="border-radius: 0px; box-shadow: -10px -10px 0px 0px rgba(0,0,0,1);">
+                <div class="cart-modal-header flex-between">
+                    <h2>Lịch sử Đơn hàng</h2>
+                    <button id="close-history-modal" class="btn-icon"><i class="fa-solid fa-times"></i></button>
+                </div>
+                <div class="cart-modal-body" id="history-items-container" style="background: var(--bg-color);">
+                    <!-- Order history items will be injected here via JS -->
+                    <div class="empty-cart text-center text-muted mt-4">Bạn chưa đặt đơn hàng nào.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Options Selection -->
+        <div class="cart-modal" id="options-modal">
+            <div class="cart-modal-content" style="border-radius: 0px; box-shadow: -10px -10px 0px 0px rgba(0,0,0,1);">
+                <div class="cart-modal-header flex-between">
+                    <h2 id="options-modal-title">Tùy chọn món</h2>
+                    <button id="close-options-modal" class="btn-icon"><i class="fa-solid fa-times"></i></button>
+                </div>
+                <div class="cart-modal-body" id="options-container" style="background: var(--bg-color); max-height: 60vh; overflow-y: auto;">
+                    <!-- Option groups injected here via JS -->
+                </div>
+                <div class="cart-modal-footer">
+                    <button id="confirm-options-btn" class="btn btn-primary btn-block btn-lg" style="border-radius: 0; box-shadow: 4px 4px 0px 0px #000;">
+                        Cập nhật Giá & Thêm vào Giỏ
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedback Modal -->
+        <div class="modal fade" id="feedbackModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content" style="border: 2px solid var(--border); border-radius: 0px; box-shadow: 8px 8px 0px rgba(0,0,0,1);">
+                    <div class="modal-header border-0">
+                        <h5 class="modal-title font-bold text-main"><i class="fa-solid fa-face-smile-beam me-2"></i>Đánh giá trải nghiệm</h5>
+                    </div>
+                    <div class="modal-body text-center p-4">
+                        <p class="text-main mb-4">Cảm ơn bạn đã tin tưởng Nohope Coffee! Bạn thấy món ăn và dịch vụ của chúng tôi thế nào?</p>
+                        
+                        <div id="star-rating" class="mb-4 fs-1">
+                            <i class="fa-regular fa-star star-btn text-accent" data-value="1"></i>
+                            <i class="fa-regular fa-star star-btn text-accent" data-value="2"></i>
+                            <i class="fa-regular fa-star star-btn text-accent" data-value="3"></i>
+                            <i class="fa-regular fa-star star-btn text-accent" data-value="4"></i>
+                            <i class="fa-regular fa-star star-btn text-accent" data-value="5"></i>
+                        </div>
+                        
+                        <textarea id="feedback-comment" class="form-control bg-light border-dark text-dark mb-3" rows="3" placeholder="Chia sẻ thêm cảm nhận của bạn..." style="border-radius: 0; border: 2px solid var(--border);"></textarea>
+                        
+                        <div class="d-grid">
+                            <button class="btn btn-primary py-2" id="submit-feedback-btn" onclick="submitFeedback()" style="border-radius: 0; box-shadow: 4px 4px 0px rgba(0,0,0,1);">Gửi đánh giá</button>
+                        </div>
+                        <button class="btn btn-link text-muted mt-3 text-decoration-none" data-bs-dismiss="modal">Để sau</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Floating Support Menu -->
+        <div class="fab-container">
+            <div class="fab-menu" id="fab-menu">
+                <button id="call-bill-btn" class="btn-floating fab-item" title="Gọi thanh toán" style="border-radius: 0px; border: 2px solid #000;">
+                    <i class="fa-solid fa-file-invoice-dollar"></i>
+                </button>
+                <button id="call-staff-btn" class="btn-floating fab-item" title="Gọi nhân viên" style="border-radius: 0px; border: 2px solid #000;">
+                    <i class="fa-solid fa-bell-concierge"></i>
                 </button>
             </div>
-        </div>
-    </div> <!-- Ensure cart-modal is properly closed -->
-
-    <!-- Modal: QR Payment & Confirmation -->
-    <div class="cart-modal" id="payment-modal">
-        <div class="cart-modal-content" style="max-height: 85vh;">
-            <div class="cart-modal-header flex-between">
-                <h2>Thanh toán chuyển khoản</h2>
-                <button id="close-payment-modal" class="btn-icon"><i class="fa-solid fa-arrow-left"></i></button>
-            </div>
-            <div class="cart-modal-body text-center" style="background: var(--bg-color);">
-                <p class="text-muted mb-3">Vui lòng quét mã QR dưới đây để thanh toán cho đơn hàng của bạn.</p>
-                <div style="background: #FFF; padding: 20px; border-radius: var(--radius); display: inline-block; box-shadow: var(--shadow-sm); border: 1px solid var(--border);">
-                    <img id="qr-image" src="https://img.vietqr.io/image/970415-113333666999-compact2.jpg?amount=0&addInfo=Thanh%20toan%20Hoa%20don&accountName=QUAN%20CAFE%20NOHOPE" alt="Bank QR Code" style="width: 250px; height: 250px; border-radius: 8px;">
-                </div>
-                <div class="mt-4 text-start p-3" style="background: var(--surface-glass); border: 1px dashed var(--primary); border-radius: var(--radius-sm);">
-                    <div class="mb-2"><span class="text-muted">Tổng cộng:</span> <strong class="text-primary float-end" id="payment-total-amount">0 đ</strong></div>
-                    <div class="mb-2"><span class="text-muted">Nội dung CK:</span> <strong class="float-end" id="payment-transfer-memo">Thanh toan Ban 5</strong></div>
-                </div>
-            </div>
-            <div class="cart-modal-footer">
-                <button id="confirm-payment-btn" class="btn btn-primary btn-block btn-lg">
-                    <i class="fa-solid fa-check-circle"></i> Tôi đã chuyển khoản xong
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal: Order History -->
-    <div class="cart-modal" id="order-history-modal">
-        <div class="cart-modal-content">
-            <div class="cart-modal-header flex-between">
-                <h2>Lịch sử Đơn hàng</h2>
-                <button id="close-history-modal" class="btn-icon"><i class="fa-solid fa-times"></i></button>
-            </div>
-            <div class="cart-modal-body" id="history-items-container" style="background: var(--bg-color);">
-                <!-- Order history items will be injected here via JS -->
-                <div class="empty-cart text-center text-muted mt-4">Bạn chưa đặt đơn hàng nào.</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal: Options Selection -->
-    <div class="cart-modal" id="options-modal">
-        <div class="cart-modal-content">
-            <div class="cart-modal-header flex-between">
-                <h2 id="options-modal-title">Tùy chọn món</h2>
-                <button id="close-options-modal" class="btn-icon"><i class="fa-solid fa-times"></i></button>
-            </div>
-            <div class="cart-modal-body" id="options-container" style="background: var(--bg-color); max-height: 60vh; overflow-y: auto;">
-                <!-- Option groups injected here via JS -->
-            </div>
-            <div class="cart-modal-footer">
-                <button id="confirm-options-btn" class="btn btn-primary btn-block btn-lg">
-                    Cập nhật Giá & Thêm vào Giỏ
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Feedback Modal -->
-    <div class="modal fade" id="feedbackModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content glass-card border-gold-light">
-                <div class="modal-header border-0">
-                    <h5 class="modal-title font-bold text-gold"><i class="fa-solid fa-face-smile-beam me-2"></i>Đánh giá trải nghiệm</h5>
-                </div>
-                <div class="modal-body text-center p-4">
-                    <p class="text-light mb-4">Cảm ơn bạn đã tin tưởng Nohope Coffee! Bạn thấy món ăn và dịch vụ của chúng tôi thế nào?</p>
-                    
-                    <div id="star-rating" class="mb-4 fs-1">
-                        <i class="fa-regular fa-star star-btn" data-value="1"></i>
-                        <i class="fa-regular fa-star star-btn" data-value="2"></i>
-                        <i class="fa-regular fa-star star-btn" data-value="3"></i>
-                        <i class="fa-regular fa-star star-btn" data-value="4"></i>
-                        <i class="fa-regular fa-star star-btn" data-value="5"></i>
-                    </div>
-                    
-                    <textarea id="feedback-comment" class="form-control bg-dark border-secondary text-white mb-3" rows="3" placeholder="Chia sẻ thêm cảm nhận của bạn..."></textarea>
-                    
-                    <div class="d-grid">
-                        <button class="btn btn-primary shimmer-btn py-2" id="submit-feedback-btn" onclick="submitFeedback()">Gửi đánh giá</button>
-                    </div>
-                    <button class="btn btn-link text-muted mt-3 text-decoration-none" data-bs-dismiss="modal">Để sau</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Floating Support Menu -->
-    <div class="fab-container">
-        <div class="fab-menu" id="fab-menu">
-            <button id="call-bill-btn" class="btn-floating fab-item" title="Gọi thanh toán">
-                <i class="fa-solid fa-file-invoice-dollar"></i>
+            <button class="btn-floating fab-main" id="fab-main-btn" onclick="toggleFabMenu()" style="border-radius: 0; border: 2px solid #000; box-shadow: 2px 2px 0px #000;">
+                <i class="fa-solid fa-headset"></i>
             </button>
-            <button id="call-staff-btn" class="btn-floating fab-item" title="Gọi nhân viên">
-                <i class="fa-solid fa-bell-concierge"></i>
-            </button>
         </div>
-        <button class="btn-floating fab-main" id="fab-main-btn" onclick="toggleFabMenu()">
-            <i class="fa-solid fa-headset"></i>
-        </button>
-    </div>
 
-    <!-- Styles for new buttons -->
-    <style>
-        .fab-container { position: fixed; bottom: 100px; right: 20px; z-index: 1050; display: flex; flex-direction: column; align-items: center; gap: 10px; }
-        .fab-menu { display: flex; flex-direction: column; gap: 10px; opacity: 0; transform: translateY(20px); pointer-events: none; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .fab-menu.active { opacity: 1; transform: translateY(0); pointer-events: auto; }
-        
-        .btn-floating { border: none; width: 48px; height: 48px; border-radius: 50%; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s; }
-        .btn-floating:active { transform: scale(0.9); }
-        .btn-floating i { font-size: 1.2rem; transition: transform 0.3s ease; }
-        
-        .fab-main { background: var(--primary-gradient); color: #0b0f14; border: 1px solid var(--primary); }
-        .fab-main.active i { transform: rotate(180deg); opacity: 0; }
-        .fab-main::after { content: '\f00d'; font-family: 'Font Awesome 6 Free'; font-weight: 900; position: absolute; opacity: 0; transform: rotate(-180deg); transition: all 0.3s ease; font-size: 1.4rem; }
-        .fab-main.active::after { opacity: 1; transform: rotate(0); }
+        <!-- Styles for new buttons -->
+        <style>
+            .fab-container { position: absolute; bottom: 100px; right: 20px; z-index: 1050; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+            .fab-menu { display: flex; flex-direction: column; gap: 10px; opacity: 0; transform: translateY(20px); pointer-events: none; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+            .fab-menu.active { opacity: 1; transform: translateY(0); pointer-events: auto; }
+            
+            .btn-floating { border: none; width: 48px; height: 48px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s; }
+            .btn-floating:active { transform: scale(0.9) translateY(2px); box-shadow: 0 0 0;}
+            .btn-floating i { font-size: 1.2rem; transition: transform 0.3s ease; }
+            
+            .fab-main { background: var(--accent); color: #fff; border: 2px solid var(--border); box-shadow: 4px 4px 0px rgba(0,0,0,1);}
+            .fab-main.active i { transform: rotate(180deg); opacity: 0; }
+            .fab-main::after { content: '\f00d'; font-family: 'Font Awesome 6 Free'; font-weight: 900; position: absolute; opacity: 0; transform: rotate(-180deg); transition: all 0.3s ease; font-size: 1.4rem; }
+            .fab-main.active::after { opacity: 1; transform: rotate(0); }
 
-        .fab-item:nth-child(1) { background: var(--success); color: white; transition-delay: 0.05s; }
-        .fab-item:nth-child(2) { background: #3498db; color: white; transition-delay: 0s; }
-        
-        /* Mobile adjustment to not overlap with cart */
-        @media (max-width: 768px) {
-            .fab-container { bottom: 85px; right: 15px; }
-            .btn-floating { width: 44px; height: 44px; }
-        }
-    </style>
-    <script>
-        function toggleFabMenu() {
-            document.getElementById('fab-menu').classList.toggle('active');
-            document.getElementById('fab-main-btn').classList.toggle('active');
-        }
-        
-        // Auto close menu when an action is clicked
-        document.querySelectorAll('.fab-item').forEach(btn => {
-            btn.addEventListener('click', () => {
-                if(document.getElementById('fab-menu').classList.contains('active')) {
-                    toggleFabMenu();
-                }
+            .fab-item:nth-child(1) { background: var(--success); color: white; transition-delay: 0.05s; }
+            .fab-item:nth-child(2) { background: #3498db; color: white; transition-delay: 0s; }
+            
+            /* Mobile adjustment to not overlap with cart */
+            @media (max-width: 768px) {
+                .fab-container { bottom: 85px; right: 15px; }
+                .btn-floating { width: 44px; height: 44px; }
+            }
+        </style>
+        <script>
+            function toggleFabMenu() {
+                document.getElementById('fab-menu').classList.toggle('active');
+                document.getElementById('fab-main-btn').classList.toggle('active');
+            }
+            
+            // Auto close menu when an action is clicked
+            document.querySelectorAll('.fab-item').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if(document.getElementById('fab-menu').classList.contains('active')) {
+                        toggleFabMenu();
+                    }
+                });
             });
-        });
-    </script>
+        </script>
 
-    <!-- Custom Confirm Modal -->
-    <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
-        <div class="modal-dialog modal-dialog-centered modal-sm">
-            <div class="modal-content glass-card" style="border: 1px solid rgba(255,255,255,0.1);">
-                <div class="modal-header border-0 pb-0">
-                    <h5 class="modal-title" id="confirmModalTitle" style="color: #e6edf3;"><i class="fa-solid fa-triangle-exclamation text-warning me-2"></i>Xác nhận</h5>
-                </div>
-                <div class="modal-body" id="confirmModalBody" style="color: #a0a0a0;">Bạn có chắc chắn không?</div>
-                <div class="modal-footer border-0 pt-0">
-                    <button type="button" class="btn btn-secondary btn-sm" id="confirmModalCancel" data-bs-dismiss="modal">Không</button>
-                    <button type="button" class="btn btn-danger btn-sm" id="confirmModalOk">Có, xác nhận</button>
+        <!-- Custom Confirm Modal -->
+        <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
+            <div class="modal-dialog modal-dialog-centered modal-sm">
+                <div class="modal-content" style="border: 2px solid var(--border); border-radius: 0; box-shadow: 6px 6px 0px rgba(0,0,0,1);">
+                    <div class="modal-header border-0 pb-0">
+                        <h5 class="modal-title" id="confirmModalTitle" style="color: var(--text-main); font-weight: bold;"><i class="fa-solid fa-triangle-exclamation text-accent me-2"></i>Xác nhận</h5>
+                    </div>
+                    <div class="modal-body" id="confirmModalBody" style="color: var(--text-muted); font-weight: 500;">Bạn có chắc chắn không?</div>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="button" class="btn btn-secondary btn-sm" id="confirmModalCancel" data-bs-dismiss="modal" style="border-radius: 0; border: 2px solid var(--border); background: var(--surface-color); color: var(--text-main); font-weight: bold;">Không</button>
+                        <button type="button" class="btn btn-danger btn-sm" id="confirmModalOk" style="border-radius: 0; border: 2px solid var(--border); background: var(--danger); font-weight: bold; box-shadow: 2px 2px 0px rgba(0,0,0,1);">Có, xác nhận</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </div> <!-- END app-wrapper -->
 
     <!-- Bootstrap JS (required for modals) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
