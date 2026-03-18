@@ -189,7 +189,7 @@ async function fetchMenu() {
         if (ordersRes.error) throw ordersRes.error;
 
         // Map menu items properly id to _id for backward compatibility with existing UI code
-        menuItems = prodRes.data.map(p => ({...p, _id: p.id}));
+        menuItems = prodRes.data.map(p => ({...p, _id: p.id, imageUrl: p.image_url}));
         
         // Build stock dictionary
         ingredientStock = {};
