@@ -3,6 +3,12 @@ const express = require('express');
 const http = require('http');
 const path = require('path');
 const jwt = require('jsonwebtoken');
+const { createClient } = require('@supabase/supabase-js');
+
+// Supabase Setup
+const supabaseUrl = process.env.SUPABASE_URL || 'YOUR_SUPABASE_URL';
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'YOUR_SUPABASE_KEY';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 const app = express();
 const server = http.createServer(app);
@@ -39,6 +45,57 @@ app.post('/api/login', (req, res) => {
         res.json({ token, role });
     } else {
         res.status(401).json({ error: 'Tài khoản hoặc mật khẩu không đúng' });
+    }
+});
+
+// --- Auto Payment Webhook (SePay / Casso) ---
+app.post('/api/webhook/payment', async (req, res) => {
+    try {
+        const payload = req.body;
+        // SePay format usually puts list of transactions in 'data' array
+        const txs = payload.data ? (Array.isArray(payload.data) ? payload.data : [payload.data]) : [payload];
+        let processedCount = 0;
+
+        for (let tx of txs) {
+            const desc = (tx.description || tx.content || '').toUpperCase();
+            const amount = parseFloat(tx.amount || tx.transferAmount || 0);
+
+            // Assuming user transfers with memo containing the first 8 characters of Order ID
+            // For example: "Thanh toan NHP 3f2a1b4c"
+            const match = desc.match(/[A-F0-9]{8}/);
+
+            if (match) {
+                const shortId = match[0].toLowerCase();
+                
+                // Fetch the order from Supabase
+                const { data: orders, error: fetchErr } = await supabase
+                    .from('orders')
+                    .select('id, total_price, is_paid')
+                    .ilike('id', `${shortId}%`)
+                    .limit(1);
+                    
+                if (!fetchErr && orders && orders.length > 0) {
+                    const order = orders[0];
+                    
+                    if (!order.is_paid && amount >= order.total_price) {
+                        // Mark as paid
+                        const { error: updateErr } = await supabase
+                            .from('orders')
+                            .update({ payment_status: 'paid', is_paid: true })
+                            .eq('id', order.id);
+                            
+                        if (!updateErr) {
+                            processedCount++;
+                            // Thích hợp để tích điểm Loyalty luôn tại đây nếu cần (có thể gom API sau)
+                        }
+                    }
+                }
+            }
+        }
+        res.status(200).json({ success: true, processed: processedCount });
+    } catch (e) {
+        console.error('Webhook Error:', e);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 

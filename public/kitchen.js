@@ -124,6 +124,9 @@ function renderOrders() {
         console.error("Lỗi hiển thị đơn hàng:", e);
         ordersContainer.innerHTML = '<div class="text-danger">Không tải được giao diện đơn hàng. Xem console để biết thêm chi tiết.</div>';
     }
+    
+    // Always render sidebar
+    if (typeof renderBatchSidebar === 'function') renderBatchSidebar();
 }
 
 // Render Orders Grouped By Item
@@ -185,6 +188,50 @@ function renderGroupedOrders() {
 
     ordersContainer.innerHTML = html;
 }
+
+function renderBatchSidebar() {
+    const listContainer = document.getElementById('batch-list');
+    if (!listContainer) return;
+    
+    const activeOrders = orders.filter(o => o.status === 'Pending' || o.status === 'Preparing');
+    
+    if (activeOrders.length === 0) {
+        listContainer.innerHTML = '<div class="text-muted small">Không có món nào đang chờ.</div>';
+        return;
+    }
+
+    const groupMap = {};
+    activeOrders.forEach(order => {
+        if (!order.items) return;
+        order.items.forEach(item => {
+            let optKey = '';
+            if (item.selectedOptions && item.selectedOptions.length > 0) {
+                optKey = item.selectedOptions.map(o => o.choiceName).sort().join(' + ');
+            }
+            const groupKey = optKey ? `${item.name} (${optKey})` : item.name;
+            if (!groupMap[groupKey]) groupMap[groupKey] = 0;
+            groupMap[groupKey] += item.quantity;
+        });
+    });
+
+    const sortedItems = Object.keys(groupMap).map(k => ({ name: k, qty: groupMap[k] })).sort((a,b) => b.qty - a.qty);
+    
+    let html = '';
+    sortedItems.forEach(item => {
+        html += `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+                <span style="font-size: 0.95rem; color: #e6edf3;">${item.name}</span>
+                <span class="badge bg-primary rounded-pill fs-6" style="min-width: 32px; text-align: center;">${item.qty}</span>
+            </div>
+        `;
+    });
+    listContainer.innerHTML = html;
+}
+
+window.toggleOrderGrouping = function() {
+    isGroupedView = document.getElementById('groupOrdersToggle')?.checked || false;
+    renderOrders();
+};
 
 // Update Order Status via Supabase
 window.updateOrderStatus = async (orderId, newStatus, btn) => {

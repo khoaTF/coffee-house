@@ -1151,6 +1151,13 @@ function handleCartUpdate(cartKey, baseItem, change, selectedOptions) {
 }
 
 // --- Loyalty & Upsell Functions ---
+
+function getVipTier(totalSpent) {
+    if (totalSpent >= 5000000) return { name: 'DIAMOND', pct: 15, class: 'tier-diamond', icon: '💎' };
+    if (totalSpent >= 2000000) return { name: 'GOLD', pct: 10, class: 'tier-gold', icon: '👑' };
+    if (totalSpent >= 500000) return { name: 'SILVER', pct: 5, class: 'tier-silver', icon: '🥈' };
+    return { name: 'BRONZE', pct: 0, class: 'tier-bronze', icon: '🥉' };
+}
 async function verifyCustomerPhone() {
     const phoneInput = document.getElementById('customer-phone-input').value.trim();
     const msg = document.getElementById('loyalty-message');
@@ -1175,7 +1182,30 @@ async function verifyCustomerPhone() {
         
         if (data) {
             window.currentCustomerPoints = data.current_points || 0;
-            msg.innerHTML = `<i class="fa-solid fa-check-circle"></i> Xin chào, SĐT chuẩn! Bạn đang có <strong>${window.currentCustomerPoints} điểm</strong>.`;
+            
+            // Render Holographic VIP Card
+            const vip = getVipTier(data.total_spent || 0);
+            const cardEl = document.getElementById('vip-card-el');
+            cardEl.className = `vip-card ${vip.class}`;
+            document.getElementById('vip-card-name').textContent = data.name || 'Thành Viên';
+            document.getElementById('vip-card-tier-text').textContent = vip.name;
+            document.getElementById('vip-card-tier-icon').textContent = vip.icon;
+            document.getElementById('vip-card-discount').textContent = `Ưu đãi giảm ${vip.pct}%`;
+            document.getElementById('vip-card-container').style.display = 'block';
+
+            if (vip.pct > 0) {
+                // Auto Apply VIP Promo
+                appliedPromo = { code: `VIP ${vip.name}`, discountType: 'PERCENT', value: vip.pct };
+                updateCartUI();
+                msg.textContent = `Thẻ VIP tự động giảm ${vip.pct}%!`;
+                msg.style.display = 'block';
+                msg.style.color = 'var(--success)';
+            } else {
+                msg.innerHTML = `<i class="fa-solid fa-check-circle"></i> SĐT hợp lệ. Bạn đang có <strong>${window.currentCustomerPoints} điểm</strong>.`;
+                msg.style.display = 'block';
+            }
+
+            // Exchanger logic
             if (window.currentCustomerPoints >= 100 && !window.loyaltyDiscountApplied) {
                 discountBtn.style.display = 'block';
             } else {
@@ -1183,7 +1213,9 @@ async function verifyCustomerPhone() {
             }
         } else {
             window.currentCustomerPoints = 0;
-            msg.innerHTML = `<i class="fa-solid fa-star"></i> SĐT mới! Bạn sẽ tự động trở thành Thành Viên sau đơn này.`;
+            document.getElementById('vip-card-container').style.display = 'none';
+            msg.innerHTML = `<i class="fa-solid fa-star"></i> SĐT mới! Bạn sẽ đổi hạng thành viên sau khi thanh toán đơn này.`;
+            msg.style.display = 'block';
             discountBtn.style.display = 'none';
         }
     } catch (e) {

@@ -180,9 +180,19 @@
             </div>
         </div>
 
-        <!-- Orders Grid -->
-        <div class="dashboard-grid" id="orders-container">
-            <!-- Order cards will be injected here via JS -->
+        <div style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;">
+            <!-- Orders Grid -->
+            <div class="dashboard-grid" id="orders-container" style="flex: 1; min-width: 60%;">
+                <!-- Order cards will be injected here via JS -->
+            </div>
+            
+            <!-- Sidebar Batch Tracker -->
+            <div class="batch-sidebar" id="batch-container" style="width: 320px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 18px; position: sticky; top: 20px;">
+                <h6 style="color: #d4a76a; font-weight: bold; margin-bottom: 15px; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 15px; font-size: 1.1rem;"><i class="fa-solid fa-layer-group"></i> Tổng hợp chế biến</h6>
+                <div id="batch-list">
+                    <!-- Batch items will go here -->
+                </div>
+            </div>
         </div>
     </div>
 

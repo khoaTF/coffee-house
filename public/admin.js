@@ -1879,4 +1879,130 @@ document.head.appendChild(slideInStyle);
 // Init fetch
 fetchActiveStaffRequests();
 
+// --- Analytics & Charts ---
+let revenueDailyChartInstance = null;
+let revenueCategoryChartInstance = null;
 
+function renderAnalytics() {
+    if (!document.getElementById('section-analytics').classList.contains('active')) return;
+    
+    // Compute Daily Revenue (Last 7 days)
+    const last7Days = [...Array(7)].map((_, i) => {
+        const d = new Date();
+        d.setDate(d.getDate() - (6 - i));
+        return {
+            dateStr: d.toISOString().split('T')[0],
+            display: d.toLocaleDateString('vi-VN', { month: '2-digit', day: '2-digit' }),
+            revenue: 0
+        };
+    });
+
+    // Compute Category Share
+    const categoryTotals = {};
+    
+    orderHistory.forEach(o => {
+        if (o.status !== 'Completed' && o.status !== 'Ready') return; 
+        
+        const dateStr = new Date(o.createdAt).toISOString().split('T')[0];
+        const dayMatch = last7Days.find(d => d.dateStr === dateStr);
+        if (dayMatch) {
+            dayMatch.revenue += (o.totalPrice || 0);
+        }
+        
+        if (o.items && Array.isArray(o.items)) {
+            o.items.forEach(item => {
+                const prod = products.find(p => p._id === item.productId || p.id === item.productId);
+                const cat = prod ? prod.category : 'Khác';
+                const itemRev = (item.price * item.quantity);
+                categoryTotals[cat] = (categoryTotals[cat] || 0) + itemRev;
+            });
+        }
+    });
+
+    // Draw Line Chart
+    const ctxDaily = document.getElementById('revenueDailyChart').getContext('2d');
+    if (revenueDailyChartInstance) revenueDailyChartInstance.destroy();
+    
+    revenueDailyChartInstance = new Chart(ctxDaily, {
+        type: 'line',
+        data: {
+            labels: last7Days.map(d => d.display),
+            datasets: [{
+                label: 'Doanh thu (VNĐ)',
+                data: last7Days.map(d => d.revenue),
+                borderColor: '#d4a76a',
+                backgroundColor: 'rgba(212,167,106,0.2)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+
+    // Draw Doughnut Chart
+    const ctxCat = document.getElementById('revenueCategoryChart').getContext('2d');
+    if (revenueCategoryChartInstance) revenueCategoryChartInstance.destroy();
+    
+    revenueCategoryChartInstance = new Chart(ctxCat, {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(categoryTotals).length ? Object.keys(categoryTotals) : ['Chưa có dữ liệu'],
+            datasets: [{
+                data: Object.keys(categoryTotals).length ? Object.values(categoryTotals) : [1],
+                backgroundColor: ['#d4a76a', '#3498db', '#e74c3c', '#2ecc71', '#9b59b6'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { color: '#c9d1d9' } }
+            }
+        }
+    });
+}
+
+function fetchFeedbackStats() {
+    const ratedOrders = orderHistory.filter(o => o.feedback_rating > 0);
+    const avgRatingEl = document.getElementById('fb-avg-rating');
+    const avgStarsEl = document.getElementById('fb-avg-stars');
+    const totalCountEl = document.getElementById('fb-total-count');
+    
+    if (ratedOrders.length === 0) {
+        if(avgRatingEl) avgRatingEl.textContent = '0.0';
+        if(avgStarsEl) avgStarsEl.innerHTML = '<i class="fa-regular fa-star text-warning"></i>'.repeat(5);
+        if(totalCountEl) totalCountEl.textContent = '0 lượt đánh giá';
+        return;
+    }
+    
+    const sum = ratedOrders.reduce((acc, curr) => acc + curr.feedback_rating, 0);
+    const avg = (sum / ratedOrders.length).toFixed(1);
+    
+    if(avgRatingEl) avgRatingEl.textContent = avg;
+    if(totalCountEl) totalCountEl.textContent = `${ratedOrders.length} lượt đánh giá`;
+    
+    if(avgStarsEl) {
+        let starsHtml = '';
+        const fullStars = Math.floor(avg);
+        const hasHalf = avg - fullStars >= 0.5;
+        
+        for(let i = 0; i < fullStars; i++) starsHtml += '<i class="fa-solid fa-star text-warning"></i>';
+        if (hasHalf) starsHtml += '<i class="fa-solid fa-star-half-stroke text-warning"></i>';
+        const emptyStars = 5 - fullStars - (hasHalf ? 1 : 0);
+        for(let i = 0; i < emptyStars; i++) starsHtml += '<i class="fa-regular fa-star text-warning"></i>';
+        
+        avgStarsEl.innerHTML = starsHtml;
+    }
+}
