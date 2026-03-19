@@ -38,7 +38,6 @@ async function fetchActiveOrders() {
             .from('orders')
             .select('*')
             .in('status', ['Pending', 'Preparing', 'Ready'])
-            .eq('is_paid', true)
             .order('created_at', { ascending: true });
 
         if (error) throw error;
@@ -385,7 +384,6 @@ function setupRealtimeSubscription() {
     supabase
         .channel('kitchen-orders')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, payload => {
-            if (!payload.new.is_paid) return; // Ignore unpaid orders
             console.log('NEW ORDER RECEIVED via REALTIME:', payload.new);
             const newOrder = {
                 ...payload.new,
@@ -405,7 +403,6 @@ function setupRealtimeSubscription() {
             }
         })
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders' }, payload => {
-            if (!payload.new.is_paid) return; // Do not process unpaid orders yet
             const updatedOrder = { ...payload.new, _id: payload.new.id, createdAt: payload.new.created_at, tableNumber: payload.new.table_number, orderNote: payload.new.order_note };
             const orderIndex = orders.findIndex(o => o._id === updatedOrder._id);
 
