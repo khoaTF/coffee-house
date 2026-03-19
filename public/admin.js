@@ -253,7 +253,7 @@ function editProduct(id) {
         product.options.forEach(opt => {
             const block = addOptionBlock(opt.name || opt.optionName);
             opt.choices.forEach(ch => {
-                addChoiceRow(block, ch.name || ch.choiceName, ch.priceExtra);
+                addChoiceRow(block, ch.name || ch.choiceName, ch.priceExtra, ch.isAbsoluteRecipe, ch.recipe);
             });
         });
     }
@@ -307,10 +307,25 @@ function addOptionBlock(optName = '') {
     return block;
 }
 
-function addChoiceRow(block, choiceName = '', priceExtra = 0) {
+function addChoiceRow(block, choiceName = '', priceExtra = 0, isAbsolute = false, recipeData = []) {
     const container = block.querySelector('.choices-container');
     const row = document.createElement('div');
-    row.className = 'd-flex gap-2 mb-1 choice-row';
+    row.className = 'd-flex gap-2 mb-1 choice-row align-items-center';
+    
+    // Hidden inputs for recipe data
+    const inputRecipe = document.createElement('input');
+    inputRecipe.type = 'hidden';
+    inputRecipe.className = 'choice-recipe-data';
+    inputRecipe.value = JSON.stringify(recipeData || []);
+    
+    const inputAbsolute = document.createElement('input');
+    inputAbsolute.type = 'hidden';
+    inputAbsolute.className = 'choice-is-absolute';
+    inputAbsolute.value = isAbsolute ? 'true' : 'false';
+    row.append(inputRecipe, inputAbsolute);
+    
+    // Give row a unique id to map back from modal
+    row.id = 'choice-row-' + Math.random().toString(36).substr(2, 9);
     
     const inputName = document.createElement('input');
     inputName.type = 'text';
@@ -340,6 +355,13 @@ function addChoiceRow(block, choiceName = '', priceExtra = 0) {
     
     inputGroup.append(span1, inputPrice, span2);
     
+    const recipeBtn = document.createElement('button');
+    recipeBtn.type = 'button';
+    recipeBtn.className = (recipeData && recipeData.length > 0) ? 'btn btn-sm btn-info text-white' : 'btn btn-sm btn-outline-info';
+    recipeBtn.title = 'Gắn công thức';
+    recipeBtn.innerHTML = '<i class="fa-solid fa-spoon"></i>';
+    recipeBtn.onclick = () => openChoiceRecipeModal(row.id);
+    
     const delBtn = document.createElement('button');
     delBtn.type = 'button';
     delBtn.className = 'btn btn-sm btn-outline-danger';
@@ -348,7 +370,7 @@ function addChoiceRow(block, choiceName = '', priceExtra = 0) {
     delBtn.appendChild(closeIcon);
     delBtn.onclick = () => row.remove();
     
-    row.append(inputName, inputGroup, delBtn);
+    row.append(inputName, inputGroup, recipeBtn, delBtn);
     container.appendChild(row);
 }
 
@@ -422,8 +444,19 @@ async function saveProduct() {
         choiceRows.forEach(row => {
             const cName = row.querySelector('.choice-name').value.trim();
             const cPrice = parseInt(row.querySelector('.choice-price').value) || 0;
+            const cRecipeJson = row.querySelector('.choice-recipe-data').value;
+            const cIsAbsolute = row.querySelector('.choice-is-absolute').value === 'true';
+            
+            let parsedRecipe = [];
+            try { parsedRecipe = JSON.parse(cRecipeJson); } catch (e) {}
+
             if (cName) {
-                choices.push({ name: cName, priceExtra: cPrice });
+                const choiceObj = { name: cName, priceExtra: cPrice };
+                if (parsedRecipe && parsedRecipe.length > 0) {
+                    choiceObj.recipe = parsedRecipe;
+                    choiceObj.isAbsoluteRecipe = cIsAbsolute;
+                }
+                choices.push(choiceObj);
             }
         });
 
@@ -2237,4 +2270,119 @@ async function togglePromoStatus(id, currentlyActive) {
         console.error(e);
         alert("Lỗi hệ thống.");
     }
+}
+
+// --- Choice Recipe Modal Logic ---
+let choiceRecipeModalInstance;
+
+function openChoiceRecipeModal(rowId) {
+    if (!choiceRecipeModalInstance) {
+        choiceRecipeModalInstance = new bootstrap.Modal(document.getElementById('choiceRecipeModal'));
+    }
+    
+    const row = document.getElementById(rowId);
+    if (!row) return;
+    
+    // Store current row ID in modal
+    let cachedInput = document.getElementById('currentChoiceRowId');
+    if (!cachedInput) {
+        cachedInput = document.createElement('input');
+        cachedInput.type = 'hidden';
+        cachedInput.id = 'currentChoiceRowId';
+        document.querySelector('#choiceRecipeModal .modal-body').appendChild(cachedInput);
+    }
+    cachedInput.value = rowId;
+    
+    // Read data from row
+    const isAbsolute = row.querySelector('.choice-is-absolute').value === 'true';
+    const recipeData = JSON.parse(row.querySelector('.choice-recipe-data').value || '[]');
+    
+    // Set UI
+    document.getElementById('choiceIsAbsolute').checked = isAbsolute;
+    
+    const container = document.getElementById('choice-recipe-container');
+    container.replaceChildren();
+    
+    if (recipeData && recipeData.length > 0) {
+        recipeData.forEach(r => addChoiceRecipeRow(r.ingredientId, r.quantity));
+    } else {
+        addChoiceRecipeRow(); // start with one empty row
+    }
+    
+    document.getElementById('choiceRecipeModalLabel').textContent = 'Công thức: ' + (row.querySelector('.choice-name').value || 'Tùy chọn');
+    choiceRecipeModalInstance.show();
+}
+
+function addChoiceRecipeRow(ingId = '', qty = '') {
+    const row = document.createElement('div');
+    row.className = 'd-flex gap-2 mb-2 choice-recipe-row';
+    
+    const select = document.createElement('select');
+    select.className = 'form-select form-select-sm choice-recipe-ing bg-dark text-light border-secondary';
+    select.required = true;
+    
+    const defaultOpt = document.createElement('option');
+    defaultOpt.value = '';
+    defaultOpt.textContent = '-- Chọn nguyên liệu --';
+    select.appendChild(defaultOpt);
+    
+    ingredients.forEach(i => {
+        const opt = document.createElement('option');
+        opt.value = i._id;
+        opt.textContent = `${i.name} (${i.unit})`;
+        if (i._id === ingId) opt.selected = true;
+        select.appendChild(opt);
+    });
+    
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.className = 'form-control form-control-sm choice-recipe-qty bg-dark text-light border-secondary';
+    input.placeholder = 'Số lượng';
+    input.value = qty;
+    input.required = true;
+    input.style.width = '100px';
+    
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn btn-outline-danger btn-sm';
+    btn.innerHTML = '<i class="fa-solid fa-times"></i>';
+    btn.onclick = () => row.remove();
+    
+    row.append(select, input, btn);
+    document.getElementById('choice-recipe-container').appendChild(row);
+}
+
+function saveChoiceRecipe() {
+    const rowId = document.getElementById('currentChoiceRowId').value;
+    const row = document.getElementById(rowId);
+    if (!row) {
+        choiceRecipeModalInstance.hide();
+        return;
+    }
+    
+    const isAbsolute = document.getElementById('choiceIsAbsolute').checked;
+    
+    const recipeRows = document.querySelectorAll('.choice-recipe-row');
+    const recipe = [];
+    recipeRows.forEach(r => {
+        const ingId = r.querySelector('.choice-recipe-ing').value;
+        const qty = parseFloat(r.querySelector('.choice-recipe-qty').value);
+        if (ingId && !isNaN(qty) && qty > 0) {
+            recipe.push({ ingredientId: ingId, quantity: qty });
+        }
+    });
+    
+    // Save to row
+    row.querySelector('.choice-is-absolute').value = isAbsolute ? 'true' : 'false';
+    row.querySelector('.choice-recipe-data').value = JSON.stringify(recipe);
+    
+    // Update button styling
+    const btn = row.querySelector('.fa-spoon').parentElement;
+    if (recipe.length > 0) {
+        btn.className = 'btn btn-sm btn-info text-white';
+    } else {
+        btn.className = 'btn btn-sm btn-outline-info';
+    }
+    
+    choiceRecipeModalInstance.hide();
 }

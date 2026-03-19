@@ -422,6 +422,46 @@
         </div>
     </div>
 
+    <!-- Choice Recipe Modal -->
+    <div class="modal fade" id="choiceRecipeModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark text-light border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title" id="choiceRecipeModalLabel">Công thức riêng cho Lựa chọn</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-check form-switch mb-3 p-3 bg-secondary bg-opacity-25 rounded border border-warning">
+                        <input class="form-check-input ms-0 me-2" type="checkbox" id="choiceIsAbsolute">
+                        <label class="form-check-label text-warning fw-bold" for="choiceIsAbsolute">
+                            <i class="fa-solid fa-triangle-exclamation"></i> Ghi đè tuyệt đối (Dùng cho Size)
+                        </label>
+                        <div class="mt-2 text-light" style="font-size: 0.85rem;">
+                            - <strong>BẬT</strong>: Thay thế hoàn toàn công thức của món ăn bằng công thức này (VD: Ly Size L có chuẩn tỷ lệ riêng).<br>
+                            - <strong>TẮT</strong>: Công thức dưới đây sẽ được <em>cộng dồn</em> vào đơn hàng (VD: Thêm 50g Trân Châu / Thêm 20g Sữa đặc).
+                        </div>
+                    </div>
+
+                    <h6 class="mb-2 border-bottom border-secondary pb-2">Nguyên liệu cần trừ kho</h6>
+                    <div id="choice-recipe-container">
+                        <!-- Choice recipe rows -->
+                    </div>
+                    <button type="button" class="btn btn-outline-info btn-sm mt-2" onclick="addChoiceRecipeRow()">
+                        <i class="fa-solid fa-plus"></i> Thêm nguyên liệu
+                    </button>
+                    
+                    <div class="mt-3 text-muted" style="font-size: 0.8rem;">
+                        <i>* Mẹo: Nếu là tuỳ chọn hao phí tự do (ít đá, nhiều đường), hãy để trống danh sách nguyên liệu.</i>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-success" onclick="saveChoiceRecipe()">Lưu Công Thức</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Ingredient Modal -->
     <div class="modal fade" id="ingredientModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">

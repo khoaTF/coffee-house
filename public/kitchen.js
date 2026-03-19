@@ -249,13 +249,37 @@ window.updateOrderStatus = async (orderId, newStatus, btn) => {
         if (newStatus === 'Completed') {
             const order = orders.find(o => o._id === orderId);
             if (order && order.items && order.items.length > 0) {
-                const { data: productsData } = await supabase.from('products').select('id, name, recipe');
+                const { data: productsData } = await supabase.from('products').select('id, name, recipe, options');
                 if (productsData) {
                     const reductions = {};
                     order.items.forEach(item => {
                         const product = productsData.find(p => p.id === item._id || p.name === item.name);
-                        if (product && product.recipe && Array.isArray(product.recipe)) {
-                            product.recipe.forEach(r => {
+                        if (product) {
+                            let finalRecipe = [];
+                            let isAbsoluted = false;
+                            
+                            if (item.selectedOptions && Array.isArray(item.selectedOptions) && product.options && Array.isArray(product.options)) {
+                                item.selectedOptions.forEach(selOpt => {
+                                    const optGroup = product.options.find(o => o.name === selOpt.optionName || o.optionName === selOpt.optionName);
+                                    if (optGroup && Array.isArray(optGroup.choices)) {
+                                        const choice = optGroup.choices.find(c => c.name === selOpt.choiceName || c.choiceName === selOpt.choiceName);
+                                        if (choice && choice.recipe && Array.isArray(choice.recipe)) {
+                                            if (choice.isAbsoluteRecipe) {
+                                                isAbsoluted = true;
+                                                finalRecipe = [...choice.recipe];
+                                            } else {
+                                                finalRecipe = finalRecipe.concat(choice.recipe);
+                                            }
+                                        }
+                                    }
+                                });
+                            }
+                            
+                            if (!isAbsoluted && Array.isArray(product.recipe)) {
+                                finalRecipe = finalRecipe.concat(product.recipe);
+                            }
+                            
+                            finalRecipe.forEach(r => {
                                 if (!reductions[r.ingredientId]) reductions[r.ingredientId] = 0;
                                 reductions[r.ingredientId] += (r.quantity * item.quantity);
                             });
