@@ -22,6 +22,27 @@ CREATE TABLE IF NOT EXISTS ingredients (
     unit TEXT,
     stock NUMERIC DEFAULT 0,
     low_stock_threshold NUMERIC DEFAULT 50,
+    supplier_name TEXT,
+    supplier_contact TEXT,
+    last_restock_date TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- NOTE: If upgrading existing database, run these commands manually:
+-- ALTER TABLE ingredients ADD COLUMN IF NOT EXISTS supplier_name TEXT;
+-- ALTER TABLE ingredients ADD COLUMN IF NOT EXISTS supplier_contact TEXT;
+-- ALTER TABLE ingredients ADD COLUMN IF NOT EXISTS last_restock_date TIMESTAMP WITH TIME ZONE;
+
+-- Inventory Logs Table for strict audit trails
+CREATE TABLE IF NOT EXISTS inventory_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    ingredient_id UUID REFERENCES ingredients(id),
+    change_type TEXT CHECK (change_type IN ('deduction', 'restock', 'spoilage', 'adjustment')),
+    amount NUMERIC NOT NULL,
+    previous_stock NUMERIC NOT NULL,
+    new_stock NUMERIC NOT NULL,
+    reference_id TEXT, -- To link to order ID or PO
+    reason TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
@@ -30,8 +51,18 @@ CREATE TABLE IF NOT EXISTS customers (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     phone TEXT UNIQUE NOT NULL,
     name TEXT,
+    tier TEXT DEFAULT 'Bronze',
     current_points INTEGER DEFAULT 0,
     total_spent NUMERIC DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- Point Logs Table
+CREATE TABLE IF NOT EXISTS point_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    customer_id UUID REFERENCES customers(id),
+    amount INTEGER NOT NULL,
+    reason TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 

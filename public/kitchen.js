@@ -242,6 +242,76 @@ window.updateOrderStatus = async (orderId, newStatus, btn) => {
         btn.disabled = true;
     }
     try {
+        if (newStatus === 'Completed') {
+            const order = orders.find(o => o._id === orderId);
+            if (order && order.items && order.items.length > 0) {
+                const { data: productsData } = await supabase.from('products').select('id, name, recipe');
+                if (productsData) {
+                    const reductions = {};
+                    order.items.forEach(item => {
+                        const product = productsData.find(p => p.id === item._id || p.name === item.name);
+                        if (product && product.recipe && Array.isArray(product.recipe)) {
+                            product.recipe.forEach(r => {
+                                if (!reductions[r.ingredientId]) reductions[r.ingredientId] = 0;
+                                reductions[r.ingredientId] += (r.quantity * item.quantity);
+                            });
+                        }
+                    });
+
+                    for (const [ingId, qtyToDeduct] of Object.entries(reductions)) {
+                        const { data: ingData } = await supabase.from('ingredients').select('stock').eq('id', ingId).single();
+                        if (ingData) {
+                            const newStock = Math.max(0, ingData.stock - qtyToDeduct);
+                            await supabase.from('ingredients').update({ stock: newStock }).eq('id', ingId);
+                            await supabase.from('inventory_logs').insert([{
+                                ingredient_id: ingId,
+                                change_type: 'deduction',
+                                amount: qtyToDeduct,
+                                previous_stock: ingData.stock,
+                                new_stock: newStock,
+                                reference_id: orderId,
+                                reason: 'Xuất kho tự động cho đơn hàng'
+                            }]);
+                        }
+                    }
+                }
+            }
+
+            // Earn Loyalty Points
+            if (order && order.customer_phone) {
+                const { data: custData } = await supabase.from('customers').select('id, current_points, total_spent').eq('phone', order.customer_phone).maybeSingle();
+                const earnedPts = order.earned_points || 0;
+                const paidAmt = order.total_price || order.totalPrice || 0;
+                
+                if (custData) {
+                    const newPts = (custData.current_points || 0) + earnedPts;
+                    const newSpent = (custData.total_spent || 0) + paidAmt;
+                    let newTier = 'Bronze';
+                    if (newSpent >= 5000000) newTier = 'Diamond';
+                    else if (newSpent >= 2000000) newTier = 'Gold';
+                    else if (newSpent >= 500000) newTier = 'Silver';
+
+                    await supabase.from('customers').update({ current_points: newPts, total_spent: newSpent, tier: newTier }).eq('id', custData.id);
+                    if (earnedPts > 0) {
+                        await supabase.from('point_logs').insert([{ customer_id: custData.id, amount: earnedPts, reason: 'Tích điểm đơn hàng ' + orderId.substring(0,8) }]);
+                    }
+                } else {
+                    let newTier = 'Bronze';
+                    if (paidAmt >= 5000000) newTier = 'Diamond';
+                    else if (paidAmt >= 2000000) newTier = 'Gold';
+                    else if (paidAmt >= 500000) newTier = 'Silver';
+
+                    const { data: newCust } = await supabase.from('customers').insert([{
+                        phone: order.customer_phone, name: 'Khách hàng', current_points: earnedPts, total_spent: paidAmt, tier: newTier
+                    }]).select().single();
+                    
+                    if (newCust && earnedPts > 0) {
+                        await supabase.from('point_logs').insert([{ customer_id: newCust.id, amount: earnedPts, reason: 'Tích điẻm đơn hàng ' + orderId.substring(0,8) }]);
+                    }
+                }
+            }
+        }
+
         const { error } = await supabase.from('orders').update({ status: newStatus }).eq('id', orderId);
         if (error) throw error;
     } catch (error) {

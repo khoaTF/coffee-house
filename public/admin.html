@@ -164,13 +164,31 @@
         <section id="section-analytics" class="content-section">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="mb-0">Thống kê & Báo cáo</h2>
-                <button class="btn btn-outline-success btn-sm" onclick="exportOrdersToCSV()"><i class="fa-solid fa-file-csv me-1"></i> Xuất Excel (CSV)</button>
+                <div>
+                    <button class="btn btn-outline-success btn-sm" onclick="exportOrdersToCSV()"><i class="fa-solid fa-file-csv me-1"></i> Xuất Doanh Thu</button>
+                    <button class="btn btn-outline-info btn-sm ms-2" onclick="exportInventoryToCSV()"><i class="fa-solid fa-box-open me-1"></i> Xuất Kho</button>
+                </div>
             </div>
+            
+            <div class="row mb-4 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label text-muted small">Từ ngày</label>
+                    <input type="date" id="analytics-start-date" class="form-control text-light" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label text-muted small">Đến ngày</label>
+                    <input type="date" id="analytics-end-date" class="form-control text-light" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
+                </div>
+                <div class="col-md-3 mt-3 mt-md-0">
+                    <button class="btn btn-primary w-100 font-bold" onclick="renderAnalytics()"><i class="fa-solid fa-filter me-1"></i> Lọc dữ liệu</button>
+                </div>
+            </div>
+
             <div class="row mb-4">
                 <div class="col-md-6 mb-3 mb-md-0">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-body">
-                            <h5 class="card-title text-center text-muted mb-3"><i class="fa-regular fa-calendar-days"></i> Doanh thu Cận đây (7 ngày)</h5>
+                            <h5 class="card-title text-center text-muted mb-3"><i class="fa-regular fa-calendar-days"></i> Biểu đồ Doanh thu</h5>
                             <div style="height: 300px; width: 100%;">
                                 <canvas id="revenueDailyChart"></canvas>
                             </div>
@@ -183,6 +201,31 @@
                             <h5 class="card-title text-center text-muted mb-3"><i class="fa-solid fa-chart-pie"></i> Tỉ trọng Danh mục</h5>
                             <div style="height: 300px; width: 100%; display: flex; justify-content: center;">
                                 <canvas id="revenueCategoryChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Best Selling Row -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title text-muted mb-3"><i class="fa-solid fa-fire text-danger"></i> Top Món Bán Chạy Nhất</h5>
+                            <div class="table-responsive">
+                                <table class="table table-hover text-light mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Tên món</th>
+                                            <th class="text-center">Số lượng bán</th>
+                                            <th class="text-end">Doanh thu thu về</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="top-selling-body">
+                                        <tr><td colspan="3" class="text-center py-3 text-muted">Đang tải biểu mẫu...</td></tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -390,6 +433,7 @@
                 <div class="modal-body">
                     <form id="ingredientForm">
                         <input type="hidden" id="ingId">
+                        <input type="hidden" id="ingOldStock">
                         <div class="mb-3">
                             <label class="form-label">Tên nguyên liệu</label>
                             <input type="text" class="form-control" id="ingName" required>
@@ -407,11 +451,57 @@
                             <input type="number" id="ingThreshold" class="form-control bg-dark text-light border-secondary" value="50" min="0" step="any">
                             <small class="text-muted">Hệ thống sẽ cảnh báo nếu tồn kho thấp hơn mức này.</small>
                         </div>
+                        <div class="mb-3">
+                            <label class="form-label">Nhà cung cấp (Tùy chọn)</label>
+                            <input type="text" id="ingSupplierName" class="form-control bg-dark text-light border-secondary" placeholder="Tên công ty hoặc SĐT">
+                        </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
                     <button type="button" class="btn btn-success" onclick="saveIngredient()">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Promo Modal -->
+    <div class="modal fade" id="promoModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="promoModalLabel">Thêm / Sửa Khuyến Mãi</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="promoForm">
+                        <input type="hidden" id="promoId">
+                        <div class="mb-3">
+                            <label class="form-label">Mã khuyến mãi (Code)</label>
+                            <input type="text" class="form-control text-uppercase" id="promoCode" required>
+                            <small class="text-muted">VD: SALETET, VIP10</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Loại giảm giá</label>
+                            <select class="form-select" id="promoType">
+                                <option value="PERCENT">Giảm theo phần trăm (%)</option>
+                                <option value="FIXED">Giảm số tiền cố định (VNĐ)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Mức giảm</label>
+                            <input type="number" class="form-control" id="promoValue" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Giới hạn số lần dùng</label>
+                            <input type="number" class="form-control" id="promoLimit" value="0">
+                            <small class="text-muted">Để 0 nếu không giới hạn</small>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-success" onclick="savePromo()">Lưu</button>
                 </div>
             </div>
         </div>

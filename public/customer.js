@@ -754,9 +754,24 @@ async function placeOrder(method = 'cash') {
         
         // Deduct points virtually if they used loyalty promo
         if (window.loyaltyDiscountApplied && window.currentCustomerPhone) {
-            supabase.from('customers').select('id, current_points').eq('phone', window.currentCustomerPhone).maybeSingle().then(({data}) => {
-                if (data) {
-                    supabase.from('customers').update({ current_points: Math.max(0, data.current_points - 100) }).eq('id', data.id).then();
+            supabase.from('customers').select('id, current_points').eq('phone', window.currentCustomerPhone).maybeSingle().then(({data: cust}) => {
+                if (cust) {
+                    supabase.from('customers').update({ current_points: Math.max(0, cust.current_points - 100) }).eq('id', cust.id).then(() => {
+                        supabase.from('point_logs').insert([{
+                            customer_id: cust.id,
+                            amount: -100,
+                            reason: 'Đổi 100 điểm lấy 10.000đ giảm giá cho đơn ' + savedOrder._id.substring(0,8)
+                        }]).then();
+                    });
+                }
+            });
+        }
+        
+        // Increment discount used_count
+        if (orderData.discount_code && orderData.discount_code !== 'LOYALTY_100' && !orderData.discount_code.startsWith('VIP ')) {
+            supabase.from('discounts').select('id, used_count').eq('code', orderData.discount_code).maybeSingle().then(({data: dData}) => {
+                if (dData) {
+                    supabase.from('discounts').update({ used_count: (dData.used_count || 0) + 1 }).eq('id', dData.id).then();
                 }
             });
         }
@@ -1367,23 +1382,40 @@ async function applyPromo() {
     if(btn) btn.disabled = true;
     
     try {
-        const response = await fetch('/api/discounts/validate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ code, cartTotal: subtotal })
-        });
-        const data = await response.json();
+        const { data: discount, error } = await supabase.from('discounts').select('*').eq('code', code).eq('active', true).maybeSingle();
         
         if(btn) btn.disabled = false;
-        if (response.ok && data.valid) {
-            appliedPromo = data;
+        if (discount) {
+            if (discount.usage_limit > 0 && (discount.used_count || 0) >= discount.usage_limit) {
+                appliedPromo = null;
+                msgEl.className = 'text-danger mt-2';
+                msgEl.textContent = 'Mã khuyến mãi đã hết lượt sử dụng!';
+                updateCartUI();
+                return;
+            }
+            
+            let discountAmount = 0;
+            if (discount.discount_type === 'PERCENT') {
+                discountAmount = (subtotal * discount.value) / 100;
+            } else if (discount.discount_type === 'FIXED') {
+                discountAmount = discount.value;
+            }
+            if (discountAmount > subtotal) discountAmount = subtotal;
+
+            appliedPromo = {
+                code: discount.code,
+                discountType: discount.discount_type,
+                value: discount.value,
+                discountAmount: discountAmount
+            };
+            
             msgEl.className = 'text-success mt-2 font-bold';
-            msgEl.textContent = `Áp dụng thành công! Giảm ${data.discountAmount.toLocaleString('vi-VN')} đ`;
+            msgEl.textContent = `Áp dụng thành công! Giảm ${discountAmount.toLocaleString('vi-VN')} đ`;
             updateCartUI();
         } else {
             appliedPromo = null;
             msgEl.className = 'text-danger mt-2';
-            msgEl.textContent = data.error || 'Mã không hợp lệ hoặc đã hết hạn';
+            msgEl.textContent = 'Mã không hợp lệ hoặc đã hết hạn';
             updateCartUI();
         }
     } catch (e) {

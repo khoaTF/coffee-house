@@ -1191,13 +1191,19 @@ function openIngredientModal(ingredientId = null) {
             document.getElementById('ingName').value = ingredient.name;
             document.getElementById('ingUnit').value = ingredient.unit;
             document.getElementById('ingStock').value = ingredient.stock;
+            document.getElementById('ingOldStock').value = ingredient.stock;
             document.getElementById('ingThreshold').value = ingredient.lowStockThreshold || 50;
+            if(document.getElementById('ingSupplierName')) {
+                document.getElementById('ingSupplierName').value = ingredient.supplier_name || '';
+            }
         }
     } else {
         document.getElementById('ingredientForm').reset();
         document.getElementById('ingId').value = '';
+        if(document.getElementById('ingOldStock')) document.getElementById('ingOldStock').value = '0';
         document.getElementById('ingStock').value = '0';
         document.getElementById('ingThreshold').value = '50';
+        if(document.getElementById('ingSupplierName')) document.getElementById('ingSupplierName').value = '';
     }
     
     ingredientModalInstance.show();
@@ -1208,7 +1214,9 @@ async function saveIngredient() {
     const name = document.getElementById('ingName').value.trim();
     const unit = document.getElementById('ingUnit').value.trim();
     const stock = parseFloat(document.getElementById('ingStock').value) || 0;
+    const oldStock = document.getElementById('ingOldStock') ? (parseFloat(document.getElementById('ingOldStock').value) || 0) : 0;
     const lowStockThreshold = parseFloat(document.getElementById('ingThreshold').value) || 50;
+    const supplierName = document.getElementById('ingSupplierName') ? document.getElementById('ingSupplierName').value.trim() : null;
 
     if (!name || !unit) {
         alert("Vui lòng nhập tên và đơn vị!");
@@ -1219,16 +1227,43 @@ async function saveIngredient() {
         name, 
         unit, 
         stock, 
-        low_stock_threshold: lowStockThreshold 
+        low_stock_threshold: lowStockThreshold
     };
+    if (supplierName !== null) payload.supplier_name = supplierName;
 
     try {
         if (id) {
             const { error } = await supabase.from('ingredients').update(payload).eq('id', id);
             if (error) throw error;
+            
+            // Log Stock Change
+            if (stock !== oldStock) {
+                const diff = stock - oldStock;
+                const changeType = diff > 0 ? 'restock' : 'adjustment';
+                await supabase.from('inventory_logs').insert([{
+                    ingredient_id: id,
+                    change_type: changeType,
+                    amount: Math.abs(diff),
+                    previous_stock: oldStock,
+                    new_stock: stock,
+                    reason: 'Cập nhật thủ công từ Dashboard'
+                }]);
+            }
         } else {
-            const { error } = await supabase.from('ingredients').insert([payload]);
+            const { data, error } = await supabase.from('ingredients').insert([payload]).select();
             if (error) throw error;
+            
+            // Log Initial Restock
+            if (stock > 0 && data && data.length > 0) {
+                await supabase.from('inventory_logs').insert([{
+                    ingredient_id: data[0].id,
+                    change_type: 'restock',
+                    amount: stock,
+                    previous_stock: 0,
+                    new_stock: stock,
+                    reason: 'Khởi tạo nguyên liệu mới'
+                }]);
+            }
         }
 
         ingredientModalInstance.hide();
@@ -1886,10 +1921,33 @@ let revenueCategoryChartInstance = null;
 function renderAnalytics() {
     if (!document.getElementById('section-analytics').classList.contains('active')) return;
     
-    // Compute Daily Revenue (Last 7 days)
-    const last7Days = [...Array(7)].map((_, i) => {
-        const d = new Date();
-        d.setDate(d.getDate() - (6 - i));
+    const startDateInput = document.getElementById('analytics-start-date');
+    const endDateInput = document.getElementById('analytics-end-date');
+    let startDateStr = startDateInput ? startDateInput.value : '';
+    let endDateStr = endDateInput ? endDateInput.value : '';
+    
+    let daysToShow = 7;
+    let startDate = new Date();
+    startDate.setDate(startDate.getDate() - 6);
+    startDate.setHours(0,0,0,0);
+    let endDate = new Date();
+    endDate.setHours(23,59,59,999);
+    
+    if (startDateStr && endDateStr) {
+        startDate = new Date(startDateStr);
+        startDate.setHours(0,0,0,0);
+        endDate = new Date(endDateStr);
+        endDate.setHours(23,59,59,999);
+        
+        let diffTime = Math.abs(endDate - startDate);
+        daysToShow = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        if (daysToShow === 0) daysToShow = 1;
+    }
+    
+    // Generate empty buckets
+    const dateLabels = [...Array(daysToShow)].map((_, i) => {
+        const d = new Date(startDate);
+        d.setDate(d.getDate() + i);
         return {
             dateStr: d.toISOString().split('T')[0],
             display: d.toLocaleDateString('vi-VN', { month: '2-digit', day: '2-digit' }),
@@ -1897,25 +1955,34 @@ function renderAnalytics() {
         };
     });
 
-    // Compute Category Share
     const categoryTotals = {};
+    const itemSales = {};
     
     orderHistory.forEach(o => {
         if (o.status !== 'Completed' && o.status !== 'Ready') return; 
         
-        const dateStr = new Date(o.createdAt).toISOString().split('T')[0];
-        const dayMatch = last7Days.find(d => d.dateStr === dateStr);
-        if (dayMatch) {
-            dayMatch.revenue += (o.totalPrice || 0);
-        }
-        
-        if (o.items && Array.isArray(o.items)) {
-            o.items.forEach(item => {
-                const prod = products.find(p => p._id === item.productId || p.id === item.productId);
-                const cat = prod ? prod.category : 'Khác';
-                const itemRev = (item.price * item.quantity);
-                categoryTotals[cat] = (categoryTotals[cat] || 0) + itemRev;
-            });
+        const d = new Date(o.createdAt);
+        if (d >= startDate && d <= endDate) {
+            const dateStr = d.toISOString().split('T')[0];
+            const dayMatch = dateLabels.find(l => l.dateStr === dateStr);
+            if (dayMatch) {
+                dayMatch.revenue += (o.totalPrice || 0);
+            }
+            
+            if (o.items && Array.isArray(o.items)) {
+                o.items.forEach(item => {
+                    const prod = typeof products !== 'undefined' ? products.find(p => p._id === item.productId || p.id === item.productId) : null;
+                    const cat = prod ? prod.category : 'Khác';
+                    // We only want original price or option price (we can estimate item.price)
+                    const itemRev = (item.price * item.quantity);
+                    categoryTotals[cat] = (categoryTotals[cat] || 0) + itemRev;
+                    
+                    const name = prod ? prod.name : item.name;
+                    if (!itemSales[name]) itemSales[name] = { qty: 0, rev: 0 };
+                    itemSales[name].qty += item.quantity;
+                    itemSales[name].rev += itemRev;
+                });
+            }
         }
     });
 
@@ -1926,10 +1993,10 @@ function renderAnalytics() {
     revenueDailyChartInstance = new Chart(ctxDaily, {
         type: 'line',
         data: {
-            labels: last7Days.map(d => d.display),
+            labels: dateLabels.map(d => d.display),
             datasets: [{
                 label: 'Doanh thu (VNĐ)',
-                data: last7Days.map(d => d.revenue),
+                data: dateLabels.map(d => d.revenue),
                 borderColor: '#d4a76a',
                 backgroundColor: 'rgba(212,167,106,0.2)',
                 borderWidth: 2,
@@ -1940,12 +2007,10 @@ function renderAnalytics() {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false }
-            },
+            plugins: { legend: { display: false } },
             scales: {
                 y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
-                x: { grid: { display: false } }
+                x: { grid: { display: false }, ticks: { maxTicksLimit: 10 } }
             }
         }
     });
@@ -1960,7 +2025,7 @@ function renderAnalytics() {
             labels: Object.keys(categoryTotals).length ? Object.keys(categoryTotals) : ['Chưa có dữ liệu'],
             datasets: [{
                 data: Object.keys(categoryTotals).length ? Object.values(categoryTotals) : [1],
-                backgroundColor: ['#d4a76a', '#3498db', '#e74c3c', '#2ecc71', '#9b59b6'],
+                backgroundColor: ['#d4a76a', '#3498db', '#e74c3c', '#2ecc71', '#9b59b6', '#f1c40f'],
                 borderWidth: 0
             }]
         },
@@ -1972,6 +2037,31 @@ function renderAnalytics() {
             }
         }
     });
+
+    // Render Top Items
+    const topItemsEl = document.getElementById('top-selling-body');
+    if (topItemsEl) {
+        topItemsEl.innerHTML = '';
+        const sortedItems = Object.keys(itemSales)
+            .map(name => ({ name, ...itemSales[name] }))
+            .sort((a,b) => b.qty - a.qty)
+            .slice(0, 5); // top 5
+            
+        if (sortedItems.length === 0) {
+            topItemsEl.innerHTML = '<tr><td colspan="3" class="text-center py-3 text-muted">Chưa có giao dịch nào trong thời gian này.</td></tr>';
+        } else {
+            sortedItems.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                const badgeClass = index === 0 ? 'bg-danger' : (index === 1 ? 'bg-warning' : (index === 2 ? 'bg-success' : 'bg-secondary'));
+                tr.innerHTML = `
+                    <td><span class="badge ${badgeClass} me-2">#${index+1}</span> ${item.name}</td>
+                    <td class="text-center font-bold text-light">${item.qty} đv</td>
+                    <td class="text-end text-success">${item.rev.toLocaleString('vi-VN')} đ</td>
+                `;
+                topItemsEl.appendChild(tr);
+            });
+        }
+    }
 }
 
 function fetchFeedbackStats() {
@@ -2004,5 +2094,147 @@ function fetchFeedbackStats() {
         for(let i = 0; i < emptyStars; i++) starsHtml += '<i class="fa-regular fa-star text-warning"></i>';
         
         avgStarsEl.innerHTML = starsHtml;
+    }
+}
+// --- Promo Management ---
+async function fetchDiscounts() {
+    const tbody = document.getElementById('promo-table-body');
+    if (!tbody) return;
+    try {
+        const { data, error } = await supabase.from('discounts').select('*').order('created_at', { ascending: false });
+        if (error) throw error;
+        discounts = data;
+        renderDiscountsTable(data);
+    } catch (e) {
+        console.error(e);
+        tbody.innerHTML = '<tr><td colspan="7" class="text-danger text-center">Lỗi tải dữ liệu.</td></tr>';
+    }
+}
+
+function renderDiscountsTable(data) {
+    const tbody = document.getElementById('promo-table-body');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    
+    if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-muted text-center py-4">Chưa có mã khuyến mãi nào.</td></tr>';
+        return;
+    }
+    
+    data.forEach(d => {
+        const tr = document.createElement('tr');
+        const isActive = d.active !== false;
+        
+        tr.innerHTML = `
+            <td class="font-bold text-light">${d.code}</td>
+            <td>${d.discount_type === 'PERCENT' ? 'Phần trăm' : 'Cố định'}</td>
+            <td class="text-success">${d.discount_type === 'PERCENT' ? d.value + '%' : d.value.toLocaleString('vi-VN') + ' đ'}</td>
+            <td>${d.usage_limit || 'Không giới hạn'}</td>
+            <td>${d.used_count || 0}</td>
+            <td><span class="badge ${isActive ? 'bg-success' : 'bg-danger'}">${isActive ? 'Hoạt động' : 'Đã ngưng'}</span></td>
+            <td class="text-end">
+                <button class="action-btn" title="Sửa" onclick="editPromo('${d.id}')"><i class="fa-solid fa-pen"></i></button>
+                <button class="action-btn ${isActive ? 'delete' : 'text-success'}" title="${isActive ? 'Ngưng' : 'Bật lại'}" onclick="togglePromoStatus('${d.id}', ${isActive})">
+                    <i class="fa-solid ${isActive ? 'fa-ban' : 'fa-check'}"></i>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function openPromoModal() {
+    document.getElementById('promoForm').reset();
+    document.getElementById('promoId').value = '';
+    promoModalInstance.show();
+}
+
+// --- Import/Export Inventory ---
+async function exportInventoryToCSV() {
+    try {
+        const { data: logs, error } = await supabase.from('inventory_logs')
+            .select('*, ingredients(name, unit)')
+            .order('created_at', { ascending: false });
+            
+        if (error) throw error;
+        
+        if (!logs || logs.length === 0) {
+            alert('Không có dữ liệu log kho nào!');
+            return;
+        }
+        
+        let csv = 'Thời gian,Tên nguyên liệu,Loại,Khối lượng thay đổi,Tồn cũ,Tồn mới,Chi tiết\n';
+        logs.forEach(l => {
+            const date = new Date(l.created_at).toLocaleString('vi-VN');
+            const ingName = l.ingredients ? l.ingredients.name : 'Unknown';
+            const unit = l.ingredients ? l.ingredients.unit : '';
+            const typeMap = { deduction: 'Xuất (Bán)', restock: 'Nhập', spoilage: 'Hư hỏng', adjustment: 'Kiểm kho' };
+            const type = typeMap[l.change_type] || l.change_type;
+            const prefix = l.amount > 0 ? '+' : '';
+            csv += `"${date}","${ingName}","${type}","${prefix}${l.amount} ${unit}","${l.previous_stock}","${l.new_stock}","${l.reason || ''}"\n`;
+        });
+        
+        const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `inventory_logs_${new Date().toISOString().split('T')[0]}.csv`;
+        link.click();
+    } catch (e) {
+        console.error(e);
+        alert('Lỗi xuất dữ liệu kho!');
+    }
+}
+
+function editPromo(id) {
+    const p = discounts.find(i => i.id === id);
+    if(!p) return;
+    document.getElementById('promoId').value = p.id;
+    document.getElementById('promoCode').value = p.code;
+    document.getElementById('promoType').value = p.discount_type;
+    document.getElementById('promoValue').value = p.value;
+    document.getElementById('promoLimit').value = p.usage_limit || 0;
+    promoModalInstance.show();
+}
+
+async function savePromo() {
+    const id = document.getElementById('promoId').value;
+    const data = {
+        code: document.getElementById('promoCode').value.trim().toUpperCase(),
+        discount_type: document.getElementById('promoType').value,
+        value: parseFloat(document.getElementById('promoValue').value) || 0,
+        usage_limit: parseInt(document.getElementById('promoLimit').value) || 0
+    };
+    
+    if (!data.code || data.value <= 0) {
+        alert("Vui lòng nhập mã và mức giảm hợp lệ.");
+        return;
+    }
+    
+    try {
+        if (id) {
+            const { error } = await supabase.from('discounts').update(data).eq('id', id);
+            if(error) throw error;
+        } else {
+            const { error } = await supabase.from('discounts').insert([data]);
+            if(error) throw error;
+        }
+        promoModalInstance.hide();
+        fetchDiscounts();
+    } catch (e) {
+        console.error(e);
+        alert("Lỗi khi lưu mã khuyến mãi.");
+    }
+}
+
+async function togglePromoStatus(id, currentlyActive) {
+    const conf = await customConfirm(`Bạn muốn ${currentlyActive ? 'ngưng' : 'bật lại'} mã này?`, "Xác nhận");
+    if(!conf) return;
+    try {
+        const { error } = await supabase.from('discounts').update({ active: !currentlyActive }).eq('id', id);
+        if(error) throw error;
+        fetchDiscounts();
+    } catch(e) {
+        console.error(e);
+        alert("Lỗi hệ thống.");
     }
 }
