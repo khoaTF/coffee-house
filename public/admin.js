@@ -2097,38 +2097,7 @@ function renderAnalytics() {
     }
 }
 
-function fetchFeedbackStats() {
-    const ratedOrders = orderHistory.filter(o => o.feedback_rating > 0);
-    const avgRatingEl = document.getElementById('fb-avg-rating');
-    const avgStarsEl = document.getElementById('fb-avg-stars');
-    const totalCountEl = document.getElementById('fb-total-count');
-    
-    if (ratedOrders.length === 0) {
-        if(avgRatingEl) avgRatingEl.textContent = '0.0';
-        if(avgStarsEl) avgStarsEl.innerHTML = '<i class="fa-regular fa-star text-warning"></i>'.repeat(5);
-        if(totalCountEl) totalCountEl.textContent = '0 lượt đánh giá';
-        return;
-    }
-    
-    const sum = ratedOrders.reduce((acc, curr) => acc + curr.feedback_rating, 0);
-    const avg = (sum / ratedOrders.length).toFixed(1);
-    
-    if(avgRatingEl) avgRatingEl.textContent = avg;
-    if(totalCountEl) totalCountEl.textContent = `${ratedOrders.length} lượt đánh giá`;
-    
-    if(avgStarsEl) {
-        let starsHtml = '';
-        const fullStars = Math.floor(avg);
-        const hasHalf = avg - fullStars >= 0.5;
-        
-        for(let i = 0; i < fullStars; i++) starsHtml += '<i class="fa-solid fa-star text-warning"></i>';
-        if (hasHalf) starsHtml += '<i class="fa-solid fa-star-half-stroke text-warning"></i>';
-        const emptyStars = 5 - fullStars - (hasHalf ? 1 : 0);
-        for(let i = 0; i < emptyStars; i++) starsHtml += '<i class="fa-regular fa-star text-warning"></i>';
-        
-        avgStarsEl.innerHTML = starsHtml;
-    }
-}
+
 // --- Promo Management ---
 async function fetchDiscounts() {
     const tbody = document.getElementById('promo-table-body');
