@@ -1552,41 +1552,46 @@ if ('serviceWorker' in navigator) {
 }
 
 // --- Staff Requests ---
-document.getElementById('call-staff-btn')?.addEventListener('click', async () => {
-    const confirmed = await customerConfirm("Bạn muốn gọi nhân viên phục vụ?");
-    if(!confirmed) return;
+window.requestStaffService = async function(type) {
+    const messages = {
+        'staff': 'Bạn muốn gọi nhân viên phục vụ?',
+        'water': 'Bạn muốn yêu cầu thêm nước lọc?',
+        'checkout': 'Bạn muốn yêu cầu tính tiền?'
+    };
     
-    try {
-        const { error } = await supabase.from('staff_requests').insert([{
-            table_number: TABLE_NUMBER,
-            type: 'staff',
-            status: 'pending'
-        }]);
-        if(error) throw error;
-        await customerAlert("Đã gửi yêu cầu gọi nhân viên!");
-    } catch(e) {
-        console.error(e);
-        await customerAlert(`Lỗi: ${e.message || JSON.stringify(e)}`);
+    const dbTypes = {
+        'staff': 'staff',
+        'water': 'staff', // map water to staff
+        'checkout': 'bill'
+    };
+    
+    if (!TABLE_NUMBER) {
+        await customerAlert("Không xác định được số bàn!");
+        return;
     }
-});
 
-document.getElementById('call-bill-btn')?.addEventListener('click', async () => {
-    const confirmed = await customerConfirm("Bạn muốn yêu cầu thanh toán?");
-    if(!confirmed) return;
+    const confirmed = await customerConfirm(messages[type] || 'Bạn có chắc chắn?');
+    if (!confirmed) return;
     
     try {
         const { error } = await supabase.from('staff_requests').insert([{
             table_number: TABLE_NUMBER,
-            type: 'bill',
+            type: dbTypes[type] || 'staff',
             status: 'pending'
         }]);
-        if(error) throw error;
-        await customerAlert("Đã gửi yêu cầu thanh toán!");
+        if (error) throw error;
+        
+        const successMsgs = {
+             'staff': 'Đã gửi yêu cầu nhân viên!',
+             'water': 'Đã yêu cầu thêm nước rọc. NV sẽ lấy ngay!',
+             'checkout': 'Đã yêu cầu thanh toán!'
+        };
+        await customerAlert(successMsgs[type] || "Yêu cầu đã được gửi!");
     } catch(e) {
         console.error(e);
         await customerAlert(`Lỗi: ${e.message || JSON.stringify(e)}`);
     }
-});
+};
 
 // Start the app
 init();
