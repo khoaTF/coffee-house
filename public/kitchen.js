@@ -424,6 +424,10 @@ function setupRealtimeSubscription() {
                 orders.push(newOrder);
                 orders.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
                 renderOrders();
+                
+                if (window.autoPrintKitchen) {
+                    window.printKitchenTicket(newOrder);
+                }
             }
         })
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders' }, payload => {
@@ -699,3 +703,73 @@ async function fetchKitchenHistory() {
 
 // Boot
 init();
+
+// --- Kitchen Auto-Print Logic ---
+window.autoPrintKitchen = localStorage.getItem('autoPrintKitchen') === 'true';
+const autoPrintToggleEl = document.getElementById('autoPrintToggle');
+if (autoPrintToggleEl) autoPrintToggleEl.checked = window.autoPrintKitchen;
+
+window.toggleAutoPrint = () => {
+    window.autoPrintKitchen = document.getElementById('autoPrintToggle').checked;
+    localStorage.setItem('autoPrintKitchen', window.autoPrintKitchen);
+};
+
+window.printKitchenTicket = (order) => {
+    if (!order) return;
+
+    let itemsHtml = '';
+    let orderItems = order.items;
+    if (typeof orderItems === 'string') {
+        try { orderItems = JSON.parse(orderItems); } catch(e) { orderItems = []; }
+    }
+    
+    if (Array.isArray(orderItems)) {
+        itemsHtml = orderItems.map(i => {
+            const optionNames = i.selectedOptions && i.selectedOptions.length > 0 
+               ? `<div style="font-size: 14px; margin-left: 20px; color: #333;">• ${i.selectedOptions.map(o => o.choiceName).join(', ')}</div>` 
+               : '';
+            return `<div style="margin-bottom: 8px; font-weight: bold; font-size: 18px;">${i.quantity}x ${i.name}</div>${optionNames}`;
+        }).join('');
+    }
+    
+    const timeStr = order.createdAt ? new Date(order.createdAt).toLocaleTimeString('vi-VN') : new Date().toLocaleTimeString('vi-VN');
+    const noteHtml = order.orderNote ? `<div style="margin-top: 15px; font-style: italic; border: 1px dashed #000; padding: 5px;">Ghi chú: ${order.orderNote}</div>` : '';
+
+    const printWindow = window.open('', '', 'width=400,height=600');
+    printWindow.document.write(`
+        <html>
+            <head>
+                <title>PHIẾU CHẾ BIẾN - Bàn ${order.tableNumber || '?'}</title>
+                <style>
+                    body { font-family: 'Arial', sans-serif; padding: 10px; font-size: 16px; color: #000; margin: 0; }
+                    .header { text-align: center; border-bottom: 3px solid #000; padding-bottom: 10px; margin-bottom: 15px; }
+                    .table-num { font-size: 32px; font-weight: bold; margin: 5px 0; }
+                    .items { margin-bottom: 15px; border-bottom: 2px dashed #000; padding-bottom: 10px; }
+                    @media print {
+                        @page { margin: 0; }
+                        body { width: 80mm; padding: 5mm; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h2 style="margin: 0;">PHIẾU CHẾ BIẾN</h2>
+                    <div class="table-num">BÀN: ${order.tableNumber || '?'}</div>
+                    <div style="font-size: 14px;">Thời gian: ${timeStr}</div>
+                    <div style="font-size: 14px; margin-top: 5px;">Mã: ${(order._id || order.id || '').substring(0, 6)}</div>
+                </div>
+                <div class="items">
+                    ${itemsHtml}
+                    ${noteHtml}
+                </div>
+                <div style="text-align: center; margin-top: 10px; font-size: 12px;">----- HẾT -----</div>
+            </body>
+        </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+    }, 200);
+};

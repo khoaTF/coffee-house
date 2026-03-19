@@ -2386,3 +2386,69 @@ function saveChoiceRecipe() {
     
     choiceRecipeModalInstance.hide();
 }
+
+// --- Admin Print Receipt ---
+window.printInvoice = (orderId) => {
+    const order = orderHistory.find(o => o._id === orderId);
+    if (!order) return;
+
+    const itemsHtml = order.items.map(i => {
+        const optionNames = i.selectedOptions && i.selectedOptions.length > 0 ? ` (+ ${i.selectedOptions.map(o => o.choiceName).join(', ')})` : '';
+        return `<div>${i.quantity}x ${i.name}${optionNames} - ${(i.price * i.quantity).toLocaleString('vi-VN')}đ</div>`;
+    }).join('');
+    
+    const subtotal = order.totalPrice ? order.totalPrice : 0;
+    const discount = order.discountAmount ? order.discountAmount : 0;
+    const finalTotal = subtotal - discount;
+    
+    const timeStr = order.createdAt ? new Date(order.createdAt).toLocaleString('vi-VN') : new Date().toLocaleString('vi-VN');
+    const noteHtml = order.orderNote ? `<div style="margin-top: 10px; font-style: italic;">Ghi chú: ${order.orderNote}</div>` : '';
+
+    const printWindow = window.open('', '', 'width=400,height=600');
+    printWindow.document.write(`
+        <html>
+            <head>
+                <title>Hóa Đơn - Bàn ${order.tableNumber}</title>
+                <style>
+                    body { font-family: 'Courier New', Courier, monospace; padding: 20px; font-size: 14px; color: #000; margin: 0; }
+                    .header { text-align: center; border-bottom: 2px dashed #000; padding-bottom: 10px; margin-bottom: 15px; }
+                    .items { margin-bottom: 15px; border-bottom: 2px dashed #000; padding-bottom: 10px; }
+                    .summary { text-align: right; font-size: 14px; margin-bottom: 5px; }
+                    .total { text-align: right; font-weight: bold; font-size: 18px; margin-bottom: 20px; margin-top: 10px; }
+                    .footer { text-align: center; font-size: 12px; }
+                    @media print {
+                        @page { margin: 0; }
+                        body { width: 80mm; padding: 5mm; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h2 style="margin: 0 0 5px 0;">Nohope Coffee</h2>
+                    <div>Đ/C: Số 123 Đường Tình Yêu</div>
+                    <div>Hóa đơn thanh toán</div>
+                    <div style="margin-top: 10px;">Bàn số: <strong>${order.tableNumber}</strong></div>
+                    <div>Thời gian: ${timeStr}</div>
+                    <div>Mã đơn: ${(order._id || '').substring(0, 8)}</div>
+                </div>
+                <div class="items">
+                    ${itemsHtml}
+                    ${noteHtml}
+                </div>
+                ${discount > 0 ? `<div class="summary">Giảm giá: -${discount.toLocaleString('vi-VN')} đ</div>` : ''}
+                <div class="total">Tổng cộng: ${finalTotal.toLocaleString('vi-VN')} đ</div>
+                <div class="footer">
+                    <div>Wifi: NohopeCoffee / Pass: 12345678</div>
+                    <div style="margin-top: 5px;">Cảm ơn quý khách! Hẹn gặp lại.</div>
+                </div>
+            </body>
+        </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    // setTimeout to allow rendering before print
+    setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+    }, 200);
+};
