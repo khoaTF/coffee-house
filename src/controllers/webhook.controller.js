@@ -1,0 +1,60 @@
+const supabase = require('../config/supabase');
+
+const handlePaymentWebhook = async (req, res) => {
+    try {
+        const payload = req.body;
+        // SePay format usually puts list of transactions in 'data' array
+        const txs = payload.data ? (Array.isArray(payload.data) ? payload.data : [payload.data]) : [payload];
+        let processedCount = 0;
+
+        for (let tx of txs) {
+            const desc = (tx.description || tx.content || '').toUpperCase();
+            const amount = parseFloat(tx.amount || tx.transferAmount || 0);
+
+            // Assuming user transfers with memo containing the first 8 characters of Order ID
+            const match = desc.match(/[A-F0-9]{8}/);
+
+            if (match) {
+                const shortId = match[0].toLowerCase();
+                console.log("shortId extracted:", shortId);
+                // Fetch unpaid orders and filter in JS (PostgreSQL UUID ilike throws error)
+                const { data: unpaidOrders, error: fetchErr } = await supabase
+                    .from('orders')
+                    .select('id, total_price, is_paid')
+                    .eq('is_paid', false);
+                    
+                console.log("Fetch unpaid:", { count: unpaidOrders ? unpaidOrders.length : 0, fetchErr });
+                if (!fetchErr && unpaidOrders && unpaidOrders.length > 0) {
+                    const order = unpaidOrders.find(o => o.id.toLowerCase().startsWith(shortId));
+                    console.log("Found order matching shortId:", order);
+                    
+                    if (order && amount >= parseFloat(order.total_price)) {
+                        console.log("Amount sufficient, marking as paid...");
+                        // Mark as paid
+                        const { error: updateErr } = await supabase
+                            .from('orders')
+                            .update({ payment_status: 'paid', is_paid: true })
+                            .eq('id', order.id);
+                            
+                        if (!updateErr) {
+                            processedCount++;
+                            // Thích hợp để tích điểm Loyalty lúc này
+                        } else {
+                            console.error("Webhook Update Error:", updateErr);
+                        }
+                    } else if (!order) {
+                        console.log("No matching unpaid order found for shortId:", shortId);
+                    }
+                } else if (fetchErr) {
+                    console.error("Webhook Fetch Error:", fetchErr);
+                }
+            }
+        }
+        res.status(200).json({ success: true, processed: processedCount });
+    } catch (e) {
+        console.error('Webhook Error:', e);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+module.exports = { handlePaymentWebhook };
