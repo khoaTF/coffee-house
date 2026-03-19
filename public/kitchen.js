@@ -80,11 +80,16 @@ function renderOrders() {
 
             // Build items list
             const items = Array.isArray(order.items) ? order.items : [];
-            const itemsHtml = items.map(item => `
+            const itemsHtml = items.map(item => {
+                const optionsHtml = item.selectedOptions && item.selectedOptions.length > 0
+                    ? `<div class="ms-3 text-muted" style="font-size: 0.85rem;">+ ${item.selectedOptions.map(o => o.choiceName).join(', ')}</div>`
+                    : '';
+                return `
                 <li>
-                    <span>${item.quantity || 1}x ${item.name || 'Unknown Item'}</span>
-                </li>
-            `).join('');
+                    <span><span class="fw-bold">${item.quantity || 1}x</span> ${item.name || 'Unknown Item'}</span>
+                    ${optionsHtml}
+                </li>`;
+            }).join('');
 
             const card = document.createElement('div');
             card.className = `order-card status-${order.status || 'Pending'}`;
@@ -524,7 +529,10 @@ window.printReceipt = (orderId) => {
     const order = orders.find(o => o._id === orderId);
     if (!order) return;
 
-    const itemsHtml = order.items.map(i => `<div>${i.quantity}x ${i.name} - ${(i.price * i.quantity).toLocaleString('vi-VN')}đ</div>`).join('');
+    const itemsHtml = order.items.map(i => {
+        const optionNames = i.selectedOptions && i.selectedOptions.length > 0 ? ` (+ ${i.selectedOptions.map(o => o.choiceName).join(', ')})` : '';
+        return `<div>${i.quantity}x ${i.name}${optionNames} - ${(i.price * i.quantity).toLocaleString('vi-VN')}đ</div>`;
+    }).join('');
     const total = order.totalPrice ? order.totalPrice.toLocaleString('vi-VN') : '0';
     const timeStr = order.createdAt ? new Date(order.createdAt).toLocaleString('vi-VN') : new Date().toLocaleString('vi-VN');
     const noteHtml = order.orderNote ? `<div style="margin-top: 10px; font-style: italic;">Ghi chú: ${order.orderNote}</div>` : '';
