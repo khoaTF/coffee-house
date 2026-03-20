@@ -12,28 +12,7 @@ let sessionOrders = [];
 let currentLang = 'VI';
 let currentFeedbackOrderId = null;
 
-const translations = {
-    'VI': {
-        'app_title': '<i class="fa-solid fa-mug-hot"></i> Nohope Coffee',
-        'my_orders': 'Đơn của tôi',
-        'search_placeholder': 'Tìm kiếm món ăn...',
-        'no_items': 'Không tìm thấy món.',
-        'call_staff': 'Gọi nhân viên',
-        'call_bill': 'Thanh toán',
-        'cart_title': 'Giỏ hàng của bạn',
-        'checkout': 'Thanh toán'
-    },
-    'EN': {
-        'app_title': '<i class="fa-solid fa-mug-hot"></i> Nohope Coffee',
-        'my_orders': 'My Orders',
-        'search_placeholder': 'Search for dishes...',
-        'no_items': 'No items found.',
-        'call_staff': 'Call Staff',
-        'call_bill': 'Call Bill',
-        'cart_title': 'Your Cart',
-        'checkout': 'Checkout'
-    }
-};
+// translations moved to i18n.js
 
 // Per-tab session using sessionStorage (isolated per browser tab)
 // Include table number so different table tabs on the same browser are fully isolated
