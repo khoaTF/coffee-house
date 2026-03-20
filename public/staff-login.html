@@ -81,8 +81,18 @@
 <body>
 
     <div class="login-card">
-        
-
+        <div style="margin-bottom: 20px; display: flex; justify-content: center;">
+            <img src="/images/bunny_logo.png" alt="Bunny Logo" style="height: 80px; width: 80px; border-radius: 50%; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+        </div>
+        <h2>Nhân Viên Đăng Nhập</h2>
+        <div class="input-group">
+            <label for="staff-pin">Mã PIN Nhân Viên</label>
+            <input type="password" id="staff-pin" placeholder="Nhập mã bí mật 4-6 số..." autocomplete="off">
+        </div>
+        <button id="login-btn" style="width: 100%; padding: 14px; background: var(--primary, #FF8BA7); color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 1.1rem; cursor: pointer; transition: all 0.3s ease;">
+            Đăng Nhập <i class="fa-solid fa-arrow-right"></i>
+        </button>
+        <div id="error-msg" class="error-msg"></div>
     <!-- Supabase Core & Auth logic -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
