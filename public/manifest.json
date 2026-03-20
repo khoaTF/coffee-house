@@ -8,7 +8,7 @@
   "theme_color": "#d4a76a",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/3127/3127056.png",
+      "src": "/images/bunny_logo.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
