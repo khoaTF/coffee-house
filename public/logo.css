@@ -85,3 +85,8 @@
     50% { opacity: 0.8; }
     100% { opacity: 0; }
 }
+
+/* Light theme overrides for customer page */
+.customer-order-page .hub-logo .text-1 {
+    color: #000000 !important;
+}
