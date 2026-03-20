@@ -922,6 +922,15 @@ function renderIngredients() {
             const tdAction = document.createElement('td');
             tdAction.className = 'text-end';
             
+            const restockBtn = document.createElement('button');
+            restockBtn.className = 'action-btn me-2';
+            restockBtn.style.color = '#3fb950';
+            restockBtn.title = 'Nhập kho nhanh';
+            const restockIcon = document.createElement('i');
+            restockIcon.className = 'fa-solid fa-boxes-packing';
+            restockBtn.appendChild(restockIcon);
+            restockBtn.onclick = () => openRestockModal(i._id, i.name, i.stock, i.unit);
+            
             const editBtn = document.createElement('button');
             editBtn.className = 'action-btn';
             const editIcon = document.createElement('i');
@@ -936,7 +945,7 @@ function renderIngredients() {
             delBtn.appendChild(delIcon);
             delBtn.onclick = () => deleteIngredient(i._id, i.stock);
             
-            tdAction.append(editBtn, delBtn);
+            tdAction.append(restockBtn, editBtn, delBtn);
             tr.append(tdName, tdStock, tdUnit, tdAction);
             inventoryTableBody.appendChild(tr);
         });
@@ -1945,3 +1954,75 @@ window.printInvoice = (orderId) => {
         printWindow.close();
     }, 200);
 };
+
+let restockModalInstance;
+
+function openRestockModal(id, name, stock, unit) {
+    document.getElementById('restockForm').reset();
+    document.getElementById('restockIngId').value = id;
+    document.getElementById('restockIngUnit').value = unit;
+    document.getElementById('restockIngName').textContent = name;
+    document.getElementById('restockCurrentStock').textContent = stock + ' ' + unit;
+    document.getElementById('restockUnitDisplay').textContent = unit;
+    
+    if (!restockModalInstance) {
+        restockModalInstance = new bootstrap.Modal(document.getElementById('restockModal'));
+    }
+    restockModalInstance.show();
+    setTimeout(() => {
+        const input = document.getElementById('restockAmount');
+        if(input) input.focus();
+    }, 500);
+}
+
+async function saveRestock() {
+    const id = document.getElementById('restockIngId').value;
+    const addAmountStr = document.getElementById('restockAmount').value;
+    const addAmount = parseFloat(addAmountStr);
+    
+    if (!id || isNaN(addAmount) || addAmount <= 0) {
+        alert("Vui lòng nhập số lượng hợp lệ lớn hơn 0.");
+        return;
+    }
+    
+    try {
+        const btn = document.querySelector('#restockModal .btn-success');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...';
+        
+        // Fetch current to avoid race conditions
+        const { data: currentData, error: fetchErr } = await supabase.from('ingredients').select('stock').eq('id', id).single();
+        if (fetchErr) throw fetchErr;
+        
+        const currentStock = parseFloat(currentData.stock) || 0;
+        const newStock = currentStock + addAmount;
+        
+        const { error: updateErr } = await supabase.from('ingredients').update({ stock: newStock }).eq('id', id);
+        if (updateErr) throw updateErr;
+        
+        // Log Restock
+        await supabase.from('inventory_logs').insert([{
+            ingredient_id: id,
+            change_type: 'restock',
+            amount: addAmount,
+            previous_stock: currentStock,
+            new_stock: newStock,
+            reason: 'Nhập kho nhanh từ Dashboard'
+        }]);
+        
+        restockModalInstance.hide();
+        fetchIngredients(); // reload table
+        
+        setTimeout(() => {
+            btn.disabled = false;
+            btn.innerHTML = 'Nhập +';
+        }, 500);
+    } catch (e) {
+        console.error(e);
+        alert("Lỗi kết nối khi nhập kho.");
+        
+        const btn = document.querySelector('#restockModal .btn-success');
+        btn.disabled = false;
+        btn.innerHTML = 'Nhập +';
+    }
+}

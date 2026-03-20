@@ -480,6 +480,40 @@
         </div>
     </div>
 
+    <!-- Restock Modal -->
+    <div class="modal fade" id="restockModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fa-solid fa-boxes-packing text-success me-2"></i> Nhập Kho Nhanh</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="restockForm">
+                        <input type="hidden" id="restockIngId">
+                        <input type="hidden" id="restockIngUnit">
+                        <div class="text-center mb-3">
+                            <h6 id="restockIngName" class="text-info fw-bold mb-1">Tên nguyên liệu</h6>
+                            <div class="badge bg-secondary bg-opacity-25 text-light border border-secondary p-2">Tồn hiện tại: <span id="restockCurrentStock" class="fw-bold text-warning">0</span></div>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label text-light small">Số lượng mua thêm</label>
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text bg-success bg-opacity-25 text-success border-success border-opacity-50"><i class="fa-solid fa-plus"></i></span>
+                                <input type="number" id="restockAmount" class="form-control bg-dark text-light border-success" placeholder="Nhập số..." required min="0.1" step="any">
+                                <span class="input-group-text bg-dark text-light border-success border-opacity-50" id="restockUnitDisplay">g</span>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-success btn-sm fw-bold" onclick="saveRestock()">Nhập +</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Ingredient Modal -->
     <div class="modal fade" id="ingredientModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
