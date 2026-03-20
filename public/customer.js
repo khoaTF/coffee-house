@@ -9,7 +9,6 @@ let activeOrderId = null; // Locks the menu
 let trackedOrderId = null; // Updates the banner
 let ingredientStock = {};
 let sessionOrders = [];
-let currentLang = 'VI';
 let currentFeedbackOrderId = null;
 
 // translations moved to i18n.js
