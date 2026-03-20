@@ -180,6 +180,9 @@
     </style>
 
     <link rel="stylesheet" href="logo.css">
+    <!-- PWA Favicons -->
+    <link rel="icon" type="image/png" href="/images/bunny_logo.png">
+    <link rel="apple-touch-icon" href="/images/bunny_logo.png">
 </head>
 <body>
 
@@ -190,7 +193,10 @@
     </div>
 
     <header class="tv-header">
-        <div class="hub-logo mb-4" style="font-size: 3rem; justify-content: center; width: 100%;"><span class="text-1">Nohope</span><span class="text-2">Coffee</span></div>
+        <a href="/" class="brand-logo" style="text-decoration: none; display: flex; align-items: center; gap: 10px;">
+    <img src="/images/bunny_logo.png" alt="Bunny Logo" style="height: 45px; width: 45px; border-radius: 50%; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+    <span style="font-weight: 900; font-size: 1.4rem; color: var(--text-main, #ffffff); letter-spacing: -0.5px; text-transform: uppercase;">Nohope</span>
+</a>
         <div class="clock" id="tv-clock">00:00:00</div>
     </header>
 
