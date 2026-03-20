@@ -1,2 +1,2 @@
 // Alias entry point for Render default start commands
-require('./src/server.js');
+require('./server.js');
