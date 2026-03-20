@@ -27,8 +27,18 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="styles.css?v=1.4">
     <script>
-        if (localStorage.getItem('cafe_role') !== 'admin') {
+        const role = localStorage.getItem('cafe_role') || sessionStorage.getItem('cafe_role');
+        const token = localStorage.getItem('cafe_token') || sessionStorage.getItem('cafe_token');
+        if (role !== 'admin') {
             window.location.href = '/login.html';
+        } else if (token) {
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                if (payload.exp * 1000 < Date.now()) {
+                    localStorage.clear(); sessionStorage.clear();
+                    window.location.href = '/login.html';
+                }
+            } catch(e) {}
         }
     </script>
     <style>
@@ -99,19 +109,27 @@
         .dropdown-item.active { background: rgba(212,167,106,0.1); color: #d4a76a !important; }
         
         /* Nav button styles moved to head */
-        .admin-nav .btn-nav { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #8b949e; padding: 8px 16px; border-radius: 8px; transition: all 0.2s; }
-        .admin-nav .btn-nav:hover { background: rgba(255,255,255,0.1); color: #e6edf3; }
-        .admin-nav .btn-nav.active { background: rgba(212,167,106,0.1); border-color: #d4a76a; color: #d4a76a; }
+        .admin-tabs .btn-tab { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #8b949e; padding: 8px 16px; border-radius: 8px; transition: all 0.2s; }
+        .admin-tabs .btn-tab:hover { background: rgba(255,255,255,0.1); color: #e6edf3; }
+        .admin-tabs .btn-tab.active { background: rgba(212,167,106,0.1); border-color: #d4a76a; color: #d4a76a; }
     </style>
+
+    <link rel="stylesheet" href="logo.css">
 </head>
 <body>
 
     <header class="admin-header">
-        <h1 class="admin-title"><i class="fa-solid fa-chart-line me-2" aria-hidden="true" title="Dashboard"></i> Nohope Coffee - Bảng điều khiển Quản trị Hệ thống</h1>
-        <div>
-            <a href="/" class="btn btn-outline-light btn-sm me-2"><i class="fa-solid fa-store"></i> Menu khách</a>
-            <a href="/kitchen.html" class="btn btn-outline-light btn-sm me-2"><i class="fa-solid fa-utensils"></i> Bếp</a>
-            <button class="btn btn-outline-light btn-sm" onclick="localStorage.clear(); window.location.href='/login.html'"><i class="fa-solid fa-sign-out-alt"></i> Đăng xuất</button>
+        <h1 class="admin-title d-flex align-items-center"><div class="hub-logo me-3" style="font-size: 1.5rem;"><span class="text-1">Nohope</span><span class="text-2">Coffee</span></div> <span class="d-none d-md-inline" style="font-size: 1.1rem; color: #8b949e;">- Quản trị Hệ thống</span></h1>
+        <div class="dropdown">
+            <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow">
+                <li><a class="dropdown-item" href="/"><i class="fa-solid fa-store me-2"></i> Menu khách</a></li>
+                <li><a class="dropdown-item" href="/kitchen.html"><i class="fa-solid fa-utensils me-2"></i> Bếp</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><button class="dropdown-item text-danger" onclick="localStorage.clear(); sessionStorage.clear(); window.location.href='/login.html'"><i class="fa-solid fa-sign-out-alt me-2"></i> Đăng xuất</button></li>
+            </ul>
         </div>
     </header>
 
@@ -121,13 +139,13 @@
         <div id="alerts-container"></div>
 
         <!-- Simple Navigation (Satisfies Hick's Law Audit) -->
-        <div class="d-flex flex-wrap gap-2 mb-4 admin-nav" id="admin-main-nav">
-            <button class="btn btn-sm btn-nav active" onclick="switchTab('menu')" id="tab-menu"><i class="fa-solid fa-book-open me-2"></i> Thực đơn</button>
-            <button class="btn btn-sm btn-nav" onclick="switchTab('inventory')" id="tab-inventory"><i class="fa-solid fa-boxes-stacked me-2"></i> Kho</button>
-            <button class="btn btn-sm btn-nav" onclick="switchTab('promo')" id="tab-promo"><i class="fa-solid fa-ticket me-2"></i> Khuyến mãi</button>
-            <button class="btn btn-sm btn-nav" onclick="switchTab('history')" id="tab-history"><i class="fa-solid fa-clock-rotate-left me-2"></i> Đơn hàng</button>
-            <button class="btn btn-sm btn-nav" onclick="switchTab('analytics')" id="tab-analytics"><i class="fa-solid fa-chart-pie me-2"></i> Báo cáo</button>
-            <button class="btn btn-sm btn-nav" onclick="switchTab('tables')" id="tab-tables"><i class="fa-solid fa-table-cells me-2"></i> Bàn</button>
+        <div class="d-flex flex-wrap gap-2 mb-4 admin-tabs" id="admin-main-nav">
+            <button class="btn btn-sm btn-tab active" onclick="switchTab('menu')" id="tab-menu"><i class="fa-solid fa-book-open me-2"></i> Thực đơn</button>
+            <button class="btn btn-sm btn-tab" onclick="switchTab('inventory')" id="tab-inventory"><i class="fa-solid fa-boxes-stacked me-2"></i> Kho</button>
+            <button class="btn btn-sm btn-tab" onclick="switchTab('promo')" id="tab-promo"><i class="fa-solid fa-ticket me-2"></i> Khuyến mãi</button>
+            <button class="btn btn-sm btn-tab" onclick="switchTab('history')" id="tab-history"><i class="fa-solid fa-clock-rotate-left me-2"></i> Đơn hàng</button>
+            <button class="btn btn-sm btn-tab" onclick="switchTab('analytics')" id="tab-analytics"><i class="fa-solid fa-chart-pie me-2"></i> Báo cáo</button>
+            <button class="btn btn-sm btn-tab" onclick="switchTab('tables')" id="tab-tables"><i class="fa-solid fa-table-cells me-2"></i> Bàn</button>
         </div>
 
 

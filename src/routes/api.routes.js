@@ -11,7 +11,7 @@ router.post('/login', authController.login);
 router.post('/webhook/payment', webhookController.handlePaymentWebhook);
 
 // Catch-all for legacy API routes
-router.all('/*', (req, res) => {
+router.use((req, res) => {
     res.status(404).json({ error: 'Legacy API route. Database operations moved to Supabase.' });
 });
 

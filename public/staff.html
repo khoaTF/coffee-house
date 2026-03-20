@@ -205,13 +205,15 @@
     
     <script>
         // --- 1. Authentication Check ---
-        if (localStorage.getItem('nohope_staff_auth') !== 'true') {
+        if (sessionStorage.getItem('nohope_staff_auth') !== 'true' && localStorage.getItem('nohope_staff_auth') !== 'true') {
             window.location.href = 'staff-login.html';
         }
 
         document.getElementById('logout-btn').addEventListener('click', () => {
             localStorage.removeItem('nohope_staff_auth');
             localStorage.removeItem('nohope_staff_name');
+            sessionStorage.removeItem('nohope_staff_auth');
+            sessionStorage.removeItem('nohope_staff_name');
             window.location.href = 'staff-login.html';
         });
 

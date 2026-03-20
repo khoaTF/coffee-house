@@ -13,8 +13,18 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
     <script>
-        if (localStorage.getItem('cafe_role') !== 'kitchen' && localStorage.getItem('cafe_role') !== 'admin') {
+        const role = localStorage.getItem('cafe_role') || sessionStorage.getItem('cafe_role');
+        const token = localStorage.getItem('cafe_token') || sessionStorage.getItem('cafe_token');
+        if (role !== 'kitchen' && role !== 'admin') {
             window.location.href = '/login.html';
+        } else if (token) {
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                if (payload.exp * 1000 < Date.now()) {
+                    localStorage.clear(); sessionStorage.clear();
+                    window.location.href = '/login.html';
+                }
+            } catch(e) {}
         }
     </script>
     <!-- Supabase Client -->
@@ -162,7 +172,7 @@
                 <button id="btn-toggle-audio" class="btn btn-audio" onclick="toggleAudio()"><i class="fa-solid fa-volume-high"></i> Âm báo</button>
                 <button class="btn" onclick="openKitchenHistory()"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử</button>
                 <a href="/admin.html" class="btn" style="text-decoration: none;"><i class="fa-solid fa-gear"></i> Quản trị</a>
-                <button class="btn" onclick="localStorage.clear(); window.location.href='/login.html'"><i class="fa-solid fa-sign-out-alt"></i> Đăng xuất</button>
+                <button class="btn" onclick="localStorage.clear(); sessionStorage.clear(); window.location.href='/login.html'"><i class="fa-solid fa-sign-out-alt"></i> Đăng xuất</button>
                 <div id="connection-status"><i class="fa-solid fa-wifi"></i> Trực tuyến</div>
             </div>
         </div>

@@ -1,23 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Nohope Coffee - Thực đơn & Đặt món QR</title>
-    <meta name="description" content="Trải nghiệm đặt món tuyệt vời tại Nohope Coffee. Thực đơn đa dạng, không gian sang trọng, đặt món nhanh chóng qua mã QR.">
+    <meta name="description"
+        content="Trải nghiệm đặt món tuyệt vời tại Nohope Coffee. Thực đơn đa dạng, không gian sang trọng, đặt món nhanh chóng qua mã QR.">
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://coffee-house.com/">
     <meta property="og:title" content="Nohope Coffee - Thực đơn & Đặt món QR">
-    <meta property="og:description" content="Trải nghiệm đặt món tuyệt vời tại Nohope Coffee. Đặt món nhanh chóng, tiện lợi.">
+    <meta property="og:description"
+        content="Trải nghiệm đặt món tuyệt vời tại Nohope Coffee. Đặt món nhanh chóng, tiện lợi.">
     <meta property="og:image" content="/images/og-image.jpg">
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:title" content="Nohope Coffee - Thực đơn & Đặt món QR">
-    <meta property="twitter:description" content="Trải nghiệm đặt món tuyệt vời tại Nohope Coffee. Đặt món nhanh chóng, tiện lợi.">
-    
+    <meta property="twitter:description"
+        content="Trải nghiệm đặt món tuyệt vời tại Nohope Coffee. Đặt món nhanh chóng, tiện lợi.">
+
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap"
+        rel="stylesheet">
     <!-- Bootstrap CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome for Icons -->
@@ -34,121 +40,167 @@
             border-radius: 12px;
             padding: 16px 20px;
             color: white;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(255,255,255,0.2);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.2);
             overflow: hidden;
             position: relative;
             transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
+
         .vip-card-glow {
             position: absolute;
-            top: 0; left: -100%; width: 50%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
             transform: skewX(-20deg);
             animation: holoGlow 3s infinite;
         }
+
         @keyframes holoGlow {
-            0% { left: -100%; }
-            20% { left: 200%; }
-            100% { left: 200%; }
+            0% {
+                left: -100%;
+            }
+
+            20% {
+                left: 200%;
+            }
+
+            100% {
+                left: 200%;
+            }
         }
-        .tier-bronze { background: linear-gradient(135deg, #cd7f32, #8b4513); }
-        .tier-silver { background: linear-gradient(135deg, #bdc3c7, #7f8c8d); }
-        .tier-gold { background: linear-gradient(135deg, #f1c40f, #f39c12); color: #000; text-shadow: none !important;}
-        .tier-diamond { background: linear-gradient(135deg, #9b59b6, #3498db); }
+
+        .tier-bronze {
+            background: linear-gradient(135deg, #cd7f32, #8b4513);
+        }
+
+        .tier-silver {
+            background: linear-gradient(135deg, #bdc3c7, #7f8c8d);
+        }
+
+        .tier-gold {
+            background: linear-gradient(135deg, #f1c40f, #f39c12);
+            color: #000;
+            text-shadow: none !important;
+        }
+
+        .tier-diamond {
+            background: linear-gradient(135deg, #9b59b6, #3498db);
+        }
     </style>
+
+    <link rel="stylesheet" href="logo.css">
 </head>
+
 <body class="customer-order-page" style="background-color: var(--bg-color);">
     <div class="app-wrapper">
         <aside class="desktop-sidebar">
-        <!-- Header -->
-        <header class="app-header">
-            <div class="header-content">
-                <h1 data-i18n="app_title"><i class="fa-solid fa-mug-hot"></i> Nohope Coffee</h1>
-                <div style="display: flex; gap: 8px; align-items: center;">
-                    <button id="lang-toggle" class="btn-icon" title="Toggle Language" style="font-size: 0.9rem; padding: 4px 8px; background: rgba(0,0,0,0.05); border: 1px solid var(--border); border-radius: 0px; color: var(--text-main);">
-                        EN
-                    </button>
-                    <button id="my-orders-btn" class="btn btn-outline" style="padding: 6px 10px; font-size: 0.85rem; border-radius: 0px; box-shadow: 2px 2px 0px 0px var(--border);">
-                        <i class="fa-solid fa-list-ul"></i> <span data-i18n="my_orders">Đơn của tôi</span>
-                    </button>
-                    <div class="table-info">Bàn <span id="table-number-display">5</span></div>
+            <!-- Header -->
+            <header class="app-header">
+                <div class="header-content">
+                    <div class="hub-logo mb-4" style="font-size: 3rem; justify-content: center;"><span class="text-1">Nohope</span><span class="text-2">Coffee</span></div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <button id="lang-toggle" class="btn-icon" title="Toggle Language"
+                            style="font-size: 0.9rem; padding: 4px 8px; background: rgba(0,0,0,0.05); border: 1px solid var(--border); border-radius: 0px; color: var(--text-main);">
+                            EN
+                        </button>
+                        <button id="my-orders-btn" class="btn btn-outline"
+                            style="padding: 6px 10px; font-size: 0.85rem; border-radius: 0px; box-shadow: 2px 2px 0px 0px var(--border);">
+                            <i class="fa-solid fa-list-ul"></i> <span data-i18n="my_orders">Đơn của tôi</span>
+                        </button>
+                        <div class="table-info">Bàn <span id="table-number-display">5</span></div>
+                    </div>
                 </div>
-            </div>
-        </header>
+            </header>
         </aside>
 
         <div class="main-flow">
-        <!-- Search Section -->
-        <div class="container" style="position: relative; z-index: 10; margin-top: -10px; padding-bottom: 5px;">
-            <div style="padding: 10px 18px; display: flex; align-items: center; gap: 12px; border-radius: var(--radius-lg); border: 1px solid var(--border); background: var(--surface-color); box-shadow: var(--shadow-sm);">
-                <i class="fa-solid fa-search text-muted"></i>
-                <input type="text" id="menu-search" class="form-control border-0 bg-transparent text-dark p-0" placeholder="Tìm kiếm món ăn..." style="box-shadow: none; font-size: 0.95rem; font-weight: 500;">
-            </div>
-        </div>
-
-        <!-- Live Order Banner -->
-        <div id="live-order-banner" class="live-order-banner" style="display: none; border-bottom: 1px solid var(--border); box-shadow: var(--shadow-sm);">
-            <div class="banner-content" style="flex-direction: column; align-items: stretch; gap: 12px;">
-                <div class="flex-between">
-                    <div>
-                    <div class="banner-title"><i class="fa-solid fa-clock pulse-icon text-primary me-2"></i> Trạng thái đơn hàng</div>
-                    <div class="banner-status text-primary" id="live-status">Đang chờ</div>
-                    </div>
-                    <button class="btn-icon text-muted" onclick="trackedOrderId=null; document.getElementById('live-order-banner').style.display='none'"><i class="fa-solid fa-times"></i></button>
-                </div>
-                
-                <div class="order-timeline">
-                    <div class="timeline-step" id="step-pending">
-                        <div class="step-icon"><i class="fa-solid fa-receipt"></i></div>
-                    </div>
-                    <div class="timeline-line" id="line-1"></div>
-                    <div class="timeline-step" id="step-preparing">
-                        <div class="step-icon"><i class="fa-solid fa-fire-burner"></i></div>
-                    </div>
-                    <div class="timeline-line" id="line-2"></div>
-                    <div class="timeline-step" id="step-ready">
-                        <div class="step-icon"><i class="fa-solid fa-check"></i></div>
-                    </div>
-                </div>
-                
-                <!-- Service Actions -->
-                <div style="display: flex; gap: 8px; margin-top: 16px;">
-                    <button class="btn btn-outline" style="flex: 1; font-size: 0.85rem; padding: 10px; border-radius: var(--radius-sm);" onclick="requestStaffService('staff')">
-                        <i class="fa-solid fa-bell text-primary"></i> Gọi NV
-                    </button>
-                    <button class="btn btn-outline" style="flex: 1; font-size: 0.85rem; padding: 10px; border-radius: var(--radius-sm);" onclick="requestStaffService('water')">
-                        <i class="fa-solid fa-glass-water text-primary"></i> Nước
-                    </button>
-                    <button class="btn btn-outline" style="flex: 1; font-size: 0.85rem; padding: 10px; border-radius: var(--radius-sm);" onclick="requestStaffService('checkout')">
-                        <i class="fa-solid fa-money-bill text-danger"></i> Tính Tiền
-                    </button>
+            <!-- Search Section -->
+            <div class="container" style="position: relative; z-index: 10; margin-top: -10px; padding-bottom: 5px;">
+                <div
+                    style="padding: 10px 18px; display: flex; align-items: center; gap: 12px; border-radius: var(--radius-lg); border: 1px solid var(--border); background: var(--surface-color); box-shadow: var(--shadow-sm);">
+                    <i class="fa-solid fa-search text-muted"></i>
+                    <input type="text" id="menu-search" class="form-control border-0 bg-transparent text-dark p-0"
+                        placeholder="Tìm kiếm món ăn..."
+                        style="box-shadow: none; font-size: 0.95rem; font-weight: 500;">
                 </div>
             </div>
-        </div>
 
-        <!-- Main Content: Menu -->
-        <main class="container mb-padding">
-            
-            <!-- Categories -->
-            <div class="category-pills">
-                <button class="pill active" data-category="All">Tất cả</button>
-                <button class="pill" data-category="Coffee">Cà phê</button>
-                <button class="pill" data-category="Tea">Trà</button>
-                <button class="pill" data-category="Food">Đồ ăn</button>
+            <!-- Live Order Banner -->
+            <div id="live-order-banner" class="live-order-banner"
+                style="display: none; border-bottom: 1px solid var(--border); box-shadow: var(--shadow-sm);">
+                <div class="banner-content" style="flex-direction: column; align-items: stretch; gap: 12px;">
+                    <div class="flex-between">
+                        <div>
+                            <div class="banner-title"><i class="fa-solid fa-clock pulse-icon text-primary me-2"></i>
+                                Trạng thái đơn hàng</div>
+                            <div class="banner-status text-primary" id="live-status">Đang chờ</div>
+                        </div>
+                        <button class="btn-icon text-muted"
+                            onclick="trackedOrderId=null; document.getElementById('live-order-banner').style.display='none'"><i
+                                class="fa-solid fa-times"></i></button>
+                    </div>
+
+                    <div class="order-timeline">
+                        <div class="timeline-step" id="step-pending">
+                            <div class="step-icon"><i class="fa-solid fa-receipt"></i></div>
+                        </div>
+                        <div class="timeline-line" id="line-1"></div>
+                        <div class="timeline-step" id="step-preparing">
+                            <div class="step-icon"><i class="fa-solid fa-fire-burner"></i></div>
+                        </div>
+                        <div class="timeline-line" id="line-2"></div>
+                        <div class="timeline-step" id="step-ready">
+                            <div class="step-icon"><i class="fa-solid fa-check"></i></div>
+                        </div>
+                    </div>
+
+                    <!-- Service Actions -->
+                    <div style="display: flex; gap: 8px; margin-top: 16px;">
+                        <button class="btn btn-outline"
+                            style="flex: 1; font-size: 0.85rem; padding: 10px; border-radius: var(--radius-sm);"
+                            onclick="requestStaffService('staff')">
+                            <i class="fa-solid fa-bell text-primary"></i> Gọi NV
+                        </button>
+                        <button class="btn btn-outline"
+                            style="flex: 1; font-size: 0.85rem; padding: 10px; border-radius: var(--radius-sm);"
+                            onclick="requestStaffService('water')">
+                            <i class="fa-solid fa-glass-water text-primary"></i> Nước
+                        </button>
+                        <button class="btn btn-outline"
+                            style="flex: 1; font-size: 0.85rem; padding: 10px; border-radius: var(--radius-sm);"
+                            onclick="requestStaffService('checkout')">
+                            <i class="fa-solid fa-money-bill text-danger"></i> Tính Tiền
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            <div id="loader" class="text-center mt-4">Đang tải thực đơn...</div>
+            <!-- Main Content: Menu -->
+            <main class="container mb-padding">
 
-            <!-- Menu Grid -->
-            <div class="menu-grid" id="menu-container">
-                <!-- Menu items will be injected here via JS -->
-            </div>
+                <!-- Categories -->
+                <div class="category-pills">
+                    <button class="pill active" data-category="All">Tất cả</button>
+                    <button class="pill" data-category="Coffee">Cà phê</button>
+                    <button class="pill" data-category="Tea">Trà</button>
+                    <button class="pill" data-category="Food">Đồ ăn</button>
+                </div>
 
-        </main>
+                <div id="loader" class="text-center mt-4">Đang tải thực đơn...</div>
+
+                <!-- Menu Grid -->
+                <div class="menu-grid" id="menu-container">
+                    <!-- Menu items will be injected here via JS -->
+                </div>
+
+            </main>
         </div> <!-- END main-flow -->
 
         <!-- Floating Cart Summary -->
-        <div class="floating-cart" id="floating-cart" style="display: none; border-radius: var(--radius-lg); border: 1px solid var(--surface-glass-border); box-shadow: var(--shadow-xl); background: var(--surface-color);">
+        <div class="floating-cart" id="floating-cart"
+            style="display: none; border-radius: var(--radius-lg); border: 1px solid var(--surface-glass-border); box-shadow: var(--shadow-xl); background: var(--surface-color);">
             <div class="cart-summary flex-between">
                 <div>
                     <span id="cart-item-count" class="badge bg-dark">0</span> Món
@@ -156,7 +208,8 @@
                 <div class="font-bold">
                     Tổng: <span id="cart-total-price">0</span>
                 </div>
-                <button id="view-cart-btn" class="btn btn-primary" style="border-radius: var(--radius-sm);">Xem giỏ hàng</button>
+                <button id="view-cart-btn" class="btn btn-primary" style="border-radius: var(--radius-sm);">Xem giỏ
+                    hàng</button>
             </div>
         </div>
 
@@ -172,50 +225,79 @@
                     <div class="empty-cart text-center text-muted">Giỏ hàng đang trống.</div>
                 </div>
                 <div class="cart-modal-body" style="padding-top: 0;">
-                    <label for="order-note" class="font-bold text-main" style="display: block; margin-bottom: 5px;">Ghi chú (Tùy chọn):</label>
-                    <textarea id="order-note" class="input-glass" placeholder="Vd: Ít đường, nhiều đá..." rows="2" style="width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--border);"></textarea>
-                    
-                    <div class="loyalty-section mt-3 mb-3" style="background: rgba(243, 156, 18, 0.05); padding: 16px; border-radius: var(--radius-sm); border: 1px solid #f39c12;">
-                        <label class="font-bold" style="display: block; margin-bottom: 5px; color: #d35400;"><i class="fa-solid fa-crown"></i> Tích điểm / Thành viên:</label>
+                    <label for="order-note" class="font-bold text-main" style="display: block; margin-bottom: 5px;">Ghi
+                        chú (Tùy chọn):</label>
+                    <textarea id="order-note" class="input-glass" placeholder="Vd: Ít đường, nhiều đá..." rows="2"
+                        style="width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--border);"></textarea>
+
+                    <div class="loyalty-section mt-3 mb-3"
+                        style="background: rgba(243, 156, 18, 0.05); padding: 16px; border-radius: var(--radius-sm); border: 1px solid #f39c12;">
+                        <label class="font-bold" style="display: block; margin-bottom: 5px; color: #d35400;"><i
+                                class="fa-solid fa-crown"></i> Tích điểm / Thành viên:</label>
                         <div style="display: flex; gap: 8px;">
-                            <input type="tel" id="customer-phone-input" class="input-glass" placeholder="Nhập SĐT..." style="flex: 1; border-radius: 0px; border: 2px solid #e67e22;">
-                            <button id="verify-phone-btn" onclick="verifyCustomerPhone()" class="btn btn-primary" style="padding: 8px 16px; border-radius: 0px; box-shadow: 2px 2px 0px 0px #d35400; white-space: nowrap; background: #e67e22; border: none;">Nhận diện</button>
+                            <input type="tel" id="customer-phone-input" class="input-glass" placeholder="Nhập SĐT..."
+                                style="flex: 1; border-radius: 0px; border: 2px solid #e67e22;">
+                            <button id="verify-phone-btn" onclick="verifyCustomerPhone()" class="btn btn-primary"
+                                style="padding: 8px 16px; border-radius: 0px; box-shadow: 2px 2px 0px 0px #d35400; white-space: nowrap; background: #e67e22; border: none;">Nhận
+                                diện</button>
                         </div>
-                        <div id="loyalty-message" style="display: none; font-size: 0.85rem; margin-top: 6px; font-weight: 600; color: #d35400;"></div>
-                        
+                        <div id="loyalty-message"
+                            style="display: none; font-size: 0.85rem; margin-top: 6px; font-weight: 600; color: #d35400;">
+                        </div>
+
                         <!-- VIP HOLOGRAPHIC CARD -->
                         <div id="vip-card-container" style="display: none; margin-top: 15px; perspective: 1000px;">
-                            <div class="vip-card" id="vip-card-el" style="transform-style: preserve-3d; position: relative;">
+                            <div class="vip-card" id="vip-card-el"
+                                style="transform-style: preserve-3d; position: relative;">
                                 <div class="vip-card-glow"></div>
-                                <div style="display: flex; justify-content: space-between; align-items: flex-start; position: relative; z-index: 2;">
+                                <div
+                                    style="display: flex; justify-content: space-between; align-items: flex-start; position: relative; z-index: 2;">
                                     <div>
-                                        <div style="font-size: 0.75rem; opacity: 0.8; font-weight: bold; letter-spacing: 1px;">THÀNH VIÊN</div>
-                                        <div id="vip-card-name" style="font-size: 1.2rem; font-weight: 800; letter-spacing: 0.5px;">Khách Hàng</div>
+                                        <div
+                                            style="font-size: 0.75rem; opacity: 0.8; font-weight: bold; letter-spacing: 1px;">
+                                            THÀNH VIÊN</div>
+                                        <div id="vip-card-name"
+                                            style="font-size: 1.2rem; font-weight: 800; letter-spacing: 0.5px;">Khách
+                                            Hàng</div>
                                     </div>
-                                    <div id="vip-card-tier-icon" style="font-size: 2.2rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">🥉</div>
+                                    <div id="vip-card-tier-icon"
+                                        style="font-size: 2.2rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">🥉
+                                    </div>
                                 </div>
                                 <div style="margin-top: 25px; position: relative; z-index: 2;">
                                     <div style="font-size: 0.7rem; opacity: 0.8; letter-spacing: 1px;">HẠNG THẺ</div>
                                     <div style="display: flex; justify-content: space-between; align-items: flex-end;">
-                                        <div id="vip-card-tier-text" style="font-size: 1.5rem; font-weight: 900; text-transform: uppercase; letter-spacing: 2px;">BRONZE</div>
-                                        <div id="vip-card-discount" style="font-size: 0.95rem; font-weight: bold; background: rgba(0,0,0,0.3); padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);">Giảm 0%</div>
+                                        <div id="vip-card-tier-text"
+                                            style="font-size: 1.5rem; font-weight: 900; text-transform: uppercase; letter-spacing: 2px;">
+                                            BRONZE</div>
+                                        <div id="vip-card-discount"
+                                            style="font-size: 0.95rem; font-weight: bold; background: rgba(0,0,0,0.3); padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);">
+                                            Giảm 0%</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <div id="loyalty-discount-btn" style="display: none; margin-top: 10px;">
-                            <button onclick="applyLoyaltyPoints()" class="btn btn-outline" style="width: 100%; font-size: 0.85rem; border-color: #d35400; color: #d35400;"><i class="fa-solid fa-gift"></i> Đổi 100 điểm = Giảm 10.000đ</button>
+                            <button onclick="applyLoyaltyPoints()" class="btn btn-outline"
+                                style="width: 100%; font-size: 0.85rem; border-color: #d35400; color: #d35400;"><i
+                                    class="fa-solid fa-gift"></i> Đổi 100 điểm = Giảm 10.000đ</button>
                         </div>
                     </div>
 
-                    <div class="promo-section mt-3" style="background: var(--bg-color); padding: 16px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
-                        <label class="font-bold text-main" style="display: block; margin-bottom: 5px;"><i class="fa-solid fa-ticket-simple text-accent"></i> Mã khuyến mãi:</label>
+                    <div class="promo-section mt-3"
+                        style="background: var(--bg-color); padding: 16px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+                        <label class="font-bold text-main" style="display: block; margin-bottom: 5px;"><i
+                                class="fa-solid fa-ticket-simple text-accent"></i> Mã khuyến mãi:</label>
                         <div style="display: flex; gap: 8px;">
-                            <input type="text" id="promo-code-input" class="input-glass" placeholder="Nhập mã..." style="flex: 1; text-transform: uppercase; border-radius: 0px; border: 2px solid var(--border);">
-                            <button id="apply-promo-btn" onclick="applyPromo()" class="btn btn-outline" style="padding: 8px 16px; border-radius: 0px; box-shadow: 2px 2px 0px 0px var(--border); white-space: nowrap;">Áp dụng</button>
+                            <input type="text" id="promo-code-input" class="input-glass" placeholder="Nhập mã..."
+                                style="flex: 1; text-transform: uppercase; border-radius: 0px; border: 2px solid var(--border);">
+                            <button id="apply-promo-btn" onclick="applyPromo()" class="btn btn-outline"
+                                style="padding: 8px 16px; border-radius: 0px; box-shadow: 2px 2px 0px 0px var(--border); white-space: nowrap;">Áp
+                                dụng</button>
                         </div>
-                        <div id="promo-message" style="display: none; font-size: 0.85rem; margin-top: 6px; font-weight: 500;"></div>
+                        <div id="promo-message"
+                            style="display: none; font-size: 0.85rem; margin-top: 6px; font-weight: 500;"></div>
                     </div>
                 </div>
                 <div class="cart-modal-footer">
@@ -229,14 +311,17 @@
                     </div>
                     <div class="flex-between mb-2 mt-2 pt-2" style="border-top: 2px solid var(--border);">
                         <span class="font-bold" style="font-size: 1.1rem;">Tổng thanh toán:</span>
-                        <span class="font-bold text-primary" style="font-size: 1.2rem;"><span id="checkout-total">0</span></span>
+                        <span class="font-bold text-primary" style="font-size: 1.2rem;"><span
+                                id="checkout-total">0</span></span>
                     </div>
                     <!-- Payment Options -->
                     <div class="d-grid gap-2 mb-2 pt-3" style="border-top: 2px dashed var(--border);">
-                        <button id="checkout-cash-btn" class="btn btn-outline" disabled style="border-radius: 0px; box-shadow: 2px 2px 0px 0px var(--border); border: 2px solid var(--border); font-weight: 600;">
+                        <button id="checkout-cash-btn" class="btn btn-outline" disabled
+                            style="border-radius: 0px; box-shadow: 2px 2px 0px 0px var(--border); border: 2px solid var(--border); font-weight: 600;">
                             <i class="fa-solid fa-money-bill-wave"></i> Thanh toán tại quầy
                         </button>
-                        <button id="checkout-transfer-btn" class="btn btn-primary" disabled style="border-radius: 0px; box-shadow: 4px 4px 0px 0px #000; font-weight: bold;">
+                        <button id="checkout-transfer-btn" class="btn btn-primary" disabled
+                            style="border-radius: 0px; box-shadow: 4px 4px 0px 0px #000; font-weight: bold;">
                             <i class="fa-solid fa-qrcode"></i> Chuyển khoản (Duyệt TĐ)
                         </button>
                     </div>
@@ -246,24 +331,36 @@
 
         <!-- Modal: QR Payment & Confirmation -->
         <div class="cart-modal" id="payment-modal">
-            <div class="cart-modal-content" style="max-height: 85vh; border-radius: 0px; box-shadow: -10px -10px 0px 0px rgba(0,0,0,1);">
+            <div class="cart-modal-content"
+                style="max-height: 85vh; border-radius: 0px; box-shadow: -10px -10px 0px 0px rgba(0,0,0,1);">
                 <div class="cart-modal-header flex-between">
                     <h2>Thanh toán chuyển khoản</h2>
                     <button id="close-payment-modal" class="btn-icon"><i class="fa-solid fa-arrow-left"></i></button>
                 </div>
                 <div class="cart-modal-body text-center" style="background: var(--bg-color);">
-                    <p class="text-main mb-3">Vui lòng quét mã QR dưới đây để thanh toán cho đơn hàng của bạn.</p>
-                    <div style="background: #FFF; padding: 20px; display: inline-block; border: 2px solid var(--border); box-shadow: 4px 4px 0px rgba(0,0,0,1);">
-                        <img id="qr-image" src="https://img.vietqr.io/image/970415-113333666999-compact2.jpg?amount=0&addInfo=Thanh%20toan%20Hoa%20don&accountName=QUAN%20CAFE%20NOHOPE" alt="Bank QR Code" style="width: 250px; height: 250px;">
+                    <p class="text-main mb-3">Sử dụng <strong>App Ngân hàng</strong> hoặc <strong>MoMo</strong> quét mã
+                        QR đê thanh toán.</p>
+                    <div
+                        style="background: #FFF; padding: 20px; display: inline-block; border: 2px solid var(--border); box-shadow: 4px 4px 0px rgba(0,0,0,1);">
+                        <img id="qr-image"
+                            src="https://img.vietqr.io/image/970415-113333666999-compact2.jpg?amount=0&addInfo=Thanh%20toan%20Hoa%20don&accountName=QUAN%20CAFE%20NOHOPE"
+                            alt="Bank QR Code" style="width: 250px; height: 250px;">
                     </div>
-                    <div class="mt-4 text-start p-3" style="background: var(--surface-color); border: 2px dashed var(--border);">
-                        <div class="mb-2"><span class="text-muted">Tổng cộng:</span> <strong class="float-end text-success" id="payment-total-amount" style="font-size: 1.1rem;">0 đ</strong></div>
-                        <div class="mb-2"><span class="text-muted">Nội dung CK bắt buộc:</span> <strong class="float-end" id="payment-transfer-memo">...</strong></div>
-                        <div class="text-center mt-3"><small class="text-warning"><i class="fa-solid fa-spinner fa-spin"></i> Đang chờ hệ thống tự động xác nhận chuyển khoản...</small></div>
+                    <div class="mt-4 text-start p-3"
+                        style="background: var(--surface-color); border: 2px dashed var(--border);">
+                        <div class="mb-2"><span class="text-muted">Tổng cộng:</span> <strong
+                                class="float-end text-success" id="payment-total-amount" style="font-size: 1.1rem;">0
+                                đ</strong></div>
+                        <div class="mb-2"><span class="text-muted">Nội dung CK bắt buộc:</span> <strong
+                                class="float-end" id="payment-transfer-memo">...</strong></div>
+                        <div class="text-center mt-3"><small class="text-warning"><i
+                                    class="fa-solid fa-spinner fa-spin"></i> Đang chờ hệ thống tự động xác nhận chuyển
+                                khoản...</small></div>
                     </div>
                 </div>
                 <div class="cart-modal-footer">
-                    <button id="confirm-payment-btn" class="btn btn-primary btn-block btn-lg" style="border-radius: 0px; box-shadow: 4px 4px 0px 0px #000;">
+                    <button id="confirm-payment-btn" class="btn btn-primary btn-block btn-lg"
+                        style="border-radius: 0px; box-shadow: 4px 4px 0px 0px #000;">
                         <i class="fa-solid fa-check-circle"></i> Tôi đã chuyển khoản xong
                     </button>
                 </div>
@@ -291,11 +388,13 @@
                     <h2 id="options-modal-title">Tùy chọn món</h2>
                     <button id="close-options-modal" class="btn-icon"><i class="fa-solid fa-times"></i></button>
                 </div>
-                <div class="cart-modal-body" id="options-container" style="background: var(--bg-color); max-height: 60vh; overflow-y: auto;">
+                <div class="cart-modal-body" id="options-container"
+                    style="background: var(--bg-color); max-height: 60vh; overflow-y: auto;">
                     <!-- Option groups injected here via JS -->
                 </div>
                 <div class="cart-modal-footer">
-                    <button id="confirm-options-btn" class="btn btn-primary btn-block btn-lg" style="border-radius: 0; box-shadow: 4px 4px 0px 0px #000;">
+                    <button id="confirm-options-btn" class="btn btn-primary btn-block btn-lg"
+                        style="border-radius: 0; box-shadow: 4px 4px 0px 0px #000;">
                         Cập nhật Giá & Thêm vào Giỏ
                     </button>
                 </div>
@@ -304,18 +403,28 @@
 
         <!-- Modal: Upsell / Cross-sell -->
         <div class="cart-modal" id="upsell-modal" style="z-index: 1065;">
-            <div class="cart-modal-content" style="border-radius: 0px; box-shadow: -10px -10px 0px 0px rgba(0,0,0,1); background: radial-gradient(circle at top right, #fff5e6 0%, #FFFFFF 100%);">
+            <div class="cart-modal-content"
+                style="border-radius: 0px; box-shadow: -10px -10px 0px 0px rgba(0,0,0,1); background: radial-gradient(circle at top right, #fff5e6 0%, #FFFFFF 100%);">
                 <div class="cart-modal-header border-0 pb-0 flex-between">
-                    <h2 class="text-accent" style="font-weight: 800;"><i class="fa-solid fa-fire text-danger"></i> Dùng thêm bánh chứ?</h2>
-                    <button onclick="closeUpsellModal()" class="btn-icon text-muted"><i class="fa-solid fa-times"></i></button>
+                    <h2 class="text-accent" style="font-weight: 800;"><i class="fa-solid fa-fire text-danger"></i> Dùng
+                        thêm bánh chứ?</h2>
+                    <button onclick="closeUpsellModal()" class="btn-icon text-muted"><i
+                            class="fa-solid fa-times"></i></button>
                 </div>
                 <div class="cart-modal-body text-center">
-                    <img src="https://images.unsplash.com/photo-1555507036-ab1f40ce88cb?auto=format&fit=crop&w=300&q=80" alt="Bánh sừng trâu" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; margin-bottom: 15px; border: 3px solid var(--accent); box-shadow: 4px 4px 0px rgba(0,0,0,0.1);">
-                    <p class="font-bold text-main" style="font-size: 1.1rem; margin-bottom: 5px;">Bánh Sừng Trâu (Croissant)</p>
-                    <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 15px;">Thưởng thức cùng đồ uống sẽ ngon hơn rất nhiều! Trải nghiệm chỉ với <strong class="text-danger">15.000đ</strong>.</p>
+                    <img src="https://images.unsplash.com/photo-1555507036-ab1f40ce88cb?auto=format&fit=crop&w=300&q=80"
+                        alt="Bánh sừng trâu"
+                        style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; margin-bottom: 15px; border: 3px solid var(--accent); box-shadow: 4px 4px 0px rgba(0,0,0,0.1);">
+                    <p class="font-bold text-main" style="font-size: 1.1rem; margin-bottom: 5px;">Bánh Sừng Trâu
+                        (Croissant)</p>
+                    <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 15px;">Thưởng thức cùng đồ uống sẽ
+                        ngon hơn rất nhiều! Trải nghiệm chỉ với <strong class="text-danger">15.000đ</strong>.</p>
                     <div class="d-grid gap-2">
-                        <button onclick="addUpsellItem()" class="btn btn-primary" style="box-shadow: 4px 4px 0px 0px #000; font-weight: 800; font-size: 1.1rem;"><i class="fa-solid fa-plus-circle"></i> Thêm vào giỏ (+15K)</button>
-                        <button onclick="closeUpsellModal()" class="btn btn-link text-muted" style="text-decoration: none; font-weight: 600;">Không, cảm ơn</button>
+                        <button onclick="addUpsellItem()" class="btn btn-primary"
+                            style="box-shadow: 4px 4px 0px 0px #000; font-weight: 800; font-size: 1.1rem;"><i
+                                class="fa-solid fa-plus-circle"></i> Thêm vào giỏ (+15K)</button>
+                        <button onclick="closeUpsellModal()" class="btn btn-link text-muted"
+                            style="text-decoration: none; font-weight: 600;">Không, cảm ơn</button>
                     </div>
                 </div>
             </div>
@@ -324,13 +433,16 @@
         <!-- Feedback Modal -->
         <div class="modal fade" id="feedbackModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
             <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content" style="border: 2px solid var(--border); border-radius: 0px; box-shadow: 8px 8px 0px rgba(0,0,0,1);">
+                <div class="modal-content"
+                    style="border: 2px solid var(--border); border-radius: 0px; box-shadow: 8px 8px 0px rgba(0,0,0,1);">
                     <div class="modal-header border-0">
-                        <h5 class="modal-title font-bold text-main"><i class="fa-solid fa-face-smile-beam me-2"></i>Đánh giá trải nghiệm</h5>
+                        <h5 class="modal-title font-bold text-main"><i class="fa-solid fa-face-smile-beam me-2"></i>Đánh
+                            giá trải nghiệm</h5>
                     </div>
                     <div class="modal-body text-center p-4">
-                        <p class="text-main mb-4">Cảm ơn bạn đã tin tưởng Nohope Coffee! Bạn thấy món ăn và dịch vụ của chúng tôi thế nào?</p>
-                        
+                        <p class="text-main mb-4">Cảm ơn bạn đã tin tưởng Nohope Coffee! Bạn thấy món ăn và dịch vụ của
+                            chúng tôi thế nào?</p>
+
                         <div id="star-rating" class="mb-4 fs-1">
                             <i class="fa-regular fa-star star-btn text-accent" data-value="1"></i>
                             <i class="fa-regular fa-star star-btn text-accent" data-value="2"></i>
@@ -338,13 +450,17 @@
                             <i class="fa-regular fa-star star-btn text-accent" data-value="4"></i>
                             <i class="fa-regular fa-star star-btn text-accent" data-value="5"></i>
                         </div>
-                        
-                        <textarea id="feedback-comment" class="form-control bg-light border-dark text-dark mb-3" rows="3" placeholder="Chia sẻ thêm cảm nhận của bạn..." style="border-radius: 0; border: 2px solid var(--border);"></textarea>
-                        
+
+                        <textarea id="feedback-comment" class="form-control bg-light border-dark text-dark mb-3"
+                            rows="3" placeholder="Chia sẻ thêm cảm nhận của bạn..."
+                            style="border-radius: 0; border: 2px solid var(--border);"></textarea>
+
                         <div class="d-grid">
-                            <button class="btn btn-primary py-2" id="submit-feedback-btn" onclick="submitFeedback()" style="border-radius: 0; box-shadow: 4px 4px 0px rgba(0,0,0,1);">Gửi đánh giá</button>
+                            <button class="btn btn-primary py-2" id="submit-feedback-btn" onclick="submitFeedback()"
+                                style="border-radius: 0; box-shadow: 4px 4px 0px rgba(0,0,0,1);">Gửi đánh giá</button>
                         </div>
-                        <button class="btn btn-link text-muted mt-3 text-decoration-none" data-bs-dismiss="modal">Để sau</button>
+                        <button class="btn btn-link text-muted mt-3 text-decoration-none" data-bs-dismiss="modal">Để
+                            sau</button>
                     </div>
                 </div>
             </div>
@@ -353,40 +469,123 @@
         <!-- Floating Support Menu -->
         <div class="fab-container">
             <div class="fab-menu" id="fab-menu">
-                <button id="call-bill-btn" class="btn-floating fab-item" title="Gọi thanh toán" style="border-radius: 0px; border: 2px solid #000;">
+                <button id="call-bill-btn" class="btn-floating fab-item" title="Gọi thanh toán"
+                    style="border-radius: 0px; border: 2px solid #000;">
                     <i class="fa-solid fa-file-invoice-dollar"></i>
                 </button>
-                <button id="call-staff-btn" class="btn-floating fab-item" title="Gọi nhân viên" style="border-radius: 0px; border: 2px solid #000;">
+                <button id="call-staff-btn" class="btn-floating fab-item" title="Gọi nhân viên"
+                    style="border-radius: 0px; border: 2px solid #000;">
                     <i class="fa-solid fa-bell-concierge"></i>
                 </button>
             </div>
-            <button class="btn-floating fab-main" id="fab-main-btn" onclick="toggleFabMenu()" style="border-radius: 0; border: 2px solid #000; box-shadow: 2px 2px 0px #000;">
+            <button class="btn-floating fab-main" id="fab-main-btn" onclick="toggleFabMenu()"
+                style="border-radius: 0; border: 2px solid #000; box-shadow: 2px 2px 0px #000;">
                 <i class="fa-solid fa-headset"></i>
             </button>
         </div>
 
         <!-- Styles for new buttons -->
         <style>
-            .fab-container { position: absolute; bottom: 100px; right: 20px; z-index: 1050; display: flex; flex-direction: column; align-items: center; gap: 10px; }
-            .fab-menu { display: flex; flex-direction: column; gap: 10px; opacity: 0; transform: translateY(20px); pointer-events: none; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-            .fab-menu.active { opacity: 1; transform: translateY(0); pointer-events: auto; }
-            
-            .btn-floating { border: none; width: 48px; height: 48px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s; }
-            .btn-floating:active { transform: scale(0.9) translateY(2px); box-shadow: 0 0 0;}
-            .btn-floating i { font-size: 1.2rem; transition: transform 0.3s ease; }
-            
-            .fab-main { background: var(--accent); color: #fff; border: 2px solid var(--border); box-shadow: 4px 4px 0px rgba(0,0,0,1);}
-            .fab-main.active i { transform: rotate(180deg); opacity: 0; }
-            .fab-main::after { content: '\f00d'; font-family: 'Font Awesome 6 Free'; font-weight: 900; position: absolute; opacity: 0; transform: rotate(-180deg); transition: all 0.3s ease; font-size: 1.4rem; }
-            .fab-main.active::after { opacity: 1; transform: rotate(0); }
+            .fab-container {
+                position: absolute;
+                bottom: 100px;
+                right: 20px;
+                z-index: 1050;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
 
-            .fab-item:nth-child(1) { background: var(--success); color: white; transition-delay: 0.05s; }
-            .fab-item:nth-child(2) { background: #3498db; color: white; transition-delay: 0s; }
-            
+            .fab-menu {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                opacity: 0;
+                transform: translateY(20px);
+                pointer-events: none;
+                transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            }
+
+            .fab-menu.active {
+                opacity: 1;
+                transform: translateY(0);
+                pointer-events: auto;
+            }
+
+            .btn-floating {
+                border: none;
+                width: 48px;
+                height: 48px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: transform 0.2s;
+            }
+
+            .btn-floating:active {
+                transform: scale(0.9) translateY(2px);
+                box-shadow: 0 0 0;
+            }
+
+            .btn-floating i {
+                font-size: 1.2rem;
+                transition: transform 0.3s ease;
+            }
+
+            .fab-main {
+                background: var(--accent);
+                color: #fff;
+                border: 2px solid var(--border);
+                box-shadow: 4px 4px 0px rgba(0, 0, 0, 1);
+            }
+
+            .fab-main.active i {
+                transform: rotate(180deg);
+                opacity: 0;
+            }
+
+            .fab-main::after {
+                content: '\f00d';
+                font-family: 'Font Awesome 6 Free';
+                font-weight: 900;
+                position: absolute;
+                opacity: 0;
+                transform: rotate(-180deg);
+                transition: all 0.3s ease;
+                font-size: 1.4rem;
+            }
+
+            .fab-main.active::after {
+                opacity: 1;
+                transform: rotate(0);
+            }
+
+            .fab-item:nth-child(1) {
+                background: var(--success);
+                color: white;
+                transition-delay: 0.05s;
+            }
+
+            .fab-item:nth-child(2) {
+                background: #3498db;
+                color: white;
+                transition-delay: 0s;
+            }
+
             /* Mobile adjustment to not overlap with cart */
             @media (max-width: 768px) {
-                .fab-container { bottom: 85px; right: 15px; }
-                .btn-floating { width: 44px; height: 44px; }
+                .fab-container {
+                    bottom: 85px;
+                    right: 15px;
+                }
+
+                .btn-floating {
+                    width: 44px;
+                    height: 44px;
+                }
             }
         </style>
         <script>
@@ -394,11 +593,11 @@
                 document.getElementById('fab-menu').classList.toggle('active');
                 document.getElementById('fab-main-btn').classList.toggle('active');
             }
-            
+
             // Auto close menu when an action is clicked
             document.querySelectorAll('.fab-item').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    if(document.getElementById('fab-menu').classList.contains('active')) {
+                    if (document.getElementById('fab-menu').classList.contains('active')) {
                         toggleFabMenu();
                     }
                 });
@@ -408,14 +607,22 @@
         <!-- Custom Confirm Modal -->
         <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
             <div class="modal-dialog modal-dialog-centered modal-sm">
-                <div class="modal-content" style="border: 2px solid var(--border); border-radius: 0; box-shadow: 6px 6px 0px rgba(0,0,0,1);">
+                <div class="modal-content"
+                    style="border: 2px solid var(--border); border-radius: 0; box-shadow: 6px 6px 0px rgba(0,0,0,1);">
                     <div class="modal-header border-0 pb-0">
-                        <h5 class="modal-title" id="confirmModalTitle" style="color: var(--text-main); font-weight: bold;"><i class="fa-solid fa-triangle-exclamation text-accent me-2"></i>Xác nhận</h5>
+                        <h5 class="modal-title" id="confirmModalTitle"
+                            style="color: var(--text-main); font-weight: bold;"><i
+                                class="fa-solid fa-triangle-exclamation text-accent me-2"></i>Xác nhận</h5>
                     </div>
-                    <div class="modal-body" id="confirmModalBody" style="color: var(--text-muted); font-weight: 500;">Bạn có chắc chắn không?</div>
+                    <div class="modal-body" id="confirmModalBody" style="color: var(--text-muted); font-weight: 500;">
+                        Bạn có chắc chắn không?</div>
                     <div class="modal-footer border-0 pt-0">
-                        <button type="button" class="btn btn-secondary btn-sm" id="confirmModalCancel" data-bs-dismiss="modal" style="border-radius: 0; border: 2px solid var(--border); background: var(--surface-color); color: var(--text-main); font-weight: bold;">Không</button>
-                        <button type="button" class="btn btn-danger btn-sm" id="confirmModalOk" style="border-radius: 0; border: 2px solid var(--border); background: var(--danger); font-weight: bold; box-shadow: 2px 2px 0px rgba(0,0,0,1);">Có, xác nhận</button>
+                        <button type="button" class="btn btn-secondary btn-sm" id="confirmModalCancel"
+                            data-bs-dismiss="modal"
+                            style="border-radius: 0; border: 2px solid var(--border); background: var(--surface-color); color: var(--text-main); font-weight: bold;">Không</button>
+                        <button type="button" class="btn btn-danger btn-sm" id="confirmModalOk"
+                            style="border-radius: 0; border: 2px solid var(--border); background: var(--danger); font-weight: bold; box-shadow: 2px 2px 0px rgba(0,0,0,1);">Có,
+                            xác nhận</button>
                     </div>
                 </div>
             </div>
@@ -424,6 +631,8 @@
 
     <!-- Bootstrap JS (required for modals) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="i18n.js?v=1.1"></script>
     <script src="customer.js?v=1.6"></script>
 </body>
+
 </html>

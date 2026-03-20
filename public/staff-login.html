@@ -127,9 +127,13 @@
                     throw new Error("Sai mã PIN");
                 }
 
-                // Setup local storage auth
-                localStorage.setItem('nohope_staff_auth', 'true');
-                localStorage.setItem('nohope_staff_name', data.name || 'Nhân viên');
+                // Setup session storage auth
+                sessionStorage.setItem('nohope_staff_auth', 'true');
+                sessionStorage.setItem('nohope_staff_name', data.name || 'Nhân viên');
+                
+                // Clear old localStorage if present to force clean session
+                localStorage.removeItem('nohope_staff_auth');
+                localStorage.removeItem('nohope_staff_name');
                 
                 // Redirect to Staff Dashboard
                 window.location.href = 'staff.html';
