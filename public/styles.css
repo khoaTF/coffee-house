@@ -878,6 +878,23 @@ input, select, textarea {
         max-width: 600px;
     }
 }
+
+@media (max-width: 991px) {
+    /* Mobile / Tablet Header Fixes */
+    .header-content {
+        flex-direction: column;
+        gap: 16px;
+        padding: 16px 20px;
+    }
+    .hub-logo {
+        font-size: clamp(2rem, 8vw, 2.5rem) !important;
+        margin-bottom: 0 !important;
+    }
+    .header-content > div:last-child {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
 .btn::after, .add-btn::after, .pill::after {
     content: '';
     position: absolute;
