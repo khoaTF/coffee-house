@@ -84,9 +84,9 @@
         <div style="margin-bottom: 20px; display: flex; justify-content: center;">
             <img src="/images/bunny_logo.png" alt="Bunny Logo" style="height: 80px; width: 80px; border-radius: 50%; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
         </div>
-        <h2>Nhân Viên Đăng Nhập</h2>
+        <h2>Hệ thống Đăng nhập</h2>
         <div class="input-group">
-            <label for="staff-pin">Mã PIN Nhân Viên</label>
+            <label for="staff-pin">Mã PIN Nội bộ</label>
             <input type="password" id="staff-pin" placeholder="Nhập mã bí mật 4-6 số..." autocomplete="off">
         </div>
         <button id="login-btn" style="width: 100%; padding: 14px; background: var(--primary, #FF8BA7); color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 1.1rem; cursor: pointer; transition: all 0.3s ease;">
@@ -118,28 +118,35 @@
             errorMsg.style.display = 'none';
 
             try {
-                // For staff login, we authenticate against the specific 'users' table using role 'staff'
+                // Unified login for all roles
                 const { data, error } = await supabase
                     .from('users')
                     .select('*')
                     .eq('pin', pin)
-                    .eq('role', 'staff')
                     .single();
 
                 if (error || !data) {
                     throw new Error("Sai mã PIN");
                 }
 
-                // Setup session storage auth
-                sessionStorage.setItem('nohope_staff_auth', 'true');
+                // Setup session storage auth compatibility
+                sessionStorage.setItem('cafe_role', data.role);
+                sessionStorage.setItem('nohope_staff_auth', 'true'); // Keep for staff.html
                 sessionStorage.setItem('nohope_staff_name', data.name || 'Nhân viên');
                 
-                // Clear old localStorage if present to force clean session
+                // Clear old localStorage to prevent conflicts
+                localStorage.removeItem('cafe_role');
                 localStorage.removeItem('nohope_staff_auth');
                 localStorage.removeItem('nohope_staff_name');
                 
-                // Redirect to Staff Dashboard
-                window.location.href = 'staff.html';
+                // Smart Redirects
+                if (data.role === 'kitchen') {
+                    window.location.href = '/kitchen.html';
+                } else if (data.role === 'admin' || data.role === 'manager') {
+                    window.location.href = '/admin.html';
+                } else {
+                    window.location.href = '/staff.html'; // Default for 'staff'
+                }
 
             } catch (err) {
                 errorMsg.textContent = "Mã PIN không hợp lệ hoặc bạn không có quyền.";

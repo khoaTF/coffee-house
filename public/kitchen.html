@@ -174,7 +174,7 @@
             <div class="header-actions">
                 <button id="btn-toggle-audio" class="btn btn-audio" onclick="toggleAudio()"><i class="fa-solid fa-volume-high"></i> Âm báo</button>
                 <button class="btn" onclick="openKitchenHistory()"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử</button>
-                <a href="/admin.html" class="btn" style="text-decoration: none;"><i class="fa-solid fa-gear"></i> Quản trị</a>
+                <a href="/admin.html" class="btn" style="text-decoration: none;" id="btn-admin-link" onclick="if (role !== 'admin' && role !== 'manager') { event.preventDefault(); alert('Chỉ có Quản lý mới được vào trang Quản trị!'); } else { window.location.href='/admin.html'; }"><i class="fa-solid fa-gear"></i> Quản trị</a>
                 <button class="btn" onclick="localStorage.clear(); sessionStorage.clear(); window.location.href='/login.html'"><i class="fa-solid fa-sign-out-alt"></i> Đăng xuất</button>
                 <div id="connection-status"><i class="fa-solid fa-wifi"></i> Trực tuyến</div>
             </div>

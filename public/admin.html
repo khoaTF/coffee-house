@@ -29,7 +29,7 @@
     <script>
         const role = localStorage.getItem('cafe_role') || sessionStorage.getItem('cafe_role');
         const token = localStorage.getItem('cafe_token') || sessionStorage.getItem('cafe_token');
-        if (role !== 'admin') {
+        if (role !== 'admin' && role !== 'manager') {
             window.location.href = '/login.html';
         } else if (token) {
             try {
@@ -713,7 +713,8 @@
                             <select class="form-select" id="staffRole" required>
                                 <option value="staff">Nhân viên phục vụ (Staff)</option>
                                 <option value="kitchen">Nhân viên bếp (Kitchen)</option>
-                                <option value="admin">Quản lý (Admin)</option>
+                                <option value="manager">Quản lý ca (Manager)</option>
+                                <option value="admin">Quản lý tổng (Admin)</option>
                             </select>
                         </div>
                         <div class="mb-3">

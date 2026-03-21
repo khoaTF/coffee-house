@@ -72,6 +72,25 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchProducts();
     fetchHistory();
     fetchIngredients();
+
+    // RBAC: Hide restricted tabs for Shift Manager
+    const role = sessionStorage.getItem('cafe_role') || localStorage.getItem('cafe_role');
+    if (role === 'manager') {
+        const restrictedTabs = ['tab-menu', 'tab-promo', 'tab-analytics', 'tab-customers', 'tab-staff'];
+        restrictedTabs.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        });
+        
+        // Hide add staff or promo CTA buttons if they exist outside the main tabs
+        const btnAddPromo = document.querySelector('button[onclick="openPromoModal()"]');
+        if (btnAddPromo) btnAddPromo.style.display = 'none';
+
+        // Set default active tab
+        switchTab('tables');
+    } else {
+        switchTab('menu');
+    }
 });
 
 // const socket = io(); // REMOVED FOR SUPABASE
@@ -2119,8 +2138,8 @@ function renderStaffTable() {
         tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Chưa có nhân viên nào.</td></tr>';
         return;
     }
-    const roleMap = { 'staff': 'Phục vụ', 'kitchen': 'Bếp', 'admin': 'Quản lý' };
-    const badgeMap = { 'staff': 'bg-info text-dark', 'kitchen': 'bg-warning text-dark', 'admin': 'bg-danger' };
+    const roleMap = { 'staff': 'Phục vụ', 'kitchen': 'Bếp', 'manager': 'Quản lý ca', 'admin': 'Quản lý tổng' };
+    const badgeMap = { 'staff': 'bg-primary text-white', 'kitchen': 'bg-warning text-dark', 'manager': 'bg-info text-dark', 'admin': 'bg-danger text-white' };
     
     staffList.forEach(s => {
         const tr = document.createElement('tr');
@@ -2164,10 +2183,11 @@ async function saveStaff() {
     const staffData = {
         name: document.getElementById('staffName').value,
         role: document.getElementById('staffRole').value,
-        pin: document.getElementById('staffPin').value
+        pin: document.getElementById('staffPin').value.trim()
     };
-    if (!staffData.pin) {
-        alert("Vui lòng điền mã PIN.");
+    
+    if (!/^\d{4,6}$/.test(staffData.pin)) {
+        alert("Mã PIN không hợp lệ! Vui lòng nhập từ 4 đến 6 chữ số đễ đảm bảo tính bảo mật.");
         return;
     }
     
@@ -2183,7 +2203,11 @@ async function saveStaff() {
         fetchStaff();
     } catch (e) {
         console.error(e);
-        alert('Lỗi lưu thông tin nhân viên.');
+        if (e.code === '23505') {
+            alert('LỖI: Mã PIN này đã có nhân viên khác sử dụng. Vui lòng chọn mã PIN khác để tránh trùng hệ thống.');
+        } else {
+            alert('Lỗi lưu thông tin: ' + (e.message || 'Vui lòng thử lại.'));
+        }
     }
 }
 
