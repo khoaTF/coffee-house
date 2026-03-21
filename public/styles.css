@@ -236,7 +236,7 @@ body {
 /* Menu List/Grid */
 .menu-grid { 
     display: grid; 
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 160px), 1fr));
     gap: 16px; 
 }
 
@@ -260,7 +260,7 @@ body {
 .menu-item > div:first-child {
     flex-shrink: 0;
     width: 100%;
-    height: 200px; /* Big imagery focus */
+    aspect-ratio: 1; /* Keep it perfect square for 2-col */
     display: block;
 }
 
@@ -291,13 +291,11 @@ body {
     gap: 12px;
 }
 .menu-title { 
-    font-size: 1.35rem;     
+    font-size: clamp(1.05rem, 4vw, 1.35rem);     
     font-family: 'Playfair Display', serif;
     font-weight: 700; 
     margin-bottom: 4px; 
     color: var(--text-main);
-    line-height: 1.2;
-
     line-height: 1.3;
     letter-spacing: -0.2px;
 }
@@ -320,7 +318,7 @@ body {
     border-top: 1px solid rgba(212, 167, 106, 0.1);
 }
 .menu-price { 
-    font-size: 1.15rem; 
+    font-size: clamp(1rem, 3.5vw, 1.15rem); 
     font-weight: 800; 
     color: var(--primary); 
     letter-spacing: -0.5px;
@@ -797,6 +795,88 @@ input, select, textarea {
 .btn, .add-btn, .qty-btn, .pill {
     position: relative;
     overflow: hidden;
+}
+
+/* ===== RESPONSIVE DESIGN & MEDIA QUERIES ===== */
+@media (min-width: 992px) {
+    /* Full App Layout for Desktop */
+    .app-wrapper {
+        flex-direction: row;
+        max-width: 1400px;
+        margin: 0 auto;
+        box-shadow: 0 0 40px rgba(0,0,0,0.05);
+    }
+    
+    /* Distinct Sidebar */
+    .desktop-sidebar {
+        width: 320px;
+        height: 100vh;
+        position: sticky;
+        top: 0;
+        border-right: 1px solid var(--border);
+        background: var(--surface-color);
+        box-shadow: 4px 0 15px rgba(0,0,0,0.02);
+    }
+    
+    .app-header {
+        height: 100%;
+        box-shadow: none;
+        border-bottom: none;
+        position: static;
+        background: transparent;
+    }
+    
+    .header-content {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 40px 24px;
+        gap: 30px;
+    }
+
+    /* Override inline flex properties from index.html */
+    .header-content > div:last-child {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        width: 100%;
+        gap: 16px;
+    }
+    
+    /* Main Content Area */
+    .main-flow {
+        flex: 1;
+        padding: 20px 40px;
+    }
+    
+    /* Category Pills Adjustment */
+    .category-pills {
+        top: 0; /* Since header is not sticky on top anymore */
+        padding-top: 10px;
+    }
+    
+    /* Floating Cart behavior Desktop */
+    .floating-cart {
+        max-width: 400px;
+        left: auto;
+        right: 40px;
+        bottom: 40px;
+        border-radius: var(--radius-lg);
+    }
+    
+    /* Menu Grid adjusted for larger space */
+    .menu-grid {
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+        gap: 24px;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+    /* Tablet layout */
+    .menu-grid {
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
+    }
+    .floating-cart {
+        max-width: 600px;
+    }
 }
 .btn::after, .add-btn::after, .pill::after {
     content: '';
