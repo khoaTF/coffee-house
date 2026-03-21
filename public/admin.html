@@ -149,6 +149,8 @@
             <button class="btn btn-sm btn-tab" onclick="switchTab('history')" id="tab-history"><i class="fa-solid fa-clock-rotate-left me-2"></i> Đơn hàng</button>
             <button class="btn btn-sm btn-tab" onclick="switchTab('analytics')" id="tab-analytics"><i class="fa-solid fa-chart-pie me-2"></i> Báo cáo</button>
             <button class="btn btn-sm btn-tab" onclick="switchTab('tables')" id="tab-tables"><i class="fa-solid fa-table-cells me-2"></i> Bàn</button>
+            <button class="btn btn-sm btn-tab" onclick="switchTab('customers')" id="tab-customers"><i class="fa-solid fa-users me-2"></i> Khách hàng</button>
+            <button class="btn btn-sm btn-tab" onclick="switchTab('staff')" id="tab-staff"><i class="fa-solid fa-user-tie me-2"></i> Nhân viên</button>
         </div>
 
 
@@ -313,6 +315,61 @@
             <h2 class="mb-4"><i class="fa-solid fa-table-cells text-primary me-2"></i> Trạng thái Bàn hiện tại</h2>
             <div id="tables-grid" class="row g-3">
                 <div class="col-12 text-center text-muted p-5">Đang tải thông tin bàn...</div>
+            </div>
+        </section>
+
+        <!-- Customer Management Section -->
+        <section id="section-customers" class="content-section">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="mb-0"><i class="fa-solid fa-users text-info me-2"></i> Quản lý Khách hàng</h2>
+            </div>
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Số điện thoại</th>
+                                    <th>Tên khách hàng</th>
+                                    <th>Điểm tích lũy</th>
+                                    <th>Tổng chi tiêu</th>
+                                    <th>Lần cuối</th>
+                                    <th class="text-end">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody id="customers-table-body">
+                                <tr><td colspan="6" class="text-center py-4">Đang tải danh sách...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Staff Management Section -->
+        <section id="section-staff" class="content-section">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="mb-0"><i class="fa-solid fa-user-tie text-success me-2"></i> Quản lý Nhân viên</h2>
+                <button class="btn btn-success" onclick="openStaffModal()"><i class="fa-solid fa-plus me-1"></i> Thêm nhân viên</button>
+            </div>
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Tên nhân viên</th>
+                                    <th>Phân quyền (Role)</th>
+                                    <th>Mã PIN</th>
+                                    <th class="text-end">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody id="staff-table-body">
+                                <tr><td colspan="4" class="text-center py-4">Đang tải danh sách...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -597,6 +654,78 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
                     <button type="button" class="btn btn-success" onclick="savePromo()">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Modal -->
+    <div class="modal fade" id="customerModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Cập nhật Điểm Khách hàng</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="customerForm">
+                        <input type="hidden" id="customerId">
+                        <div class="mb-3">
+                            <label class="form-label">Tên khách hàng</label>
+                            <input type="text" class="form-control" id="customerName" disabled>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Số điện thoại</label>
+                            <input type="text" class="form-control" id="customerPhone" disabled>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Điểm tích lũy hiện tại</label>
+                            <input type="number" class="form-control fw-bold text-warning bg-dark" id="customerPoints" required>
+                            <small class="text-muted">Bạn có thể điều chỉnh cộng/trừ điểm thủ công.</small>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-success" onclick="saveCustomer()">Lưu thay đổi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Staff Modal -->
+    <div class="modal fade" id="staffModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="staffModalLabel">Thêm / Sửa Nhân Viên</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="staffForm">
+                        <input type="hidden" id="staffId">
+                        <div class="mb-3">
+                            <label class="form-label">Tên nhân viên (nếu có)</label>
+                            <input type="text" class="form-control" id="staffName" placeholder="Nguyễn Văn A">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Phân quyền</label>
+                            <select class="form-select" id="staffRole" required>
+                                <option value="staff">Nhân viên phục vụ (Staff)</option>
+                                <option value="kitchen">Nhân viên bếp (Kitchen)</option>
+                                <option value="admin">Quản lý (Admin)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Mã PIN đăng nhập</label>
+                            <input type="text" class="form-control fw-bold text-light bg-dark" id="staffPin" required placeholder="4-6 số (VD: 1234)">
+                            <small class="text-muted">Mã PIN dùng để đăng nhập hệ thống nội bộ.</small>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-success" onclick="saveStaff()">Lưu chi tiết</button>
                 </div>
             </div>
         </div>

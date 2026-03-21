@@ -2,10 +2,14 @@ let products = [];
 let orderHistory = [];
 let ingredients = [];
 let discounts = [];
+let customersList = [];
+let staffList = [];
 let productModalInstance;
 let ingredientModalInstance;
 let promoModalInstance;
 let confirmModalInstance;
+let customerModalInstance;
+let staffModalInstance;
 const authHeaders = () => ({ 'Authorization': 'Bearer ' + (sessionStorage.getItem('cafe_token') || localStorage.getItem('cafe_token')) });
 
 // DOM Elements (Initialized in DOMContentLoaded to prevent null errors)
@@ -62,6 +66,8 @@ document.addEventListener('DOMContentLoaded', () => {
     productModalInstance = new bootstrap.Modal(document.getElementById('productModal'));
     ingredientModalInstance = new bootstrap.Modal(document.getElementById('ingredientModal'));
     promoModalInstance = new bootstrap.Modal(document.getElementById('promoModal'));
+    customerModalInstance = new bootstrap.Modal(document.getElementById('customerModal'));
+    staffModalInstance = new bootstrap.Modal(document.getElementById('staffModal'));
     // Load initial data
     fetchProducts();
     fetchHistory();
@@ -94,6 +100,10 @@ function switchTab(tabId) {
         fetchIngredients();
     } else if (tabId === 'promo') {
         fetchDiscounts();
+    } else if (tabId === 'customers') {
+        fetchCustomers();
+    } else if (tabId === 'staff') {
+        fetchStaff();
     } else {
         fetchProducts();
     }
@@ -2024,5 +2034,169 @@ async function saveRestock() {
         const btn = document.querySelector('#restockModal .btn-success');
         btn.disabled = false;
         btn.innerHTML = 'Nhập +';
+    }
+}
+
+// --- Customer Management ---
+async function fetchCustomers() {
+    try {
+        const { data, error } = await supabase.from('customers').select('*').order('created_at', { ascending: false });
+        if (error) throw error;
+        customersList = data;
+        renderCustomersTable();
+    } catch (e) {
+        console.error(e);
+        document.getElementById('customers-table-body').innerHTML = '<tr><td colspan="6" class="text-center text-danger">Lỗi tải dữ liệu.</td></tr>';
+    }
+}
+
+function renderCustomersTable() {
+    const tbody = document.getElementById('customers-table-body');
+    tbody.replaceChildren();
+    if (customersList.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Chưa có khách hàng nào.</td></tr>';
+        return;
+    }
+    customersList.forEach(c => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="fw-bold">${c.phone}</td>
+            <td>${c.name || '<i>Khách vô danh</i>'}</td>
+            <td class="text-warning fw-bold"><i class="fa-solid fa-star"></i> ${c.current_points || 0}</td>
+            <td class="text-success">${(c.total_spent || 0).toLocaleString('vi-VN')} đ</td>
+            <td>${c.created_at ? new Date(c.created_at).toLocaleDateString() : 'N/A'}</td>
+            <td class="text-end">
+                <button class="action-btn edit-btn" title="Chỉnh sửa điểm" onclick="editCustomer('${c.id}')">
+                    <i class="fa-solid fa-pen"></i>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function editCustomer(id) {
+    const c = customersList.find(x => x.id === id);
+    if (!c) return;
+    document.getElementById('customerId').value = c.id;
+    document.getElementById('customerName').value = c.name || '';
+    document.getElementById('customerPhone').value = c.phone || '';
+    document.getElementById('customerPoints').value = c.current_points || 0;
+    customerModalInstance.show();
+}
+
+async function saveCustomer() {
+    const id = document.getElementById('customerId').value;
+    const points = parseInt(document.getElementById('customerPoints').value) || 0;
+    try {
+        const { error } = await supabase.from('customers').update({ current_points: points }).eq('id', id);
+        if (error) throw error;
+        customerModalInstance.hide();
+        fetchCustomers();
+    } catch (e) {
+        console.error(e);
+        alert('Lỗi cập nhật điểm khách hàng.');
+    }
+}
+
+// --- Staff Management ---
+async function fetchStaff() {
+    try {
+        const { data, error } = await supabase.from('users').select('*').order('created_at', { ascending: false });
+        if (error) throw error;
+        staffList = data;
+        renderStaffTable();
+    } catch (e) {
+        console.error(e);
+        document.getElementById('staff-table-body').innerHTML = '<tr><td colspan="4" class="text-center text-danger">Lỗi tải dữ liệu.</td></tr>';
+    }
+}
+
+function renderStaffTable() {
+    const tbody = document.getElementById('staff-table-body');
+    tbody.replaceChildren();
+    if (staffList.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Chưa có nhân viên nào.</td></tr>';
+        return;
+    }
+    const roleMap = { 'staff': 'Phục vụ', 'kitchen': 'Bếp', 'admin': 'Quản lý' };
+    const badgeMap = { 'staff': 'bg-info text-dark', 'kitchen': 'bg-warning text-dark', 'admin': 'bg-danger' };
+    
+    staffList.forEach(s => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="fw-bold"><i class="fa-solid fa-user-circle me-2 text-secondary"></i>${s.name || '<i>NV Mới</i>'}</td>
+            <td><span class="badge ${badgeMap[s.role] || 'bg-secondary'}">${roleMap[s.role] || s.role}</span></td>
+            <td class="text-muted"><kbd>${s.pin}</kbd></td>
+            <td class="text-end">
+                <button class="action-btn edit-btn" title="Chỉnh sửa" onclick="editStaff('${s.id}')">
+                    <i class="fa-solid fa-pen"></i>
+                </button>
+                <button class="action-btn delete" title="Xóa nhân viên" onclick="deleteStaff('${s.id}')">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function openStaffModal() {
+    document.getElementById('staffForm').reset();
+    document.getElementById('staffId').value = '';
+    document.getElementById('staffModalLabel').textContent = 'Thêm nhân viên mới';
+    staffModalInstance.show();
+}
+
+function editStaff(id) {
+    const s = staffList.find(x => x.id === id);
+    if (!s) return;
+    document.getElementById('staffId').value = s.id;
+    document.getElementById('staffName').value = s.name || '';
+    document.getElementById('staffRole').value = s.role || 'staff';
+    document.getElementById('staffPin').value = s.pin || '';
+    document.getElementById('staffModalLabel').textContent = 'Chỉnh sửa nhân viên';
+    staffModalInstance.show();
+}
+
+async function saveStaff() {
+    const id = document.getElementById('staffId').value;
+    const staffData = {
+        name: document.getElementById('staffName').value,
+        role: document.getElementById('staffRole').value,
+        pin: document.getElementById('staffPin').value
+    };
+    if (!staffData.pin) {
+        alert("Vui lòng điền mã PIN.");
+        return;
+    }
+    
+    try {
+        if (id) {
+            const { error } = await supabase.from('users').update(staffData).eq('id', id);
+            if (error) throw error;
+        } else {
+            const { error } = await supabase.from('users').insert([staffData]);
+            if (error) throw error;
+        }
+        staffModalInstance.hide();
+        fetchStaff();
+    } catch (e) {
+        console.error(e);
+        alert('Lỗi lưu thông tin nhân viên.');
+    }
+}
+
+async function deleteStaff(id) {
+    const confirmed = await customConfirm('Bạn có chắc chắn muốn xóa nhân viên này khỏi hệ thống không?', 'Xóa nhân viên');
+    if (!confirmed) return;
+    
+    try {
+        const { error } = await supabase.from('users').delete().eq('id', id);
+        if (error) throw error;
+        fetchStaff();
+    } catch (e) {
+        console.error(e);
+        alert("Lỗi kết nối máy chủ khi xóa nhân viên.");
     }
 }
