@@ -258,6 +258,9 @@ function openProductModal() {
     document.getElementById('productForm').reset();
     document.getElementById('prodId').value = '';
     document.getElementById('prodBestSeller').checked = false;
+    document.getElementById('prodPromoPrice').value = '';
+    document.getElementById('prodPromoStart').value = '';
+    document.getElementById('prodPromoEnd').value = '';
     document.getElementById('options-container').replaceChildren();
     document.getElementById('recipe-container').replaceChildren();
     document.getElementById('productModalLabel').textContent = 'Thêm món mới';
@@ -275,6 +278,23 @@ function editProduct(id) {
     document.getElementById('prodDesc').value = product.description || '';
     document.getElementById('prodImg').value = product.imageUrl || '';
     document.getElementById('prodBestSeller').checked = !!product.isBestSeller;
+    
+    // Promo fields
+    const promoStartMatch = product.promotional_price && product.promo_start_time ? new Date(product.promo_start_time) : null;
+    const promoEndMatch = product.promotional_price && product.promo_end_time ? new Date(product.promo_end_time) : null;
+    
+    document.getElementById('prodPromoPrice').value = product.promotional_price || '';
+    
+    // Format for datetime-local (YYYY-MM-DDThh:mm)
+    const formatDateTimeLocal = (date) => {
+        if (!date || isNaN(date.getTime())) return '';
+        const offset = date.getTimezoneOffset() * 60000;
+        const localISOTime = (new Date(date - offset)).toISOString().slice(0, 16);
+        return localISOTime;
+    };
+    
+    document.getElementById('prodPromoStart').value = formatDateTimeLocal(promoStartMatch);
+    document.getElementById('prodPromoEnd').value = formatDateTimeLocal(promoEndMatch);
     // Load existing options
     const optionsContainer = document.getElementById('options-container');
     optionsContainer.replaceChildren();
@@ -494,6 +514,10 @@ async function saveProduct() {
         }
     });
 
+    const promoPriceStr = document.getElementById('prodPromoPrice').value;
+    const promoStartStr = document.getElementById('prodPromoStart').value;
+    const promoEndStr = document.getElementById('prodPromoEnd').value;
+    
     const productData = {
         name: document.getElementById('prodName').value,
         category: document.getElementById('prodCategory').value,
@@ -501,6 +525,9 @@ async function saveProduct() {
         description: document.getElementById('prodDesc').value,
         image_url: document.getElementById('prodImg').value,
         is_best_seller: document.getElementById('prodBestSeller').checked,
+        promotional_price: promoPriceStr ? parseFloat(promoPriceStr) : null,
+        promo_start_time: promoStartStr ? new Date(promoStartStr).toISOString() : null,
+        promo_end_time: promoEndStr ? new Date(promoEndStr).toISOString() : null,
         recipe: recipe,
         options: options
     };
@@ -605,7 +632,8 @@ async function fetchHistory() {
 
 function renderHistoryTable() {
     historyTableBody.replaceChildren();
-    let revenue = 0;
+    let grossRevenue = 0;
+    let netRevenue = 0;
 
     if (orderHistory.length === 0) {
         const tr = document.createElement('tr');
@@ -615,7 +643,7 @@ function renderHistoryTable() {
         td.textContent = 'Chưa có đơn hàng nào trong quá khứ.';
         tr.appendChild(td);
         historyTableBody.appendChild(tr);
-        totalRevenueEl.innerText = `Tổng doanh thu: 0 đ`;
+        totalRevenueEl.innerHTML = `Tổng doanh thu nguyên giá: <strong>0 đ</strong> <span class="ms-3 text-success">Doanh thu thực nhận: <strong>0 đ</strong></span>`;
         return;
     }
 
@@ -629,9 +657,11 @@ function renderHistoryTable() {
 
         const itemsStr = (order.items || []).map(i => `${i.quantity}x ${i.name}`).join(', ');
         const total = order.totalPrice || 0;
+        const discount = order.discountAmount || 0;
         
         if (order.status === 'Completed') {
-            revenue += total;
+            netRevenue += total;
+            grossRevenue += (total + discount);
         }
 
         const statusMap = {
@@ -724,12 +754,22 @@ function renderHistoryTable() {
     });
 
     totalRevenueEl.replaceChildren();
-    const strongRev = document.createElement('strong');
-    strongRev.textContent = 'Tổng doanh thu (Hoàn thành):';
-    const spanRev = document.createElement('span');
-    spanRev.className = 'text-success ms-2';
-    spanRev.textContent = `${revenue.toLocaleString('vi-VN')} đ`;
-    totalRevenueEl.append(strongRev, spanRev);
+    
+    // Gross Revenue
+    const strongGross = document.createElement('strong');
+    strongGross.textContent = 'Tổng doanh thu (Gốc):';
+    const spanGross = document.createElement('span');
+    spanGross.className = 'text-muted ms-2 me-4 text-decoration-line-through';
+    spanGross.textContent = `${grossRevenue.toLocaleString('vi-VN')} đ`;
+    
+    // Net Revenue
+    const strongNet = document.createElement('strong');
+    strongNet.textContent = 'Doanh thu thực nhận:';
+    const spanNet = document.createElement('span');
+    spanNet.className = 'text-success ms-2 fw-bold fs-5';
+    spanNet.textContent = `${netRevenue.toLocaleString('vi-VN')} đ`;
+    
+    totalRevenueEl.append(strongGross, spanGross, strongNet, spanNet);
 }
 
 window.cancelOrder = async (orderId) => {
@@ -1396,10 +1436,10 @@ supabase.channel('admin-orders')
       }
   })
   .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'staff_requests' }, payload => {
-      if(payload.new.status === 'pending') renderStaffRequest(payload.new);
+      if(payload.new.status === 'Pending') renderStaffRequest(payload.new);
   })
   .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'staff_requests' }, payload => {
-      if(payload.new.status === 'completed') removeStaffRequestUI(payload.new.id);
+      if(payload.new.status === 'Completed') removeStaffRequestUI(payload.new.id);
   })
   .subscribe((status, err) => {
       console.log('ADMIN REALTIME STATUS:', status);
@@ -1409,7 +1449,7 @@ supabase.channel('admin-orders')
 // --- Staff Requests (Top-Right Floating Alerts) ---
 async function fetchActiveStaffRequests() {
     try {
-        const { data, error } = await supabase.from('staff_requests').select('*').eq('status', 'pending');
+        const { data, error } = await supabase.from('staff_requests').select('*').eq('status', 'Pending');
         if (error) throw error;
         data.forEach(req => renderStaffRequest(req));
     } catch (e) { console.error("Error fetching staff requests:", e); }
@@ -1423,12 +1463,12 @@ function renderStaffRequest(data) {
         document.body.appendChild(container);
     }
 
-    const { id, table_number, type, created_at } = data;
+    const { id, table_number, request_type, created_at } = data;
     if(document.querySelector(`.admin-alert[data-request-id="${id}"]`)) return;
 
-    const msg = type === 'bill' ? `Bàn ${table_number} thanh toán!` : `Bàn ${table_number} gọi phục vụ!`;
-    const bg = type === 'bill' ? 'linear-gradient(135deg, #2ecc71, #27ae60)' : 'linear-gradient(135deg, #f39c12, #e67e22)';
-    const icon = type === 'bill' ? 'fa-file-invoice-dollar' : 'fa-bell-concierge';
+    const msg = request_type === 'bill' ? `Bàn ${table_number} thanh toán!` : `Bàn ${table_number} gọi phục vụ!`;
+    const bg = request_type === 'bill' ? 'linear-gradient(135deg, #2ecc71, #27ae60)' : 'linear-gradient(135deg, #f39c12, #e67e22)';
+    const icon = request_type === 'bill' ? 'fa-file-invoice-dollar' : 'fa-bell-concierge';
 
     const alertDiv = document.createElement('div');
     alertDiv.className = 'admin-alert custom-alert shadow-lg';
@@ -1476,7 +1516,7 @@ function removeStaffRequestUI(id) {
 window.clearStaffRequest = async (id, btn) => {
     btn.disabled = true;
     try {
-        await supabase.from('staff_requests').update({ status: 'completed' }).eq('id', id);
+        await supabase.from('staff_requests').update({ status: 'Completed' }).eq('id', id);
         removeStaffRequestUI(id);
     } catch(e) {
         console.error(e);

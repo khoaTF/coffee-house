@@ -173,7 +173,27 @@ async function fetchMenu() {
         if (ordersRes.error) throw ordersRes.error;
 
         // Map menu items properly id to _id for backward compatibility with existing UI code
-        menuItems = prodRes.data.map(p => ({...p, _id: p.id, imageUrl: p.image_url}));
+        const now = new Date();
+        menuItems = prodRes.data.map(p => {
+            let activePrice = p.price;
+            let isPromo = false;
+            if (p.promotional_price && p.promo_start_time && p.promo_end_time) {
+                const start = new Date(p.promo_start_time);
+                const end = new Date(p.promo_end_time);
+                if (now >= start && now <= end) {
+                    activePrice = p.promotional_price;
+                    isPromo = true;
+                }
+            }
+            return {
+                ...p, 
+                _id: p.id, 
+                imageUrl: p.image_url,
+                originalPrice: p.price,
+                price: activePrice,
+                isPromo: isPromo
+            };
+        });
         
         // Build stock dictionary
         ingredientStock = {};
@@ -299,6 +319,7 @@ function renderMenu(category) {
         card.style.setProperty('--item-idx', index);
         const isBestSeller = !!item.isBestSeller;
         const hasOptions = item.options && item.options.length > 0;
+        const hasPromo = !!item.isPromo;
         
         card.innerHTML = `
             <div style="position: relative;">
@@ -306,12 +327,15 @@ function renderMenu(category) {
                 <div class="img-fallback" style="display:none; width:100%; height:160px; background:linear-gradient(135deg,rgba(212,167,106,0.15) 0%,rgba(22,27,34,0.95) 100%); align-items:center; justify-content:center; flex-direction:column; gap:8px; color:rgba(255,255,255,0.4);"><i class="fa-solid fa-mug-hot" style="font-size:2rem;color:rgba(212,167,106,0.4);"></i><span style="font-size:0.8rem;">${item.name}</span></div>
                 ${isOutOfStock ? '<div style="position: absolute; top: 10px; right: 10px; background: var(--danger); color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold;">Hết hàng</div>' : ''}
                 ${isBestSeller && !isOutOfStock ? '<div style="position: absolute; top: -10px; left: -10px; background: linear-gradient(45deg, #ff416c, #ff4b2b); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; box-shadow: 0 4px 10px rgba(255, 65, 108, 0.4); z-index: 2; transform: rotate(-5deg);"><i class="fa-solid fa-fire"></i> Bán Chạy</div>' : ''}
+                ${hasPromo && !isOutOfStock ? '<div style="position: absolute; bottom: 10px; right: 10px; background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; box-shadow: 0 4px 10px rgba(46,204,113,0.4); z-index: 2;"><i class="fa-solid fa-tag"></i> KM</div>' : ''}
             </div>
             <div class="menu-details">
-                <div>
-                    <div class="menu-title">${item.name}</div>
-                    <div class="menu-desc">${item.description}</div>
-                    <div class="menu-price">${item.price.toLocaleString('vi-VN')} đ</div>
+                <div class="flex-grow-1" style="min-width: 0;">
+                    <div class="menu-title text-truncate" title="${item.name}">${item.name}</div>
+                    <div class="menu-desc text-truncate" title="${item.description}">${item.description}</div>
+                    <div class="menu-price">
+                        ${hasPromo ? `<span class="text-decoration-line-through text-muted small me-1">${item.originalPrice.toLocaleString('vi-VN')}đ</span> <span class="text-success fw-bold">${item.price.toLocaleString('vi-VN')}đ</span>` : `${item.price.toLocaleString('vi-VN')} đ`}
+                    </div>
                 </div>
                 <div class="qty-controls" style="margin-top: auto; align-self: flex-start;">
                     ${(cartItemTotalQty > 0) ? `<button class="qty-btn" onclick="updateCart('${item._id}', -1)">-</button>` : ''}
@@ -1553,9 +1577,9 @@ window.requestStaffService = async function(type) {
     
     try {
         const { error } = await supabase.from('staff_requests').insert([{
-            table_number: TABLE_NUMBER,
-            type: dbTypes[type] || 'staff',
-            status: 'pending'
+            table_number: TABLE_NUMBER.toString(),
+            request_type: dbTypes[type] || 'staff',
+            status: 'Pending'
         }]);
         if (error) throw error;
         
