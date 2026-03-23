@@ -206,7 +206,26 @@ function renderProductsTable() {
         
         // Price Cell
         const tdPrice = document.createElement('td');
+        
+        let isPromoValid = false;
         if (p.promotional_price) {
+            const now = new Date();
+            const startStr = p.promo_start_time || p.promo_start_time === '' ? p.promo_start_time : null;
+            const endStr = p.promo_end_time || p.promo_end_time === '' ? p.promo_end_time : null;
+
+            if (!startStr && !endStr) {
+                isPromoValid = true;
+            } else {
+                const s = startStr ? new Date(startStr) : null;
+                const e = endStr ? new Date(endStr) : null;
+                
+                if (s && e) isPromoValid = now >= s && now <= e;
+                else if (s && !e) isPromoValid = now >= s;
+                else if (!s && e) isPromoValid = now <= e;
+            }
+        }
+
+        if (isPromoValid) {
             tdPrice.innerHTML = `<span class="text-muted text-decoration-line-through small">${p.price.toLocaleString('vi-VN')} đ</span><br><span class="text-danger fw-bold">${p.promotional_price.toLocaleString('vi-VN')} đ</span>`;
         } else {
             tdPrice.className = 'text-primary fw-bold';
