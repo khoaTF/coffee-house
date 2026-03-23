@@ -17,6 +17,10 @@ app.use((req, res, next) => {
 // JSON parsing
 app.use(express.json());
 
+// Health check endpoints for Render
+app.get('/health', (req, res) => res.status(200).send('OK'));
+app.get('/ping', (req, res) => res.status(200).send('pong'));
+
 // Serve static frontend files from 'public' directory at root
 app.use(express.static(path.join(__dirname, '../public')));
 
