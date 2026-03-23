@@ -869,11 +869,11 @@ async function requestStaffService(type) {
     }
 
     try {
+        let dbType = type === 'checkout' ? 'bill' : 'staff';
         const { error } = await supabase.from('staff_requests').insert([{
             table_number: TABLE_NUMBER.toString(),
-            session_id: sessionId,
-            request_type: type,
-            status: 'Pending'
+            type: dbType,
+            status: 'pending'
         }]);
 
         if (error) throw error;
@@ -1576,10 +1576,11 @@ window.requestStaffService = async function(type) {
     if (!confirmed) return;
     
     try {
+        let dbType = type === 'checkout' ? 'bill' : 'staff';
         const { error } = await supabase.from('staff_requests').insert([{
             table_number: TABLE_NUMBER.toString(),
-            request_type: dbTypes[type] || 'staff',
-            status: 'Pending'
+            type: dbType,
+            status: 'pending'
         }]);
         if (error) throw error;
         

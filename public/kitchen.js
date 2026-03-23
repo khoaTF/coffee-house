@@ -454,12 +454,12 @@ function setupRealtimeSubscription() {
             }
         })
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'staff_requests' }, payload => {
-            if (payload.new.status === 'Pending') {
+            if (payload.new.status === 'pending') {
                 renderStaffRequest(payload.new);
             }
         })
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'staff_requests' }, payload => {
-            if (payload.new.status === 'Completed') {
+            if (payload.new.status === 'completed') {
                 removeStaffRequestUI(payload.new.id);
             }
         })
@@ -489,17 +489,17 @@ async function fetchActiveStaffRequests() {
         const { data, error } = await supabase
             .from('staff_requests')
             .select('*')
-            .eq('status', 'Pending');
+            .eq('status', 'pending');
         if (error) throw error;
         data.forEach(req => renderStaffRequest(req));
     } catch (e) { console.error("Error fetching staff requests:", e); }
 }
 
 function renderStaffRequest(data) {
-    const { id, table_number, request_type, created_at } = data;
-    const msg = request_type === 'bill' ? `Bàn ${table_number} yêu cầu thanh toán!` : `Bàn ${table_number} gọi phục vụ!`;
-    const alertClass = request_type === 'bill' ? 'bill-alert' : 'help-alert';
-    const iconClass = request_type === 'bill' ? 'fa-file-invoice-dollar' : 'fa-hand-paper';
+    const { id, table_number, type, created_at } = data;
+    const msg = type === 'bill' ? `Bàn ${table_number} yêu cầu thanh toán!` : `Bàn ${table_number} gọi phục vụ!`;
+    const alertClass = type === 'bill' ? 'bill-alert' : 'help-alert';
+    const iconClass = type === 'bill' ? 'fa-file-invoice-dollar' : 'fa-hand-paper';
 
     // Check if already exists
     if (document.querySelector(`.custom-alert[data-request-id="${id}"]`)) return;
@@ -528,7 +528,7 @@ function removeStaffRequestUI(id) {
 window.clearRequest = async (id, btn) => {
     btn.disabled = true;
     try {
-        const { error } = await supabase.from('staff_requests').update({ status: 'Completed' }).eq('id', id);
+        const { error } = await supabase.from('staff_requests').update({ status: 'completed' }).eq('id', id);
         if (error) throw error;
         removeStaffRequestUI(id);
     } catch (e) {

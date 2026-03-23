@@ -1436,10 +1436,10 @@ supabase.channel('admin-orders')
       }
   })
   .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'staff_requests' }, payload => {
-      if(payload.new.status === 'Pending') renderStaffRequest(payload.new);
+      if(payload.new.status === 'pending') renderStaffRequest(payload.new);
   })
   .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'staff_requests' }, payload => {
-      if(payload.new.status === 'Completed') removeStaffRequestUI(payload.new.id);
+      if(payload.new.status === 'completed') removeStaffRequestUI(payload.new.id);
   })
   .subscribe((status, err) => {
       console.log('ADMIN REALTIME STATUS:', status);
@@ -1449,7 +1449,7 @@ supabase.channel('admin-orders')
 // --- Staff Requests (Top-Right Floating Alerts) ---
 async function fetchActiveStaffRequests() {
     try {
-        const { data, error } = await supabase.from('staff_requests').select('*').eq('status', 'Pending');
+        const { data, error } = await supabase.from('staff_requests').select('*').eq('status', 'pending');
         if (error) throw error;
         data.forEach(req => renderStaffRequest(req));
     } catch (e) { console.error("Error fetching staff requests:", e); }
@@ -1463,12 +1463,12 @@ function renderStaffRequest(data) {
         document.body.appendChild(container);
     }
 
-    const { id, table_number, request_type, created_at } = data;
+    const { id, table_number, type, created_at } = data;
     if(document.querySelector(`.admin-alert[data-request-id="${id}"]`)) return;
 
-    const msg = request_type === 'bill' ? `Bàn ${table_number} thanh toán!` : `Bàn ${table_number} gọi phục vụ!`;
-    const bg = request_type === 'bill' ? 'linear-gradient(135deg, #2ecc71, #27ae60)' : 'linear-gradient(135deg, #f39c12, #e67e22)';
-    const icon = request_type === 'bill' ? 'fa-file-invoice-dollar' : 'fa-bell-concierge';
+    const msg = type === 'bill' ? `Bàn ${table_number} thanh toán!` : `Bàn ${table_number} gọi phục vụ!`;
+    const bg = type === 'bill' ? 'linear-gradient(135deg, #2ecc71, #27ae60)' : 'linear-gradient(135deg, #f39c12, #e67e22)';
+    const icon = type === 'bill' ? 'fa-file-invoice-dollar' : 'fa-bell-concierge';
 
     const alertDiv = document.createElement('div');
     alertDiv.className = 'admin-alert custom-alert shadow-lg';
@@ -1516,7 +1516,7 @@ function removeStaffRequestUI(id) {
 window.clearStaffRequest = async (id, btn) => {
     btn.disabled = true;
     try {
-        await supabase.from('staff_requests').update({ status: 'Completed' }).eq('id', id);
+        await supabase.from('staff_requests').update({ status: 'completed' }).eq('id', id);
         removeStaffRequestUI(id);
     } catch(e) {
         console.error(e);

@@ -521,14 +521,13 @@
             }
         }
 
-        // Staff Requests Fetch
         async function fetchRequests() {
             requestsContainer.innerHTML = '<div class="text-center text-muted"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải...</div>';
             try {
                 const { data, error } = await supabase
                     .from('staff_requests')
                     .select('*')
-                    .eq('status', 'Pending')
+                    .eq('status', 'pending')
                     .order('created_at', { ascending: true });
 
                 if (error) throw error;
@@ -555,7 +554,7 @@
                 const { count, error } = await supabase
                     .from('staff_requests')
                     .select('*', { count: 'exact', head: true })
-                    .eq('status', 'Pending');
+                    .eq('status', 'pending');
                     
                 const badge = document.getElementById('req-badge');
                 if(!error && count > 0) {
@@ -718,7 +717,7 @@
 
         async function completeRequest(reqId) {
             try {
-                const { error } = await supabase.from('staff_requests').update({ status: 'Completed' }).eq('id', reqId);
+                const { error } = await supabase.from('staff_requests').update({ status: 'completed' }).eq('id', reqId);
                 if(error) throw error;
                 fetchRequests();
                 fetchRequestsBadge();
