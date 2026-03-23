@@ -226,7 +226,7 @@ function renderProductsTable() {
         }
 
         if (isPromoValid) {
-            tdPrice.innerHTML = `<span class="text-muted text-decoration-line-through small">${p.price.toLocaleString('vi-VN')} đ</span><br><span class="text-danger fw-bold">${p.promotional_price.toLocaleString('vi-VN')} đ</span>`;
+            tdPrice.innerHTML = `<span class="text-decoration-line-through small" style="color: #a3aab1;">${p.price.toLocaleString('vi-VN')} đ</span><br><span class="text-danger fw-bold">${p.promotional_price.toLocaleString('vi-VN')} đ</span>`;
         } else {
             tdPrice.className = 'text-primary fw-bold';
             tdPrice.textContent = `${p.price.toLocaleString('vi-VN')} đ`;
