@@ -206,11 +206,12 @@ body {
     padding: 12px 4px 16px 4px; 
     scrollbar-width: none; 
     position: sticky;
-    top: 70px;
+    top: 60px; /* Right below the sticky search bar */
     z-index: 50;
     margin-bottom: 20px;
-    background: transparent;
+    background: var(--bg-color); /* Prevents items from showing behind */
     pointer-events: auto;
+    border-bottom: 1px solid var(--surface-glass-border);
 }
 .category-pills::-webkit-scrollbar { display: none; }
 .pill { 
