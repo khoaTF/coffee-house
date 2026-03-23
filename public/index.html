@@ -105,7 +105,7 @@
                     <div class="hub-logo mb-4" style="font-size: 3rem; justify-content: center;"><span class="text-1">Nohope</span><span class="text-2">Coffee</span></div>
                     <div style="display: flex; gap: 8px; align-items: center;">
                         <button id="lang-toggle" title="Toggle Language"
-                            style="font-size: 0.9rem; padding: 4px 8px; font-weight: 800; background: var(--surface-color); border: 3px solid var(--border); box-shadow: 4px 4px 0px var(--border); color: var(--text-main); cursor: pointer;">
+                            style="font-size: 0.9rem; padding: 4px 8px; font-weight: 800; background: var(--surface-color); border: 1px solid var(--border); box-shadow: var(--shadow-sm); color: var(--text-main); cursor: pointer;">
                             EN
                         </button>
                         <button id="my-orders-btn" class="btn btn-outline"
@@ -120,11 +120,11 @@
 
         <div class="main-flow">
             <!-- Sticky Top Section: Search & Categories -->
-            <div class="sticky-top-section" style="position: sticky; top: -1px; z-index: 60; background: var(--bg-color); border-bottom: 4px solid var(--border); padding-top: 10px;">
+            <div class="sticky-top-section" style="position: sticky; top: -1px; z-index: 60; background: var(--bg-color); border-bottom: 1px solid var(--border); padding-top: 10px;">
                 <!-- Search Section -->
                 <div class="container" style="padding-top: 5px; padding-bottom: 5px;">
                     <div
-                        style="padding: 10px 18px; display: flex; align-items: center; gap: 12px; border: 3px solid var(--border); background: var(--surface-color); box-shadow: var(--shadow-sm);">
+                        style="padding: 10px 18px; display: flex; align-items: center; gap: 12px; border: 1px solid var(--border); background: var(--surface-color); box-shadow: var(--shadow-sm);">
                         <i class="fa-solid fa-search text-main" style="font-weight: 800;"></i>
                         <input type="text" id="menu-search" class="form-control border-0 bg-transparent text-dark p-0"
                             placeholder="Tìm kiếm món ăn..."
@@ -238,14 +238,14 @@
                         style="width: 100%;"></textarea>
 
                     <div class="loyalty-section mt-3 mb-3"
-                        style="background: var(--bg-color); padding: 16px; border: 3px solid #f39c12; box-shadow: 4px 4px 0px #f39c12;">
+                        style="background: var(--bg-color); padding: 16px; border: 2px solid #f39c12; box-shadow: 2px 2px 0px #f39c12;">
                         <label class="font-bold" style="display: block; margin-bottom: 5px; color: #d35400;"><i
                                 class="fa-solid fa-crown"></i> Tích điểm / Thành viên:</label>
                         <div style="display: flex; gap: 8px;">
                             <input type="tel" id="customer-phone-input" class="input-glass" placeholder="Nhập SĐT..."
-                                style="flex: 1; border: 3px solid #e67e22; box-shadow: 4px 4px 0px #e67e22;">
+                                style="flex: 1; border: 2px solid #e67e22; box-shadow: 2px 2px 0px #e67e22;">
                             <button id="verify-phone-btn" onclick="verifyCustomerPhone()" class="btn btn-primary"
-                                style="padding: 8px 16px; border: 3px solid #d35400; box-shadow: 4px 4px 0px #d35400; white-space: nowrap; background: #e67e22; color: #fff;">Nhận diện</button>
+                                style="padding: 8px 16px; border: 2px solid #d35400; box-shadow: 2px 2px 0px #d35400; white-space: nowrap; background: #e67e22; color: #fff;">Nhận diện</button>
                         </div>
                         <div id="loyalty-message"
                             style="display: none; font-size: 0.85rem; margin-top: 6px; font-weight: 600; color: #d35400;">
@@ -286,18 +286,18 @@
 
                         <div id="loyalty-discount-btn" style="display: none; margin-top: 10px;">
                             <button onclick="applyLoyaltyPoints()" class="btn btn-outline"
-                                style="width: 100%; font-size: 0.85rem; border: 3px solid #d35400; box-shadow: 4px 4px 0px #d35400; color: #d35400;"><i
+                                style="width: 100%; font-size: 0.85rem; border: 2px solid #d35400; box-shadow: 2px 2px 0px #d35400; color: #d35400;"><i
                                     class="fa-solid fa-gift"></i> Đổi 100 điểm = Giảm 10.000đ</button>
                         </div>
                     </div>
 
                     <div class="promo-section mt-3"
-                        style="background: var(--bg-color); padding: 16px; border: 3px solid var(--border); box-shadow: 4px 4px 0px var(--border);">
+                        style="background: var(--bg-color); padding: 16px; border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
                         <label class="font-bold text-main" style="display: block; margin-bottom: 5px;"><i
                                 class="fa-solid fa-ticket-simple text-accent"></i> Mã khuyến mãi:</label>
                         <div style="display: flex; gap: 8px;">
                             <input type="text" id="promo-code-input" class="input-glass" placeholder="Nhập mã..."
-                                style="flex: 1; text-transform: uppercase; border: 3px solid var(--border); box-shadow: 4px 4px 0px var(--border);">
+                                style="flex: 1; text-transform: uppercase; border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
                             <button id="apply-promo-btn" onclick="applyPromo()" class="btn btn-outline"
                                 style="padding: 8px 16px; white-space: nowrap;">Áp
                                 dụng</button>
@@ -315,13 +315,13 @@
                         <span><i class="fa-solid fa-tag"></i> Giảm giá:</span>
                         <span>-<span id="checkout-discount">0</span></span>
                     </div>
-                    <div class="flex-between mb-2 mt-2 pt-2" style="border-top: 3px dashed var(--border);">
+                    <div class="flex-between mb-2 mt-2 pt-2" style="border-top: 2px dashed var(--border);">
                         <span class="font-bold" style="font-size: 1.1rem;">Tổng thanh toán:</span>
                         <span class="font-bold text-primary" style="font-size: 1.2rem;"><span
                                 id="checkout-total">0</span></span>
                     </div>
                     <!-- Payment Options -->
-                    <div class="d-grid gap-2 mb-2 pt-3" style="border-top: 3px dashed var(--border);">
+                    <div class="d-grid gap-2 mb-2 pt-3" style="border-top: 2px dashed var(--border);">
                         <button id="checkout-cash-btn" class="btn btn-outline" disabled>
                             <i class="fa-solid fa-money-bill-wave"></i> Thanh toán tại quầy
                         </button>
@@ -344,13 +344,13 @@
                     <p class="text-main mb-3">Sử dụng <strong>App Ngân hàng</strong> hoặc <strong>MoMo</strong> quét mã
                         QR đê thanh toán.</p>
                     <div
-                        style="background: #FFF; padding: 20px; display: inline-block; border: 4px solid var(--border); box-shadow: 8px 8px 0px var(--border);">
+                        style="background: #FFF; padding: 20px; display: inline-block; border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
                         <img id="qr-image"
                             src="https://img.vietqr.io/image/970415-113333666999-compact2.jpg?amount=0&addInfo=Thanh%20toan%20Hoa%20don&accountName=QUAN%20CAFE%20NOHOPE"
                             alt="Bank QR Code" style="width: 250px; height: 250px;">
                     </div>
                     <div class="mt-4 text-start p-3"
-                        style="background: var(--surface-color); border: 4px dashed var(--border);">
+                        style="background: var(--surface-color); border: 2px dashed var(--border);">
                         <div class="mb-2"><span class="text-muted">Tổng cộng:</span> <strong
                                 class="float-end text-success" id="payment-total-amount" style="font-size: 1.1rem;">0
                                 đ</strong></div>
@@ -414,7 +414,7 @@
                 <div class="cart-modal-body text-center">
                     <img src="https://images.unsplash.com/photo-1555507036-ab1f40ce88cb?auto=format&fit=crop&w=300&q=80"
                         alt="Bánh sừng trâu"
-                        style="width: 120px; height: 120px; border-radius: 0px; object-fit: cover; margin-bottom: 15px; border: 4px solid var(--primary); box-shadow: 6px 6px 0px var(--primary);">
+                        style="width: 120px; height: 120px; border-radius: 16px; object-fit: cover; margin-bottom: 15px; border: 1px solid var(--border); box-shadow: var(--shadow-md);">
                     <p class="font-bold text-main" style="font-size: 1.1rem; margin-bottom: 5px;">Bánh Sừng Trâu
                         (Croissant)</p>
                     <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 15px;">Thưởng thức cùng đồ uống sẽ
@@ -434,7 +434,7 @@
         <div class="modal fade" id="feedbackModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content"
-                    style="border: 4px solid var(--border); border-radius: 0px; box-shadow: 12px 12px 0px var(--border); background: var(--surface-color);">
+                    style="border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow-md); background: var(--surface-color);">
                     <div class="modal-header border-0">
                         <h5 class="modal-title font-bold text-main"><i class="fa-solid fa-face-smile-beam me-2"></i>Đánh
                             giá trải nghiệm</h5>
@@ -453,7 +453,7 @@
 
                         <textarea id="feedback-comment" class="form-control mb-3"
                             rows="3" placeholder="Chia sẻ thêm cảm nhận của bạn..."
-                            style="border-radius: 0; border: 3px solid var(--border); box-shadow: 4px 4px 0px var(--border); background: var(--surface-color); color: var(--text-main); font-weight: 700;"></textarea>
+                            style="border-radius: 0; border: 1px solid var(--border); box-shadow: var(--shadow-sm); background: var(--surface-color); color: var(--text-main); font-weight: 700;"></textarea>
 
                         <div class="d-grid">
                             <button class="btn btn-primary py-2" id="submit-feedback-btn" onclick="submitFeedback()">Gửi đánh giá</button>
@@ -512,9 +512,9 @@
             }
 
             .btn-floating {
-                border: 3px solid var(--border);
-                border-radius: 0px;
-                box-shadow: 4px 4px 0px var(--border);
+                border: 1px solid var(--border);
+                border-radius: 16px;
+                box-shadow: var(--shadow-sm);
                 width: 48px;
                 height: 48px;
                 display: flex;
@@ -525,7 +525,7 @@
             }
 
             .btn-floating:active {
-                transform: translate(2px, 2px);
+                transform: scale(0.96);
                 box-shadow: 0 0 0;
             }
 
@@ -537,8 +537,8 @@
             .fab-main {
                 background: var(--accent);
                 color: #fff;
-                border: 3px solid var(--border);
-                box-shadow: 4px 4px 0px var(--border);
+                border: 1px solid var(--border);
+                box-shadow: var(--shadow-sm);
             }
 
             .fab-main.active i {
@@ -607,7 +607,7 @@
         <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
             <div class="modal-dialog modal-dialog-centered modal-sm">
                 <div class="modal-content"
-                    style="border: 4px solid var(--border); border-radius: 0; box-shadow: 12px 12px 0px var(--border); background: var(--surface-color);">
+                    style="border: 1px solid var(--border); border-radius: 0; box-shadow: var(--shadow-md); background: var(--surface-color);">
                     <div class="modal-header border-0 pb-0">
                         <h5 class="modal-title" id="confirmModalTitle"
                             style="color: var(--text-main); font-weight: bold;"><i
@@ -618,9 +618,9 @@
                     <div class="modal-footer border-0 pt-0">
                         <button type="button" class="btn btn-secondary btn-sm" id="confirmModalCancel"
                             data-bs-dismiss="modal"
-                            style="border-radius: 0; border: 3px solid var(--border); background: var(--surface-color); box-shadow: 4px 4px 0px var(--border); color: var(--text-main); font-weight: 800;">Không</button>
+                            style="border-radius: 0; border: 1px solid var(--border); background: var(--surface-color); box-shadow: var(--shadow-sm); color: var(--text-main); font-weight: 800;">Không</button>
                         <button type="button" class="btn btn-danger btn-sm" id="confirmModalOk"
-                            style="border-radius: 0; border: 3px solid var(--border); background: var(--accent); color: #FFF; font-weight: 800; box-shadow: 4px 4px 0px var(--border);">Có,
+                            style="border-radius: 0; border: 1px solid var(--border); background: var(--accent); color: #FFF; font-weight: 800; box-shadow: var(--shadow-sm);">Có,
                             xác nhận</button>
                     </div>
                 </div>
