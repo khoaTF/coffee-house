@@ -119,14 +119,27 @@
         </aside>
 
         <div class="main-flow">
-            <!-- Search Section -->
-            <div class="container" style="position: sticky; top: 0; z-index: 60; background: var(--bg-color); margin-top: -10px; padding-top: 10px; padding-bottom: 5px; border-bottom: 1px solid var(--surface-glass-border);">
-                <div
-                    style="padding: 10px 18px; display: flex; align-items: center; gap: 12px; border-radius: var(--radius-lg); border: 1px solid var(--border); background: var(--surface-color); box-shadow: var(--shadow-sm);">
-                    <i class="fa-solid fa-search text-muted"></i>
-                    <input type="text" id="menu-search" class="form-control border-0 bg-transparent text-dark p-0"
-                        placeholder="Tìm kiếm món ăn..."
-                        style="box-shadow: none; font-size: 0.95rem; font-weight: 500;">
+            <!-- Sticky Top Section: Search & Categories -->
+            <div class="sticky-top-section" style="position: sticky; top: 0; z-index: 60; background: var(--bg-color); border-bottom: 1px solid var(--surface-glass-border);">
+                <!-- Search Section -->
+                <div class="container" style="margin-top: -10px; padding-top: 10px; padding-bottom: 5px;">
+                    <div
+                        style="padding: 10px 18px; display: flex; align-items: center; gap: 12px; border-radius: var(--radius-lg); border: 1px solid var(--border); background: var(--surface-color); box-shadow: var(--shadow-sm);">
+                        <i class="fa-solid fa-search text-muted"></i>
+                        <input type="text" id="menu-search" class="form-control border-0 bg-transparent text-dark p-0"
+                            placeholder="Tìm kiếm món ăn..."
+                            style="box-shadow: none; font-size: 0.95rem; font-weight: 500;">
+                    </div>
+                </div>
+
+                <!-- Categories -->
+                <div class="container" style="padding-top: 0; padding-bottom: 5px;">
+                    <div class="category-pills" style="position: static; margin-bottom: 5px; border-bottom: none; padding-top: 5px; padding-bottom: 10px; z-index: 1;">
+                        <button class="pill active" data-category="All">Tất cả</button>
+                        <button class="pill" data-category="Coffee">Cà phê</button>
+                        <button class="pill" data-category="Tea">Trà</button>
+                        <button class="pill" data-category="Food">Đồ ăn</button>
+                    </div>
                 </div>
             </div>
 
@@ -182,14 +195,6 @@
 
             <!-- Main Content: Menu -->
             <main class="container mb-padding">
-
-                <!-- Categories -->
-                <div class="category-pills">
-                    <button class="pill active" data-category="All">Tất cả</button>
-                    <button class="pill" data-category="Coffee">Cà phê</button>
-                    <button class="pill" data-category="Tea">Trà</button>
-                    <button class="pill" data-category="Food">Đồ ăn</button>
-                </div>
 
                 <div id="loader" class="text-center mt-4">Đang tải thực đơn...</div>
 
