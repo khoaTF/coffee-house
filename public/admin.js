@@ -10,6 +10,7 @@ let promoModalInstance;
 let confirmModalInstance;
 let customerModalInstance;
 let staffModalInstance;
+let quickPromoModalInstance;
 const authHeaders = () => ({ 'Authorization': 'Bearer ' + (sessionStorage.getItem('cafe_token') || localStorage.getItem('cafe_token')) });
 
 // DOM Elements (Initialized in DOMContentLoaded to prevent null errors)
@@ -68,6 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
     promoModalInstance = new bootstrap.Modal(document.getElementById('promoModal'));
     customerModalInstance = new bootstrap.Modal(document.getElementById('customerModal'));
     staffModalInstance = new bootstrap.Modal(document.getElementById('staffModal'));
+    quickPromoModalInstance = new bootstrap.Modal(document.getElementById('quickPromoModal'));
     // Load initial data
     fetchProducts();
     fetchHistory();
@@ -244,6 +246,14 @@ function renderProductsTable() {
         const tdAction = document.createElement('td');
         tdAction.className = 'text-end';
         
+        const quickPromoBtn = document.createElement('button');
+        quickPromoBtn.className = 'action-btn text-warning me-2';
+        quickPromoBtn.title = 'Giảm giá nhanh';
+        const quickPromoIcon = document.createElement('i');
+        quickPromoIcon.className = 'fa-solid fa-tag';
+        quickPromoBtn.appendChild(quickPromoIcon);
+        quickPromoBtn.onclick = () => openQuickPromo(p._id);
+
         const editBtn = document.createElement('button');
         editBtn.className = 'action-btn edit-btn';
         editBtn.title = 'Sửa';
@@ -269,7 +279,7 @@ function renderProductsTable() {
             toggleBtn.onclick = () => restoreProduct(p._id);
         }
         
-        tdAction.append(editBtn, toggleBtn);
+        tdAction.append(quickPromoBtn, editBtn, toggleBtn);
         
         tr.append(tdImg, tdInfo, tdCat, tdPrice, tdStatus, tdAction);
         productsTableBody.appendChild(tr);
@@ -586,6 +596,61 @@ async function saveProduct() {
     } catch (error) {
         console.error(error);
         alert("Lưu sản phẩm thất bại.");
+    }
+}
+
+// Giảm Giá Nhanh
+function openQuickPromo(id) {
+    const product = products.find(p => p._id === id);
+    if (!product) return;
+    
+    document.getElementById('quickPromoId').value = product._id;
+    document.getElementById('quickPromoName').textContent = product.name;
+    document.getElementById('quickPromoOriginalPrice').textContent = `${product.price.toLocaleString('vi-VN')} đ`;
+    
+    document.getElementById('quickPromoPriceInput').value = product.promotional_price || '';
+    
+    const formatDateTimeLocal = (dateStr) => {
+        if (!dateStr || dateStr === '') return '';
+        const date = new Date(dateStr);
+        if (isNaN(date.getTime())) return '';
+        const offset = date.getTimezoneOffset() * 60000;
+        return (new Date(date - offset)).toISOString().slice(0, 16);
+    };
+    
+    document.getElementById('quickPromoStart').value = formatDateTimeLocal(product.promo_start_time);
+    document.getElementById('quickPromoEnd').value = formatDateTimeLocal(product.promo_end_time);
+    
+    quickPromoModalInstance.show();
+}
+
+async function saveQuickPromo() {
+    const id = document.getElementById('quickPromoId').value;
+    const priceStr = document.getElementById('quickPromoPriceInput').value;
+    let startStr = document.getElementById('quickPromoStart').value;
+    let endStr = document.getElementById('quickPromoEnd').value;
+    
+    // Auto set start time if left empty while setting a price
+    if (priceStr && !startStr) {
+        startStr = new Date().toISOString();
+        document.getElementById('quickPromoStart').value = startStr.slice(0, 16);
+    }
+    
+    const promoData = {
+        promotional_price: priceStr ? parseFloat(priceStr) : null,
+        promo_start_time: startStr ? new Date(startStr).toISOString() : null,
+        promo_end_time: endStr ? new Date(endStr).toISOString() : null,
+    };
+    
+    try {
+        const { error } = await supabase.from('products').update(promoData).eq('id', id);
+        if (error) throw error;
+        
+        quickPromoModalInstance.hide();
+        fetchProducts();
+    } catch (e) {
+        console.error(e);
+        alert('Cập nhật khuyến mãi thất bại');
     }
 }
 

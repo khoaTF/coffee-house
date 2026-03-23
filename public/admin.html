@@ -631,6 +631,44 @@
         </div>
     </div>
 
+    <!-- Quick Promo Modal -->
+    <div class="modal fade" id="quickPromoModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fa-solid fa-tag text-danger me-2"></i> Giảm Giá Nhanh</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="quickPromoForm">
+                        <input type="hidden" id="quickPromoId">
+                        <div class="text-center mb-3">
+                            <h6 id="quickPromoName" class="text-info fw-bold mb-1">Tên món</h6>
+                            <div class="badge bg-secondary bg-opacity-25 text-light border border-secondary p-2">Giá gốc: <span id="quickPromoOriginalPrice" class="fw-bold text-warning">0 đ</span></div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-light small">Giá khuyến mãi (VNĐ)</label>
+                            <input type="number" id="quickPromoPriceInput" class="form-control bg-dark text-light border-danger" placeholder="Để trống để xóa KM">
+                            <small class="text-muted" style="font-size: 0.75rem;">Để trống để hủy khuyến mãi</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-light small">Bắt đầu KM</label>
+                            <input type="datetime-local" class="form-control bg-dark text-light border-secondary" id="quickPromoStart">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-light small">Kết thúc KM</label>
+                            <input type="datetime-local" class="form-control bg-dark text-light border-secondary" id="quickPromoEnd">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-danger btn-sm fw-bold" onclick="saveQuickPromo()">Áp dụng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Promo Modal -->
     <div class="modal fade" id="promoModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
