@@ -206,8 +206,12 @@ function renderProductsTable() {
         
         // Price Cell
         const tdPrice = document.createElement('td');
-        tdPrice.className = 'text-primary fw-bold';
-        tdPrice.textContent = `${p.price.toLocaleString('vi-VN')} đ`;
+        if (p.promotional_price) {
+            tdPrice.innerHTML = `<span class="text-muted text-decoration-line-through small">${p.price.toLocaleString('vi-VN')} đ</span><br><span class="text-danger fw-bold">${p.promotional_price.toLocaleString('vi-VN')} đ</span>`;
+        } else {
+            tdPrice.className = 'text-primary fw-bold';
+            tdPrice.textContent = `${p.price.toLocaleString('vi-VN')} đ`;
+        }
         
         // Status Cell
         const tdStatus = document.createElement('td');
@@ -515,8 +519,12 @@ async function saveProduct() {
     });
 
     const promoPriceStr = document.getElementById('prodPromoPrice').value;
-    const promoStartStr = document.getElementById('prodPromoStart').value;
+    let promoStartStr = document.getElementById('prodPromoStart').value;
     const promoEndStr = document.getElementById('prodPromoEnd').value;
+    
+    if (promoPriceStr && !promoStartStr) {
+        promoStartStr = new Date().toISOString();
+    }
     
     const productData = {
         name: document.getElementById('prodName').value,
