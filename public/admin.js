@@ -93,6 +93,30 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         switchTab('menu');
     }
+
+    // Add Event Listeners for Quick Promo Modal
+    document.getElementById('quickPromoPercentInput').addEventListener('input', function() {
+        const percent = parseFloat(this.value);
+        const originalPrice = parseFloat(document.getElementById('quickPromoOriginalPriceValue').value);
+        if (!isNaN(percent) && !isNaN(originalPrice) && percent >= 0 && percent <= 100) {
+            let discountedPrice = originalPrice * (1 - percent / 100);
+            discountedPrice = Math.round(discountedPrice / 1000) * 1000;
+            document.getElementById('quickPromoPriceInput').value = discountedPrice;
+        } else if (this.value === '') {
+            document.getElementById('quickPromoPriceInput').value = '';
+        }
+    });
+
+    document.getElementById('quickPromoPriceInput').addEventListener('input', function() {
+        const price = parseFloat(this.value);
+        const originalPrice = parseFloat(document.getElementById('quickPromoOriginalPriceValue').value);
+        if (!isNaN(price) && !isNaN(originalPrice) && originalPrice > 0 && price >= 0) {
+            const percent = (1 - price / originalPrice) * 100;
+            document.getElementById('quickPromoPercentInput').value = Math.round(percent * 10) / 10;
+        } else if (this.value === '') {
+            document.getElementById('quickPromoPercentInput').value = '';
+        }
+    });
 });
 
 // const socket = io(); // REMOVED FOR SUPABASE
@@ -607,8 +631,16 @@ function openQuickPromo(id) {
     document.getElementById('quickPromoId').value = product._id;
     document.getElementById('quickPromoName').textContent = product.name;
     document.getElementById('quickPromoOriginalPrice').textContent = `${product.price.toLocaleString('vi-VN')} đ`;
+    document.getElementById('quickPromoOriginalPriceValue').value = product.price;
     
     document.getElementById('quickPromoPriceInput').value = product.promotional_price || '';
+    
+    if (product.promotional_price && product.price > 0) {
+        const percent = (1 - product.promotional_price / product.price) * 100;
+        document.getElementById('quickPromoPercentInput').value = Math.round(percent * 10) / 10;
+    } else {
+        document.getElementById('quickPromoPercentInput').value = '';
+    }
     
     const formatDateTimeLocal = (dateStr) => {
         if (!dateStr || dateStr === '') return '';
