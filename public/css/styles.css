@@ -523,13 +523,13 @@ textarea#order-note:focus {
 
 /* Live Order Tracking Banner */
 .live-order-banner {
-    background: var(--surface-color);
-    border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 60px; /* Right below the header */
-    z-index: 9;
-    padding: 12px 20px;
-    box-shadow: 0px 8px 0px var(--border);
+    background: transparent;
+    border-bottom: none;
+    border-top: 1px dashed var(--border);
+    position: static;
+    padding: 16px 20px 8px 20px;
+    margin-top: 12px;
+    box-shadow: none;
     animation: slideDownFade 0.4s ease;
 }
 @keyframes slideDownFade {

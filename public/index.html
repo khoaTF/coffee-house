@@ -64,72 +64,75 @@
         </aside>
 
         <div class="main-flow">
-            <!-- Sticky Top Section: Floating Search & Categories -->
-            <div class="sticky-top-section">
-
-                <!-- Search Section -->
-                <div class="container search-container">
-                    <div class="search-bar">
-                        <i class="fa-solid fa-search text-muted"></i>
-                        <input type="text" id="menu-search"
-                            class="form-control border-0 bg-transparent text-dark p-0 search-input"
-                            placeholder="Tìm kiếm món ăn...">
+            <!-- Unified Sticky Header Wrapper -->
+            <div class="unified-sticky-header">
+                <!-- Sticky Top Section: Floating Search & Categories -->
+                <div class="sticky-top-section">
+    
+                    <!-- Search Section -->
+                    <div class="container search-container">
+                        <div class="search-bar">
+                            <i class="fa-solid fa-search text-muted"></i>
+                            <input type="text" id="menu-search"
+                                class="form-control border-0 bg-transparent text-dark p-0 search-input"
+                                placeholder="Tìm kiếm món ăn...">
+                        </div>
+                    </div>
+    
+                    <!-- Categories -->
+                    <div class="container category-container">
+                        <div class="category-pills scrollable-pills">
+                            <button class="pill active" data-category="All">Tất cả</button>
+                            <button class="pill" data-category="Coffee">Cà phê</button>
+                            <button class="pill" data-category="Tea">Trà</button>
+                            <button class="pill" data-category="Food">Đồ ăn</button>
+                        </div>
                     </div>
                 </div>
-
-                <!-- Categories -->
-                <div class="container category-container">
-                    <div class="category-pills scrollable-pills">
-                        <button class="pill active" data-category="All">Tất cả</button>
-                        <button class="pill" data-category="Coffee">Cà phê</button>
-                        <button class="pill" data-category="Tea">Trà</button>
-                        <button class="pill" data-category="Food">Đồ ăn</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Live Order Banner -->
-            <div id="live-order-banner" class="live-order-banner" style="display: none;">
-                <div class="banner-content" style="flex-direction: column; align-items: stretch; gap: 12px;">
-                    <div class="flex-between">
-                        <div>
-                            <div class="banner-title"><i class="fa-solid fa-clock pulse-icon text-primary me-2"></i>
-                                Trạng thái đơn hàng</div>
-                            <div class="banner-status text-primary" id="live-status">Đang chờ</div>
+    
+                <!-- Live Order Banner -->
+                <div id="live-order-banner" class="live-order-banner" style="display: none;">
+                    <div class="banner-content" style="flex-direction: column; align-items: stretch; gap: 12px;">
+                        <div class="flex-between">
+                            <div>
+                                <div class="banner-title"><i class="fa-solid fa-clock pulse-icon text-primary me-2"></i>
+                                    Trạng thái đơn hàng</div>
+                                <div class="banner-status text-primary" id="live-status">Đang chờ</div>
+                            </div>
+                            <button class="btn-icon text-muted"
+                                onclick="trackedOrderId=null; document.getElementById('live-order-banner').style.display='none'"><i
+                                    class="fa-solid fa-times"></i></button>
                         </div>
-                        <button class="btn-icon text-muted"
-                            onclick="trackedOrderId=null; document.getElementById('live-order-banner').style.display='none'"><i
-                                class="fa-solid fa-times"></i></button>
-                    </div>
-
-                    <div class="order-timeline">
-                        <div class="timeline-step" id="step-pending">
-                            <div class="step-icon"><i class="fa-solid fa-receipt"></i></div>
+    
+                        <div class="order-timeline">
+                            <div class="timeline-step" id="step-pending">
+                                <div class="step-icon"><i class="fa-solid fa-receipt"></i></div>
+                            </div>
+                            <div class="timeline-line" id="line-1"></div>
+                            <div class="timeline-step" id="step-preparing">
+                                <div class="step-icon"><i class="fa-solid fa-fire-burner"></i></div>
+                            </div>
+                            <div class="timeline-line" id="line-2"></div>
+                            <div class="timeline-step" id="step-ready">
+                                <div class="step-icon"><i class="fa-solid fa-check"></i></div>
+                            </div>
                         </div>
-                        <div class="timeline-line" id="line-1"></div>
-                        <div class="timeline-step" id="step-preparing">
-                            <div class="step-icon"><i class="fa-solid fa-fire-burner"></i></div>
+    
+                        <!-- Service Actions -->
+                        <div style="display: flex; gap: 8px; margin-top: 16px;">
+                            <button class="btn btn-outline" style="flex: 1; font-size: 0.85rem; padding: 10px;"
+                                onclick="requestStaffService('staff')">
+                                <i class="fa-solid fa-bell text-primary"></i> Gọi NV
+                            </button>
+                            <button class="btn btn-outline" style="flex: 1; font-size: 0.85rem; padding: 10px;"
+                                onclick="requestStaffService('water')">
+                                <i class="fa-solid fa-glass-water text-primary"></i> Nước
+                            </button>
+                            <button class="btn btn-outline" style="flex: 1; font-size: 0.85rem; padding: 10px;"
+                                onclick="requestStaffService('checkout')">
+                                <i class="fa-solid fa-money-bill text-danger"></i> Tính Tiền
+                            </button>
                         </div>
-                        <div class="timeline-line" id="line-2"></div>
-                        <div class="timeline-step" id="step-ready">
-                            <div class="step-icon"><i class="fa-solid fa-check"></i></div>
-                        </div>
-                    </div>
-
-                    <!-- Service Actions -->
-                    <div style="display: flex; gap: 8px; margin-top: 16px;">
-                        <button class="btn btn-outline" style="flex: 1; font-size: 0.85rem; padding: 10px;"
-                            onclick="requestStaffService('staff')">
-                            <i class="fa-solid fa-bell text-primary"></i> Gọi NV
-                        </button>
-                        <button class="btn btn-outline" style="flex: 1; font-size: 0.85rem; padding: 10px;"
-                            onclick="requestStaffService('water')">
-                            <i class="fa-solid fa-glass-water text-primary"></i> Nước
-                        </button>
-                        <button class="btn btn-outline" style="flex: 1; font-size: 0.85rem; padding: 10px;"
-                            onclick="requestStaffService('checkout')">
-                            <i class="fa-solid fa-money-bill text-danger"></i> Tính Tiền
-                        </button>
                     </div>
                 </div>
             </div>
