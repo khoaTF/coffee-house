@@ -119,10 +119,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// const socket = io(); // REMOVED FOR SUPABASE
-
-
-
 // --- Tab Switching Logic ---
 function switchTab(tabId) {
     // Update active nav link

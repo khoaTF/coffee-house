@@ -1,0 +1,221 @@
+/* VIP Card styles */
+.vip-card {
+    background: linear-gradient(135deg, #111, #333);
+    border-radius: 12px;
+    padding: 16px 20px;
+    color: white;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+    position: relative;
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.vip-card-glow {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transform: skewX(-20deg);
+    animation: holoGlow 3s infinite;
+}
+
+@keyframes holoGlow {
+    0% { left: -100%; }
+    20% { left: 200%; }
+    100% { left: 200%; }
+}
+
+.tier-bronze { background: linear-gradient(135deg, #cd7f32, #8b4513); }
+.tier-silver { background: linear-gradient(135deg, #bdc3c7, #7f8c8d); }
+.tier-gold { background: linear-gradient(135deg, #f1c40f, #f39c12); color: #000; text-shadow: none !important; }
+.tier-diamond { background: linear-gradient(135deg, #9b59b6, #3498db); }
+
+/* Floating Action Button (FAB) styles */
+.fab-container {
+    position: absolute;
+    bottom: 100px;
+    right: 20px;
+    z-index: 1050;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.fab-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.fab-menu.active {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.btn-floating {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--shadow-sm);
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.btn-floating:active {
+    transform: scale(0.96);
+    box-shadow: 0 0 0;
+}
+
+.btn-floating i {
+    font-size: 1.2rem;
+    transition: transform 0.3s ease;
+}
+
+.fab-main {
+    background: var(--accent);
+    color: #fff;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+}
+
+.fab-main.active i {
+    transform: rotate(180deg);
+    opacity: 0;
+}
+
+.fab-main::after {
+    content: '\f00d';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    position: absolute;
+    opacity: 0;
+    transform: rotate(-180deg);
+    transition: all 0.3s ease;
+    font-size: 1.4rem;
+}
+
+.fab-main.active::after {
+    opacity: 1;
+    transform: rotate(0);
+}
+
+.fab-item:nth-child(1) {
+    background: var(--success);
+    color: white;
+    transition-delay: 0.05s;
+}
+
+.fab-item:nth-child(2) {
+    background: #3498db;
+    color: white;
+    transition-delay: 0s;
+}
+
+/* Mobile adjustment to not overlap with cart */
+@media (max-width: 768px) {
+    .fab-container {
+        bottom: 85px;
+        right: 15px;
+    }
+    .btn-floating {
+        width: 44px;
+        height: 44px;
+    }
+}
+
+body.customer-order-page {
+    background-color: var(--bg-color);
+}
+
+/* Header adjustments */
+.hub-logo.centered-large {
+    font-size: 3rem;
+    justify-content: center;
+}
+
+.header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+#lang-toggle {
+    font-size: 0.9rem;
+    padding: 4px 8px;
+    font-weight: 800;
+    background: var(--surface-color);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    color: var(--text-main);
+    cursor: pointer;
+}
+
+.btn-small {
+    padding: 6px 10px;
+    font-size: 0.85rem;
+}
+
+/* Sticky Search & Filter Section */
+.sticky-top-section {
+    position: sticky;
+    top: 12px;
+    z-index: 100;
+    margin: 12px 20px 24px 20px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+    border-radius: 24px;
+    padding: 12px 0;
+    border: 1px solid rgba(255,255,255,0.4);
+}
+
+.search-container {
+    padding: 0 16px 8px 16px;
+}
+
+.search-bar {
+    padding: 10px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--bg-color);
+    border-radius: 50px;
+    border: 1px solid var(--border);
+}
+
+.search-input {
+    box-shadow: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+/* Category Pills adjustments */
+.category-container {
+    padding: 0 16px;
+}
+
+.category-pills.scrollable-pills {
+    position: static;
+    padding: 0;
+    margin: 0;
+    border: none;
+    background: transparent;
+    z-index: 1;
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
