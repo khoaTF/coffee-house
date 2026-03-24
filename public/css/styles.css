@@ -1,18 +1,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap');
 
-/* Nohope Coffee Design System - Modern Rounded UI */
+/* Nohope Coffee Design System - Native App-like */
 :root {
-    /* Color Palette - Modern Rounded */
-    --primary: #FF5722; 
-    --primary-light: #FF8A65;
-    --primary-glow: rgba(255, 87, 34, 0.3);
+    /* Color Palette - High Contrast */
+    --primary: #ff7300; 
+    --primary-light: #ff8c2b;
+    --primary-glow: rgba(255, 115, 0, 0.3);
     
     --secondary: #FFFFFF; 
-    --accent: #FF5722; 
+    --accent: #ff7300; 
     
-    --bg-color: #F7F8FA; /* Soft cool gray for modern feel */
-    --surface-color: #FFFFFF; 
-    --surface-glass: rgba(255, 255, 255, 0.8);
+    --bg-color: #ffffff; /* Clean white */
+    --surface-color: #ffffff; 
+    --surface-glass: rgba(255, 255, 255, 0.95);
     --surface-glass-border: rgba(0,0,0,0.05);
     
     --text-main: #1A1A1A;
@@ -91,7 +91,64 @@ body {
 .mb-2 { margin-bottom: 8px; }
 .mt-3 { margin-top: 16px; }
 .mt-4 { margin-top: 24px; }
-.mb-padding { padding-bottom: 120px; }
+.mb-padding { padding-bottom: 140px; } /* Increased for bottom bar */
+
+/* Fixed Bottom Action Bar */
+.bottom-action-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #ffffff;
+    padding: 16px 20px 24px 20px;
+    display: flex;
+    gap: 12px;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+    z-index: 1000;
+    border-top: 1px solid var(--border);
+}
+.bottom-action-bar .action-btn {
+    border-radius: 16px;
+    height: 56px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.1rem;
+    font-weight: 800;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+.bottom-action-bar .action-btn:active {
+    transform: scale(0.96);
+    opacity: 0.9;
+}
+.bottom-action-bar .checkout-btn {
+    flex: 2;
+    background: var(--primary);
+    color: #ffffff;
+    justify-content: space-between;
+    padding: 0 20px;
+}
+.bottom-action-bar .checkout-btn .action-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+.bottom-action-bar .checkout-btn .action-title {
+    font-size: 1.1rem;
+    line-height: 1.2;
+}
+.bottom-action-bar .checkout-btn .action-subtitle {
+    font-size: 0.85rem;
+    font-weight: 600;
+    opacity: 0.9;
+}
+.bottom-action-bar .staff-btn {
+    flex: 1;
+    background: #f5f5f5;
+    color: var(--text-main);
+    border: none;
+    gap: 8px;
+}
 
 /* Animation Utility */
 @keyframes slideUpFade {
@@ -164,43 +221,55 @@ body {
 
 /* Header - Solid High Contrast */
 .app-header { 
-    background: var(--surface-glass); 
-    border-bottom: 2px solid var(--surface-glass-border);
+    background: #ffffff;
     position: sticky; 
     top: 0; 
     z-index: 100; 
-    box-shadow: var(--shadow-sm);
+    border-bottom: 1px solid var(--border);
 }
 .header-content { 
     display: flex; 
     justify-content: space-between; 
     align-items: center; 
-    padding: 24px 20px; 
+    padding: 12px 16px; 
     max-width: 1200px; 
-    margin: 0 auto; 
+    margin: 0 auto;
+    gap: 12px;
 }
-.header-content h1 { 
-    font-size: 1.5rem; 
-    font-weight: 800;
-    display: flex; 
-    align-items: center; 
-    gap: 12px; 
-    color: var(--primary);
-    letter-spacing: -0.5px;
+.header-content .hub-logo {
+    font-size: 1.5rem;
+    margin-bottom: 0 !important;
 }
-/* For the icon to keep its color despite text gradient */
-.header-content h1 i {
+.header-content .text-1 {
+    color: var(--text-main);
+}
+.header-content .text-2 {
     color: var(--primary);
+}
+.header-right-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.header-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #f5f5f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-main);
 }
 .table-info { 
-    background: var(--surface-color); 
-    padding: 8px 16px; 
-    border-radius: var(--radius); 
-    font-weight: 700; 
+    background: #f5f5f5; 
+    padding: 8px 14px; 
+    border-radius: 50px; 
+    font-weight: 800; 
     font-size: 0.95rem; 
-    border: 1px solid var(--border); 
     color: var(--text-main);
-    box-shadow: var(--shadow-sm);
 }
 
 /* Categories */
@@ -220,142 +289,107 @@ body {
 }
 .category-pills::-webkit-scrollbar { display: none; }
 .pill { 
-    padding: 10px 24px; 
+    padding: 8px 20px; 
     border-radius: var(--radius-pill); 
-    background: var(--surface-color); 
-    border: 1px solid var(--border); 
+    background: #ffffff;
+    border: 1px solid #e0e0e0; 
     white-space: nowrap; 
-    font-size: 1.05rem; 
+    font-size: 0.95rem; 
     font-weight: 600; 
-    color: var(--text-muted); 
+    color: var(--text-main); 
     cursor: pointer; 
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
 }
-.pill:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-    color: var(--primary);
-    border-color: var(--primary-glow);
+.pill:active {
+    transform: scale(0.95);
 }
 .pill.active { 
-    background: var(--accent); 
-    color: #FFF; 
-    border: 1px solid var(--accent);
-    box-shadow: 0 4px 12px var(--primary-glow);
+    background: var(--primary); 
+    color: #ffffff; 
+    border-color: var(--primary);
 }
 
 /* Menu List/Grid */
 .menu-grid { 
     display: grid; 
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 160px), 1fr));
-    gap: 20px; 
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px; 
+}
+
+@media (min-width: 768px) {
+    .menu-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
 }
 
 .menu-item { 
-    background: var(--surface-color); 
+    background: #ffffff; 
     border: none;
-    border-radius: var(--radius-lg); 
+    border-radius: 12px; 
     overflow: hidden; 
     display: flex; 
     flex-direction: column;
-    box-shadow: var(--shadow-sm); 
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
-    animation: slideUpFade 0.7s ease-out backwards;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    transition: transform 0.2s ease, box-shadow 0.2s ease; 
+    animation: slideUpFade 0.5s ease-out backwards;
     cursor: pointer;
 }
-.menu-item:hover { 
-    transform: translateY(-6px); 
-    box-shadow: var(--shadow-lg);
+.menu-item:active {
+    transform: scale(0.98);
 }
 
 .menu-item > div:first-child {
-    flex-shrink: 0;
     width: 100%;
-    aspect-ratio: 1; /* Keep it perfect square for 2-col */
+    aspect-ratio: 1; 
     display: block;
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 8px;
 }
 
 .menu-img { 
     width: 100%; 
     height: 100%; 
     object-fit: cover;
-    background: var(--bg-color);
+    background: #f5f5f5;
 }
-.menu-img[alt]::after {
-    content: attr(alt);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: absolute;
-    inset: 0;
-    background: var(--bg-color);
-    color: var(--text-muted);
-    font-size: 0.85rem;
-    font-family: monospace;
-}
+
 .menu-details { 
-    padding: 24px; 
-    flex: 1; 
+    padding: 8px 12px 16px 12px; 
     display: flex; 
     flex-direction: column; 
-    justify-content: space-between; 
-    gap: 12px;
+    gap: 4px;
+    text-align: left;
 }
 .menu-title { 
-    font-size: clamp(1.05rem, 4vw, 1.35rem);     
-    font-family: 'Playfair Display', serif;
+    font-size: 1rem;     
+    font-family: 'Plus Jakarta Sans', sans-serif;
     font-weight: 700; 
-    margin-bottom: 4px; 
     color: var(--text-main);
     line-height: 1.3;
-    letter-spacing: -0.2px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 .menu-desc { 
-    font-size: 0.85rem; 
-    color: var(--text-muted); 
-    line-height: 1.5; 
-    display: -webkit-box; 
-    -webkit-line-clamp: 2; 
-    line-clamp: 2; 
-    -webkit-box-orient: vertical; 
-    overflow: hidden; 
+    display: none; /* Hide desc for mobile grid to save space */
 }
 .menu-price-row { 
     display: flex; 
-    justify-content: space-between; 
+    justify-content: flex-start; 
     align-items: center;
-    margin-top: auto;
-    padding-top: 12px;
-    border-top: 1px solid rgba(212, 167, 106, 0.1);
+    margin-top: 4px;
 }
 .menu-price { 
-    font-size: clamp(1rem, 3.5vw, 1.15rem); 
+    font-size: 1.1rem; 
     font-weight: 800; 
-    color: var(--primary); 
-    letter-spacing: -0.5px;
+    color: var(--text-main); 
 }
 .add-btn { 
-    width: 44px; 
-    height: 44px; 
-    border-radius: 16px; 
-    border: 1px solid var(--border); 
-    background: var(--accent); 
-    color: #FFF; 
-    font-size: 1.4rem; 
-    cursor: pointer; 
-    box-shadow: var(--shadow-sm);
-    transition: all 150ms ease;
-}
-.add-btn:hover { 
-    background: #FF2A00; 
-    color: #FFF; 
-    box-shadow: var(--shadow-md); 
-    transform: translateY(-2px); 
-}
-.add-btn:active { 
-    transform: scale(0.96) !important; 
-    box-shadow: 0px 0px 0px var(--primary) !important; 
+    display: none; /* Removed from grid as per mockup, clicking the card will add/show modal */
 }
 
 /* Controls */
@@ -775,25 +809,7 @@ input, select, textarea {
 
 /* ===== DYNAMIC ANIMATIONS & EFFECTS ===== */
 
-/* Shimmer sweep on gold buttons */
-@keyframes shimmer {
-    0% { background-position: -200% center; }
-    100% { background-position: 200% center; }
-}
-.btn-primary, .add-btn, .login-btn {
-    background-size: 200% auto;
-    animation: shimmer 3s linear infinite;
-}
-
-/* Floating particles in background */
-@keyframes particleFloat {
-    0%, 100% { transform: translateY(0) translateX(0); opacity: 0; }
-    10% { opacity: 0.6; }
-    90% { opacity: 0.6; }
-    50% { transform: translateY(-40vh) translateX(20px); }
-}
-
-/* Smooth card entrance - Removed heavy blur/scale for professionalism */
+/* Smooth card entrance */
 @keyframes cardEntrance {
     0% { opacity: 0; transform: translateY(20px); }
     100% { opacity: 1; transform: translateY(0); }

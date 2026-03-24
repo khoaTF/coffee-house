@@ -1,462 +1,544 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="vi" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Nohope Coffee - Thực đơn & Đặt món QR</title>
-    <meta name="description"
-        content="Trải nghiệm đặt món tuyệt vời tại Nohope Coffee. Thực đơn đa dạng, không gian sang trọng, đặt món nhanh chóng qua mã QR.">
+    <meta name="description" content="Trải nghiệm đặt món tuyệt vời tại Nohope Coffee. Thực đơn đa dạng, không gian sang trọng, đặt món nhanh chóng qua mã QR.">
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://coffee-house.com/">
     <meta property="og:title" content="Nohope Coffee - Thực đơn & Đặt món QR">
-    <meta property="og:description"
-        content="Trải nghiệm đặt món tuyệt vời tại Nohope Coffee. Đặt món nhanh chóng, tiện lợi.">
+    <meta property="og:description" content="Trải nghiệm đặt món tuyệt vời tại Nohope Coffee. Đặt món nhanh chóng, tiện lợi.">
     <meta property="og:image" content="/images/og-image.jpg">
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:title" content="Nohope Coffee - Thực đơn & Đặt món QR">
-    <meta property="twitter:description"
-        content="Trải nghiệm đặt món tuyệt vời tại Nohope Coffee. Đặt món nhanh chóng, tiện lợi.">
-
+    
     <!-- Google Fonts -->
-    <link
-        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap"
-        rel="stylesheet">
-    <!-- Bootstrap CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    
+    <!-- Bootstrap CSS (Kept for existing feedback/confirm modals) -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome for Icons -->
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS (Kept for toast and custom modal logic) -->
     <link rel="stylesheet" href="css/styles.css?v=1.6">
+    <link rel="stylesheet" href="css/index.css">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-container-lowest": "#ffffff",
+              "on-primary-fixed": "#321200",
+              "inverse-on-surface": "#f3f0ef",
+              "secondary-fixed-dim": "#ffb787",
+              "outline-variant": "#e0c0af",
+              "surface-container-highest": "#e4e2e1",
+              "on-surface-variant": "#584235",
+              "on-primary": "#ffffff",
+              "secondary": "#964900",
+              "inverse-primary": "#ffb68b",
+              "on-primary-container": "#5c2800",
+              "primary-fixed-dim": "#ffb68b",
+              "outline": "#8c7263",
+              "surface": "#fcf9f8",
+              "tertiary": "#b72301",
+              "on-secondary": "#ffffff",
+              "secondary-container": "#fe851f",
+              "on-error": "#ffffff",
+              "surface-container-low": "#f6f3f2",
+              "secondary-fixed": "#ffdcc7",
+              "error": "#ba1a1a",
+              "on-secondary-container": "#612d00",
+              "error-container": "#ffdad6",
+              "primary": "#994700",
+              "background": "#fcf9f8",
+              "on-tertiary-fixed": "#3d0600",
+              "on-tertiary-fixed-variant": "#8c1800",
+              "surface-variant": "#e4e2e1",
+              "primary-fixed": "#ffdbc8",
+              "on-background": "#1b1c1c",
+              "surface-dim": "#dcd9d9",
+              "on-error-container": "#93000a",
+              "tertiary-fixed-dim": "#ffb4a4",
+              "on-secondary-fixed-variant": "#723600",
+              "surface-container": "#f0eded",
+              "tertiary-fixed": "#ffdad3",
+              "on-secondary-fixed": "#311300",
+              "primary-container": "#ff7a00",
+              "on-surface": "#1b1c1c",
+              "on-primary-fixed-variant": "#753400",
+              "surface-container-high": "#eae7e7",
+              "inverse-surface": "#303030",
+              "on-tertiary": "#ffffff",
+              "surface-bright": "#fcf9f8",
+              "on-tertiary-container": "#6f1100",
+              "tertiary-container": "#ff7759",
+              "surface-tint": "#994700"
+            },
+            fontFamily: {
+              "headline": ["Plus Jakarta Sans"],
+              "body": ["Inter"],
+              "label": ["Plus Jakarta Sans"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, .brand-font { font-family: 'Plus Jakarta Sans', sans-serif; }
+        
+        /* Fix for Tailwind Preflight vs Bootstrap */
+        .modal { z-index: 1050 !important; }
+        .modal-backdrop { z-index: 1040 !important; }
+        
+        /* Hide scrollbar for categories */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .no-tap-highlight { -webkit-tap-highlight-color: transparent; }
+    </style>
+
     <!-- Supabase Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-config.js?v=1.2"></script>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#6F4E37">
-    <link rel="stylesheet" href="css/index.css">
-
-    <link rel="stylesheet" href="css/logo.css">
-    <!-- PWA Favicons -->
+    <meta name="theme-color" content="#994700">
     <link rel="icon" type="image/png" href="/images/bunny_logo.png">
     <link rel="apple-touch-icon" href="/images/bunny_logo.png">
 </head>
+<body class="bg-surface text-on-surface overflow-x-hidden no-tap-highlight">
 
-<body class="customer-order-page">
-    <div class="app-wrapper">
-        <aside class="desktop-sidebar">
-            <!-- Header -->
-            <header class="app-header">
-                <div class="header-content">
-                    <div class="hub-logo mb-4 centered-large"><span class="text-1">Nohope</span><span
-                            class="text-2">Coffee</span></div>
-                    <div class="header-actions">
-                        <button id="lang-toggle" title="Toggle Language">
-                            EN
-                        </button>
-                        <button id="my-orders-btn" class="btn btn-outline btn-small">
-                            <i class="fa-solid fa-list-ul"></i> <span data-i18n="my_orders">Đơn của tôi</span>
-                        </button>
-                        <div class="table-info">Bàn <span id="table-number-display">5</span></div>
-                    </div>
-                </div>
-            </header>
-        </aside>
-
-        <div class="main-flow">
-            <!-- Unified Sticky Header Wrapper -->
-            <div class="unified-sticky-header">
-                <!-- Sticky Top Section: Floating Search & Categories -->
-                <div class="sticky-top-section">
+<!-- SideNavBar (Desktop Shell) -->
+<aside class="h-screen w-64 fixed left-0 top-0 hidden lg:flex flex-col bg-[#F6F3F2] dark:bg-[#1B1C1C] py-8 shadow-[20px_0_40px_rgba(88,66,53,0.04)] z-40">
+    <div class="px-8 mb-10">
+        <h1 class="text-[#994700] font-['Plus_Jakarta_Sans'] font-extrabold text-2xl tracking-tight">Nohope</h1>
+        <p class="text-on-surface-variant text-xs mt-1 font-medium opacity-60">Digital Barista Experience</p>
+    </div>
     
-                    <!-- Search Section -->
-                    <div class="container search-container">
-                        <div class="search-bar">
-                            <i class="fa-solid fa-search text-muted"></i>
-                            <input type="text" id="menu-search"
-                                class="form-control border-0 bg-transparent text-dark p-0 search-input"
-                                placeholder="Tìm kiếm món ăn...">
-                        </div>
-                    </div>
-    
-                    <!-- Categories -->
-                    <div class="container category-container">
-                        <div class="category-pills scrollable-pills">
-                            <button class="pill active" data-category="All">Tất cả</button>
-                            <button class="pill" data-category="Coffee">Cà phê</button>
-                            <button class="pill" data-category="Tea">Trà</button>
-                            <button class="pill" data-category="Food">Đồ ăn</button>
-                        </div>
-                    </div>
-                </div>
-    
-                <!-- Live Order Banner -->
-                <div id="live-order-banner" class="live-order-banner" style="display: none;">
-                    <div class="banner-content" style="flex-direction: column; align-items: stretch; gap: 12px;">
-                        <div class="flex-between">
-                            <div>
-                                <div class="banner-title"><i class="fa-solid fa-clock pulse-icon text-primary me-2"></i>
-                                    Trạng thái đơn hàng</div>
-                                <div class="banner-status text-primary" id="live-status">Đang chờ</div>
-                            </div>
-                            <button class="btn-icon text-muted"
-                                onclick="trackedOrderId=null; document.getElementById('live-order-banner').style.display='none'"><i
-                                    class="fa-solid fa-times"></i></button>
-                        </div>
-    
-                        <div class="order-timeline">
-                            <div class="timeline-step" id="step-pending">
-                                <div class="step-icon"><i class="fa-solid fa-receipt"></i></div>
-                            </div>
-                            <div class="timeline-line" id="line-1"></div>
-                            <div class="timeline-step" id="step-preparing">
-                                <div class="step-icon"><i class="fa-solid fa-fire-burner"></i></div>
-                            </div>
-                            <div class="timeline-line" id="line-2"></div>
-                            <div class="timeline-step" id="step-ready">
-                                <div class="step-icon"><i class="fa-solid fa-check"></i></div>
-                            </div>
-                        </div>
-    
-                        <!-- Service Actions -->
-                        <div style="display: flex; gap: 8px; margin-top: 16px;">
-                            <button class="btn btn-outline" style="flex: 1; font-size: 0.85rem; padding: 10px;"
-                                onclick="requestStaffService('staff')">
-                                <i class="fa-solid fa-bell text-primary"></i> Gọi NV
-                            </button>
-                            <button class="btn btn-outline" style="flex: 1; font-size: 0.85rem; padding: 10px;"
-                                onclick="requestStaffService('water')">
-                                <i class="fa-solid fa-glass-water text-primary"></i> Nước
-                            </button>
-                            <button class="btn btn-outline" style="flex: 1; font-size: 0.85rem; padding: 10px;"
-                                onclick="requestStaffService('checkout')">
-                                <i class="fa-solid fa-money-bill text-danger"></i> Tính Tiền
-                            </button>
-                        </div>
-                    </div>
-                </div>
+    <nav class="flex-1 flex flex-col space-y-2" id="desktop-category-filters">
+        <!-- Categories will be injected here via JS -->
+    </nav>
+
+    <div class="mt-auto px-4">
+        <button id="my-orders-btn" class="w-full bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white py-4 px-6 rounded-xl flex items-center justify-between shadow-lg shadow-[#FF7A00]/20 hover:scale-[0.98] transition-all">
+            <div class="flex items-center space-x-3">
+                <span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+                <span class="font-bold text-sm">Đơn của tôi</span>
             </div>
-
-            <!-- Main Content: Menu -->
-            <main class="container mb-padding">
-
-                <div id="loader" class="text-center mt-4">Đang tải thực đơn...</div>
-
-                <!-- Menu Grid -->
-                <div class="menu-grid" id="menu-container">
-                    <!-- Menu items will be injected here via JS -->
-                </div>
-
-            </main>
-        </div> <!-- END main-flow -->
-
-        <!-- Floating Cart Summary -->
-        <div class="floating-cart" id="floating-cart" style="display: none;">
-            <div class="cart-summary flex-between">
-                <div>
-                    <span id="cart-item-count" class="badge bg-dark">0</span> Món
-                </div>
-                <div class="font-bold">
-                    Tổng: <span id="cart-total-price">0</span>
-                </div>
-                <button id="view-cart-btn" class="btn btn-primary">Xem giỏ hàng</button>
-            </div>
-        </div>
-
-        <!-- Modal: Cart & Checkout -->
-        <div class="cart-modal" id="cart-modal">
-            <div class="cart-modal-content">
-                <div class="cart-modal-header flex-between">
-                    <h2>Đơn hàng của bạn</h2>
-                    <button id="close-modal" class="btn-icon"><i class="fa-solid fa-times"></i></button>
-                </div>
-                <div class="cart-modal-body" id="cart-items-container">
-                    <!-- Cart items list -->
-                    <div class="empty-cart text-center text-muted">Giỏ hàng đang trống.</div>
-                </div>
-                <div class="cart-modal-body" style="padding-top: 0;">
-                    <label for="order-note" class="font-bold text-main" style="display: block; margin-bottom: 5px;">Ghi
-                        chú (Tùy chọn):</label>
-                    <textarea id="order-note" class="input-glass" placeholder="Vd: Ít đường, nhiều đá..." rows="2"
-                        style="width: 100%;"></textarea>
-
-                    <div class="loyalty-section mt-3 mb-3"
-                        style="background: var(--bg-color); padding: 16px; border: 2px solid #f39c12; box-shadow: 2px 2px 0px #f39c12;">
-                        <label class="font-bold" style="display: block; margin-bottom: 5px; color: #d35400;"><i
-                                class="fa-solid fa-crown"></i> Tích điểm / Thành viên:</label>
-                        <div style="display: flex; gap: 8px;">
-                            <input type="tel" id="customer-phone-input" class="input-glass" placeholder="Nhập SĐT..."
-                                style="flex: 1; border: 2px solid #e67e22; box-shadow: 2px 2px 0px #e67e22;">
-                            <button id="verify-phone-btn" onclick="verifyCustomerPhone()" class="btn btn-primary"
-                                style="padding: 8px 16px; border: 2px solid #d35400; box-shadow: 2px 2px 0px #d35400; white-space: nowrap; background: #e67e22; color: #fff;">Nhận
-                                diện</button>
-                        </div>
-                        <div id="loyalty-message"
-                            style="display: none; font-size: 0.85rem; margin-top: 6px; font-weight: 600; color: #d35400;">
-                        </div>
-
-                        <!-- VIP HOLOGRAPHIC CARD -->
-                        <div id="vip-card-container" style="display: none; margin-top: 15px; perspective: 1000px;">
-                            <div class="vip-card" id="vip-card-el"
-                                style="transform-style: preserve-3d; position: relative;">
-                                <div class="vip-card-glow"></div>
-                                <div
-                                    style="display: flex; justify-content: space-between; align-items: flex-start; position: relative; z-index: 2;">
-                                    <div>
-                                        <div
-                                            style="font-size: 0.75rem; opacity: 0.8; font-weight: bold; letter-spacing: 1px;">
-                                            THÀNH VIÊN</div>
-                                        <div id="vip-card-name"
-                                            style="font-size: 1.2rem; font-weight: 800; letter-spacing: 0.5px;">Khách
-                                            Hàng</div>
-                                    </div>
-                                    <div id="vip-card-tier-icon"
-                                        style="font-size: 2.2rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">🥉
-                                    </div>
-                                </div>
-                                <div style="margin-top: 25px; position: relative; z-index: 2;">
-                                    <div style="font-size: 0.7rem; opacity: 0.8; letter-spacing: 1px;">HẠNG THẺ</div>
-                                    <div style="display: flex; justify-content: space-between; align-items: flex-end;">
-                                        <div id="vip-card-tier-text"
-                                            style="font-size: 1.5rem; font-weight: 900; text-transform: uppercase; letter-spacing: 2px;">
-                                            BRONZE</div>
-                                        <div id="vip-card-discount"
-                                            style="font-size: 0.95rem; font-weight: bold; background: rgba(0,0,0,0.3); padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);">
-                                            Giảm 0%</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div id="loyalty-discount-btn" style="display: none; margin-top: 10px;">
-                            <button onclick="applyLoyaltyPoints()" class="btn btn-outline"
-                                style="width: 100%; font-size: 0.85rem; border: 2px solid #d35400; box-shadow: 2px 2px 0px #d35400; color: #d35400;"><i
-                                    class="fa-solid fa-gift"></i> Đổi 100 điểm = Giảm 10.000đ</button>
-                        </div>
-                    </div>
-
-                    <div class="promo-section mt-3"
-                        style="background: var(--bg-color); padding: 16px; border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
-                        <label class="font-bold text-main" style="display: block; margin-bottom: 5px;"><i
-                                class="fa-solid fa-ticket-simple text-accent"></i> Mã khuyến mãi:</label>
-                        <div style="display: flex; gap: 8px;">
-                            <input type="text" id="promo-code-input" class="input-glass" placeholder="Nhập mã..."
-                                style="flex: 1; text-transform: uppercase; border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
-                            <button id="apply-promo-btn" onclick="applyPromo()" class="btn btn-outline"
-                                style="padding: 8px 16px; white-space: nowrap;">Áp
-                                dụng</button>
-                        </div>
-                        <div id="promo-message"
-                            style="display: none; font-size: 0.85rem; margin-top: 6px; font-weight: 500;"></div>
-                    </div>
-                </div>
-                <div class="cart-modal-footer">
-                    <div class="flex-between mb-1" id="cart-subtotal-row" style="display: none;">
-                        <span class="text-muted">Tạm tính:</span>
-                        <span class="text-muted"><span id="checkout-subtotal">0</span></span>
-                    </div>
-                    <div class="flex-between mb-1" id="cart-discount-row" style="display: none; color: var(--success);">
-                        <span><i class="fa-solid fa-tag"></i> Giảm giá:</span>
-                        <span>-<span id="checkout-discount">0</span></span>
-                    </div>
-                    <div class="flex-between mb-2 mt-2 pt-2" style="border-top: 2px dashed var(--border);">
-                        <span class="font-bold" style="font-size: 1.1rem;">Tổng thanh toán:</span>
-                        <span class="font-bold text-primary" style="font-size: 1.2rem;"><span
-                                id="checkout-total">0</span></span>
-                    </div>
-                    <!-- Payment Options -->
-                    <div class="d-grid gap-2 mb-2 pt-3" style="border-top: 2px dashed var(--border);">
-                        <button id="checkout-cash-btn" class="btn btn-outline" disabled>
-                            <i class="fa-solid fa-money-bill-wave"></i> Thanh toán tại quầy
-                        </button>
-                        <button id="checkout-transfer-btn" class="btn btn-primary" disabled>
-                            <i class="fa-solid fa-qrcode"></i> Chuyển khoản (Duyệt TĐ)
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal: QR Payment & Confirmation -->
-        <div class="cart-modal" id="payment-modal">
-            <div class="cart-modal-content" style="max-height: 85vh;">
-                <div class="cart-modal-header flex-between">
-                    <h2>Thanh toán chuyển khoản</h2>
-                    <button id="close-payment-modal" class="btn-icon"><i class="fa-solid fa-arrow-left"></i></button>
-                </div>
-                <div class="cart-modal-body text-center" style="background: var(--bg-color);">
-                    <p class="text-main mb-3">Sử dụng <strong>App Ngân hàng</strong> hoặc <strong>MoMo</strong> quét mã
-                        QR đê thanh toán.</p>
-                    <div
-                        style="background: #FFF; padding: 20px; display: inline-block; border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
-                        <img id="qr-image"
-                            src="https://img.vietqr.io/image/970415-113333666999-compact2.jpg?amount=0&addInfo=Thanh%20toan%20Hoa%20don&accountName=QUAN%20CAFE%20NOHOPE"
-                            alt="Bank QR Code" style="width: 250px; height: 250px;">
-                    </div>
-                    <div class="mt-4 text-start p-3"
-                        style="background: var(--surface-color); border: 2px dashed var(--border);">
-                        <div class="mb-2"><span class="text-muted">Tổng cộng:</span> <strong
-                                class="float-end text-success" id="payment-total-amount" style="font-size: 1.1rem;">0
-                                đ</strong></div>
-                        <div class="mb-2"><span class="text-muted">Nội dung CK bắt buộc:</span> <strong
-                                class="float-end" id="payment-transfer-memo">...</strong></div>
-                        <div class="text-center mt-3"><small class="text-warning"><i
-                                    class="fa-solid fa-spinner fa-spin"></i> Đang chờ hệ thống tự động xác nhận chuyển
-                                khoản...</small></div>
-                    </div>
-                </div>
-                <div class="cart-modal-footer">
-                    <button id="confirm-payment-btn" class="btn btn-primary btn-block btn-lg">
-                        <i class="fa-solid fa-check-circle"></i> Tôi đã chuyển khoản xong
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal: Order History -->
-        <div class="cart-modal" id="order-history-modal">
-            <div class="cart-modal-content">
-                <div class="cart-modal-header flex-between">
-                    <h2>Lịch sử Đơn hàng</h2>
-                    <button id="close-history-modal" class="btn-icon"><i class="fa-solid fa-times"></i></button>
-                </div>
-                <div class="cart-modal-body" id="history-items-container" style="background: var(--bg-color);">
-                    <!-- Order history items will be injected here via JS -->
-                    <div class="empty-cart text-center text-muted mt-4">Bạn chưa đặt đơn hàng nào.</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal: Options Selection -->
-        <div class="cart-modal" id="options-modal">
-            <div class="cart-modal-content">
-                <div class="cart-modal-header flex-between">
-                    <h2 id="options-modal-title">Tùy chọn món</h2>
-                    <button id="close-options-modal" class="btn-icon"><i class="fa-solid fa-times"></i></button>
-                </div>
-                <div class="cart-modal-body" id="options-container"
-                    style="background: var(--bg-color); max-height: 60vh; overflow-y: auto;">
-                    <!-- Option groups injected here via JS -->
-                </div>
-                <div class="cart-modal-footer">
-                    <button id="confirm-options-btn" class="btn btn-primary btn-block btn-lg">
-                        Cập nhật Giá & Thêm vào Giỏ
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal: Upsell / Cross-sell -->
-        <div class="cart-modal" id="upsell-modal" style="z-index: 1065;">
-            <div class="cart-modal-content" style="background: var(--surface-color);">
-                <div class="cart-modal-header border-0 pb-0 flex-between">
-                    <h2 class="text-accent" style="font-weight: 800;"><i class="fa-solid fa-fire text-danger"></i> Dùng
-                        thêm bánh chứ?</h2>
-                    <button onclick="closeUpsellModal()" class="btn-icon text-muted"><i
-                            class="fa-solid fa-times"></i></button>
-                </div>
-                <div class="cart-modal-body text-center">
-                    <img src="https://images.unsplash.com/photo-1555507036-ab1f40ce88cb?auto=format&fit=crop&w=300&q=80"
-                        alt="Bánh sừng trâu"
-                        style="width: 120px; height: 120px; border-radius: 16px; object-fit: cover; margin-bottom: 15px; border: 1px solid var(--border); box-shadow: var(--shadow-md);">
-                    <p class="font-bold text-main" style="font-size: 1.1rem; margin-bottom: 5px;">Bánh Sừng Trâu
-                        (Croissant)</p>
-                    <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 15px;">Thưởng thức cùng đồ uống sẽ
-                        ngon hơn rất nhiều! Trải nghiệm chỉ với <strong class="text-danger">15.000đ</strong>.</p>
-                    <div class="d-grid gap-2">
-                        <button onclick="addUpsellItem()" class="btn btn-primary" style="font-size: 1.1rem;"><i
-                                class="fa-solid fa-plus-circle"></i> Thêm vào giỏ (+15K)</button>
-                        <button onclick="closeUpsellModal()" class="btn btn-link text-muted"
-                            style="text-decoration: none; font-weight: 600;">Không, cảm ơn</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Feedback Modal -->
-        <div class="modal fade" id="feedbackModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content"
-                    style="border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow-md); background: var(--surface-color);">
-                    <div class="modal-header border-0">
-                        <h5 class="modal-title font-bold text-main"><i class="fa-solid fa-face-smile-beam me-2"></i>Đánh
-                            giá trải nghiệm</h5>
-                    </div>
-                    <div class="modal-body text-center p-4">
-                        <p class="text-main mb-4">Cảm ơn bạn đã tin tưởng Nohope Coffee! Bạn thấy món ăn và dịch vụ của
-                            chúng tôi thế nào?</p>
-
-                        <div id="star-rating" class="mb-4 fs-1">
-                            <i class="fa-regular fa-star star-btn text-accent" data-value="1"></i>
-                            <i class="fa-regular fa-star star-btn text-accent" data-value="2"></i>
-                            <i class="fa-regular fa-star star-btn text-accent" data-value="3"></i>
-                            <i class="fa-regular fa-star star-btn text-accent" data-value="4"></i>
-                            <i class="fa-regular fa-star star-btn text-accent" data-value="5"></i>
-                        </div>
-
-                        <textarea id="feedback-comment" class="form-control mb-3" rows="3"
-                            placeholder="Chia sẻ thêm cảm nhận của bạn..."
-                            style="border-radius: 0; border: 1px solid var(--border); box-shadow: var(--shadow-sm); background: var(--surface-color); color: var(--text-main); font-weight: 700;"></textarea>
-
-                        <div class="d-grid">
-                            <button class="btn btn-primary py-2" id="submit-feedback-btn" onclick="submitFeedback()">Gửi
-                                đánh giá</button>
-                        </div>
-                        <button class="btn btn-link text-muted mt-3 text-decoration-none" data-bs-dismiss="modal">Để
-                            sau</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Floating Support Menu -->
-        <div class="fab-container">
-            <div class="fab-menu" id="fab-menu">
-                <button id="call-bill-btn" class="btn-floating fab-item" title="Gọi thanh toán"
-                    onclick="requestStaffService('checkout')">
-                    <i class="fa-solid fa-file-invoice-dollar"></i>
-                </button>
-                <button id="call-staff-btn" class="btn-floating fab-item" title="Gọi nhân viên"
-                    onclick="requestStaffService('staff')">
-                    <i class="fa-solid fa-bell-concierge"></i>
-                </button>
-            </div>
-            <button class="btn-floating fab-main" id="fab-main-btn" onclick="toggleFabMenu()">
-                <i class="fa-solid fa-headset"></i>
+            <!-- Notifications badge here if needed -->
+        </button>
+        
+        <div class="mt-6 flex flex-col space-y-4">
+            <a href="#" onclick="requestStaffService('staff'); return false;" class="text-[#1B1C1C]/70 pl-4 py-2 hover:text-[#994700] flex items-center space-x-3 text-sm">
+                <span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+                <span>Gọi Nhân Viên</span>
+            </a>
+            <button id="lang-toggle" class="text-start text-[#1B1C1C]/70 pl-4 py-2 hover:text-[#994700] flex items-center space-x-3 text-sm bg-transparent border-0">
+                <span class="material-symbols-outlined" data-icon="language">language</span>
+                <span>EN / VI</span>
             </button>
         </div>
+    </div>
+</aside>
 
-        <!-- Toggle Menu Script moved to customer.js -->
-
-        <!-- Custom Confirm Modal -->
-        <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
-            <div class="modal-dialog modal-dialog-centered modal-sm">
-                <div class="modal-content"
-                    style="border: 1px solid var(--border); border-radius: 0; box-shadow: var(--shadow-md); background: var(--surface-color);">
-                    <div class="modal-header border-0 pb-0">
-                        <h5 class="modal-title" id="confirmModalTitle"
-                            style="color: var(--text-main); font-weight: bold;"><i
-                                class="fa-solid fa-triangle-exclamation text-accent me-2"></i>Xác nhận</h5>
-                    </div>
-                    <div class="modal-body" id="confirmModalBody" style="color: var(--text-muted); font-weight: 500;">
-                        Bạn có chắc chắn không?</div>
-                    <div class="modal-footer border-0 pt-0">
-                        <button type="button" class="btn btn-secondary btn-sm" id="confirmModalCancel"
-                            data-bs-dismiss="modal"
-                            style="border-radius: 0; border: 1px solid var(--border); background: var(--surface-color); box-shadow: var(--shadow-sm); color: var(--text-main); font-weight: 800;">Không</button>
-                        <button type="button" class="btn btn-danger btn-sm" id="confirmModalOk"
-                            style="border-radius: 0; border: 1px solid var(--border); background: var(--accent); color: #FFF; font-weight: 800; box-shadow: var(--shadow-sm);">Có,
-                            xác nhận</button>
-                    </div>
+<!-- Main Content Canvas -->
+<main class="lg:ml-64 min-h-screen pb-32">
+    <!-- TopAppBar -->
+    <header class="fixed top-0 right-0 left-0 lg:left-64 z-30 bg-[#FCF9F8]/80 dark:bg-[#1B1C1C]/80 backdrop-blur-xl">
+        <div class="flex justify-between items-center px-6 py-4 max-w-screen-2xl mx-auto">
+            <div>
+                <h2 class="text-2xl font-black tracking-tight text-[#1B1C1C] dark:text-[#FCF9F8]">Bàn <span id="table-number-display"></span></h2>
+                <p class="text-on-surface-variant text-xs font-medium">Chào mừng bạn đến với Nohope Coffee</p>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <div class="relative hidden md:block">
+                    <input type="text" id="menu-search-desktop" placeholder="Tìm kiếm món uống..." class="bg-surface-container-high border-none rounded-full py-2.5 px-12 text-sm w-64 focus:ring-2 focus:ring-primary/20 transition-all text-on-surface">
+                    <span class="material-symbols-outlined absolute left-4 top-2.5 text-on-surface-variant text-sm" data-icon="search">search</span>
                 </div>
+                <button id="floating-cart" class="p-2.5 hover:bg-[#F6F3F2] dark:hover:bg-[#2A2B2B] rounded-full transition-all relative">
+                    <span class="material-symbols-outlined text-[#994700]" data-icon="shopping_cart">shopping_cart</span>
+                    <span id="cart-count" class="absolute top-1 right-1 w-4 h-4 bg-tertiary text-white rounded-full text-[10px] font-bold flex items-center justify-center hidden">0</span>
+                </button>
             </div>
         </div>
-    </div> <!-- END app-wrapper -->
+        <!-- Mobile Category Bar -->
+        <div class="lg:hidden px-4 pb-3 overflow-x-auto hide-scrollbar flex gap-2" id="mobile-category-filters">
+            <!-- Categories will be injected here via JS -->
+        </div>
+        <div class="bg-[#F6F3F2] dark:bg-[#2A2B2B] h-[1px] w-full"></div>
+    </header>
 
-    <!-- Bootstrap JS (required for modals) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/i18n.js?v=1.2"></script>
-    <script src="js/customer.js?v=1.8"></script>
+    <!-- Page Content -->
+    <section class="pt-32 px-6 pb-24 max-w-screen-2xl mx-auto">
+        <!-- Live Order Banner -->
+        <div id="live-order-banner" class="mb-6 bg-surface-container-highest p-4 rounded-xl shadow-sm border border-outline-variant/30" style="display: none;">
+            <div class="flex justify-between items-start mb-2">
+                <div>
+                    <div class="text-sm font-bold text-on-surface flex items-center"><i class="fa-solid fa-clock pulse-icon text-primary me-2"></i> Trạng thái đơn hàng</div>
+                    <div id="live-status" class="text-primary font-bold mt-1">Đang chờ</div>
+                </div>
+                <button class="text-on-surface-variant hover:text-on-surface" onclick="trackedOrderId=null; document.getElementById('live-order-banner').style.display='none'">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="flex gap-2 mt-4">
+                <button class="flex-1 bg-surface-container-low hover:bg-surface-container-high text-primary font-semibold py-2 rounded-lg text-sm flex items-center justify-center gap-1 transition-colors" onclick="requestStaffService('staff')">
+                    <i class="fa-solid fa-bell"></i> Gọi NV
+                </button>
+                <button class="flex-1 bg-surface-container-low hover:bg-surface-container-high text-primary font-semibold py-2 rounded-lg text-sm flex items-center justify-center gap-1 transition-colors" onclick="requestStaffService('water')">
+                    <i class="fa-solid fa-glass-water"></i> Nước
+                </button>
+            </div>
+        </div>
+
+        <!-- Welcome Bento Hero -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <div class="md:col-span-2 relative h-64 rounded-xl overflow-hidden group">
+                <img src="/images/banner-coffee.jpg" onerror="this.src='https://images.unsplash.com/photo-1517701550927-30cf0ba1cad0?auto=format&fit=crop&q=80'" alt="Hero" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+                <div class="absolute bottom-6 left-8 text-white">
+                    <span class="uppercase tracking-widest text-[10px] font-bold bg-primary px-3 py-1 rounded-full mb-3 inline-block">Đặc Trưng</span>
+                    <h3 class="text-3xl font-bold font-headline">Cà Phê Nohope</h3>
+                    <p class="text-sm opacity-80 mt-1">Hương vị nguyên bản, đánh thức mọi giác quan</p>
+                </div>
+            </div>
+            
+            <div class="bg-primary-container rounded-xl p-8 flex flex-col justify-between text-on-primary-container relative overflow-hidden">
+                <div class="z-10">
+                    <h4 class="text-xl font-bold mb-2">Thông báo mới</h4>
+                    <p class="text-sm opacity-90">Theo dõi trạng thái đơn hàng trực tiếp ngay trên điện thoại của bạn.</p>
+                </div>
+                <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+            </div>
+        </div>
+
+        <!-- Mobile Search (only on sm) -->
+        <div class="md:hidden relative mb-6">
+            <input type="text" id="menu-search-mobile" placeholder="Tìm kiếm món uống..." class="bg-surface-container-highest border-none rounded-full py-3 px-12 text-sm w-full focus:ring-2 focus:ring-primary/20 transition-all text-on-surface">
+            <span class="material-symbols-outlined absolute left-4 top-3 text-on-surface-variant text-sm" data-icon="search">search</span>
+        </div>
+
+        <!-- Menu Grid -->
+        <div class="flex justify-between items-end mb-6">
+            <div>
+                <h3 class="text-2xl font-bold text-on-surface">Thực đơn đặc sắc</h3>
+                <p class="text-on-surface-variant text-sm mt-1">Được pha chế thủ công bởi các barista tận tâm</p>
+            </div>
+        </div>
+
+        <div id="loader" class="text-center mt-8 text-on-surface-variant">
+            <i class="fa-solid fa-circle-notch fa-spin text-primary text-2xl mb-2"></i><br>
+            Đang tải thực đơn...
+        </div>
+
+        <div id="menu-container" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-8">
+            <!-- Items injected via JS -->
+        </div>
+
+        <!-- Empty State Section (Used when menu is empty or table locked) -->
+        <div id="empty-state" class="mt-12 mb-12 flex flex-col items-center justify-center text-center p-8 border-2 border-dashed border-outline-variant/20 rounded-xl" style="display: none;">
+            <div class="w-32 h-32 mb-6 bg-surface-container-low rounded-full flex items-center justify-center relative">
+                <span class="material-symbols-outlined text-6xl text-outline-variant/40" data-icon="coffee_maker">coffee_maker</span>
+            </div>
+            <h3 class="text-xl font-bold text-on-surface mb-2" id="empty-state-title">Không tìm thấy món</h3>
+            <p class="text-on-surface-variant max-w-sm mb-6 text-sm" id="empty-state-desc">Vui lòng thử lại với từ khóa khác hoặc dọn dẹp bộ lọc.</p>
+        </div>
+    </section>
+
+    <!-- Order Summary Bar (Docked) -->
+    <div id="docked-cart-summary" class="fixed bottom-20 lg:bottom-0 right-0 left-0 lg:left-64 p-4 pointer-events-none z-40 hidden">
+        <div class="max-w-screen-xl mx-auto pointer-events-auto">
+            <div class="bg-[#FCF9F8]/90 dark:bg-[#1B1C1C]/90 backdrop-blur-2xl px-6 py-4 rounded-2xl shadow-[0_10px_30px_rgba(88,66,53,0.15)] flex items-center justify-between border border-outline-variant/20">
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 rounded-full bg-surface-container-low flex items-center justify-center text-primary relative">
+                        <span class="material-symbols-outlined">shopping_bag</span>
+                    </div>
+                    <div>
+                        <p class="text-[10px] uppercase tracking-widest font-bold text-on-surface-variant/80"><span id="cart-item-count-docked">0</span> món trong giỏ</p>
+                        <p class="font-bold text-lg text-[#994700]" id="cart-total-price-docked">0đ</p>
+                    </div>
+                </div>
+                <button id="view-cart-btn-docked" class="bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white px-6 py-3 rounded-full font-bold shadow-lg shadow-[#FF7A00]/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2">
+                    <span>Thanh toán</span>
+                    <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Mobile Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-end px-6 pb-6 lg:hidden bg-[#FCF9F8]/90 dark:bg-[#1B1C1C]/90 backdrop-blur-2xl rounded-t-[2rem] border-t border-[#1B1C1C]/5 pt-4">
+    <a href="#" class="flex flex-col items-center justify-center bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white rounded-full w-14 h-14 -mt-8 shadow-lg shadow-[#FF7A00]/30 transition-all duration-300 scale-110">
+        <span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+    </a>
+    <a href="#" id="mobile-my-orders-btn" class="flex flex-col items-center justify-center text-[#1B1C1C]/50 py-2 hover:text-[#994700] transition-colors">
+        <span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+        <span class="font-['Inter'] text-[10px] uppercase tracking-widest font-bold mt-1">Đơn hàng</span>
+    </a>
+    <a href="#" onclick="requestStaffService('checkout'); return false;" class="flex flex-col items-center justify-center text-[#1B1C1C]/50 py-2 hover:text-[#994700] transition-colors">
+        <span class="material-symbols-outlined" data-icon="point_of_sale">point_of_sale</span>
+        <span class="font-['Inter'] text-[10px] uppercase tracking-widest font-bold mt-1">Tính tiền</span>
+    </a>
+    <a href="#" onclick="requestStaffService('staff'); return false;" class="flex flex-col items-center justify-center text-[#1B1C1C]/50 py-2 hover:text-[#994700] transition-colors">
+        <span class="material-symbols-outlined" data-icon="contact_support">contact_support</span>
+        <span class="font-['Inter'] text-[10px] uppercase tracking-widest font-bold mt-1">Gọi NV</span>
+    </a>
+</nav>
+
+<!-- Existing Modals - Hidden by default but structure retained -->
+<!-- Modal: Cart & Checkout -->
+<div class="cart-modal" id="cart-modal">
+    <div class="cart-modal-content" style="max-height: 90vh; overflow-y: auto;">
+        <div class="cart-modal-header flex-between">
+            <h2>Đơn hàng của bạn</h2>
+            <button id="close-modal" class="btn-icon"><i class="fa-solid fa-times"></i></button>
+        </div>
+        <div class="cart-modal-body" id="cart-items-container">
+            <!-- Cart items list -->
+            <div class="empty-cart text-center text-muted">Giỏ hàng đang trống.</div>
+        </div>
+        <div class="cart-modal-body" style="padding-top: 0;">
+            <label for="order-note" class="font-bold text-main" style="display: block; margin-bottom: 5px;">Ghi
+                chú (Tùy chọn):</label>
+            <textarea id="order-note" class="input-glass" placeholder="Vd: Ít đường, nhiều đá..." rows="2"
+                style="width: 100%;"></textarea>
+
+            <div class="loyalty-section mt-3 mb-3"
+                style="background: var(--bg-color); padding: 16px; border: 2px solid #f39c12; box-shadow: 2px 2px 0px #f39c12;">
+                <label class="font-bold" style="display: block; margin-bottom: 5px; color: #d35400;"><i
+                        class="fa-solid fa-crown"></i> Tích điểm / Thành viên:</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="tel" id="customer-phone-input" class="input-glass" placeholder="Nhập SĐT..."
+                        style="flex: 1; border: 2px solid #e67e22; box-shadow: 2px 2px 0px #e67e22;">
+                    <button id="verify-phone-btn" onclick="verifyCustomerPhone()" class="btn btn-primary"
+                        style="padding: 8px 16px; border: 2px solid #d35400; box-shadow: 2px 2px 0px #d35400; white-space: nowrap; background: #e67e22; color: #fff;">Nhận
+                        diện</button>
+                </div>
+                <div id="loyalty-message"
+                    style="display: none; font-size: 0.85rem; margin-top: 6px; font-weight: 600; color: #d35400;">
+                </div>
+
+                <!-- VIP HOLOGRAPHIC CARD -->
+                <div id="vip-card-container" style="display: none; margin-top: 15px; perspective: 1000px;">
+                    <div class="vip-card" id="vip-card-el"
+                        style="transform-style: preserve-3d; position: relative;">
+                        <div class="vip-card-glow"></div>
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: flex-start; position: relative; z-index: 2;">
+                            <div>
+                                <div
+                                    style="font-size: 0.75rem; opacity: 0.8; font-weight: bold; letter-spacing: 1px;">
+                                    THÀNH VIÊN</div>
+                                <div id="vip-card-name"
+                                    style="font-size: 1.2rem; font-weight: 800; letter-spacing: 0.5px;">Khách
+                                    Hàng</div>
+                            </div>
+                            <div id="vip-card-tier-icon"
+                                style="font-size: 2.2rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">🥉
+                            </div>
+                        </div>
+                        <div style="margin-top: 25px; position: relative; z-index: 2;">
+                            <div style="font-size: 0.7rem; opacity: 0.8; letter-spacing: 1px;">HẠNG THẺ</div>
+                            <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                                <div id="vip-card-tier-text"
+                                    style="font-size: 1.5rem; font-weight: 900; text-transform: uppercase; letter-spacing: 2px;">
+                                    BRONZE</div>
+                                <div id="vip-card-discount"
+                                    style="font-size: 0.95rem; font-weight: bold; background: rgba(0,0,0,0.3); padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);">
+                                    Giảm 0%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="loyalty-discount-btn" style="display: none; margin-top: 10px;">
+                    <button onclick="applyLoyaltyPoints()" class="btn btn-outline"
+                        style="width: 100%; font-size: 0.85rem; border: 2px solid #d35400; box-shadow: 2px 2px 0px #d35400; color: #d35400;"><i
+                            class="fa-solid fa-gift"></i> Đổi 100 điểm = Giảm 10.000đ</button>
+                </div>
+            </div>
+
+            <div class="promo-section mt-3"
+                style="background: var(--bg-color); padding: 16px; border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
+                <label class="font-bold text-main" style="display: block; margin-bottom: 5px;"><i
+                        class="fa-solid fa-ticket-simple text-accent"></i> Mã khuyến mãi:</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="promo-code-input" class="input-glass" placeholder="Nhập mã..."
+                        style="flex: 1; text-transform: uppercase; border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
+                    <button id="apply-promo-btn" onclick="applyPromo()" class="btn btn-outline"
+                        style="padding: 8px 16px; white-space: nowrap;">Áp dụng</button>
+                </div>
+                <div id="promo-message" style="display: none; font-size: 0.85rem; margin-top: 6px; font-weight: 500;"></div>
+            </div>
+        </div>
+        <div class="cart-modal-footer">
+            <div class="flex-between mb-1" id="cart-subtotal-row" style="display: none;">
+                <span class="text-muted">Tạm tính:</span>
+                <span class="text-muted"><span id="checkout-subtotal">0</span></span>
+            </div>
+            <div class="flex-between mb-1" id="cart-discount-row" style="display: none; color: var(--success);">
+                <span><i class="fa-solid fa-tag"></i> Giảm giá:</span>
+                <span>-<span id="checkout-discount">0</span></span>
+            </div>
+            <div class="flex-between mb-2 mt-2 pt-2" style="border-top: 2px dashed var(--border);">
+                <span class="font-bold" style="font-size: 1.1rem;">Tổng thanh toán:</span>
+                <span class="font-bold text-primary" style="font-size: 1.2rem;"><span id="checkout-total">0</span></span>
+            </div>
+            <!-- Payment Options -->
+            <div class="d-grid gap-2 mb-2 pt-3" style="border-top: 2px dashed var(--border);">
+                <button id="checkout-cash-btn" class="btn btn-outline" disabled style="width: 100%;">
+                    <i class="fa-solid fa-money-bill-wave"></i> Thanh toán tại quầy
+                </button>
+                <button id="checkout-transfer-btn" class="btn btn-primary" disabled style="width: 100%;">
+                    <i class="fa-solid fa-qrcode"></i> Chuyển khoản (Duyệt TĐ)
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: QR Payment & Confirmation -->
+<div class="cart-modal" id="payment-modal">
+    <div class="cart-modal-content" style="max-height: 85vh;">
+        <div class="cart-modal-header flex-between">
+            <h2>Thanh toán chuyển khoản</h2>
+            <button id="close-payment-modal" class="btn-icon"><i class="fa-solid fa-arrow-left"></i></button>
+        </div>
+        <div class="cart-modal-body text-center" style="background: var(--bg-color);">
+            <p class="text-main mb-3">Sử dụng <strong>App Ngân hàng</strong> hoặc <strong>MoMo</strong> quét mã QR đê thanh toán.</p>
+            <div style="background: #FFF; padding: 20px; display: inline-block; border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
+                <img id="qr-image" src="" alt="Bank QR Code" style="width: 250px; height: 250px;">
+            </div>
+            <div class="mt-4 text-start p-3" style="background: var(--surface-color); border: 2px dashed var(--border);">
+                <div class="mb-2"><span class="text-muted">Tổng cộng:</span> <strong class="float-end text-success" id="payment-total-amount" style="font-size: 1.1rem;">0 đ</strong></div>
+                <div class="mb-2"><span class="text-muted">Nội dung CK bắt buộc:</span> <strong class="float-end" id="payment-transfer-memo">...</strong></div>
+                <div class="text-center mt-3"><small class="text-warning"><i class="fa-solid fa-spinner fa-spin"></i> Đang chờ hệ thống tự động xác nhận chuyển khoản...</small></div>
+            </div>
+        </div>
+        <div class="cart-modal-footer">
+            <button id="confirm-payment-btn" class="btn btn-primary btn-block btn-lg" style="width: 100%;">
+                <i class="fa-solid fa-check-circle"></i> Tôi đã chuyển khoản xong
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Order History -->
+<div class="cart-modal" id="order-history-modal">
+    <div class="cart-modal-content">
+        <div class="cart-modal-header flex-between">
+            <h2>Lịch sử Đơn hàng</h2>
+            <button id="close-history-modal" class="btn-icon"><i class="fa-solid fa-times"></i></button>
+        </div>
+        <div class="cart-modal-body" id="history-items-container" style="background: var(--bg-color);">
+            <!-- Order history items will be injected here via JS -->
+            <div class="empty-cart text-center text-muted mt-4">Bạn chưa đặt đơn hàng nào.</div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Options Selection -->
+<div class="cart-modal" id="options-modal">
+    <div class="cart-modal-content">
+        <div class="cart-modal-header flex-between">
+            <h2 id="options-modal-title">Tùy chọn món</h2>
+            <button id="close-options-modal" class="btn-icon"><i class="fa-solid fa-times"></i></button>
+        </div>
+        <div class="cart-modal-body" id="options-container" style="background: var(--bg-color); max-height: 60vh; overflow-y: auto;">
+            <!-- Option groups injected here via JS -->
+        </div>
+        <div class="cart-modal-footer">
+            <button id="confirm-options-btn" class="btn btn-primary btn-block btn-lg" style="width: 100%;">
+                Cập nhật Giá & Thêm vào Giỏ
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Upsell / Cross-sell -->
+<div class="cart-modal" id="upsell-modal" style="z-index: 1065;">
+    <div class="cart-modal-content" style="background: var(--surface-color);">
+        <div class="cart-modal-header border-0 pb-0 flex-between">
+            <h2 class="text-accent" style="font-weight: 800;"><i class="fa-solid fa-fire text-danger"></i> Dùng thêm bánh chứ?</h2>
+            <button onclick="closeUpsellModal()" class="btn-icon text-muted"><i class="fa-solid fa-times"></i></button>
+        </div>
+        <div class="cart-modal-body text-center">
+            <img src="https://images.unsplash.com/photo-1555507036-ab1f40ce88cb?auto=format&fit=crop&w=300&q=80"
+                alt="Bánh sừng trâu"
+                style="width: 120px; height: 120px; border-radius: 16px; object-fit: cover; margin-bottom: 15px; border: 1px solid var(--border); box-shadow: var(--shadow-md);">
+            <p class="font-bold text-main" style="font-size: 1.1rem; margin-bottom: 5px;">Bánh Sừng Trâu (Croissant)</p>
+            <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 15px;">Thưởng thức cùng đồ uống sẽ ngon hơn rất nhiều! Trải nghiệm chỉ với <strong class="text-danger">15.000đ</strong>.</p>
+            <div class="d-grid gap-2">
+                <button onclick="addUpsellItem()" class="btn btn-primary" style="font-size: 1.1rem; width: 100%;"><i class="fa-solid fa-plus-circle"></i> Thêm vào giỏ (+15K)</button>
+                <button onclick="closeUpsellModal()" class="btn btn-link text-muted" style="text-decoration: none; font-weight: 600; width: 100%;">Không, cảm ơn</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Feedback Modal -->
+<div class="modal fade" id="feedbackModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow-md); background: var(--surface-color);">
+            <div class="modal-header border-0">
+                <h5 class="modal-title font-bold text-main"><i class="fa-solid fa-face-smile-beam me-2"></i>Đánh giá trải nghiệm</h5>
+            </div>
+            <div class="modal-body text-center p-4">
+                <p class="text-main mb-4">Cảm ơn bạn đã tin tưởng Nohope Coffee! Bạn thấy món ăn và dịch vụ của chúng tôi thế nào?</p>
+
+                <div id="star-rating" class="mb-4 fs-1 w-full justify-center flex gap-2 text-3xl">
+                    <i class="fa-regular fa-star star-btn text-accent" data-value="1"></i>
+                    <i class="fa-regular fa-star star-btn text-accent" data-value="2"></i>
+                    <i class="fa-regular fa-star star-btn text-accent" data-value="3"></i>
+                    <i class="fa-regular fa-star star-btn text-accent" data-value="4"></i>
+                    <i class="fa-regular fa-star star-btn text-accent" data-value="5"></i>
+                </div>
+
+                <textarea id="feedback-comment" class="form-control mb-3 w-full p-2" rows="3"
+                    placeholder="Chia sẻ thêm cảm nhận của bạn..."
+                    style="border-radius: 8px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); background: var(--surface-color); color: var(--text-main); font-weight: 500;"></textarea>
+
+                <div class="d-grid w-full">
+                    <button class="btn btn-primary py-2 w-full" id="submit-feedback-btn" onclick="submitFeedback()">Gửi đánh giá</button>
+                </div>
+                <button class="btn btn-link text-muted mt-3 text-decoration-none" data-bs-dismiss="modal">Để sau</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Confirm Modal -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content" style="border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--shadow-md); background: var(--surface-color);">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title" id="confirmModalTitle" style="color: var(--text-main); font-weight: bold;"><i class="fa-solid fa-triangle-exclamation text-accent me-2"></i>Xác nhận</h5>
+            </div>
+            <div class="modal-body" id="confirmModalBody" style="color: var(--text-muted); font-weight: 500;">Bạn có chắc chắn không?</div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-secondary btn-sm" id="confirmModalCancel" data-bs-dismiss="modal" style="border-radius: 4px; border: 1px solid var(--border); background: var(--surface-color); box-shadow: var(--shadow-sm); color: var(--text-main); font-weight: 800;">Không</button>
+                <button type="button" class="btn btn-danger btn-sm" id="confirmModalOk" style="border-radius: 4px; border: 1px solid var(--border); background: var(--accent); color: #FFF; font-weight: 800; box-shadow: var(--shadow-sm);">Có, xác nhận</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS (required for modals) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script src="js/i18n.js?v=1.2"></script>
+<script src="js/customer.js?v=1.9"></script>
+
 </body>
-
 </html>
