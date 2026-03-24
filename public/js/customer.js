@@ -643,11 +643,24 @@ function attachEventListeners() {
     closeHistoryModalBtn.addEventListener('click', closeHistoryModal);
     closeOptionsBtn.addEventListener('click', closeOptionsModal);
 
-    // Search input listener
-    document.getElementById('menu-search').addEventListener('input', () => {
-        const activeCategory = document.querySelector('.pill.active').dataset.category;
+    // Search input listeners (Desktop & Mobile)
+    const handleSearch = (e) => {
+        const activeCategory = document.querySelector('.pill.active, .category-pill.text-\\[\\#994700\\], .category-pill.bg-gradient-to-br')?.dataset.category || 'All';
+        // Ensure both search inputs stay in sync
+        const query = e.target.value;
+        const desktopSearch = document.getElementById('menu-search-desktop');
+        const mobileSearch = document.getElementById('menu-search-mobile');
+        if (desktopSearch && e.target !== desktopSearch) desktopSearch.value = query;
+        if (mobileSearch && e.target !== mobileSearch) mobileSearch.value = query;
+        
         renderMenu(activeCategory);
-    });
+    };
+
+    const searchDesktop = document.getElementById('menu-search-desktop');
+    const searchMobile = document.getElementById('menu-search-mobile');
+    
+    if (searchDesktop) searchDesktop.addEventListener('input', handleSearch);
+    if (searchMobile) searchMobile.addEventListener('input', handleSearch);
 
     // Language Toggle
     document.getElementById('lang-toggle').addEventListener('click', toggleLanguage);
@@ -1269,7 +1282,7 @@ function handleCartUpdate(cartKey, baseItem, change, selectedOptions) {
     }
 
     updateCartUI();
-    const activeCategory = document.querySelector('.pill.active').dataset.category;
+    const activeCategory = document.querySelector('.pill.active, .category-pill.text-\\[\\#994700\\], .category-pill.bg-gradient-to-br')?.dataset.category || 'All';
     renderMenu(activeCategory);
 
     // Upsell popup logic
