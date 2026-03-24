@@ -3,9 +3,12 @@ const ASSETS = [
   '/',
   '/index.html',
   '/css/styles.css',
+  '/css/index.css',
+  '/css/logo.css',
+  '/js/supabase-config.js',
+  '/js/i18n.js',
   '/js/customer.js',
-  'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css',
-  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
+  '/images/bunny_logo.png'
 ];
 
 self.addEventListener('install', event => {
