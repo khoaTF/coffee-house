@@ -41,14 +41,15 @@ const statusMap = {
 
 // DOM Elements
 const menuContainer = document.getElementById('menu-container');
-const categoryPills = document.querySelectorAll('.pill');
 const loader = document.getElementById('loader');
 
 // Cart DOM
 const floatingCart = document.getElementById('floating-cart');
-const cartItemCount = document.getElementById('cart-item-count');
-const cartTotalPrice = document.getElementById('cart-total-price');
-const viewCartBtn = document.getElementById('view-cart-btn');
+const topCartCount = document.getElementById('cart-count'); 
+const dockedCartSummary = document.getElementById('docked-cart-summary');
+const cartItemCountDocked = document.getElementById('cart-item-count-docked');
+const cartTotalPriceDocked = document.getElementById('cart-total-price-docked');
+const viewCartBtnDocked = document.getElementById('view-cart-btn-docked');
 
 // Modal DOM
 const cartModal = document.getElementById('cart-modal');
@@ -71,6 +72,47 @@ const myOrdersBtn = document.getElementById('my-orders-btn');
 function init() {
     document.getElementById('table-number-display').textContent = TABLE_NUMBER;
     acquireTableLock();
+}
+
+function renderCategories(activeCategory = 'All') {
+    const categories = ['All', ...new Set(menuItems.map(item => item.category).filter(Boolean))];
+    
+    const desktopContainer = document.getElementById('desktop-category-filters');
+    const mobileContainer = document.getElementById('mobile-category-filters');
+    
+    const generateHTML = (cat, isDesktop) => {
+        const isActive = cat === activeCategory;
+        if (isDesktop) {
+            return `
+                <a href="#" data-category="${cat}" class="category-pill flex items-center space-x-3 px-6 py-3 rounded-xl transition-all ${isActive ? 'bg-white shadow-[0_4px_20px_rgba(88,66,53,0.08)] text-[#994700] font-bold' : 'text-[#1B1C1C]/60 hover:text-[#1B1C1C] hover:bg-[#1B1C1C]/5 font-medium'}">
+                    <span>${cat === 'All' ? 'Tất cả' : cat}</span>
+                </a>
+            `;
+        } else {
+            return `
+                <button data-category="${cat}" class="category-pill whitespace-nowrap px-5 py-2.5 rounded-2xl text-sm transition-all ${isActive ? 'bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white font-bold shadow-md shadow-[#FF7A00]/20' : 'bg-[#FCF9F8] dark:bg-[#1B1C1C] text-on-surface-variant font-medium border border-outline-variant/20'}">
+                    ${cat === 'All' ? 'Tất cả' : cat}
+                </button>
+            `;
+        }
+    };
+
+    if (desktopContainer) {
+        desktopContainer.innerHTML = categories.map(cat => generateHTML(cat, true)).join('');
+    }
+    if (mobileContainer) {
+        mobileContainer.innerHTML = categories.map(cat => generateHTML(cat, false)).join('');
+    }
+
+    // Attach listener
+    document.querySelectorAll('.category-pill').forEach(pill => {
+        pill.addEventListener('click', (e) => {
+            e.preventDefault();
+            const selectedCat = e.currentTarget.dataset.category || e.currentTarget.getAttribute('data-category');
+            renderCategories(selectedCat);
+            renderMenu(selectedCat);
+        });
+    });
 }
 
 // ---- Table Lock (via Supabase table_sessions) ----
@@ -244,6 +286,7 @@ async function fetchMenu() {
         }
         
         loader.style.display = 'none';
+        renderCategories('All');
         renderMenu('All');
         
         // Render history modal early to prepopulate it with fetched orders
@@ -297,9 +340,14 @@ function renderMenu(category) {
         return matchesCategory && matchesSearch;
     });
 
+    const emptyState = document.getElementById('empty-state');
     if(filteredItems.length === 0) {
-        menuContainer.innerHTML = `<p class="text-center text-muted" data-i18n="no_items">${searchQuery ? 'Không tìm thấy món.' : 'Không có món nào.'}</p>`;
+        if (emptyState) emptyState.style.display = 'flex';
+        menuContainer.style.display = 'none';
         return;
+    } else {
+        if (emptyState) emptyState.style.display = 'none';
+        menuContainer.style.display = 'grid';
     }
 
     filteredItems.forEach((item, index) => {
@@ -311,38 +359,68 @@ function renderMenu(category) {
         const hasActiveOrder = activeOrderId !== null;
         const disableAddBtn = isOutOfStock || hasActiveOrder || !canAddMore;
 
-        const card = document.createElement('div');
-        card.className = `menu-item ${isOutOfStock ? 'out-of-stock' : ''}`;
-        card.style.setProperty('--item-idx', index);
+        const card = document.createElement('article');
+        card.className = `bg-white dark:bg-[#2A2B2B] rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden group cursor-pointer active:scale-[0.98] transition-all ${isOutOfStock ? 'opacity-60 saturate-50' : ''}`;
+        
         const isBestSeller = !!item.isBestSeller;
         const hasOptions = item.options && item.options.length > 0;
         const hasPromo = !!item.isPromo;
-        
+
         card.innerHTML = `
-            <div style="position: relative;">
-                <img class="menu-img" src="${item.imageUrl}" alt="${item.name}" ${isOutOfStock ? "style='filter: grayscale(1); opacity: 0.6'" : ""} onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-                <div class="img-fallback" style="display:none; width:100%; height:160px; background:linear-gradient(135deg,rgba(212,167,106,0.15) 0%,rgba(22,27,34,0.95) 100%); align-items:center; justify-content:center; flex-direction:column; gap:8px; color:rgba(255,255,255,0.4);"><i class="fa-solid fa-mug-hot" style="font-size:2rem;color:rgba(212,167,106,0.4);"></i><span style="font-size:0.8rem;">${item.name}</span></div>
-                ${isOutOfStock ? '<div style="position: absolute; top: 10px; right: 10px; background: var(--danger); color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold;">Hết hàng</div>' : ''}
-                ${isBestSeller && !isOutOfStock ? '<div style="position: absolute; top: -10px; left: -10px; background: linear-gradient(45deg, #ff416c, #ff4b2b); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; box-shadow: 0 4px 10px rgba(255, 65, 108, 0.4); z-index: 2; transform: rotate(-5deg);"><i class="fa-solid fa-fire"></i> Bán Chạy</div>' : ''}
-                ${hasPromo && !isOutOfStock ? '<div style="position: absolute; bottom: 10px; right: 10px; background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; box-shadow: 0 4px 10px rgba(46,204,113,0.4); z-index: 2;"><i class="fa-solid fa-tag"></i> KM</div>' : ''}
+            <div class="aspect-[4/3] bg-slate-100 dark:bg-slate-800 relative overflow-hidden">
+                <img src="${item.imageUrl}" alt="${item.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.src='https://placehold.co/800x600/1B1C1C/FFF?text=${encodeURIComponent(item.name)}'">
+                ${isOutOfStock ? '<div class="absolute inset-0 bg-black/40 flex items-center justify-center z-10"><span class="bg-red-600 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">Hết hàng</span></div>' : ''}
+                ${isBestSeller && !isOutOfStock ? `
+                <div class="absolute top-3 left-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs font-bold text-orange-600 dark:text-orange-400 shadow-sm flex items-center gap-1 z-10">
+                    <span class="material-symbols-outlined text-[14px]">local_fire_department</span> Bán chạy
+                </div>` : ''}
+                ${hasPromo && !isOutOfStock ? `
+                <div class="absolute bottom-3 right-3 bg-green-500/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs font-bold text-white shadow-sm flex items-center gap-1 z-10">
+                    <span class="material-symbols-outlined text-[14px]">sell</span> KM
+                </div>` : ''}
             </div>
-            <div class="menu-details">
-                <div class="flex-grow-1" style="min-width: 0;">
-                    <div class="menu-title text-truncate" title="${item.name}">${item.name}</div>
-                    <div class="menu-desc text-truncate" title="${item.description}">${item.description}</div>
-                    <div class="menu-price">
-                        ${hasPromo ? `<span class="text-decoration-line-through text-muted small me-1">${item.originalPrice.toLocaleString('vi-VN')}đ</span> <span class="text-success fw-bold">${item.price.toLocaleString('vi-VN')}đ</span>` : `${item.price.toLocaleString('vi-VN')} đ`}
-                    </div>
+            <div class="p-4 flex flex-col h-[calc(100%-75%)] min-h-[150px]">
+                <div class="flex justify-between items-start gap-2 mb-1">
+                    <h3 class="font-bold text-slate-900 dark:text-slate-100 leading-tight">${item.name}</h3>
                 </div>
-                <div class="qty-controls" style="margin-top: auto; align-self: flex-start;">
-                    ${(cartItemTotalQty > 0) ? `<button class="qty-btn" onclick="updateCart('${item._id}', -1)">-</button>` : ''}
-                    ${(cartItemTotalQty > 0) ? `<span class="qty-num">${cartItemTotalQty}</span>` : ''}
-                    <button class="qty-btn ${hasOptions ? 'btn-primary' : ''}" style="${hasOptions ? 'width: auto; padding: 5px 15px; border-radius: 20px;' : ''}" onclick="updateCart('${item._id}', 1)" ${disableAddBtn ? "disabled style='opacity:0.5;background:#888;cursor:not-allowed;'" : ""}>
-                        ${hasOptions ? 'Chọn' : '+'}
+                <div class="mb-3">
+                    ${hasPromo ? `
+                        <span class="text-sm line-through text-slate-400 mr-1">${item.originalPrice.toLocaleString('vi-VN')}đ</span>
+                        <span class="font-bold text-orange-600 dark:text-orange-400 whitespace-nowrap">${item.price.toLocaleString('vi-VN')}đ</span>
+                    ` : `
+                        <span class="font-bold text-orange-600 dark:text-orange-400 whitespace-nowrap">${item.price.toLocaleString('vi-VN')}đ</span>
+                    `}
+                </div>
+                <p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mb-4 leading-relaxed flex-grow">${item.description}</p>
+                
+                <div class="flex items-center justify-between mt-auto">
+                    ${(cartItemTotalQty > 0) ? `
+                    <div class="flex items-center gap-3 bg-slate-50 dark:bg-slate-800 rounded-full p-1 border border-slate-100 dark:border-slate-700 w-full" onclick="event.stopPropagation()">
+                      <button class="w-10 h-10 rounded-full bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center shadow-sm active:scale-95 transition-transform" onclick="updateCart('${item._id}', -1)">
+                        <span class="material-symbols-outlined text-[20px]">remove</span>
+                      </button>
+                      <span class="font-bold text-slate-900 dark:text-white text-base flex-grow text-center">${cartItemTotalQty}</span>
+                      <button class="w-10 h-10 rounded-full bg-orange-600 text-white flex items-center justify-center shadow-sm active:scale-95 transition-transform" ${disableAddBtn ? "disabled style='opacity:0.5;'" : ""} onclick="updateCart('${item._id}', 1)">
+                        <span class="material-symbols-outlined text-[20px]">add</span>
+                      </button>
+                    </div>
+                    ` : `
+                    <button class="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-medium py-2.5 rounded-xl hover:bg-slate-800 dark:hover:bg-slate-100 active:bg-slate-950 transition-colors flex items-center justify-center gap-2" 
+                        onclick="event.stopPropagation(); updateCart('${item._id}', 1)" ${disableAddBtn ? "disabled style='opacity:0.5;background:#888;cursor:not-allowed;color:white;'" : ""}>
+                      <span class="material-symbols-outlined text-[20px]">${hasOptions ? 'tune' : 'add_circle'}</span>
+                      ${hasOptions ? 'Tùy chọn' : 'Thêm vào giỏ'}
                     </button>
+                    `}
                 </div>
             </div>
         `;
+        
+        // Also make card clicking add to cart if not optioned and not already out of stock
+        card.addEventListener('click', () => {
+             if (hasOptions) openOptionsModal(item);
+             else if (!disableAddBtn) updateCart(item._id, 1);
+        });
+
         menuContainer.appendChild(card);
     });
 };
@@ -354,13 +432,26 @@ function updateCartUI() {
         return sum + ((item.price + itemOptionsPrice) * item.quantity);
     }, 0);
 
-    if (totalQty > 0) {
-        floatingCart.style.display = 'block';
-        cartItemCount.textContent = totalQty;
-        cartTotalPrice.textContent = totalPrice.toLocaleString('vi-VN') + ' đ';
-    } else {
-        floatingCart.style.display = 'none';
-        closeModal(); // Close modal if emptying cart
+    // Update Top App Bar Cart
+    if (topCartCount) {
+        if (totalQty > 0) {
+            topCartCount.textContent = totalQty;
+            topCartCount.classList.remove('hidden');
+        } else {
+            topCartCount.classList.add('hidden');
+        }
+    }
+
+    // Update Docked Cart
+    if (dockedCartSummary) {
+        if (totalQty > 0) {
+            dockedCartSummary.classList.remove('hidden');
+            if (cartItemCountDocked) cartItemCountDocked.textContent = totalQty;
+            if (cartTotalPriceDocked) cartTotalPriceDocked.textContent = totalPrice.toLocaleString('vi-VN') + 'đ';
+        } else {
+            dockedCartSummary.classList.add('hidden');
+            closeModal(); // Close modal if emptying cart
+        }
     }
 
     renderModalCart();
@@ -541,16 +632,12 @@ function closeOptionsModal() {
 
 // Event Listeners
 function attachEventListeners() {
-    // Category filtering
-    categoryPills.forEach(pill => {
-        pill.addEventListener('click', (e) => {
-            document.querySelector('.pill.active').classList.remove('active');
-            e.target.classList.add('active');
-            renderMenu(e.target.dataset.category);
-        });
-    });
+    if (floatingCart) floatingCart.addEventListener('click', openModal);
+    if (viewCartBtnDocked) viewCartBtnDocked.addEventListener('click', openModal);
 
-    viewCartBtn.addEventListener('click', openModal);
+    const mobileMyOrdersBtn = document.getElementById('mobile-my-orders-btn');
+    if (mobileMyOrdersBtn) mobileMyOrdersBtn.addEventListener('click', openHistoryModal);
+
     closeModalBtn.addEventListener('click', closeModal);
     myOrdersBtn.addEventListener('click', openHistoryModal);
     closeHistoryModalBtn.addEventListener('click', closeHistoryModal);
@@ -850,7 +937,9 @@ function handleOrderConfirmed(savedOrder) {
     document.getElementById('step-pending').classList.add('active');
     
     // Re-render menu so that the '+' buttons get locked out
-    const activeCategory = document.querySelector('.pill.active').dataset.category;
+    const activeCategory = document.querySelector('.category-pill.bg-white') 
+                            ? document.querySelector('.category-pill.bg-white').dataset.category 
+                            : (document.querySelector('.category-pill.bg-gradient-to-br') ? document.querySelector('.category-pill.bg-gradient-to-br').dataset.category : 'All');
     renderMenu(activeCategory);
 }
 

@@ -139,28 +139,7 @@ body.customer-order-page {
     background-color: var(--bg-color);
 }
 
-/* Header adjustments */
-.hub-logo.centered-large {
-    font-size: 2.2rem;
-    justify-content: center;
-}
-
-.header-actions {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-}
-
-#lang-toggle {
-    font-size: 0.9rem;
-    padding: 4px 8px;
-    font-weight: 800;
-    background: var(--surface-color);
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow-sm);
-    color: var(--text-main);
-    cursor: pointer;
-}
+/* Header adjustments are now in styles.css */
 
 .btn-small {
     padding: 6px 10px;
