@@ -917,12 +917,14 @@ input, select, textarea {
         padding: 16px 20px;
     }
     .hub-logo {
-        font-size: clamp(2rem, 8vw, 2.5rem) !important;
+        font-size: clamp(1.5rem, 6vw, 2rem) !important;
         margin-bottom: 0 !important;
     }
     .header-content > div:last-child {
         width: 100%;
-        justify-content: space-between;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 12px;
     }
 }
 .btn::after, .add-btn::after, .pill::after {
@@ -998,8 +1000,8 @@ input, select, textarea {
 }
 @keyframes pillSelect {
     0% { transform: scale(0.9); }
-    60% { transform: scale(1.08) translateY(-3px); }
-    100% { transform: scale(1) translateY(-2px); }
+    60% { transform: scale(1.05); }
+    100% { transform: scale(1); }
 }
 
 /* Price count-up effect */

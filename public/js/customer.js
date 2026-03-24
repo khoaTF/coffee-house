@@ -143,8 +143,8 @@ function showTableLockedOverlay() {
     loader.innerHTML = `
         <div style="text-align:center; padding: 40px 20px;">
             <i class="fa-solid fa-lock" style="font-size: 3rem; color: #e74c3c; margin-bottom: 16px;"></i>
-            <h4 style="color: white; margin-bottom: 8px;">Bàn ${TABLE_NUMBER} đang được sử dụng</h4>
-            <p style="color: #aaa; margin-bottom: 24px;">Bàn này đang có khách. Vui lòng liên hệ nhân viên hoặc thử lại sau.</p>
+            <h4 style="color: var(--text-main); margin-bottom: 8px;">Bàn ${TABLE_NUMBER} đang được sử dụng</h4>
+            <p style="color: var(--text-muted); margin-bottom: 24px;">Bàn này đang có khách. Vui lòng liên hệ nhân viên hoặc thử lại sau.</p>
             <button onclick="location.reload()" class="pill" style="background: rgba(231,76,60,0.2); border-color: #e74c3c; color: #e74c3c; padding: 10px 24px;">
                 <i class="fa-solid fa-rotate-right"></i> Thử lại
             </button>
