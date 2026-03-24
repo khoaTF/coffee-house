@@ -243,3 +243,32 @@ body::after {
     color: var(--gold-light);
     text-decoration: none;
 }
+
+/* Login Tabs */
+.login-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 25px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 6px;
+    border-radius: 16px;
+}
+.login-tab {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.5);
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+.login-tab.active {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--gold-light);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
