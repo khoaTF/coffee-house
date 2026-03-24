@@ -167,19 +167,29 @@ body.customer-order-page {
     font-size: 0.85rem;
 }
 
-/* Sticky Search & Filter Section */
-.sticky-top-section {
+/* Unified Sticky Header */
+.unified-sticky-header {
     position: sticky;
-    top: 12px;
+    top: 0;
     z-index: 100;
-    margin: 12px 20px 24px 20px;
-    background: rgba(255, 255, 255, 0.85);
+    background: rgba(255, 255, 255, 0.90);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
-    border-radius: 24px;
-    padding: 12px 0;
-    border: 1px solid rgba(255,255,255,0.4);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+    border-radius: 0 0 24px 24px;
+    padding: 16px 0 8px 0;
+    margin-bottom: 24px;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+/* Internal search and filter no longer sticky itself */
+.sticky-top-section {
+    position: static;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+    border: none;
 }
 
 .search-container {
