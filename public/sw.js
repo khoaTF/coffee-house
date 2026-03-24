@@ -2,8 +2,8 @@ const CACHE_NAME = 'serenity-v1';
 const ASSETS = [
   '/',
   '/index.html',
-  '/styles.css',
-  '/customer.js',
+  '/css/styles.css',
+  '/js/customer.js',
   'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
 ];
