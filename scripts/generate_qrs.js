@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Configuration
-const BASE_URL = 'https://coffee-house-d6xr.onrender.com/';
+const BASE_URL = 'https://coffee-house-topaz.vercel.app/';
 const TOTAL_TABLES = 15;
 const OUTPUT_DIR = path.join(__dirname, '..', 'qrcodes');
 
