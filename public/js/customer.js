@@ -1,5 +1,3 @@
-// Remove socket.io: const socket = io();
-
 // Constants
 const queryParams = new URLSearchParams(window.location.search);
 const TABLE_NUMBER = queryParams.get('table') || '1';
@@ -207,7 +205,6 @@ async function fetchMenu() {
             totalPrice: o.total_price,
             orderNote: o.order_note
         }));
-        console.log("RESTORED SESSION ORDERS FOR TABLE", TABLE_NUMBER, sessionOrders);
         
         // activeOrder blocks placing new orders (Pending)
         // trackedOrder stays on the banner (Pending or Preparing)
@@ -1595,6 +1592,26 @@ window.requestStaffService = async function(type) {
         await customerAlert(`Lỗi: ${e.message || JSON.stringify(e)}`);
     }
 };
+
+// --- FAB Logic ---
+window.toggleFabMenu = function() {
+    const fabMenu = document.getElementById('fab-menu');
+    const fabMainBtn = document.getElementById('fab-main-btn');
+    if (fabMenu && fabMainBtn) {
+        fabMenu.classList.toggle('active');
+        fabMainBtn.classList.toggle('active');
+    }
+}
+
+// Auto close menu when an action is clicked
+document.querySelectorAll('.fab-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const fabMenu = document.getElementById('fab-menu');
+        if (fabMenu && fabMenu.classList.contains('active')) {
+            window.toggleFabMenu();
+        }
+    });
+});
 
 // Start the app
 init();

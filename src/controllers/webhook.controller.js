@@ -16,20 +16,16 @@ const handlePaymentWebhook = async (req, res) => {
 
             if (match) {
                 const shortId = match[0].toLowerCase();
-                console.log("shortId extracted:", shortId);
                 // Fetch unpaid orders and filter in JS (PostgreSQL UUID ilike throws error)
                 const { data: unpaidOrders, error: fetchErr } = await supabase
                     .from('orders')
                     .select('id, total_price, is_paid')
                     .eq('is_paid', false);
                     
-                console.log("Fetch unpaid:", { count: unpaidOrders ? unpaidOrders.length : 0, fetchErr });
                 if (!fetchErr && unpaidOrders && unpaidOrders.length > 0) {
                     const order = unpaidOrders.find(o => o.id.toLowerCase().startsWith(shortId));
-                    console.log("Found order matching shortId:", order);
                     
                     if (order && amount >= parseFloat(order.total_price)) {
-                        console.log("Amount sufficient, marking as paid...");
                         // Mark as paid
                         const { error: updateErr } = await supabase
                             .from('orders')
@@ -42,9 +38,7 @@ const handlePaymentWebhook = async (req, res) => {
                         } else {
                             console.error("Webhook Update Error:", updateErr);
                         }
-                    } else if (!order) {
-                        console.log("No matching unpaid order found for shortId:", shortId);
-                    }
+                    } 
                 } else if (fetchErr) {
                     console.error("Webhook Fetch Error:", fetchErr);
                 }
