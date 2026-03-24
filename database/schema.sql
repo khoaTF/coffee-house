@@ -134,7 +134,7 @@ CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
     pin TEXT UNIQUE NOT NULL,
-    role TEXT DEFAULT 'staff' CHECK (role IN ('staff', 'admin')),
+    role TEXT DEFAULT 'staff' CHECK (role IN ('staff', 'admin', 'kitchen', 'manager')),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
