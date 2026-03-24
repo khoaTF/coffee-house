@@ -81,7 +81,7 @@ async function acquireTableLock() {
             .from('table_sessions')
             .select('session_id, last_seen')
             .eq('table_number', TABLE_NUMBER)
-            .single();
+            .maybeSingle();
 
         if (existing) {
             const lastSeen = new Date(existing.last_seen);
