@@ -75,14 +75,14 @@ function renderLists() {
     preparingOrders.forEach(order => {
         const shortId = order.id.substring(0, 4).toUpperCase();
         prepList.innerHTML += `
-            <div class="w-full xl:w-[calc(50%-0.75rem)] bg-[#1A1814] border-l-4 border-[#D4AF37] border-y border-r border-[#3A3528] rounded-2xl p-4 md:p-5 flex justify-between items-center shadow-soft animate-slideIn">
+            <div class="w-full xl:w-[calc(50%-0.75rem)] bg-surface-variant/10 border-l-4 border-tertiary border-y border-r border-surface-variant/10 rounded-3xl p-5 md:p-6 flex justify-between items-center shadow-soft animate-slideIn backdrop-blur-md">
                 <div>
-                    <div class="text-[#A89F88] text-xs md:text-sm uppercase tracking-wider font-bold mb-1">Mã Đơn</div>
-                    <div class="font-mono text-2xl md:text-3xl font-black text-[#E8DCC4]">#${shortId}</div>
+                    <div class="text-outline-variant text-xs md:text-sm uppercase tracking-wider font-bold mb-1">Mã Đơn</div>
+                    <div class="font-mono text-3xl md:text-4xl font-black text-surface">#${shortId}</div>
                 </div>
-                <div class="text-right flex flex-col items-end">
-                    <div class="text-[#A89F88] text-xs md:text-sm uppercase tracking-wider font-bold mb-1">Bàn số</div>
-                    <div class="bg-[#232018] border border-[#3A3528] text-[#D4AF37] text-3xl md:text-4xl font-black px-4 md:px-5 py-2 rounded-xl min-w-[70px] md:min-w-[80px] text-center">${order.table_number || '?'}</div>
+                <div class="text-right flex flex-col items-end border-l border-surface-variant/20 pl-6">
+                    <div class="text-outline-variant text-xs md:text-sm uppercase tracking-wider font-bold mb-1">Bàn số</div>
+                    <div class="bg-primary border border-tertiary/30 text-tertiary text-4xl md:text-5xl font-black px-5 py-2 rounded-2xl min-w-[80px] text-center shadow-inner">${order.table_number || '?'}</div>
                 </div>
             </div>
         `;
@@ -92,14 +92,14 @@ function renderLists() {
     readyOrders.forEach(order => {
         const shortId = order.id.substring(0, 4).toUpperCase();
         readyList.innerHTML += `
-            <div class="w-full xl:w-[calc(50%-0.75rem)] bg-[#4CAF50]/10 border-l-8 border-[#4CAF50] border-y border-r border-[#4CAF50]/30 rounded-2xl p-5 md:p-6 flex justify-between items-center shadow-[0_8px_30px_rgba(76,175,80,0.2)] animate-slideIn animate-pulseReady">
+            <div class="w-full xl:w-[calc(50%-0.75rem)] bg-secondary/10 border-l-8 border-secondary border-y border-r border-secondary/30 rounded-3xl p-6 md:p-8 flex justify-between items-center shadow-[0_8px_30px_rgba(217,117,49,0.2)] animate-slideIn animate-pulseReady backdrop-blur-md">
                 <div>
-                    <div class="text-[#A89F88] text-sm md:text-base uppercase tracking-wider font-bold mb-1">Mã Đơn</div>
-                    <div class="font-mono text-3xl md:text-4xl font-black text-white drop-shadow-md">#${shortId}</div>
+                    <div class="text-secondary/80 text-sm md:text-base uppercase tracking-wider font-bold mb-1">Mã Đơn</div>
+                    <div class="font-mono text-4xl md:text-5xl font-black text-on-primary drop-shadow-md">#${shortId}</div>
                 </div>
-                <div class="text-right flex flex-col items-end">
-                    <div class="text-[#A89F88] text-sm md:text-base uppercase tracking-wider font-bold mb-1">Bàn số</div>
-                    <div class="bg-[#4CAF50] text-[#1A1814] text-4xl md:text-5xl font-black px-5 md:px-6 py-2 md:py-3 rounded-2xl min-w-[80px] md:min-w-[90px] text-center shadow-[0_0_20px_rgba(76,175,80,0.5)]">${order.table_number || '?'}</div>
+                <div class="text-right flex flex-col items-end border-l border-secondary/30 pl-6 md:pl-8">
+                    <div class="text-secondary/80 text-sm md:text-base uppercase tracking-wider font-bold mb-1">Bàn số</div>
+                    <div class="bg-secondary text-on-secondary text-5xl md:text-6xl font-black px-6 md:px-8 py-3 rounded-2xl min-w-[90px] text-center shadow-[0_0_25px_rgba(217,117,49,0.5)]">${order.table_number || '?'}</div>
                 </div>
             </div>
         `;
