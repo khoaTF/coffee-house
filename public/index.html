@@ -13,11 +13,11 @@
     <meta property="og:image" content="/images/og-image.jpg">
     
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" />
     
     <!-- Bootstrap CSS (Kept for existing feedback/confirm modals) -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -75,10 +75,10 @@
         </button>
         
         <div class="mt-6 flex flex-col space-y-4">
-            <a href="#" onclick="requestStaffService('staff'); return false;" class="text-[#1B1C1C]/70 pl-4 py-2 hover:text-[#994700] flex items-center space-x-3 text-sm">
+            <button onclick="requestStaffService('staff'); return false;" class="text-[#1B1C1C]/70 pl-4 py-2 hover:text-[#994700] flex items-center space-x-3 text-sm bg-transparent border-0">
                 <span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
                 <span>Gọi Nhân Viên</span>
-            </a>
+            </button>
             <button id="lang-toggle" onclick="toggleLanguage()" class="text-start text-[#1B1C1C]/70 pl-4 py-2 hover:text-[#994700] flex items-center space-x-3 text-sm bg-transparent border-0">
                 <span class="material-symbols-outlined" data-icon="language">language</span>
                 <span>EN / VI</span>
@@ -221,21 +221,21 @@
 
 <!-- Mobile Navigation Bar -->
 <nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-end px-6 pb-6 lg:hidden bg-[#FCF9F8]/90 dark:bg-[#1B1C1C]/90 backdrop-blur-2xl rounded-t-[2rem] border-t border-[#1B1C1C]/5 pt-4">
-    <a href="#" onclick="openCategoryModal(); return false;" class="flex flex-col items-center justify-center bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white rounded-full w-14 h-14 -mt-8 shadow-lg shadow-[#FF7A00]/30 transition-all duration-300 scale-110">
+    <button onclick="openCategoryModal(); return false;" class="flex flex-col items-center justify-center bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white rounded-full w-14 h-14 -mt-8 shadow-lg shadow-[#FF7A00]/30 transition-all duration-300 scale-110 border-0">
         <span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
-    </a>
-    <a href="#" id="mobile-my-orders-btn" class="flex flex-col items-center justify-center text-[#1B1C1C]/50 py-2 hover:text-[#994700] transition-colors">
+    </button>
+    <button id="mobile-my-orders-btn" class="flex flex-col items-center justify-center text-[#1B1C1C]/50 py-2 hover:text-[#994700] transition-colors bg-transparent border-0">
         <span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
         <span class="font-['Inter'] text-[10px] uppercase tracking-widest font-bold mt-1">Đơn hàng</span>
-    </a>
-    <a href="#" onclick="requestStaffService('checkout'); return false;" class="flex flex-col items-center justify-center text-[#1B1C1C]/50 py-2 hover:text-[#994700] transition-colors">
+    </button>
+    <button onclick="requestStaffService('checkout'); return false;" class="flex flex-col items-center justify-center text-[#1B1C1C]/50 py-2 hover:text-[#994700] transition-colors bg-transparent border-0">
         <span class="material-symbols-outlined" data-icon="point_of_sale">point_of_sale</span>
         <span class="font-['Inter'] text-[10px] uppercase tracking-widest font-bold mt-1">Tính tiền</span>
-    </a>
-    <a href="#" onclick="requestStaffService('staff'); return false;" class="flex flex-col items-center justify-center text-[#1B1C1C]/50 py-2 hover:text-[#994700] transition-colors">
+    </button>
+    <button onclick="requestStaffService('staff'); return false;" class="flex flex-col items-center justify-center text-[#1B1C1C]/50 py-2 hover:text-[#994700] transition-colors bg-transparent border-0">
         <span class="material-symbols-outlined" data-icon="contact_support">contact_support</span>
         <span class="font-['Inter'] text-[10px] uppercase tracking-widest font-bold mt-1">Gọi NV</span>
-    </a>
+    </button>
 </nav>
 
 <!-- Existing Modals - Hidden by default but structure retained -->
@@ -282,72 +282,49 @@
             <textarea id="order-note" class="input-glass" placeholder="Vd: Ít đường, nhiều đá..." rows="2"
                 style="width: 100%;"></textarea>
 
-            <div class="loyalty-section mt-3 mb-3"
-                style="background: var(--bg-color); padding: 16px; border: 2px solid #f39c12; box-shadow: 2px 2px 0px #f39c12;">
-                <label class="font-bold" style="display: block; margin-bottom: 5px; color: #d35400;"><i
-                        class="fa-solid fa-crown"></i> Tích điểm / Thành viên:</label>
-                <div style="display: flex; gap: 8px;">
-                    <input type="tel" id="customer-phone-input" class="input-glass" placeholder="Nhập SĐT..."
-                        style="flex: 1; border: 2px solid #e67e22; box-shadow: 2px 2px 0px #e67e22;">
-                    <button id="verify-phone-btn" onclick="verifyCustomerPhone()" class="btn btn-primary"
-                        style="padding: 8px 16px; border: 2px solid #d35400; box-shadow: 2px 2px 0px #d35400; white-space: nowrap; background: #e67e22; color: #fff;">Nhận
-                        diện</button>
+            <div class="loyalty-section mt-4 mb-4 bg-[#F0EDEC] dark:bg-[#2A2B2B] rounded-2xl p-4">
+                <label class="font-bold mb-2 flex items-center text-[#1b1c1b] dark:text-[#fcf9f8]"><i class="fa-solid fa-crown text-[#FF7A00] mr-2"></i> Tích điểm / Thành viên</label>
+                <div class="flex gap-2">
+                    <input type="tel" id="customer-phone-input" class="bg-[#FCF9F8] dark:bg-[#1B1C1B] rounded-xl px-4 py-3 flex-1 text-[#1b1c1b] dark:text-[#fcf9f8] focus:outline-none focus:ring-1 focus:ring-[#994700]/30" placeholder="Nhập SĐT...">
+                    <button id="verify-phone-btn" onclick="verifyCustomerPhone()" class="bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white px-5 rounded-xl font-bold whitespace-nowrap active:scale-95 transition-transform"><i class="fa-solid fa-check"></i> Xác nhận</button>
                 </div>
-                <div id="loyalty-message"
-                    style="display: none; font-size: 0.85rem; margin-top: 6px; font-weight: 600; color: #d35400;">
-                </div>
+                <div id="loyalty-message" class="hidden text-sm mt-2 font-bold text-[#FF7A00]"></div>
 
-                <!-- VIP HOLOGRAPHIC CARD -->
-                <div id="vip-card-container" style="display: none; margin-top: 15px; perspective: 1000px;">
-                    <div class="vip-card" id="vip-card-el"
-                        style="transform-style: preserve-3d; position: relative;">
+                <!-- VIP Card container -->
+                <div id="vip-card-container" class="hidden mt-4">
+                    <div class="vip-card relative rounded-2xl overflow-hidden p-5 text-white shadow-lg bg-gradient-to-br from-[#1b1c1b] to-[#3a3a3a]">
                         <div class="vip-card-glow"></div>
-                        <div
-                            style="display: flex; justify-content: space-between; align-items: flex-start; position: relative; z-index: 2;">
+                        <div class="flex justify-between items-start relative z-10">
                             <div>
-                                <div
-                                    style="font-size: 0.75rem; opacity: 0.8; font-weight: bold; letter-spacing: 1px;">
-                                    THÀNH VIÊN</div>
-                                <div id="vip-card-name"
-                                    style="font-size: 1.2rem; font-weight: 800; letter-spacing: 0.5px;">Khách
-                                    Hàng</div>
+                                <div class="text-[10px] uppercase tracking-widest opacity-80 font-bold">Thành viên</div>
+                                <div id="vip-card-name" class="text-xl font-black mt-1">Khách Hàng</div>
                             </div>
-                            <div id="vip-card-tier-icon"
-                                style="font-size: 2.2rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">🥉
-                            </div>
+                            <div id="vip-card-tier-icon" class="text-3xl drop-shadow-md">🥉</div>
                         </div>
-                        <div style="margin-top: 25px; position: relative; z-index: 2;">
-                            <div style="font-size: 0.7rem; opacity: 0.8; letter-spacing: 1px;">HẠNG THẺ</div>
-                            <div style="display: flex; justify-content: space-between; align-items: flex-end;">
-                                <div id="vip-card-tier-text"
-                                    style="font-size: 1.5rem; font-weight: 900; text-transform: uppercase; letter-spacing: 2px;">
-                                    BRONZE</div>
-                                <div id="vip-card-discount"
-                                    style="font-size: 0.95rem; font-weight: bold; background: rgba(0,0,0,0.3); padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);">
-                                    Giảm 0%</div>
+                        <div class="mt-6 flex justify-between items-end relative z-10">
+                            <div>
+                                <div class="text-[10px] uppercase tracking-widest opacity-80 mb-1">Hạng thẻ</div>
+                                <div id="vip-card-tier-text" class="text-lg font-black uppercase tracking-wider">BRONZE</div>
                             </div>
+                            <div id="vip-card-discount" class="text-sm font-bold bg-white/20 backdrop-blur-md px-3 py-1 rounded-lg border border-white/20">Giảm 0%</div>
                         </div>
                     </div>
                 </div>
 
-                <div id="loyalty-discount-btn" style="display: none; margin-top: 10px;">
-                    <button onclick="applyLoyaltyPoints()" class="btn btn-outline"
-                        style="width: 100%; font-size: 0.85rem; border: 2px solid #d35400; box-shadow: 2px 2px 0px #d35400; color: #d35400;"><i
-                            class="fa-solid fa-gift"></i> Đổi 100 điểm = Giảm 10.000đ</button>
+                <div id="loyalty-discount-btn" class="hidden mt-3">
+                    <button onclick="applyLoyaltyPoints()" class="w-full bg-[#fcf9f8] dark:bg-[#1B1C1B] text-[#994700] border border-[#ffb68b] py-3 rounded-xl font-bold flex justify-center items-center gap-2 active:scale-95 transition-transform">
+                        <i class="fa-solid fa-gift"></i> Đổi 100 điểm = Giảm 10.000đ
+                    </button>
                 </div>
             </div>
 
-            <div class="promo-section mt-3"
-                style="background: var(--bg-color); padding: 16px; border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
-                <label class="font-bold text-main" style="display: block; margin-bottom: 5px;"><i
-                        class="fa-solid fa-ticket-simple text-accent"></i> Mã khuyến mãi:</label>
-                <div style="display: flex; gap: 8px;">
-                    <input type="text" id="promo-code-input" class="input-glass" placeholder="Nhập mã..."
-                        style="flex: 1; text-transform: uppercase; border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
-                    <button id="apply-promo-btn" onclick="applyPromo()" class="btn btn-outline"
-                        style="padding: 8px 16px; white-space: nowrap;">Áp dụng</button>
+            <div class="promo-section mb-4 bg-[#F0EDEC] dark:bg-[#2A2B2B] rounded-2xl p-4">
+                <label class="font-bold mb-2 flex items-center text-[#1b1c1b] dark:text-[#fcf9f8]"><i class="fa-solid fa-ticket-simple text-[#FF7A00] mr-2"></i> Mã khuyến mãi</label>
+                <div class="flex gap-2">
+                    <input type="text" id="promo-code-input" class="bg-[#FCF9F8] dark:bg-[#1B1C1B] rounded-xl px-4 py-3 flex-1 text-[#1b1c1b] dark:text-[#fcf9f8] focus:outline-none focus:ring-1 focus:ring-[#994700]/30 uppercase" placeholder="Nhập mã...">
+                    <button id="apply-promo-btn" onclick="applyPromo()" class="bg-white dark:bg-[#1B1C1C] text-[#1b1c1b] dark:text-white border border-[#e0c0af] px-5 rounded-xl font-bold whitespace-nowrap active:scale-95 transition-transform">Áp dụng</button>
                 </div>
-                <div id="promo-message" style="display: none; font-size: 0.85rem; margin-top: 6px; font-weight: 500;"></div>
+                <div id="promo-message" class="hidden text-sm mt-2 font-medium"></div>
             </div>
         </div>
         <div class="cart-modal-footer">
@@ -359,17 +336,17 @@
                 <span><i class="fa-solid fa-tag"></i> Giảm giá:</span>
                 <span>-<span id="checkout-discount">0</span></span>
             </div>
-            <div class="flex-between mb-2 mt-2 pt-2" style="border-top: 2px dashed var(--border);">
-                <span class="font-bold" style="font-size: 1.1rem;">Tổng thanh toán:</span>
-                <span class="font-bold text-primary" style="font-size: 1.2rem;"><span id="checkout-total">0</span></span>
+            <div class="flex-between mb-2 mt-4 pt-4 border-t border-outline-variant/30">
+                <span class="font-bold text-lg text-[#1b1c1b] dark:text-white">Tổng thanh toán:</span>
+                <span class="font-black text-2xl text-[#FF7A00]"><span id="checkout-total">0</span></span>
             </div>
             <!-- Payment Options -->
-            <div class="d-grid gap-2 mb-2 pt-3" style="border-top: 2px dashed var(--border);">
-                <button id="checkout-cash-btn" class="btn btn-outline" disabled style="width: 100%;">
+            <div class="grid grid-cols-1 gap-3 mt-4">
+                <button id="checkout-cash-btn" class="bg-[#F0EDEC] dark:bg-[#2A2B2B] text-[#584235] dark:text-[#E0C0AF] py-3.5 rounded-full font-bold active:scale-95 transition-transform flex items-center justify-center gap-2" disabled>
                     <i class="fa-solid fa-money-bill-wave"></i> Thanh toán tại quầy
                 </button>
-                <button id="checkout-transfer-btn" class="btn btn-primary" disabled style="width: 100%;">
-                    <i class="fa-solid fa-qrcode"></i> Chuyển khoản (Duyệt TĐ)
+                <button id="checkout-transfer-btn" class="bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white py-3.5 rounded-full font-bold active:scale-95 transition-transform flex items-center justify-center gap-2 shadow-lg shadow-[#FF7A00]/20" disabled>
+                    <i class="fa-solid fa-qrcode"></i> Chuyển khoản (Nhanh)
                 </button>
             </div>
         </div>
@@ -455,49 +432,37 @@
     </div>
 </div>
 
-<!-- Feedback Modal -->
-<div class="modal fade" id="feedbackModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow-md); background: var(--surface-color);">
-            <div class="modal-header border-0">
-                <h5 class="modal-title font-bold text-main"><i class="fa-solid fa-face-smile-beam me-2"></i>Đánh giá trải nghiệm</h5>
-            </div>
-            <div class="modal-body text-center p-4">
-                <p class="text-main mb-4">Cảm ơn bạn đã tin tưởng Nohope Coffee! Bạn thấy món ăn và dịch vụ của chúng tôi thế nào?</p>
+<!-- Feedback Modal (Tailwind Native) -->
+<div class="fixed inset-0 bg-black/50 z-[2000] hidden items-center justify-center px-4 backdrop-blur-sm" id="feedbackModal">
+    <div class="bg-[#FCF9F8] dark:bg-[#1B1C1B] w-full max-w-sm rounded-[24px] shadow-2xl border border-[#e0c0af]/30 p-6 transform scale-95 opacity-0 transition-all duration-300" id="feedbackModalContent">
+        <h5 class="text-xl font-bold text-[#1b1c1b] dark:text-white mb-2 text-center"><i class="fa-solid fa-face-smile-beam text-[#FF7A00] mr-2"></i>Đánh giá</h5>
+        <p class="text-[#584235] dark:text-gray-400 text-sm mb-6 text-center">Cảm ơn bạn đã tin tưởng Nohope Coffee! Trải nghiệm hôm nay thế nào?</p>
 
-                <div id="star-rating" class="mb-4 fs-1 w-full justify-center flex gap-2 text-3xl">
-                    <i class="fa-regular fa-star star-btn text-accent" data-value="1"></i>
-                    <i class="fa-regular fa-star star-btn text-accent" data-value="2"></i>
-                    <i class="fa-regular fa-star star-btn text-accent" data-value="3"></i>
-                    <i class="fa-regular fa-star star-btn text-accent" data-value="4"></i>
-                    <i class="fa-regular fa-star star-btn text-accent" data-value="5"></i>
-                </div>
+        <div id="star-rating" class="flex justify-center gap-3 text-4xl mb-6">
+            <i class="fa-regular fa-star star-btn text-[#FF7A00] cursor-pointer" data-value="1"></i>
+            <i class="fa-regular fa-star star-btn text-[#FF7A00] cursor-pointer" data-value="2"></i>
+            <i class="fa-regular fa-star star-btn text-[#FF7A00] cursor-pointer" data-value="3"></i>
+            <i class="fa-regular fa-star star-btn text-[#FF7A00] cursor-pointer" data-value="4"></i>
+            <i class="fa-regular fa-star star-btn text-[#FF7A00] cursor-pointer" data-value="5"></i>
+        </div>
 
-                <textarea id="feedback-comment" class="form-control mb-3 w-full p-2" rows="3"
-                    placeholder="Chia sẻ thêm cảm nhận của bạn..."
-                    style="border-radius: 8px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); background: var(--surface-color); color: var(--text-main); font-weight: 500;"></textarea>
+        <textarea id="feedback-comment" class="w-full bg-[#F0EDEC] dark:bg-[#2A2B2B] rounded-xl px-4 py-3 mb-6 text-[#1b1c1b] dark:text-white focus:outline-none focus:ring-1 focus:ring-[#994700]/30 resize-none text-sm" rows="3" placeholder="Chia sẻ thêm cảm nhận..."></textarea>
 
-                <div class="d-grid w-full">
-                    <button class="btn btn-primary py-2 w-full" id="submit-feedback-btn" onclick="submitFeedback()">Gửi đánh giá</button>
-                </div>
-                <button class="btn btn-link text-muted mt-3 text-decoration-none" data-bs-dismiss="modal">Để sau</button>
-            </div>
+        <div class="flex flex-col gap-2">
+            <button class="w-full bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white py-3.5 rounded-full font-bold active:scale-95 transition-transform" id="submit-feedback-btn" onclick="submitFeedback()">Gửi đánh giá</button>
+            <button class="w-full bg-transparent text-[#584235] dark:text-[#E0C0AF] py-3 rounded-full font-semibold active:scale-95 transition-transform" onclick="closeFeedbackModal()">Để sau</button>
         </div>
     </div>
 </div>
 
-<!-- Custom Confirm Modal -->
-<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
-    <div class="modal-dialog modal-dialog-centered modal-sm">
-        <div class="modal-content" style="border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--shadow-md); background: var(--surface-color);">
-            <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title" id="confirmModalTitle" style="color: var(--text-main); font-weight: bold;"><i class="fa-solid fa-triangle-exclamation text-accent me-2"></i>Xác nhận</h5>
-            </div>
-            <div class="modal-body" id="confirmModalBody" style="color: var(--text-muted); font-weight: 500;">Bạn có chắc chắn không?</div>
-            <div class="modal-footer border-0 pt-0">
-                <button type="button" class="btn btn-secondary btn-sm" id="confirmModalCancel" data-bs-dismiss="modal" style="border-radius: 4px; border: 1px solid var(--border); background: var(--surface-color); box-shadow: var(--shadow-sm); color: var(--text-main); font-weight: 800;">Không</button>
-                <button type="button" class="btn btn-danger btn-sm" id="confirmModalOk" style="border-radius: 4px; border: 1px solid var(--border); background: var(--accent); color: #FFF; font-weight: 800; box-shadow: var(--shadow-sm);">Có, xác nhận</button>
-            </div>
+<!-- Custom Confirm Modal (Tailwind Native) -->
+<div class="fixed inset-0 bg-black/50 z-[2060] hidden items-center justify-center px-4 backdrop-blur-sm" id="confirmModal">
+    <div class="bg-[#FCF9F8] dark:bg-[#1B1C1B] w-full max-w-xs rounded-[20px] shadow-2xl border border-[#e0c0af]/30 p-6">
+        <h5 class="text-lg font-bold text-[#1b1c1b] dark:text-white mb-2 flex items-center justify-center"><i class="fa-solid fa-triangle-exclamation text-[#FF7A00] mr-2"></i>Xác nhận</h5>
+        <div class="text-[#584235] dark:text-gray-400 text-center text-sm mb-6" id="confirmModalBody">Bạn có chắc chắn không?</div>
+        <div class="grid grid-cols-2 gap-3">
+            <button class="bg-[#F0EDEC] dark:bg-[#2A2B2B] text-[#584235] dark:text-[#E0C0AF] py-2.5 rounded-full font-bold active:scale-95 transition-transform" id="confirmModalCancel" onclick="closeConfirmModal()">Không</button>
+            <button class="bg-[#ba1a1a] text-white py-2.5 rounded-full font-bold active:scale-95 transition-transform shadow-lg shadow-[#ba1a1a]/20" id="confirmModalOk">Xóa</button>
         </div>
     </div>
 </div>

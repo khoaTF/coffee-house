@@ -154,7 +154,7 @@ html,
   -o-tab-size: 4;
      tab-size: 4;
   /* 3 */
-  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  font-family: 'Inter', sans-serif;
   /* 4 */
   font-feature-settings: normal;
   /* 5 */
@@ -243,7 +243,7 @@ code,
 kbd,
 samp,
 pre {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-family: 'Inter', sans-serif;
   /* 1 */
   font-feature-settings: normal;
   /* 2 */
@@ -307,7 +307,7 @@ input,
 optgroup,
 select,
 textarea {
-  font-family: inherit;
+  font-family: 'Inter', sans-serif;
   /* 1 */
   font-feature-settings: inherit;
   /* 1 */
@@ -2404,27 +2404,27 @@ input:where([type='file']):focus {
 }
 
 .font-\[\'Inter\'\] {
-  font-family: 'Inter';
+  font-family: 'Inter', sans-serif;
 }
 
 .font-\[\'Plus_Jakarta_Sans\'\] {
-  font-family: 'Plus Jakarta Sans';
+  font-family: 'Inter', sans-serif;
 }
 
 .font-body {
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .font-headline {
-  font-family: 'Noto Serif', serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 .font-mono {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-family: 'Inter', sans-serif;
 }
 
 .font-serif {
-  font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 .text-2xl {
