@@ -949,7 +949,7 @@ function handleOrderConfirmed(savedOrder) {
     document.getElementById('live-status').style.color = '#e74c3c';
     document.querySelectorAll('.timeline-step').forEach(el => el.className = 'timeline-step');
     document.querySelectorAll('.timeline-line').forEach(el => el.className = 'timeline-line');
-    document.getElementById('step-pending').classList.add('active');
+    document.getElementById('step-pending')?.classList.add('active');
     
     // Re-render menu so that the '+' buttons get locked out
     const activeCategory = getActiveCategory();
@@ -1166,9 +1166,9 @@ function handleOrderStatusUpdate(updatedOrderData) {
             liveStatusEl.className = 'text-warning banner-status';
             
             // Update timeline
-            document.getElementById('step-pending').classList.replace('active', 'completed');
-            document.getElementById('line-1').classList.add('active');
-            document.getElementById('step-preparing').classList.add('active');
+            document.getElementById('step-pending')?.classList.replace('active', 'completed');
+            document.getElementById('line-1')?.classList.add('active');
+            document.getElementById('step-preparing')?.classList.add('active');
             
             // User requested: Unlock the menu for a new order when it hits Preparing
             if (activeOrderId === updatedOrder._id) {
@@ -1184,10 +1184,10 @@ function handleOrderStatusUpdate(updatedOrderData) {
             liveStatusEl.className = 'text-success banner-status';
             
             // Update timeline
-            document.getElementById('step-preparing').classList.replace('active', 'completed');
-            document.getElementById('line-1').classList.add('completed');
-            document.getElementById('line-2').classList.add('active');
-            document.getElementById('step-ready').classList.add('active');
+            document.getElementById('step-preparing')?.classList.replace('active', 'completed');
+            document.getElementById('line-1')?.classList.add('completed');
+            document.getElementById('line-2')?.classList.add('active');
+            document.getElementById('step-ready')?.classList.add('active');
             
         } else if (updatedOrder.status === 'Completed' || updatedOrder.status === 'Cancelled') {
             if (activeOrderId === updatedOrder._id) {
@@ -1198,8 +1198,8 @@ function handleOrderStatusUpdate(updatedOrderData) {
                     liveStatusEl.textContent = 'Hoàn thành';
                     liveStatusEl.className = 'text-muted banner-status';
                     
-                    document.getElementById('step-ready').classList.replace('active', 'completed');
-                    document.getElementById('line-2').classList.add('completed');
+                    document.getElementById('step-ready')?.classList.replace('active', 'completed');
+                    document.getElementById('line-2')?.classList.add('completed');
                     
                     const bannerContent = document.querySelector('#live-order-banner .banner-content');
                     if (!bannerContent.querySelector('.feedback-btn-container')) {
