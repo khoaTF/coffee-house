@@ -408,7 +408,7 @@ function renderMenu(category) {
                     <button class="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-medium py-2.5 rounded-xl hover:bg-slate-800 dark:hover:bg-slate-100 active:bg-slate-950 transition-colors flex items-center justify-center gap-2" 
                         onclick="event.stopPropagation(); updateCart('${item._id}', 1)" ${disableAddBtn ? "disabled style='opacity:0.5;background:#888;cursor:not-allowed;color:white;'" : ""}>
                       <span class="material-symbols-outlined text-[20px]">${hasOptions ? 'tune' : 'add_circle'}</span>
-                      ${hasOptions ? 'Tùy chọn' : 'Thêm vào giỏ'}
+                      ${hasOptions ? 'Chọn' : 'Thêm vào giỏ'}
                     </button>
                     `}
                 </div>
@@ -957,7 +957,18 @@ function handleOrderConfirmed(savedOrder) {
 }
 
 // User Action: Call Staff
-async function requestStaffService(type) {
+window.requestStaffService = async function(type) {
+    const messages = {
+        'staff': 'Bạn muốn gọi nhân viên phục vụ?',
+        'water': 'Bạn muốn yêu cầu thêm nước lọc?',
+        'checkout': 'Bạn muốn yêu cầu tính tiền?'
+    };
+    
+    if (!TABLE_NUMBER) {
+        await customerAlert("Không xác định được số bàn!");
+        return;
+    }
+
     // Prevent spamming
     if (localStorage.getItem(`last_req_${type}_${sessionId}`)) {
         const lastCall = new Date(localStorage.getItem(`last_req_${type}_${sessionId}`));
@@ -966,6 +977,9 @@ async function requestStaffService(type) {
             return;
         }
     }
+
+    const confirmed = await customerConfirm(messages[type] || 'Bạn có chắc chắn?');
+    if (!confirmed) return;
 
     try {
         let dbType = type === 'checkout' ? 'bill' : 'staff';
@@ -979,11 +993,13 @@ async function requestStaffService(type) {
         
         localStorage.setItem(`last_req_${type}_${sessionId}`, new Date().toISOString());
         
-        let msg = "Đã gọi nhân viên hỗ trợ.";
-        if (type === 'water') msg = "Đã gửi yêu cầu thêm nước lọc.";
-        if (type === 'checkout') msg = "Đã gửi yêu cầu thanh toán.";
+        const successMsgs = {
+             'staff': 'Đã gọi nhân viên hỗ trợ.',
+             'water': 'Đã gửi yêu cầu thêm nước lọc. NV sẽ lấy ngay.',
+             'checkout': 'Đã gửi yêu cầu thanh toán.'
+        };
         
-        await customerAlert(msg);
+        await customerAlert(successMsgs[type] || "Yêu cầu đã được gửi!");
         
     } catch (e) {
         console.error("Staff Request Error:", e);
@@ -995,28 +1011,45 @@ async function requestStaffService(type) {
 let customerConfirmModalInstance = null;
 function customerConfirm(message) {
     return new Promise((resolve) => {
+        let modalEl = document.getElementById('confirmModal');
         if (!customerConfirmModalInstance) {
-            customerConfirmModalInstance = new bootstrap.Modal(document.getElementById('confirmModal'));
+            customerConfirmModalInstance = new bootstrap.Modal(modalEl);
         }
         document.getElementById('confirmModalBody').textContent = message;
 
         const okBtn = document.getElementById('confirmModalOk');
         const cancelBtn = document.getElementById('confirmModalCancel');
+        
+        // Show cancel button if it was hidden by customerAlert
+        cancelBtn.style.display = 'inline-block';
+        okBtn.textContent = 'Có, xác nhận';
+
         const newOk = okBtn.cloneNode(true);
         const newCancel = cancelBtn.cloneNode(true);
         okBtn.parentNode.replaceChild(newOk, okBtn);
         cancelBtn.parentNode.replaceChild(newCancel, cancelBtn);
 
-        document.getElementById('confirmModalOk').addEventListener('click', () => {
+        let resolved = false;
+        
+        newOk.addEventListener('click', () => {
+            if (resolved) return; resolved = true;
             customerConfirmModalInstance.hide();
             resolve(true);
-        }, { once: true });
-        document.getElementById('confirmModalCancel').addEventListener('click', () => {
+        });
+        
+        newCancel.addEventListener('click', () => {
+            if (resolved) return; resolved = true;
+            customerConfirmModalInstance.hide();
             resolve(false);
-        }, { once: true });
-        document.getElementById('confirmModal').addEventListener('hidden.bs.modal', () => {
-            resolve(false);
-        }, { once: true });
+        });
+        
+        modalEl.addEventListener('hidden.bs.modal', function onHide() {
+            modalEl.removeEventListener('hidden.bs.modal', onHide);
+            if (!resolved) {
+                resolved = true;
+                resolve(false);
+            }
+        });
 
         customerConfirmModalInstance.show();
     });
@@ -1025,8 +1058,9 @@ function customerConfirm(message) {
 // Custom alert for mobile friendliness
 function customerAlert(message) {
     return new Promise((resolve) => {
+        let modalEl = document.getElementById('confirmModal');
         if (!customerConfirmModalInstance) {
-            customerConfirmModalInstance = new bootstrap.Modal(document.getElementById('confirmModal'));
+            customerConfirmModalInstance = new bootstrap.Modal(modalEl);
         }
         document.getElementById('confirmModalBody').textContent = message;
         
@@ -1036,32 +1070,32 @@ function customerAlert(message) {
 
         const okBtn = document.getElementById('confirmModalOk');
         const cancelBtn = document.getElementById('confirmModalCancel');
-        const newOk = okBtn.cloneNode(true);
-        const newCancel = cancelBtn.cloneNode(true);
-        okBtn.parentNode.replaceChild(newOk, okBtn);
-        cancelBtn.parentNode.replaceChild(newCancel, cancelBtn);
+        
+        cancelBtn.style.display = 'none'; // Hide cancel
+        okBtn.textContent = 'Đóng';
 
-        newOk.className = 'btn btn-primary btn-sm';
-        newOk.textContent = 'Đóng';
-        newCancel.style.display = 'none';
+        const newOk = okBtn.cloneNode(true);
+        okBtn.parentNode.replaceChild(newOk, okBtn);
+
+        let resolved = false;
 
         const cleanup = () => {
-            newOk.className = 'btn btn-danger btn-sm';
-            newOk.textContent = 'Có, xác nhận';
-            newCancel.style.display = 'inline-block';
-            titleEl.innerHTML = prevTitleHTML;
+            if (resolved) return; 
+            resolved = true;
+            customerConfirmModalInstance.hide();
+            cancelBtn.style.display = 'inline-block'; // Restore
+            newOk.textContent = 'Có, xác nhận'; // Restore
+            titleEl.innerHTML = prevTitleHTML; // Restore
             resolve(true);
         };
 
-        document.getElementById('confirmModalOk').addEventListener('click', () => {
-            customerConfirmModalInstance.hide();
-            cleanup();
-        }, { once: true });
+        newOk.addEventListener('click', cleanup);
         
-        document.getElementById('confirmModal').addEventListener('hidden.bs.modal', () => {
+        modalEl.addEventListener('hidden.bs.modal', function onHide() {
+            modalEl.removeEventListener('hidden.bs.modal', onHide);
             cleanup();
-        }, { once: true });
-
+        });
+        
         customerConfirmModalInstance.show();
     });
 }
@@ -1652,48 +1686,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// --- Staff Requests ---
-window.requestStaffService = async function(type) {
-    const messages = {
-        'staff': 'Bạn muốn gọi nhân viên phục vụ?',
-        'water': 'Bạn muốn yêu cầu thêm nước lọc?',
-        'checkout': 'Bạn muốn yêu cầu tính tiền?'
-    };
-    
-    const dbTypes = {
-        'staff': 'staff',
-        'water': 'staff', // map water to staff
-        'checkout': 'bill'
-    };
-    
-    if (!TABLE_NUMBER) {
-        await customerAlert("Không xác định được số bàn!");
-        return;
-    }
-
-    const confirmed = await customerConfirm(messages[type] || 'Bạn có chắc chắn?');
-    if (!confirmed) return;
-    
-    try {
-        let dbType = type === 'checkout' ? 'bill' : 'staff';
-        const { error } = await supabase.from('staff_requests').insert([{
-            table_number: TABLE_NUMBER.toString(),
-            type: dbType,
-            status: 'pending'
-        }]);
-        if (error) throw error;
-        
-        const successMsgs = {
-             'staff': 'Đã gửi yêu cầu nhân viên!',
-             'water': 'Đã yêu cầu thêm nước rọc. NV sẽ lấy ngay!',
-             'checkout': 'Đã yêu cầu thanh toán!'
-        };
-        await customerAlert(successMsgs[type] || "Yêu cầu đã được gửi!");
-    } catch(e) {
-        console.error(e);
-        await customerAlert(`Lỗi: ${e.message || JSON.stringify(e)}`);
-    }
-};
+// --- Staff Requests merged above ---
 
 // --- FAB Logic ---
 window.toggleFabMenu = function() {
