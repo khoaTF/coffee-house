@@ -13,11 +13,11 @@
     <meta property="og:image" content="/images/og-image.jpg">
     
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" />
     
     <!-- Bootstrap CSS (Kept for existing feedback/confirm modals) -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -139,10 +139,10 @@
         </button>
         
         <div class="mt-6 flex flex-col space-y-4">
-            <a href="#" onclick="requestStaffService('staff'); return false;" class="text-[#1B1C1C]/70 pl-4 py-2 hover:text-[#994700] flex items-center space-x-3 text-sm">
+            <button onclick="requestStaffService('staff'); return false;" class="text-[#1B1C1C]/70 pl-4 py-2 hover:text-[#994700] flex items-center space-x-3 text-sm bg-transparent border-0">
                 <span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
                 <span>Gọi Nhân Viên</span>
-            </a>
+            </button>
             <button id="lang-toggle" class="text-start text-[#1B1C1C]/70 pl-4 py-2 hover:text-[#994700] flex items-center space-x-3 text-sm bg-transparent border-0">
                 <span class="material-symbols-outlined" data-icon="language">language</span>
                 <span>EN / VI</span>
@@ -280,21 +280,21 @@
 
 <!-- Mobile Navigation Bar -->
 <nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-end px-6 pb-6 lg:hidden bg-[#FCF9F8]/90 dark:bg-[#1B1C1C]/90 backdrop-blur-2xl rounded-t-[2rem] border-t border-[#1B1C1C]/5 pt-4">
-    <a href="#" class="flex flex-col items-center justify-center bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white rounded-full w-14 h-14 -mt-8 shadow-lg shadow-[#FF7A00]/30 transition-all duration-300 scale-110">
+    <button onclick="openCategoryModal(); return false;" class="flex flex-col items-center justify-center bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white rounded-full w-14 h-14 -mt-8 shadow-lg shadow-[#FF7A00]/30 transition-all duration-300 scale-110 border-0">
         <span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
-    </a>
-    <a href="#" id="mobile-my-orders-btn" class="flex flex-col items-center justify-center text-[#1B1C1C]/50 py-2 hover:text-[#994700] transition-colors">
+    </button>
+    <button id="mobile-my-orders-btn" class="flex flex-col items-center justify-center text-[#1B1C1C]/50 py-2 hover:text-[#994700] transition-colors bg-transparent border-0">
         <span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
         <span class="font-['Inter'] text-[10px] uppercase tracking-widest font-bold mt-1">Đơn hàng</span>
-    </a>
-    <a href="#" onclick="requestStaffService('checkout'); return false;" class="flex flex-col items-center justify-center text-[#1B1C1C]/50 py-2 hover:text-[#994700] transition-colors">
+    </button>
+    <button onclick="requestStaffService('checkout'); return false;" class="flex flex-col items-center justify-center text-[#1B1C1C]/50 py-2 hover:text-[#994700] transition-colors bg-transparent border-0">
         <span class="material-symbols-outlined" data-icon="point_of_sale">point_of_sale</span>
         <span class="font-['Inter'] text-[10px] uppercase tracking-widest font-bold mt-1">Tính tiền</span>
-    </a>
-    <a href="#" onclick="requestStaffService('staff'); return false;" class="flex flex-col items-center justify-center text-[#1B1C1C]/50 py-2 hover:text-[#994700] transition-colors">
+    </button>
+    <button onclick="requestStaffService('staff'); return false;" class="flex flex-col items-center justify-center text-[#1B1C1C]/50 py-2 hover:text-[#994700] transition-colors bg-transparent border-0">
         <span class="material-symbols-outlined" data-icon="contact_support">contact_support</span>
         <span class="font-['Inter'] text-[10px] uppercase tracking-widest font-bold mt-1">Gọi NV</span>
-    </a>
+    </button>
 </nav>
 
 <!-- Existing Modals - Hidden by default but structure retained -->

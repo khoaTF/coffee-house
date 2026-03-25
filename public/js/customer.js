@@ -410,61 +410,61 @@ function renderMenu(category) {
         const disableAddBtn = isOutOfStock || hasActiveOrder || !canAddMore;
 
         const card = document.createElement('article');
-        card.className = `bg-white dark:bg-[#2A2B2B] rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden group cursor-pointer active:scale-[0.98] transition-all ${isOutOfStock ? 'opacity-60 saturate-50' : ''}`;
+        card.className = `bg-[#FCF9F8] dark:bg-[#1B1C1B] rounded-[24px] overflow-hidden group cursor-pointer active:scale-[0.98] transition-all hover:bg-white dark:hover:bg-[#2A2B2B] ${isOutOfStock ? 'opacity-60 saturate-50' : ''}`;
         
         const isBestSeller = !!item.isBestSeller;
         const hasOptions = item.options && item.options.length > 0;
         const hasPromo = !!item.isPromo;
 
         card.innerHTML = `
-            <div class="aspect-[4/3] bg-slate-100 dark:bg-slate-800 relative overflow-hidden">
+            <div class="aspect-[4/3] bg-[#F0EDEC] dark:bg-slate-800 relative overflow-hidden">
                 <img src="${item.imageUrl}" alt="${item.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.onerror=null; this.src='https://placehold.co/800x600/1B1C1C/FFF?text=${encodeURIComponent(item.name)}'">
-                ${isOutOfStock ? '<div class="absolute inset-0 bg-black/40 flex items-center justify-center z-10"><span class="bg-red-600 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">Hết hàng</span></div>' : ''}
+                ${isOutOfStock ? '<div class="absolute inset-0 bg-black/40 flex items-center justify-center z-10"><span class="bg-[#ba1a1a] text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">Hết hàng</span></div>' : ''}
                 ${isBestSeller && !isOutOfStock ? `
-                <div class="absolute top-3 left-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs font-bold text-orange-600 dark:text-orange-400 shadow-sm flex items-center gap-1 z-10">
-                    <span class="material-symbols-outlined text-[14px]">local_fire_department</span> Bán chạy
+                <div class="absolute top-3 left-3 bg-white/90 dark:bg-[#1B1C1B]/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs font-bold text-[#FF7A00] shadow-sm flex items-center gap-1 z-10">
+                    <i class="fa-solid fa-fire text-[#FF7A00] text-[12px]"></i> Bán chạy
                 </div>` : ''}
                 ${hasPromo && !isOutOfStock ? `
-                <div class="absolute bottom-3 right-3 bg-green-500/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs font-bold text-white shadow-sm flex items-center gap-1 z-10">
-                    <span class="material-symbols-outlined text-[14px]">sell</span> KM
+                <div class="absolute bottom-3 right-3 bg-[#4ade80]/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs font-bold text-white shadow-sm flex items-center gap-1 z-10">
+                    <i class="fa-solid fa-tag text-[12px]"></i> KM
                 </div>` : ''}
             </div>
             <div class="p-4 flex flex-col h-[calc(100%-75%)] min-h-[150px]">
                 <div class="flex justify-between items-start gap-2 mb-1">
-                    <h3 class="font-bold text-slate-900 dark:text-slate-100 leading-tight">${item.name}</h3>
+                    <h3 class="font-bold text-[#1b1c1b] dark:text-[#fcf9f8] leading-tight">${item.name}</h3>
                 </div>
                 <div class="mb-3">
                     ${hasPromo ? `
-                        <span class="text-sm line-through text-slate-400 mr-1">${item.originalPrice.toLocaleString('vi-VN')}đ</span>
-                        <span class="font-bold text-orange-600 dark:text-orange-400 whitespace-nowrap">${item.price.toLocaleString('vi-VN')}đ</span>
+                        <span class="text-sm line-through text-[#8b949e] mr-1">${item.originalPrice.toLocaleString('vi-VN')}đ</span>
+                        <span class="font-bold text-[#FF7A00] whitespace-nowrap">${item.price.toLocaleString('vi-VN')}đ</span>
                     ` : `
-                        <span class="font-bold text-orange-600 dark:text-orange-400 whitespace-nowrap">${item.price.toLocaleString('vi-VN')}đ</span>
+                        <span class="font-bold text-[#FF7A00] whitespace-nowrap">${item.price.toLocaleString('vi-VN')}đ</span>
                     `}
                 </div>
-                <p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mb-4 leading-relaxed flex-grow">${item.description}</p>
+                <p class="text-sm text-[#584235] dark:text-[#E0C0AF] line-clamp-2 mb-4 leading-relaxed flex-grow">${item.description}</p>
                 
                 <div class="flex items-center justify-between mt-auto">
                     ${(cartItemTotalQty > 0) ? `
-                    <div class="flex items-center gap-3 bg-slate-50 dark:bg-slate-800 rounded-full p-1 border border-slate-100 dark:border-slate-700 w-full" onclick="event.stopPropagation()">
-                      <button class="w-10 h-10 rounded-full bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center shadow-sm active:scale-95 transition-transform" onclick="updateCart('${item._id}', -1)">
-                        <span class="material-symbols-outlined text-[20px]">remove</span>
+                    <div class="flex items-center gap-3 bg-white dark:bg-[#2A2B2B] rounded-full p-1 w-full shadow-sm" onclick="event.stopPropagation()">
+                      <button class="w-10 h-10 rounded-full bg-[#F0EDEC] dark:bg-[#1B1C1B] text-[#1b1c1b] dark:text-white flex items-center justify-center active:scale-95 transition-transform" onclick="updateCart('${item._id}', -1)">
+                        <i class="fa-solid fa-minus text-[16px]"></i>
                       </button>
                       <input type="number" min="0" 
-                             class="font-bold text-slate-900 dark:text-white text-base flex-grow text-center bg-transparent w-full focus:outline-none focus:ring-1 focus:ring-orange-500 rounded no-spinners" 
+                             class="font-bold text-[#1b1c1b] dark:text-white text-base flex-grow text-center bg-transparent w-full focus:outline-none rounded no-spinners" 
                              style="-moz-appearance: textfield; appearance: textfield;" 
                              value="${cartItemTotalQty}" 
                              ${hasOptions ? 'readonly onclick="openOptionsModal(menuItems.find(i => i._id === \'' + item._id + '\'))"' : ''}
                              onchange="if(!${hasOptions}) setCartQuantity('${item._id}', this.value)" 
                              onfocus="this.select()" />
-                      <button class="w-10 h-10 rounded-full bg-orange-600 text-white flex items-center justify-center shadow-sm active:scale-95 transition-transform" ${disableAddBtn ? "disabled style='opacity:0.5;'" : ""} onclick="updateCart('${item._id}', 1)">
-                        <span class="material-symbols-outlined text-[20px]">add</span>
+                      <button class="w-10 h-10 rounded-full bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white flex items-center justify-center shadow-md active:scale-95 transition-transform" ${disableAddBtn ? "disabled style='opacity:0.5;'" : ""} onclick="updateCart('${item._id}', 1)">
+                        <i class="fa-solid fa-plus text-[16px]"></i>
                       </button>
                     </div>
                     ` : `
-                    <button class="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-medium py-2.5 rounded-xl hover:bg-slate-800 dark:hover:bg-slate-100 active:bg-slate-950 transition-colors flex items-center justify-center gap-2" 
+                    <button class="w-full bg-[#1b1c1b] dark:bg-[#F0EDEC] text-white dark:text-[#1b1c1b] font-bold py-2.5 rounded-full hover:bg-black active:scale-95 transition-transform flex items-center justify-center gap-2" 
                         onclick="event.stopPropagation(); updateCart('${item._id}', 1)" ${disableAddBtn ? "disabled style='opacity:0.5;background:#888;cursor:not-allowed;color:white;'" : ""}>
-                      <span class="material-symbols-outlined text-[20px]">${hasOptions ? 'tune' : 'add_circle'}</span>
-                      ${hasOptions ? 'Chọn' : 'Thêm vào giỏ'}
+                      <i class="fa-solid ${hasOptions ? 'fa-sliders' : 'fa-plus'} text-[16px]"></i>
+                      ${hasOptions ? 'Tùy chọn' : 'Thêm vào giỏ'}
                     </button>
                     `}
                 </div>
@@ -1045,77 +1045,83 @@ async function requestStaffService(type) {
 }
 
 // Custom confirm for customer page (avoid native confirm() which can be blocked)
-let customerConfirmModalInstance = null;
 function customerConfirm(message) {
     return new Promise((resolve) => {
-        if (!customerConfirmModalInstance) {
-            customerConfirmModalInstance = new bootstrap.Modal(document.getElementById('confirmModal'));
-        }
-        document.getElementById('confirmModalBody').textContent = message;
-
+        const modal = document.getElementById('confirmModal');
+        const body = document.getElementById('confirmModalBody');
         const okBtn = document.getElementById('confirmModalOk');
         const cancelBtn = document.getElementById('confirmModalCancel');
+
+        if (!modal || !body || !okBtn || !cancelBtn) { console.error("Confirm modal not found"); return resolve(false); }
+
+        body.textContent = message;
+        // Show modal natively
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
         const newOk = okBtn.cloneNode(true);
         const newCancel = cancelBtn.cloneNode(true);
         okBtn.parentNode.replaceChild(newOk, okBtn);
         cancelBtn.parentNode.replaceChild(newCancel, cancelBtn);
 
-        document.getElementById('confirmModalOk').addEventListener('click', () => {
-            customerConfirmModalInstance.hide();
-            resolve(true);
-        }, { once: true });
-        document.getElementById('confirmModalCancel').addEventListener('click', () => {
-            resolve(false);
-        }, { once: true });
-        document.getElementById('confirmModal').addEventListener('hidden.bs.modal', () => {
-            resolve(false);
-        }, { once: true });
+        const closeModal = (result) => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            resolve(result);
+        };
 
-        customerConfirmModalInstance.show();
+        newOk.addEventListener('click', () => closeModal(true), { once: true });
+        newCancel.addEventListener('click', () => closeModal(false), { once: true });
     });
+}
+
+function closeConfirmModal() {
+    const modal = document.getElementById('confirmModal');
+    if(modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
 }
 
 // Custom alert for mobile friendliness
 function customerAlert(message) {
     return new Promise((resolve) => {
-        if (!customerConfirmModalInstance) {
-            customerConfirmModalInstance = new bootstrap.Modal(document.getElementById('confirmModal'));
-        }
-        document.getElementById('confirmModalBody').textContent = message;
-        
-        const titleEl = document.getElementById('confirmModalTitle');
-        const prevTitleHTML = titleEl.innerHTML;
-        titleEl.innerHTML = '<i class="fa-solid fa-circle-info text-primary me-2"></i>Thông báo';
-
+        const modal = document.getElementById('confirmModal');
+        const body = document.getElementById('confirmModalBody');
         const okBtn = document.getElementById('confirmModalOk');
         const cancelBtn = document.getElementById('confirmModalCancel');
+        
+        if (!modal || !body || !okBtn || !cancelBtn) return resolve(true);
+
+        body.textContent = message;
+        
+        const titleEl = modal.querySelector('h5');
+        const prevTitleHTML = titleEl.innerHTML;
+        titleEl.innerHTML = '<i class="fa-solid fa-circle-info text-[#FF7A00] mr-2"></i>Thông báo';
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
         const newOk = okBtn.cloneNode(true);
         const newCancel = cancelBtn.cloneNode(true);
         okBtn.parentNode.replaceChild(newOk, okBtn);
         cancelBtn.parentNode.replaceChild(newCancel, cancelBtn);
 
-        newOk.className = 'btn btn-primary btn-sm';
+        newOk.className = 'bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white py-2.5 rounded-full font-bold active:scale-95 transition-transform shadow-lg shadow-[#FF7A00]/20 col-span-2';
         newOk.textContent = 'Đóng';
         newCancel.style.display = 'none';
 
-        const cleanup = () => {
-            newOk.className = 'btn btn-danger btn-sm';
-            newOk.textContent = 'Có, xác nhận';
-            newCancel.style.display = 'inline-block';
+        const closeModal = () => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            newOk.className = 'bg-[#ba1a1a] text-white py-2.5 rounded-full font-bold active:scale-95 transition-transform shadow-lg shadow-[#ba1a1a]/20';
+            newOk.textContent = 'Xóa';
+            newCancel.style.display = 'block';
             titleEl.innerHTML = prevTitleHTML;
             resolve(true);
         };
 
-        document.getElementById('confirmModalOk').addEventListener('click', () => {
-            customerConfirmModalInstance.hide();
-            cleanup();
-        }, { once: true });
-        
-        document.getElementById('confirmModal').addEventListener('hidden.bs.modal', () => {
-            cleanup();
-        }, { once: true });
-
-        customerConfirmModalInstance.show();
+        newOk.addEventListener('click', () => closeModal(), { once: true });
     });
 }
 
@@ -1426,13 +1432,18 @@ async function verifyCustomerPhone() {
             
             // Render Holographic VIP Card
             const vip = getVipTier(data.total_spent || 0);
-            const cardEl = document.getElementById('vip-card-el');
-            cardEl.className = `vip-card ${vip.class}`;
-            document.getElementById('vip-card-name').textContent = data.name || 'Thành Viên';
-            document.getElementById('vip-card-tier-text').textContent = vip.name;
-            document.getElementById('vip-card-tier-icon').textContent = vip.icon;
-            document.getElementById('vip-card-discount').textContent = `Ưu đãi giảm ${vip.pct}%`;
-            document.getElementById('vip-card-container').style.display = 'block';
+            const cardEl = document.querySelector('.vip-card') || document.getElementById('vip-card-el');
+            if (cardEl) cardEl.className = `vip-card ${vip.class}`;
+            const nameEl = document.getElementById('vip-card-name');
+            if (nameEl) nameEl.textContent = data.name || 'Thành Viên';
+            const tierTextEl = document.getElementById('vip-card-tier-text');
+            if (tierTextEl) tierTextEl.textContent = vip.name;
+            const tierIconEl = document.getElementById('vip-card-tier-icon');
+            if (tierIconEl) tierIconEl.textContent = vip.icon;
+            const discountEl = document.getElementById('vip-card-discount');
+            if (discountEl) discountEl.textContent = `Ưu đãi giảm ${vip.pct}%`;
+            const containerEl = document.getElementById('vip-card-container');
+            if (containerEl) containerEl.style.display = 'block';
 
             if (vip.pct > 0) {
                 // Auto Apply VIP Promo
@@ -1623,10 +1634,34 @@ async function applyPromo() {
 }
 
 // --- Feedback Logic ---
+// --- Feedback Logic ---
 let selectedRating = 0;
-const feedbackModal = (typeof bootstrap !== 'undefined' && document.getElementById('feedbackModal')) 
-    ? new bootstrap.Modal(document.getElementById('feedbackModal')) 
-    : null;
+
+function showFeedbackModal() {
+    const modal = document.getElementById('feedbackModal');
+    const content = document.getElementById('feedbackModalContent');
+    if(modal && content) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        setTimeout(() => {
+            content.classList.remove('opacity-0', 'scale-95');
+            content.classList.add('opacity-100', 'scale-100');
+        }, 10);
+    }
+}
+
+function closeFeedbackModal() {
+    const modal = document.getElementById('feedbackModal');
+    const content = document.getElementById('feedbackModalContent');
+    if(modal && content) {
+        content.classList.add('opacity-0', 'scale-95');
+        content.classList.remove('opacity-100', 'scale-100');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }, 300);
+    }
+}
 
 document.querySelectorAll('.star-btn').forEach(star => {
     star.addEventListener('mouseover', function() {
@@ -1678,7 +1713,7 @@ window.submitFeedback = async () => {
             const { error } = await supabase.from('feedback').insert([feedbackData]);
             if (error) throw error;
             
-            if(feedbackModal) feedbackModal.hide();
+            closeFeedbackModal();
             await customerAlert('Cảm ơn bạn đã đánh giá!');
             fetchMenu();
         } catch (error) {
@@ -1702,11 +1737,9 @@ function checkAndShowFeedback(updatedOrder) {
         // Check local sessionOrders array instead of sessionStorage
         if (sessionOrders.some(o => o._id === updatedOrder._id)) {
             setTimeout(() => {
-                if(feedbackModal) {
-                    // Check if already shown to avoid double prompting
-                    if (!document.getElementById('feedbackModal').classList.contains('show')) {
-                        feedbackModal.show();
-                    }
+                const modal = document.getElementById('feedbackModal');
+                if(modal && modal.classList.contains('hidden')) {
+                    showFeedbackModal();
                 }
             }, 3000);
         }
@@ -1732,7 +1765,12 @@ function applyTranslations() {
     });
 
     // Update search placeholder manually
-    document.getElementById('menu-search').placeholder = t.search_placeholder;
+    const searchEl = document.getElementById('menu-search');
+    if (searchEl) searchEl.placeholder = t.search_placeholder;
+    const searchDesktop = document.getElementById('menu-search-desktop');
+    if (searchDesktop) searchDesktop.placeholder = t.search_placeholder;
+    const searchMobile = document.getElementById('menu-search-mobile');
+    if (searchMobile) searchMobile.placeholder = t.search_placeholder;
     
     // Refresh menu to update dynamic labels
     const activeCategory = getActiveCategory();
