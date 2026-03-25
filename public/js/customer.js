@@ -383,10 +383,11 @@ function renderMenu(category) {
     const searchQuery = (sqDesktop || sqMobile).toLowerCase();
 
     const filteredItems = menuItems.filter(item => {
-        const matchesCategory = category === 'All' || item.category === category;
+        // If user is searching, we should search across ALL categories (ignore category filter)
+        const matchesCategory = !!searchQuery || window.currentCategory === 'all' || item.category === window.currentCategory;
         const matchesSearch = !searchQuery || 
                                item.name.toLowerCase().includes(searchQuery) || 
-                               item.description.toLowerCase().includes(searchQuery);
+                               (item.description && item.description.toLowerCase().includes(searchQuery));
         return matchesCategory && matchesSearch;
     });
 
