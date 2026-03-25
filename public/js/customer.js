@@ -631,55 +631,6 @@ function closeOptionsModal() {
     if (fab) fab.style.display = 'flex';
 }
 
-function openOptionsModal(item) {
-    currentOptionsItem = item;
-    document.getElementById('options-modal-title').textContent = item.name;
-    const container = document.getElementById('options-container');
-    container.innerHTML = '';
-    
-    item.options.forEach((opt, optIndex) => {
-        const optName = opt.name || opt.optionName;
-        const group = document.createElement('div');
-        group.className = 'option-group mb-3';
-        group.innerHTML = `<h3 style="font-size: 1.1rem; margin-bottom: 10px;">${optName}</h3>`;
-        
-        opt.choices.forEach((choice, choiceIndex) => {
-            const choiceName = choice.name || choice.choiceName;
-            const row = document.createElement('label');
-            row.style.display = 'flex';
-            row.style.justifyContent = 'space-between';
-            row.style.padding = '10px';
-            row.style.border = '1px solid var(--border)';
-            row.style.borderRadius = '8px';
-            row.style.marginBottom = '5px';
-            row.style.cursor = 'pointer';
-            
-            // Default to first choice if required (for radio)
-            const isChecked = choiceIndex === 0 ? 'checked' : '';
-            
-            row.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <input type="radio" name="opt_${optIndex}" value="${choiceName}" data-price="${choice.priceExtra}" ${isChecked} style="accent-color: var(--primary);">
-                    <span>${choiceName}</span>
-                </div>
-                <span class="text-muted">${choice.priceExtra > 0 ? '+' + choice.priceExtra.toLocaleString('vi-VN') + ' đ' : ''}</span>
-            `;
-            group.appendChild(row);
-        });
-        container.appendChild(group);
-    });
-    
-    optionsModal.classList.add('active');
-    const fab = document.querySelector('.fab-container');
-    if (fab) fab.style.display = 'none';
-}
-
-function closeOptionsModal() { 
-    optionsModal.classList.remove('active'); 
-    currentOptionsItem = null;
-    const fab = document.querySelector('.fab-container');
-    if (fab) fab.style.display = 'flex';
-}
 
 // Event Listeners
 function attachEventListeners() {
