@@ -53,6 +53,9 @@ const viewCartBtnDocked = document.getElementById('view-cart-btn-docked');
 
 // Modal DOM
 const cartModal = document.getElementById('cart-modal');
+const optionsModal = document.getElementById('options-modal');
+const closeOptionsBtn = document.getElementById('close-options-modal');
+const confirmOptionsBtn = document.getElementById('confirm-options-btn');
 const closeModalBtn = document.getElementById('close-modal');
 const cartItemsContainer = document.getElementById('cart-items-container');
 const checkoutTotal = document.getElementById('checkout-total');
@@ -526,9 +529,7 @@ function renderModalCart() {
     if(checkoutTransferBtn) checkoutTransferBtn.disabled = false;
 }
 
-const optionsModal = document.getElementById('options-modal');
-const closeOptionsBtn = document.getElementById('close-options-modal');
-const confirmOptionsBtn = document.getElementById('confirm-options-btn');
+
 
 // UI Triggers
 function openModal() { 
@@ -576,6 +577,56 @@ function openHistoryModal() {
 }
 function closeHistoryModal() { 
     historyModal.classList.remove('active'); 
+    const fab = document.querySelector('.fab-container');
+    if (fab) fab.style.display = 'flex';
+}
+
+function openOptionsModal(item) {
+    currentOptionsItem = item;
+    document.getElementById('options-modal-title').textContent = item.name;
+    const container = document.getElementById('options-container');
+    container.innerHTML = '';
+    
+    item.options.forEach((opt, optIndex) => {
+        const optName = opt.name || opt.optionName;
+        const group = document.createElement('div');
+        group.className = 'option-group mb-3';
+        group.innerHTML = `<h3 style="font-size: 1.1rem; margin-bottom: 10px; font-weight: bold; color: var(--text-main);">${optName}</h3>`;
+        
+        opt.choices.forEach((choice, choiceIndex) => {
+            const choiceName = choice.name || choice.choiceName;
+            const row = document.createElement('label');
+            row.style.display = 'flex';
+            row.style.justifyContent = 'space-between';
+            row.style.padding = '10px';
+            row.style.border = '1px solid var(--border)';
+            row.style.borderRadius = '8px';
+            row.style.marginBottom = '5px';
+            row.style.cursor = 'pointer';
+            
+            // Default to first choice if required (for radio)
+            const isChecked = choiceIndex === 0 ? 'checked' : '';
+            
+            row.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <input type="radio" name="opt_${optIndex}" value="${choiceName}" data-price="${choice.priceExtra}" ${isChecked} style="accent-color: var(--primary);">
+                    <span>${choiceName}</span>
+                </div>
+                <span class="text-muted">${choice.priceExtra > 0 ? '+' + choice.priceExtra.toLocaleString('vi-VN') + ' đ' : ''}</span>
+            `;
+            group.appendChild(row);
+        });
+        container.appendChild(group);
+    });
+    
+    if (optionsModal) optionsModal.classList.add('active');
+    const fab = document.querySelector('.fab-container');
+    if (fab) fab.style.display = 'none';
+}
+
+function closeOptionsModal() { 
+    if (optionsModal) optionsModal.classList.remove('active'); 
+    currentOptionsItem = null;
     const fab = document.querySelector('.fab-container');
     if (fab) fab.style.display = 'flex';
 }
