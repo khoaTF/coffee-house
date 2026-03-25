@@ -1,0 +1,1313 @@
+﻿commit 6aaddb06d63d945fa62f64d4371a8a48a738d70c
+Author: Cafe Admin <admin@serenity.com>
+Date:   Wed Mar 25 10:41:50 2026 +0700
+
+    fix(ux): restore files, fix language toggle, TV sync, and button text
+
+diff --git a/public/index.html b/public/index.html
+index e69de29..a728265 100644
+--- a/public/index.html
++++ b/public/index.html
+@@ -0,0 +1,480 @@
++<!DOCTYPE html>
++<html lang="vi" class="light">
++<head>
++    <meta charset="UTF-8">
++    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
++    <title>Nohope Coffee - Thß╗▒c ─æ╞ín & ─Éß║╖t m├│n QR</title>
++    <meta name="description" content="Trß║úi nghiß╗çm ─æß║╖t m├│n tuyß╗çt vß╗¥i tß║íi Nohope Coffee. Thß╗▒c ─æ╞ín ─æa dß║íng, kh├┤ng gian sang trß╗ìng, ─æß║╖t m├│n nhanh ch├│ng qua m├ú QR.">
++    <!-- Open Graph / Facebook -->
++    <meta property="og:type" content="website">
++    <meta property="og:url" content="https://coffee-house.com/">
++    <meta property="og:title" content="Nohope Coffee - Thß╗▒c ─æ╞ín & ─Éß║╖t m├│n QR">
++    <meta property="og:description" content="Trß║úi nghiß╗çm ─æß║╖t m├│n tuyß╗çt vß╗¥i tß║íi Nohope Coffee. ─Éß║╖t m├│n nhanh ch├│ng, tiß╗çn lß╗úi.">
++    <meta property="og:image" content="/images/og-image.jpg">
++    
++    <!-- Google Fonts -->
++    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
++    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
++    
++    <!-- Bootstrap CSS (Kept for existing feedback/confirm modals) -->
++    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
++    <!-- Font Awesome -->
++    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
++    
++    <!-- Custom CSS (Kept for toast and custom modal logic) -->
++    <link rel="stylesheet" href="css/styles.css?v=1.6">
++    <link rel="stylesheet" href="css/index.css">
++    
++    <!-- Tailwind CSS (Compiled for Production) -->
++    <link rel="stylesheet" href="css/tailwind-compiled.css">
++    <style>
++        .material-symbols-outlined {
++            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
++        }
++        body { font-family: 'Inter', sans-serif; }
++        h1, h2, h3, .brand-font { font-family: 'Plus Jakarta Sans', sans-serif; }
++        
++        /* Fix for Tailwind Preflight vs Bootstrap */
++        .modal { z-index: 1050 !important; }
++        .modal-backdrop { z-index: 1040 !important; }
++        
++        /* Hide scrollbar for categories */
++        .hide-scrollbar::-webkit-scrollbar { display: none; }
++        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
++        .no-tap-highlight { -webkit-tap-highlight-color: transparent; }
++    </style>
++
++    <!-- Supabase Client -->
++    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
++    <script src="js/supabase-config.js?v=1.2"></script>
++    <link rel="manifest" href="manifest.json">
++    <meta name="theme-color" content="#994700">
++    <link rel="icon" type="image/png" href="/images/bunny_logo.png">
++    <link rel="apple-touch-icon" href="/images/bunny_logo.png">
++</head>
++<body class="bg-surface text-on-surface overflow-x-hidden no-tap-highlight">
++
++<!-- SideNavBar (Desktop Shell) -->
++<aside class="h-screen w-64 fixed left-0 top-0 hidden lg:flex flex-col bg-[#F6F3F2] dark:bg-[#1B1C1C] py-8 shadow-[20px_0_40px_rgba(88,66,53,0.04)] z-40">
++    <div class="px-8 mb-10">
++        <h1 class="text-[#994700] font-['Plus_Jakarta_Sans'] font-extrabold text-2xl tracking-tight">Nohope</h1>
++        <p class="text-on-surface-variant text-xs mt-1 font-medium opacity-60">Digital Barista Experience</p>
++    </div>
++    
++    <nav class="flex-1 flex flex-col space-y-2" id="desktop-category-filters">
++        <!-- Categories will be injected here via JS -->
++    </nav>
++
++    <div class="mt-auto px-4">
++        <button id="my-orders-btn" class="w-full bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white py-4 px-6 rounded-xl flex items-center justify-between shadow-lg shadow-[#FF7A00]/20 hover:scale-[0.98] transition-all">
++            <div class="flex items-center space-x-3">
++                <span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
++                <span class="font-bold text-sm">─É╞ín cß╗ºa t├┤i</span>
++            </div>
++            <!-- Notifications badge here if needed -->
++        </button>
++        
++        <div class="mt-6 flex flex-col space-y-4">
++            <a href="#" onclick="requestStaffService('staff'); return false;" class="text-[#1B1C1C]/70 pl-4 py-2 hover:text-[#994700] flex items-center space-x-3 text-sm">
++                <span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
++                <span>Gß╗ìi Nh├ón Vi├¬n</span>
++            </a>
++            <button id="lang-toggle" onclick="toggleLanguage()" class="text-start text-[#1B1C1C]/70 pl-4 py-2 hover:text-[#994700] flex items-center space-x-3 text-sm bg-transparent border-0">
++                <span class="material-symbols-outlined" data-icon="language">language</span>
++                <span>EN / VI</span>
++            </button>
++        </div>
++    </div>
++</aside>
++
++<!-- Main Content Canvas -->
++<main class="lg:ml-64 min-h-screen pb-32">
++    <!-- TopAppBar -->
++    <header class="fixed top-0 right-0 left-0 lg:left-64 z-30 bg-[#FCF9F8]/80 dark:bg-[#1B1C1C]/80 backdrop-blur-xl">
++        <div class="flex justify-between items-center px-6 py-4 max-w-screen-2xl mx-auto">
++            <div>
++                <h2 class="text-2xl font-black tracking-tight text-[#1B1C1C] dark:text-[#FCF9F8]">B├án <span id="table-number-display"></span></h2>
++                <p class="text-on-surface-variant text-xs font-medium">Ch├áo mß╗½ng bß║ín ─æß║┐n vß╗¢i Nohope Coffee</p>
++            </div>
++            
++            <div class="flex items-center space-x-4">
++                <div class="relative hidden md:block">
++                    <input type="text" id="menu-search-desktop" placeholder="T├¼m kiß║┐m m├│n uß╗æng..." class="bg-surface-container-high border-none rounded-full py-2.5 px-12 text-sm w-64 focus:ring-2 focus:ring-primary/20 transition-all text-on-surface">
++                    <span class="material-symbols-outlined absolute left-4 top-2.5 text-on-surface-variant text-sm" data-icon="search">search</span>
++                </div>
++                <button id="floating-cart" class="p-2.5 hover:bg-[#F6F3F2] dark:hover:bg-[#2A2B2B] rounded-full transition-all relative">
++                    <span class="material-symbols-outlined text-[#994700]" data-icon="shopping_cart">shopping_cart</span>
++                    <span id="cart-count" class="absolute top-1 right-1 w-4 h-4 bg-tertiary text-white rounded-full text-[10px] font-bold flex items-center justify-center hidden">0</span>
++                </button>
++            </div>
++        </div>
++        <!-- Mobile Category Bar -->
++        <div class="lg:hidden px-4 pb-3 overflow-x-auto hide-scrollbar flex gap-2" id="mobile-category-filters">
++            <!-- Categories will be injected here via JS -->
++        </div>
++        <div class="bg-[#F6F3F2] dark:bg-[#2A2B2B] h-[1px] w-full"></div>
++    </header>
++
++    <!-- Page Content -->
++    <section class="pt-32 px-6 pb-24 max-w-screen-2xl mx-auto">
++        <!-- Live Order Banner -->
++        <div id="live-order-banner" class="mb-6 bg-surface-container-highest p-4 rounded-xl shadow-sm border border-outline-variant/30" style="display: none;">
++            <div class="flex justify-between items-start mb-2">
++                <div>
++                    <div class="text-sm font-bold text-on-surface flex items-center"><i class="fa-solid fa-clock pulse-icon text-primary me-2"></i> Trß║íng th├íi ─æ╞ín h├áng</div>
++                    <div id="live-status" class="text-primary font-bold mt-1">─Éang chß╗¥</div>
++                </div>
++                <button class="text-on-surface-variant hover:text-on-surface" onclick="trackedOrderId=null; document.getElementById('live-order-banner').style.display='none'">
++                    <span class="material-symbols-outlined">close</span>
++                </button>
++            </div>
++            <div class="flex gap-2 mt-4">
++                <button class="flex-1 bg-surface-container-low hover:bg-surface-container-high text-primary font-semibold py-2 rounded-lg text-sm flex items-center justify-center gap-1 transition-colors" onclick="requestStaffService('staff')">
++                    <i class="fa-solid fa-bell"></i> Gß╗ìi NV
++                </button>
++                <button class="flex-1 bg-surface-container-low hover:bg-surface-container-high text-primary font-semibold py-2 rounded-lg text-sm flex items-center justify-center gap-1 transition-colors" onclick="requestStaffService('water')">
++                    <i class="fa-solid fa-glass-water"></i> N╞░ß╗¢c
++                </button>
++            </div>
++        </div>
++
++        <!-- Welcome Bento Hero -->
++        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
++            <div class="md:col-span-2 relative h-64 rounded-xl overflow-hidden group">
++                <img src="/images/banner-coffee.jpg" onerror="this.src='https://images.unsplash.com/photo-1517701550927-30cf0ba1cad0?auto=format&fit=crop&q=80'" alt="Hero" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
++                <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
++                <div class="absolute bottom-6 left-8 text-white">
++                    <span class="uppercase tracking-widest text-[10px] font-bold bg-primary px-3 py-1 rounded-full mb-3 inline-block">─Éß║╖c Tr╞░ng</span>
++                    <h3 class="text-3xl font-bold font-headline">C├á Ph├¬ Nohope</h3>
++                    <p class="text-sm opacity-80 mt-1">H╞░╞íng vß╗ï nguy├¬n bß║ún, ─æ├ính thß╗⌐c mß╗ìi gi├íc quan</p>
++                </div>
++            </div>
++            
++            <div class="bg-primary-container rounded-xl p-8 flex flex-col justify-between text-on-primary-container relative overflow-hidden">
++                <div class="z-10">
++                    <h4 class="text-xl font-bold mb-2">Th├┤ng b├ío mß╗¢i</h4>
++                    <p class="text-sm opacity-90">Theo d├╡i trß║íng th├íi ─æ╞ín h├áng trß╗▒c tiß║┐p ngay tr├¬n ─æiß╗çn thoß║íi cß╗ºa bß║ín.</p>
++                </div>
++                <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
++            </div>
++        </div>
++
++        <!-- Mobile Search (only on sm) -->
++        <div class="md:hidden relative mb-6">
++            <input type="text" id="menu-search-mobile" placeholder="T├¼m kiß║┐m m├│n uß╗æng..." class="bg-surface-container-highest border-none rounded-full py-3 px-12 text-sm w-full focus:ring-2 focus:ring-primary/20 transition-all text-on-surface">
++            <span class="material-symbols-outlined absolute left-4 top-3 text-on-surface-variant text-sm" data-icon="search">search</span>
++        </div>
++
++        <!-- Menu Grid -->
++        <div class="flex justify-between items-end mb-6">
++            <div>
++                <h3 class="text-2xl font-bold text-on-surface">Thß╗▒c ─æ╞ín ─æß║╖c sß║»c</h3>
++                <p class="text-on-surface-variant text-sm mt-1">─É╞░ß╗úc pha chß║┐ thß╗º c├┤ng bß╗ƒi c├íc barista tß║¡n t├óm</p>
++            </div>
++        </div>
++
++        <div id="loader" class="text-center mt-8 text-on-surface-variant">
++            <i class="fa-solid fa-circle-notch fa-spin text-primary text-2xl mb-2"></i><br>
++            ─Éang tß║úi thß╗▒c ─æ╞ín...
++        </div>
++
++        <div id="menu-container" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-8">
++            <!-- Items injected via JS -->
++        </div>
++
++        <!-- Empty State Section (Used when menu is empty or table locked) -->
++        <div id="empty-state" class="mt-12 mb-12 flex flex-col items-center justify-center text-center p-8 border-2 border-dashed border-outline-variant/20 rounded-xl" style="display: none;">
++            <div class="w-32 h-32 mb-6 bg-surface-container-low rounded-full flex items-center justify-center relative">
++                <span class="material-symbols-outlined text-6xl text-outline-variant/40" data-icon="coffee_maker">coffee_maker</span>
++            </div>
++            <h3 class="text-xl font-bold text-on-surface mb-2" id="empty-state-title">Kh├┤ng t├¼m thß║Ñy m├│n</h3>
++            <p class="text-on-surface-variant max-w-sm mb-6 text-sm" id="empty-state-desc">Vui l├▓ng thß╗¡ lß║íi vß╗¢i tß╗½ kh├│a kh├íc hoß║╖c dß╗ìn dß║╣p bß╗Ö lß╗ìc.</p>
++        </div>
++    </section>
++
++    <!-- Order Summary Bar (Docked) -->
++    <div id="docked-cart-summary" class="fixed bottom-20 lg:bottom-0 right-0 left-0 lg:left-64 p-4 pointer-events-none z-40 hidden">
++        <div class="max-w-screen-xl mx-auto pointer-events-auto">
++            <div class="bg-[#FCF9F8]/90 dark:bg-[#1B1C1C]/90 backdrop-blur-2xl px-6 py-4 rounded-2xl shadow-[0_10px_30px_rgba(88,66,53,0.15)] flex items-center justify-between border border-outline-variant/20">
++                <div class="flex items-center space-x-3">
++                    <div class="w-12 h-12 rounded-full bg-surface-container-low flex items-center justify-center text-primary relative">
++                        <span class="material-symbols-outlined">shopping_bag</span>
++                    </div>
++                    <div>
++                        <p class="text-[10px] uppercase tracking-widest font-bold text-on-surface-variant/80"><span id="cart-item-count-docked">0</span> m├│n trong giß╗Å</p>
++                        <p class="font-bold text-lg text-[#994700]" id="cart-total-price-docked">0─æ</p>
++                    </div>
++                </div>
++                <button id="view-cart-btn-docked" class="bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white px-6 py-3 rounded-full font-bold shadow-lg shadow-[#FF7A00]/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2">
++                    <span>Thanh to├ín</span>
++                    <span class="material-symbols-outlined text-sm">arrow_forward</span>
++                </button>
++            </div>
++        </div>
++    </div>
++</main>
++
++<!-- Mobile Navigation Bar -->
++<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-end px-6 pb-6 lg:hidden bg-[#FCF9F8]/90 dark:bg-[#1B1C1C]/90 backdrop-blur-2xl rounded-t-[2rem] border-t border-[#1B1C1C]/5 pt-4">
++    <a href="#" class="flex flex-col items-center justify-center bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white rounded-full w-14 h-14 -mt-8 shadow-lg shadow-[#FF7A00]/30 transition-all duration-300 scale-110">
++        <span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
++    </a>
++    <a href="#" id="mobile-my-orders-btn" class="flex flex-col items-center justify-center text-[#1B1C1C]/50 py-2 hover:text-[#994700] transition-colors">
++        <span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
++        <span class="font-['Inter'] text-[10px] uppercase tracking-widest font-bold mt-1">─É╞ín h├áng</span>
++    </a>
++    <a href="#" onclick="requestStaffService('checkout'); return false;" class="flex flex-col items-center justify-center text-[#1B1C1C]/50 py-2 hover:text-[#994700] transition-colors">
++        <span class="material-symbols-outlined" data-icon="point_of_sale">point_of_sale</span>
++        <span class="font-['Inter'] text-[10px] uppercase tracking-widest font-bold mt-1">T├¡nh tiß╗ün</span>
++    </a>
++    <a href="#" onclick="requestStaffService('staff'); return false;" class="flex flex-col items-center justify-center text-[#1B1C1C]/50 py-2 hover:text-[#994700] transition-colors">
++        <span class="material-symbols-outlined" data-icon="contact_support">contact_support</span>
++        <span class="font-['Inter'] text-[10px] uppercase tracking-widest font-bold mt-1">Gß╗ìi NV</span>
++    </a>
++</nav>
++
++<!-- Existing Modals - Hidden by default but structure retained -->
++<!-- Modal: Cart & Checkout -->
++<div class="cart-modal" id="cart-modal">
++    <div class="cart-modal-content" style="max-height: 90vh; overflow-y: auto;">
++        <div class="cart-modal-header flex-between">
++            <h2>─É╞ín h├áng cß╗ºa bß║ín</h2>
++            <button id="close-modal" class="btn-icon"><i class="fa-solid fa-times"></i></button>
++        </div>
++        <div class="cart-modal-body" id="cart-items-container">
++            <!-- Cart items list -->
++            <div class="empty-cart text-center text-muted">Giß╗Å h├áng ─æang trß╗æng.</div>
++        </div>
++        <div class="cart-modal-body" style="padding-top: 0;">
++            <label for="order-note" class="font-bold text-main" style="display: block; margin-bottom: 5px;">Ghi
++                ch├║ (T├╣y chß╗ìn):</label>
++            <textarea id="order-note" class="input-glass" placeholder="Vd: ├ìt ─æ╞░ß╗¥ng, nhiß╗üu ─æ├í..." rows="2"
++                style="width: 100%;"></textarea>
++
++            <div class="loyalty-section mt-3 mb-3"
++                style="background: var(--bg-color); padding: 16px; border: 2px solid #f39c12; box-shadow: 2px 2px 0px #f39c12;">
++                <label class="font-bold" style="display: block; margin-bottom: 5px; color: #d35400;"><i
++                        class="fa-solid fa-crown"></i> T├¡ch ─æiß╗âm / Th├ánh vi├¬n:</label>
++                <div style="display: flex; gap: 8px;">
++                    <input type="tel" id="customer-phone-input" class="input-glass" placeholder="Nhß║¡p S─ÉT..."
++                        style="flex: 1; border: 2px solid #e67e22; box-shadow: 2px 2px 0px #e67e22;">
++                    <button id="verify-phone-btn" onclick="verifyCustomerPhone()" class="btn btn-primary"
++                        style="padding: 8px 16px; border: 2px solid #d35400; box-shadow: 2px 2px 0px #d35400; white-space: nowrap; background: #e67e22; color: #fff;">Nhß║¡n
++                        diß╗çn</button>
++                </div>
++                <div id="loyalty-message"
++                    style="display: none; font-size: 0.85rem; margin-top: 6px; font-weight: 600; color: #d35400;">
++                </div>
++
++                <!-- VIP HOLOGRAPHIC CARD -->
++                <div id="vip-card-container" style="display: none; margin-top: 15px; perspective: 1000px;">
++                    <div class="vip-card" id="vip-card-el"
++                        style="transform-style: preserve-3d; position: relative;">
++                        <div class="vip-card-glow"></div>
++                        <div
++                            style="display: flex; justify-content: space-between; align-items: flex-start; position: relative; z-index: 2;">
++                            <div>
++                                <div
++                                    style="font-size: 0.75rem; opacity: 0.8; font-weight: bold; letter-spacing: 1px;">
++                                    TH├ÇNH VI├èN</div>
++                                <div id="vip-card-name"
++                                    style="font-size: 1.2rem; font-weight: 800; letter-spacing: 0.5px;">Kh├ích
++                                    H├áng</div>
++                            </div>
++                            <div id="vip-card-tier-icon"
++                                style="font-size: 2.2rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">≡ƒÑë
++                            </div>
++                        </div>
++                        <div style="margin-top: 25px; position: relative; z-index: 2;">
++                            <div style="font-size: 0.7rem; opacity: 0.8; letter-spacing: 1px;">Hß║áNG THß║║</div>
++                            <div style="display: flex; justify-content: space-between; align-items: flex-end;">
++                                <div id="vip-card-tier-text"
++                                    style="font-size: 1.5rem; font-weight: 900; text-transform: uppercase; letter-spacing: 2px;">
++                                    BRONZE</div>
++                                <div id="vip-card-discount"
++                                    style="font-size: 0.95rem; font-weight: bold; background: rgba(0,0,0,0.3); padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);">
++                                    Giß║úm 0%</div>
++                            </div>
++                        </div>
++                    </div>
++                </div>
++
++                <div id="loyalty-discount-btn" style="display: none; margin-top: 10px;">
++                    <button onclick="applyLoyaltyPoints()" class="btn btn-outline"
++                        style="width: 100%; font-size: 0.85rem; border: 2px solid #d35400; box-shadow: 2px 2px 0px #d35400; color: #d35400;"><i
++                            class="fa-solid fa-gift"></i> ─Éß╗òi 100 ─æiß╗âm = Giß║úm 10.000─æ</button>
++                </div>
++            </div>
++
++            <div class="promo-section mt-3"
++                style="background: var(--bg-color); padding: 16px; border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
++                <label class="font-bold text-main" style="display: block; margin-bottom: 5px;"><i
++                        class="fa-solid fa-ticket-simple text-accent"></i> M├ú khuyß║┐n m├úi:</label>
++                <div style="display: flex; gap: 8px;">
++                    <input type="text" id="promo-code-input" class="input-glass" placeholder="Nhß║¡p m├ú..."
++                        style="flex: 1; text-transform: uppercase; border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
++                    <button id="apply-promo-btn" onclick="applyPromo()" class="btn btn-outline"
++                        style="padding: 8px 16px; white-space: nowrap;">├üp dß╗Ñng</button>
++                </div>
++                <div id="promo-message" style="display: none; font-size: 0.85rem; margin-top: 6px; font-weight: 500;"></div>
++            </div>
++        </div>
++        <div class="cart-modal-footer">
++            <div class="flex-between mb-1" id="cart-subtotal-row" style="display: none;">
++                <span class="text-muted">Tß║ím t├¡nh:</span>
++                <span class="text-muted"><span id="checkout-subtotal">0</span></span>
++            </div>
++            <div class="flex-between mb-1" id="cart-discount-row" style="display: none; color: var(--success);">
++                <span><i class="fa-solid fa-tag"></i> Giß║úm gi├í:</span>
++                <span>-<span id="checkout-discount">0</span></span>
++            </div>
++            <div class="flex-between mb-2 mt-2 pt-2" style="border-top: 2px dashed var(--border);">
++                <span class="font-bold" style="font-size: 1.1rem;">Tß╗òng thanh to├ín:</span>
++                <span class="font-bold text-primary" style="font-size: 1.2rem;"><span id="checkout-total">0</span></span>
++            </div>
++            <!-- Payment Options -->
++            <div class="d-grid gap-2 mb-2 pt-3" style="border-top: 2px dashed var(--border);">
++                <button id="checkout-cash-btn" class="btn btn-outline" disabled style="width: 100%;">
++                    <i class="fa-solid fa-money-bill-wave"></i> Thanh to├ín tß║íi quß║ºy
++                </button>
++                <button id="checkout-transfer-btn" class="btn btn-primary" disabled style="width: 100%;">
++                    <i class="fa-solid fa-qrcode"></i> Chuyß╗ân khoß║ún (Duyß╗çt T─É)
++                </button>
++            </div>
++        </div>
++    </div>
++</div>
++
++<!-- Modal: QR Payment & Confirmation -->
++<div class="cart-modal" id="payment-modal">
++    <div class="cart-modal-content" style="max-height: 85vh;">
++        <div class="cart-modal-header flex-between">
++            <h2>Thanh to├ín chuyß╗ân khoß║ún</h2>
++            <button id="close-payment-modal" class="btn-icon"><i class="fa-solid fa-arrow-left"></i></button>
++        </div>
++        <div class="cart-modal-body text-center" style="background: var(--bg-color);">
++            <p class="text-main mb-3">Sß╗¡ dß╗Ñng <strong>App Ng├ón h├áng</strong> hoß║╖c <strong>MoMo</strong> qu├⌐t m├ú QR ─æ├¬ thanh to├ín.</p>
++            <div style="background: #FFF; padding: 20px; display: inline-block; border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
++                <img id="qr-image" src="" alt="Bank QR Code" style="width: 250px; height: 250px;">
++            </div>
++            <div class="mt-4 text-start p-3" style="background: var(--surface-color); border: 2px dashed var(--border);">
++                <div class="mb-2"><span class="text-muted">Tß╗òng cß╗Öng:</span> <strong class="float-end text-success" id="payment-total-amount" style="font-size: 1.1rem;">0 ─æ</strong></div>
++                <div class="mb-2"><span class="text-muted">Nß╗Öi dung CK bß║»t buß╗Öc:</span> <strong class="float-end" id="payment-transfer-memo">...</strong></div>
++                <div class="text-center mt-3"><small class="text-warning"><i class="fa-solid fa-spinner fa-spin"></i> ─Éang chß╗¥ hß╗ç thß╗æng tß╗▒ ─æß╗Öng x├íc nhß║¡n chuyß╗ân khoß║ún...</small></div>
++            </div>
++        </div>
++        <div class="cart-modal-footer">
++            <button id="confirm-payment-btn" class="btn btn-primary btn-block btn-lg" style="width: 100%;">
++                <i class="fa-solid fa-check-circle"></i> T├┤i ─æ├ú chuyß╗ân khoß║ún xong
++            </button>
++        </div>
++    </div>
++</div>
++
++<!-- Modal: Order History -->
++<div class="cart-modal" id="order-history-modal">
++    <div class="cart-modal-content">
++        <div class="cart-modal-header flex-between">
++            <h2>Lß╗ïch sß╗¡ ─É╞ín h├áng</h2>
++            <button id="close-history-modal" class="btn-icon"><i class="fa-solid fa-times"></i></button>
++        </div>
++        <div class="cart-modal-body" id="history-items-container" style="background: var(--bg-color);">
++            <!-- Order history items will be injected here via JS -->
++            <div class="empty-cart text-center text-muted mt-4">Bß║ín ch╞░a ─æß║╖t ─æ╞ín h├áng n├áo.</div>
++        </div>
++    </div>
++</div>
++
++<!-- Modal: Options Selection -->
++<div class="cart-modal" id="options-modal">
++    <div class="cart-modal-content">
++        <div class="cart-modal-header flex-between">
++            <h2 id="options-modal-title">T├╣y chß╗ìn m├│n</h2>
++            <button id="close-options-modal" class="btn-icon"><i class="fa-solid fa-times"></i></button>
++        </div>
++        <div class="cart-modal-body" id="options-container" style="background: var(--bg-color); max-height: 60vh; overflow-y: auto;">
++            <!-- Option groups injected here via JS -->
++        </div>
++        <div class="cart-modal-footer">
++            <button id="confirm-options-btn" class="btn btn-primary btn-block btn-lg" style="width: 100%;">
++                Cß║¡p nhß║¡t Gi├í & Th├¬m v├áo Giß╗Å
++            </button>
++        </div>
++    </div>
++</div>
++
++<!-- Modal: Upsell / Cross-sell -->
++<div class="cart-modal" id="upsell-modal" style="z-index: 1065;">
++    <div class="cart-modal-content" style="background: var(--surface-color);">
++        <div class="cart-modal-header border-0 pb-0 flex-between">
++            <h2 class="text-accent" style="font-weight: 800;"><i class="fa-solid fa-fire text-danger"></i> D├╣ng th├¬m b├ính chß╗⌐?</h2>
++            <button onclick="closeUpsellModal()" class="btn-icon text-muted"><i class="fa-solid fa-times"></i></button>
++        </div>
++        <div class="cart-modal-body text-center">
++            <img src="https://images.unsplash.com/photo-1555507036-ab1f40ce88cb?auto=format&fit=crop&w=300&q=80"
++                alt="B├ính sß╗½ng tr├óu"
++                style="width: 120px; height: 120px; border-radius: 16px; object-fit: cover; margin-bottom: 15px; border: 1px solid var(--border); box-shadow: var(--shadow-md);">
++            <p class="font-bold text-main" style="font-size: 1.1rem; margin-bottom: 5px;">B├ính Sß╗½ng Tr├óu (Croissant)</p>
++            <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 15px;">Th╞░ß╗ƒng thß╗⌐c c├╣ng ─æß╗ô uß╗æng sß║╜ ngon h╞ín rß║Ñt nhiß╗üu! Trß║úi nghiß╗çm chß╗ë vß╗¢i <strong class="text-danger">15.000─æ</strong>.</p>
++            <div class="d-grid gap-2">
++                <button onclick="addUpsellItem()" class="btn btn-primary" style="font-size: 1.1rem; width: 100%;"><i class="fa-solid fa-plus-circle"></i> Th├¬m v├áo giß╗Å (+15K)</button>
++                <button onclick="closeUpsellModal()" class="btn btn-link text-muted" style="text-decoration: none; font-weight: 600; width: 100%;">Kh├┤ng, cß║úm ╞ín</button>
++            </div>
++        </div>
++    </div>
++</div>
++
++<!-- Feedback Modal -->
++<div class="modal fade" id="feedbackModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
++    <div class="modal-dialog modal-dialog-centered">
++        <div class="modal-content" style="border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow-md); background: var(--surface-color);">
++            <div class="modal-header border-0">
++                <h5 class="modal-title font-bold text-main"><i class="fa-solid fa-face-smile-beam me-2"></i>─É├ính gi├í trß║úi nghiß╗çm</h5>
++            </div>
++            <div class="modal-body text-center p-4">
++                <p class="text-main mb-4">Cß║úm ╞ín bß║ín ─æ├ú tin t╞░ß╗ƒng Nohope Coffee! Bß║ín thß║Ñy m├│n ─ân v├á dß╗ïch vß╗Ñ cß╗ºa ch├║ng t├┤i thß║┐ n├áo?</p>
++
++                <div id="star-rating" class="mb-4 fs-1 w-full justify-center flex gap-2 text-3xl">
++                    <i class="fa-regular fa-star star-btn text-accent" data-value="1"></i>
++                    <i class="fa-regular fa-star star-btn text-accent" data-value="2"></i>
++                    <i class="fa-regular fa-star star-btn text-accent" data-value="3"></i>
++                    <i class="fa-regular fa-star star-btn text-accent" data-value="4"></i>
++                    <i class="fa-regular fa-star star-btn text-accent" data-value="5"></i>
++                </div>
++
++                <textarea id="feedback-comment" class="form-control mb-3 w-full p-2" rows="3"
++                    placeholder="Chia sß║╗ th├¬m cß║úm nhß║¡n cß╗ºa bß║ín..."
++                    style="border-radius: 8px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); background: var(--surface-color); color: var(--text-main); font-weight: 500;"></textarea>
++
++                <div class="d-grid w-full">
++                    <button class="btn btn-primary py-2 w-full" id="submit-feedback-btn" onclick="submitFeedback()">Gß╗¡i ─æ├ính gi├í</button>
++                </div>
++                <button class="btn btn-link text-muted mt-3 text-decoration-none" data-bs-dismiss="modal">─Éß╗â sau</button>
++            </div>
++        </div>
++    </div>
++</div>
++
++<!-- Custom Confirm Modal -->
++<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
++    <div class="modal-dialog modal-dialog-centered modal-sm">
++        <div class="modal-content" style="border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--shadow-md); background: var(--surface-color);">
++            <div class="modal-header border-0 pb-0">
++                <h5 class="modal-title" id="confirmModalTitle" style="color: var(--text-main); font-weight: bold;"><i class="fa-solid fa-triangle-exclamation text-accent me-2"></i>X├íc nhß║¡n</h5>
++            </div>
++            <div class="modal-body" id="confirmModalBody" style="color: var(--text-muted); font-weight: 500;">Bß║ín c├│ chß║»c chß║»n kh├┤ng?</div>
++            <div class="modal-footer border-0 pt-0">
++                <button type="button" class="btn btn-secondary btn-sm" id="confirmModalCancel" data-bs-dismiss="modal" style="border-radius: 4px; border: 1px solid var(--border); background: var(--surface-color); box-shadow: var(--shadow-sm); color: var(--text-main); font-weight: 800;">Kh├┤ng</button>
++                <button type="button" class="btn btn-danger btn-sm" id="confirmModalOk" style="border-radius: 4px; border: 1px solid var(--border); background: var(--accent); color: #FFF; font-weight: 800; box-shadow: var(--shadow-sm);">C├│, x├íc nhß║¡n</button>
++            </div>
++        </div>
++    </div>
++</div>
++
++<!-- Bootstrap JS (required for modals) -->
++<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
++<script src="js/i18n.js?v=1.2"></script>
++<script src="js/customer.js?v=1.9"></script>
++
++</body>
++</html>
+\ No newline at end of file
+
+commit b7ccc1e29b5a72114c6411e29b7781e8dfced6c8
+Author: Cafe Admin <admin@serenity.com>
+Date:   Wed Mar 25 10:03:10 2026 +0700
+
+    UI updates: Replace all_inbox icon with text logo
+
+diff --git a/public/index.html b/public/index.html
+index 51a6802..e69de29 100644
+--- a/public/index.html
++++ b/public/index.html
+@@ -1,485 +0,0 @@
+-<!DOCTYPE html>
+-<html lang="vi" class="light">
+-<head>
+-    <meta charset="UTF-8">
+-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+-    <title>Nohope Coffee - Thß╗▒c ─æ╞ín & ─Éß║╖t m├│n QR</title>
+-    <meta name="description" content="Trß║úi nghiß╗çm ─æß║╖t m├│n tuyß╗çt vß╗¥i tß║íi Nohope Coffee. Thß╗▒c ─æ╞ín ─æa dß║íng, kh├┤ng gian sang trß╗ìng, ─æß║╖t m├│n nhanh ch├│ng qua m├ú QR.">
+-    <!-- Open Graph / Facebook -->
+-    <meta property="og:type" content="website">
+-    <meta property="og:url" content="https://coffee-house.com/">
+-    <meta property="og:title" content="Nohope Coffee - Thß╗▒c ─æ╞ín & ─Éß║╖t m├│n QR">
+-    <meta property="og:description" content="Trß║úi nghiß╗çm ─æß║╖t m├│n tuyß╗çt vß╗¥i tß║íi Nohope Coffee. ─Éß║╖t m├│n nhanh ch├│ng, tiß╗çn lß╗úi.">
+-    <meta property="og:image" content="/images/og-image.jpg">
+-    
+-    <!-- Google Fonts -->
+-    <link rel="preconnect" href="https://fonts.googleapis.com">
+-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Serif:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+-    
+-    <!-- Bootstrap CSS (Kept for existing feedback/confirm modals) -->
+-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+-    <!-- Font Awesome -->
+-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+-    
+-    <!-- Custom CSS (Kept for toast and custom modal logic) -->
+-    <link rel="stylesheet" href="css/styles.css?v=1.6">
+-    <link rel="stylesheet" href="css/index.css">
+-    
+-    <!-- Tailwind CSS (Compiled for Production) -->
+-    <link rel="stylesheet" href="css/tailwind-compiled.css">
+-    <style>
+-        .material-symbols-outlined {
+-            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+-        }
+-        body { font-family: 'Manrope', sans-serif; }
+-        h1, h2, h3, .brand-font { font-family: 'Noto Serif', serif; }
+-        
+-        /* Fix for Tailwind Preflight vs Bootstrap */
+-        .modal { z-index: 1050 !important; }
+-        .modal-backdrop { z-index: 1040 !important; }
+-        
+-        /* Hide scrollbar for categories */
+-        .hide-scrollbar::-webkit-scrollbar { display: none; }
+-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+-        .no-tap-highlight { -webkit-tap-highlight-color: transparent; }
+-    </style>
+-
+-    <!-- Supabase Client -->
+-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+-    <script src="js/supabase-config.js?v=1.2"></script>
+-    <link rel="manifest" href="manifest.json">
+-    <meta name="theme-color" content="#994700">
+-    <link rel="icon" type="image/png" href="/images/bunny_logo.png">
+-    <link rel="apple-touch-icon" href="/images/bunny_logo.png">
+-</head>
+-<body class="bg-surface text-on-surface overflow-x-hidden no-tap-highlight">
+-
+-<!-- SideNavBar (Desktop Shell) -->
+-<aside class="h-screen w-64 fixed left-0 top-0 hidden lg:flex flex-col bg-surface-container dark:bg-inverse-surface py-8 shadow-soft z-40 border-r border-outline-variant/30">
+-    <div class="px-8 mb-10">
+-        <h1 class="text-primary font-headline font-black text-3xl tracking-tight">Nohope</h1>
+-        <p class="text-tertiary text-[10px] mt-2 font-bold uppercase tracking-widest">Coffee House</p>
+-    </div>
+-    
+-    <nav class="flex-1 flex flex-col space-y-2" id="desktop-category-filters">
+-        <!-- Categories will be injected here via JS -->
+-    </nav>
+-
+-    <div class="mt-auto px-4">
+-        <button id="my-orders-btn" class="w-full bg-primary text-on-primary py-4 px-6 rounded-xl flex items-center justify-between shadow-soft hover:bg-secondary transition-colors group">
+-            <div class="flex items-center space-x-3">
+-                <span class="material-symbols-outlined group-hover:scale-110 transition-transform" data-icon="receipt_long">receipt_long</span>
+-                <span class="font-bold text-sm tracking-wide">─É╞ín cß╗ºa t├┤i</span>
+-            </div>
+-            <!-- Notifications badge here if needed -->
+-        </button>
+-        
+-        <div class="mt-6 flex flex-col space-y-4">
+-            <a href="#" onclick="requestStaffService('staff'); return false;" class="text-on-surface-variant hover:text-secondary flex items-center space-x-3 text-sm font-semibold transition-colors px-4 py-2 rounded-lg hover:bg-surface-variant/50">
+-                <span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+-                <span>Gß╗ìi Nh├ón Vi├¬n</span>
+-            </a>
+-            <button id="lang-toggle" onclick="toggleLanguage()" class="text-start text-on-surface-variant hover:text-secondary flex items-center space-x-3 text-sm font-semibold transition-colors bg-transparent border-0 px-4 py-2 rounded-lg hover:bg-surface-variant/50">
+-                <span class="material-symbols-outlined" data-icon="language">language</span>
+-                <span>EN / VI</span>
+-            </button>
+-        </div>
+-    </div>
+-</aside>
+-
+-<!-- Main Content Canvas -->
+-<main class="lg:ml-64 min-h-screen pb-32">
+-    <!-- TopAppBar -->
+-    <header class="fixed top-0 right-0 left-0 lg:left-64 z-30 bg-background/85 dark:bg-inverse-surface/85 backdrop-blur-xl border-b border-outline-variant/30">
+-        <div class="flex justify-between items-center px-6 py-4 max-w-screen-2xl mx-auto">
+-            <div>
+-                <h2 class="text-3xl font-headline font-black tracking-tight text-on-surface">B├án <span id="table-number-display"></span></h2>
+-                <p class="text-secondary text-xs mt-1 font-bold uppercase tracking-widest">Sß║╡n s├áng phß╗Ñc vß╗Ñ</p>
+-            </div>
+-            
+-            <div class="flex items-center space-x-4">
+-                <div class="relative hidden md:block">
+-                    <input type="text" id="menu-search-desktop" placeholder="T├¼m kiß║┐m m├│n uß╗æng..." class="bg-surface-container-high border-none rounded-full py-2.5 px-12 text-sm w-64 focus:ring-2 focus:ring-primary/20 transition-all text-on-surface">
+-                    <span class="material-symbols-outlined absolute left-4 top-2.5 text-on-surface-variant text-sm" data-icon="search">search</span>
+-                </div>
+-                <button id="floating-cart" class="p-2.5 hover:bg-surface-container rounded-full transition-colors relative group">
+-                    <span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform" data-icon="shopping_cart">shopping_cart</span>
+-                    <span id="cart-count" class="absolute top-1 right-1 w-4 h-4 bg-secondary text-on-secondary rounded-full text-[10px] font-bold flex items-center justify-center hidden">0</span>
+-                </button>
+-            </div>
+-        </div>
+-        <!-- Mobile Category Bar -->
+-        <div class="lg:hidden px-4 pb-3 overflow-x-auto hide-scrollbar flex gap-2" id="mobile-category-filters">
+-            <!-- Categories will be injected here via JS -->
+-        </div>
+-        <div class="bg-outline-variant/50 h-[1px] w-full hidden"></div>
+-    </header>
+-
+-    <!-- Page Content -->
+-    <section class="pt-32 px-6 pb-24 max-w-screen-2xl mx-auto">
+-        <!-- Live Order Banner -->
+-        <div id="live-order-banner" class="mb-6 bg-surface-container-highest p-4 rounded-xl shadow-sm border border-outline-variant/30" style="display: none;">
+-            <div class="flex justify-between items-start mb-2">
+-                <div>
+-                    <div class="text-sm font-bold text-on-surface flex items-center"><i class="fa-solid fa-clock pulse-icon text-primary me-2"></i> Trß║íng th├íi ─æ╞ín h├áng</div>
+-                    <div id="live-status" class="text-primary font-bold mt-1">─Éang chß╗¥</div>
+-                </div>
+-                <button class="text-on-surface-variant hover:text-on-surface" onclick="trackedOrderId=null; document.getElementById('live-order-banner').style.display='none'">
+-                    <span class="material-symbols-outlined">close</span>
+-                </button>
+-            </div>
+-            <div class="flex gap-2 mt-4">
+-                <button class="flex-1 bg-surface-container-low hover:bg-surface-container-high text-primary font-semibold py-2 rounded-lg text-sm flex items-center justify-center gap-1 transition-colors" onclick="requestStaffService('staff')">
+-                    <i class="fa-solid fa-bell"></i> Gß╗ìi NV
+-                </button>
+-                <button class="flex-1 bg-surface-container-low hover:bg-surface-container-high text-primary font-semibold py-2 rounded-lg text-sm flex items-center justify-center gap-1 transition-colors" onclick="requestStaffService('water')">
+-                    <i class="fa-solid fa-glass-water"></i> N╞░ß╗¢c
+-                </button>
+-            </div>
+-        </div>
+-
+-        <!-- Welcome Bento Hero -->
+-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+-            <div class="md:col-span-2 relative h-64 rounded-2xl overflow-hidden group shadow-soft border border-outline-variant/30 flex items-end">
+-                <img src="/images/banner-coffee.jpg" onerror="this.src='https://images.unsplash.com/photo-1517701550927-30cf0ba1cad0?auto=format&fit=crop&q=80'" alt="Hero" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+-                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
+-                <div class="relative z-10 p-8 w-full">
+-                    <span class="uppercase tracking-widest text-[10px] font-bold bg-secondary/90 text-on-secondary px-3 py-1 rounded-full mb-3 inline-block backdrop-blur-md border border-white/20">─Éß║╖c Tr╞░ng</span>
+-                    <h3 class="text-4xl font-black font-headline text-surface">Velvet Crema</h3>
+-                    <p class="text-sm text-surface-variant font-medium mt-2 max-w-md">Kh├ím ph├í nghß╗ç thuß║¡t c├á ph├¬ thß╗º c├┤ng - ─æ├ính thß╗⌐c mß╗ìi gi├íc quan trong tß╗½ng h╞░╞íng vß╗ï.</p>
+-                </div>
+-            </div>
+-            
+-            <div class="bg-tertiary rounded-2xl p-8 flex flex-col justify-between text-on-tertiary relative overflow-hidden shadow-soft">
+-                <div class="z-10">
+-                    <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center mb-4 backdrop-blur-md">
+-                        <span class="material-symbols-outlined text-surface">auto_awesome</span>
+-                    </div>
+-                    <h4 class="text-2xl font-bold font-headline mb-2 leading-tight">Trß║úi nghiß╗çm<br>─Éß║│ng cß║Ñp</h4>
+-                    <p class="text-sm text-surface-variant font-medium leading-relaxed mt-2">Theo d├╡i trß║íng th├íi v├á tß║¡n h╞░ß╗ƒng kh├┤ng gian phß╗Ñc vß╗Ñ ho├án hß║úo.</p>
+-                </div>
+-                <div class="absolute -right-16 -bottom-16 w-56 h-56 bg-surface/10 rounded-full blur-3xl"></div>
+-            </div>
+-        </div>
+-
+-        <!-- Mobile Search (only on sm) -->
+-        <div class="md:hidden relative mb-6">
+-            <input type="text" id="menu-search-mobile" placeholder="T├¼m kiß║┐m m├│n uß╗æng..." class="bg-surface-container-highest border-none rounded-full py-3 px-12 text-sm w-full focus:ring-2 focus:ring-primary/20 transition-all text-on-surface">
+-            <span class="material-symbols-outlined absolute left-4 top-3 text-on-surface-variant text-sm" data-icon="search">search</span>
+-        </div>
+-
+-        <!-- Menu Grid -->
+-        <div class="flex justify-between items-end mb-8 border-b border-outline-variant/50 pb-4">
+-            <div>
+-                <h3 class="text-3xl font-black font-headline text-on-surface">Thß╗▒c ─æ╞ín</h3>
+-                <p class="text-secondary tracking-widest uppercase font-bold text-[10px] mt-2">D├ánh ri├¬ng cho bß║ín</p>
+-            </div>
+-        </div>
+-
+-        <div id="loader" class="text-center mt-8 text-on-surface-variant">
+-            <i class="fa-solid fa-circle-notch fa-spin text-primary text-2xl mb-2"></i><br>
+-            ─Éang tß║úi thß╗▒c ─æ╞ín...
+-        </div>
+-
+-        <div id="menu-container" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-8">
+-            <!-- Items injected via JS -->
+-        </div>
+-
+-        <!-- Empty State Section (Used when menu is empty or table locked) -->
+-        <div id="empty-state" class="mt-12 mb-12 flex flex-col items-center justify-center text-center p-8 border-2 border-dashed border-outline-variant/20 rounded-xl" style="display: none;">
+-            <div class="w-32 h-32 mb-6 bg-surface-container-low rounded-full flex items-center justify-center relative">
+-                <span class="material-symbols-outlined text-6xl text-outline-variant/40" data-icon="coffee_maker">coffee_maker</span>
+-            </div>
+-            <h3 class="text-xl font-bold text-on-surface mb-2" id="empty-state-title">Kh├┤ng t├¼m thß║Ñy m├│n</h3>
+-            <p class="text-on-surface-variant max-w-sm mb-6 text-sm" id="empty-state-desc">Vui l├▓ng thß╗¡ lß║íi vß╗¢i tß╗½ kh├│a kh├íc hoß║╖c dß╗ìn dß║╣p bß╗Ö lß╗ìc.</p>
+-        </div>
+-    </section>
+-
+-    <!-- Order Summary Bar (Docked) -->
+-    <div id="docked-cart-summary" class="fixed bottom-20 lg:bottom-0 right-0 left-0 lg:left-64 p-4 pointer-events-none z-40 hidden">
+-        <div class="max-w-screen-xl mx-auto pointer-events-auto">
+-            <div class="bg-surface/95 dark:bg-inverse-surface/95 backdrop-blur-2xl px-6 py-4 rounded-2xl shadow-float flex items-center justify-between border border-outline-variant/40">
+-                <div class="flex items-center space-x-4">
+-                    <div class="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center text-secondary relative">
+-                        <span class="material-symbols-outlined">shopping_bag</span>
+-                    </div>
+-                    <div>
+-                        <p class="text-[10px] uppercase tracking-widest font-bold text-on-surface-variant"><span id="cart-item-count-docked">0</span> m├│n trong giß╗Å</p>
+-                        <p class="font-bold text-xl text-primary font-headline" id="cart-total-price-docked">0─æ</p>
+-                    </div>
+-                </div>
+-                <button id="view-cart-btn-docked" class="bg-primary text-on-primary px-8 py-3 rounded-full font-bold shadow-soft hover:bg-secondary transition-colors flex items-center gap-2">
+-                    <span>Thanh to├ín</span>
+-                    <span class="material-symbols-outlined text-sm">arrow_forward</span>
+-                </button>
+-            </div>
+-        </div>
+-    </div>
+-</main>
+-
+-<!-- Mobile Navigation Bar -->
+-<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-end px-6 pb-6 lg:hidden bg-surface/95 dark:bg-inverse-surface/95 backdrop-blur-2xl rounded-t-[2rem] border-t border-outline-variant/30 pt-4 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
+-    <a href="#" class="flex flex-col items-center justify-center bg-primary text-on-primary rounded-full w-14 h-14 -mt-8 shadow-float transition-all duration-300 hover:scale-105 active:scale-95">
+-        <span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+-    </a>
+-    <a href="#" id="mobile-my-orders-btn" class="flex flex-col items-center justify-center text-on-surface-variant py-2 hover:text-secondary hover:-translate-y-1 transition-all">
+-        <span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+-        <span class="font-['Manrope'] text-[9px] uppercase tracking-widest font-bold mt-1">─É╞ín h├áng</span>
+-    </a>
+-    <a href="#" onclick="requestStaffService('checkout'); return false;" class="flex flex-col items-center justify-center text-on-surface-variant py-2 hover:text-secondary hover:-translate-y-1 transition-all">
+-        <span class="material-symbols-outlined" data-icon="point_of_sale">point_of_sale</span>
+-        <span class="font-['Manrope'] text-[9px] uppercase tracking-widest font-bold mt-1">T├¡nh tiß╗ün</span>
+-    </a>
+-    <a href="#" onclick="requestStaffService('staff'); return false;" class="flex flex-col items-center justify-center text-on-surface-variant py-2 hover:text-secondary hover:-translate-y-1 transition-all">
+-        <span class="material-symbols-outlined" data-icon="contact_support">contact_support</span>
+-        <span class="font-['Manrope'] text-[9px] uppercase tracking-widest font-bold mt-1">Gß╗ìi NV</span>
+-    </a>
+-</nav>
+-
+-<!-- Existing Modals - Hidden by default but structure retained -->
+-<!-- Modal: Cart & Checkout -->
+-<div class="cart-modal" id="cart-modal">
+-    <div class="cart-modal-content" style="max-height: 90vh; overflow-y: auto;">
+-        <div class="cart-modal-header flex-between">
+-            <h2>─É╞ín h├áng cß╗ºa bß║ín</h2>
+-            <button id="close-modal" class="btn-icon"><i class="fa-solid fa-times"></i></button>
+-        </div>
+-        <div class="cart-modal-body" id="cart-items-container">
+-            <!-- Cart items list -->
+-            <div class="empty-cart text-center text-muted">Giß╗Å h├áng ─æang trß╗æng.</div>
+-        </div>
+-        <div class="cart-modal-body" style="padding-top: 0;">
+-            <label for="order-note" class="font-bold text-main" style="display: block; margin-bottom: 5px;">Ghi
+-                ch├║ (T├╣y chß╗ìn):</label>
+-            <textarea id="order-note" class="input-glass" placeholder="Vd: ├ìt ─æ╞░ß╗¥ng, nhiß╗üu ─æ├í..." rows="2"
+-                style="width: 100%;"></textarea>
+-
+-            <div class="loyalty-section mt-3 mb-3"
+-                style="background: var(--bg-color); padding: 16px; border: 2px solid #f39c12; box-shadow: 2px 2px 0px #f39c12;">
+-                <label class="font-bold" style="display: block; margin-bottom: 5px; color: #d35400;"><i
+-                        class="fa-solid fa-crown"></i> T├¡ch ─æiß╗âm / Th├ánh vi├¬n:</label>
+-                <div style="display: flex; gap: 8px;">
+-                    <input type="tel" id="customer-phone-input" class="input-glass" placeholder="Nhß║¡p S─ÉT..."
+-                        style="flex: 1; border: 2px solid #e67e22; box-shadow: 2px 2px 0px #e67e22;">
+-                    <button id="verify-phone-btn" onclick="verifyCustomerPhone()" class="btn btn-primary"
+-                        style="padding: 8px 16px; border: 2px solid #d35400; box-shadow: 2px 2px 0px #d35400; white-space: nowrap; background: #e67e22; color: #fff;">Nhß║¡n
+-                        diß╗çn</button>
+-                </div>
+-                <div id="loyalty-message"
+-                    style="display: none; font-size: 0.85rem; margin-top: 6px; font-weight: 600; color: #d35400;">
+-                </div>
+-
+-                <!-- VIP HOLOGRAPHIC CARD -->
+-                <div id="vip-card-container" style="display: none; margin-top: 15px; perspective: 1000px;">
+-                    <div class="vip-card" id="vip-card-el"
+-                        style="transform-style: preserve-3d; position: relative;">
+-                        <div class="vip-card-glow"></div>
+-                        <div
+-                            style="display: flex; justify-content: space-between; align-items: flex-start; position: relative; z-index: 2;">
+-                            <div>
+-                                <div
+-                                    style="font-size: 0.75rem; opacity: 0.8; font-weight: bold; letter-spacing: 1px;">
+-                                    TH├ÇNH VI├èN</div>
+-                                <div id="vip-card-name"
+-                                    style="font-size: 1.2rem; font-weight: 800; letter-spacing: 0.5px;">Kh├ích
+-                                    H├áng</div>
+-                            </div>
+-                            <div id="vip-card-tier-icon"
+-                                style="font-size: 2.2rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">≡ƒÑë
+-                            </div>
+-                        </div>
+-                        <div style="margin-top: 25px; position: relative; z-index: 2;">
+-                            <div style="font-size: 0.7rem; opacity: 0.8; letter-spacing: 1px;">Hß║áNG THß║║</div>
+-                            <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+-                                <div id="vip-card-tier-text"
+-                                    style="font-size: 1.5rem; font-weight: 900; text-transform: uppercase; letter-spacing: 2px;">
+-                                    BRONZE</div>
+-                                <div id="vip-card-discount"
+-                                    style="font-size: 0.95rem; font-weight: bold; background: rgba(0,0,0,0.3); padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);">
+-                                    Giß║úm 0%</div>
+-                            </div>
+-                        </div>
+-                    </div>
+-                </div>
+-
+-                <div id="loyalty-discount-btn" style="display: none; margin-top: 10px;">
+-                    <button onclick="applyLoyaltyPoints()" class="btn btn-outline"
+-                        style="width: 100%; font-size: 0.85rem; border: 2px solid #d35400; box-shadow: 2px 2px 0px #d35400; color: #d35400;"><i
+-                            class="fa-solid fa-gift"></i> ─Éß╗òi 100 ─æiß╗âm = Giß║úm 10.000─æ</button>
+-                </div>
+-            </div>
+-
+-            <div class="promo-section mt-3"
+-                style="background: var(--bg-color); padding: 16px; border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
+-                <label class="font-bold text-main" style="display: block; margin-bottom: 5px;"><i
+-                        class="fa-solid fa-ticket-simple text-accent"></i> M├ú khuyß║┐n m├úi:</label>
+-                <div style="display: flex; gap: 8px;">
+-                    <input type="text" id="promo-code-input" class="input-glass" placeholder="Nhß║¡p m├ú..."
+-                        style="flex: 1; text-transform: uppercase; border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
+-                    <button id="apply-promo-btn" onclick="applyPromo()" class="btn btn-outline"
+-                        style="padding: 8px 16px; white-space: nowrap;">├üp dß╗Ñng</button>
+-                </div>
+-                <div id="promo-message" style="display: none; font-size: 0.85rem; margin-top: 6px; font-weight: 500;"></div>
+-            </div>
+-        </div>
+-        <div class="cart-modal-footer">
+-            <div class="flex-between mb-1" id="cart-subtotal-row" style="display: none;">
+-                <span class="text-muted">Tß║ím t├¡nh:</span>
+-                <span class="text-muted"><span id="checkout-subtotal">0</span></span>
+-            </div>
+-            <div class="flex-between mb-1" id="cart-discount-row" style="display: none; color: var(--success);">
+-                <span><i class="fa-solid fa-tag"></i> Giß║úm gi├í:</span>
+-                <span>-<span id="checkout-discount">0</span></span>
+-            </div>
+-            <div class="flex-between mb-2 mt-2 pt-2" style="border-top: 2px dashed var(--border);">
+-                <span class="font-bold" style="font-size: 1.1rem;">Tß╗òng thanh to├ín:</span>
+-                <span class="font-bold text-primary" style="font-size: 1.2rem;"><span id="checkout-total">0</span></span>
+-            </div>
+-            <!-- Payment Options -->
+-            <div class="d-grid gap-2 mb-2 pt-3" style="border-top: 2px dashed var(--border);">
+-                <button id="checkout-cash-btn" class="btn btn-outline" disabled style="width: 100%;">
+-                    <i class="fa-solid fa-money-bill-wave"></i> Thanh to├ín tß║íi quß║ºy
+-                </button>
+-                <button id="checkout-transfer-btn" class="btn btn-primary" disabled style="width: 100%;">
+-                    <i class="fa-solid fa-qrcode"></i> Chuyß╗ân khoß║ún (Duyß╗çt T─É)
+-                </button>
+-            </div>
+-        </div>
+-    </div>
+-</div>
+-
+-<!-- Modal: QR Payment & Confirmation -->
+-<div class="cart-modal" id="payment-modal">
+-    <div class="cart-modal-content" style="max-height: 85vh;">
+-        <div class="cart-modal-header flex-between">
+-            <h2>Thanh to├ín chuyß╗ân khoß║ún</h2>
+-            <button id="close-payment-modal" class="btn-icon"><i class="fa-solid fa-arrow-left"></i></button>
+-        </div>
+-        <div class="cart-modal-body text-center" style="background: var(--bg-color);">
+-            <p class="text-main mb-3">Sß╗¡ dß╗Ñng <strong>App Ng├ón h├áng</strong> hoß║╖c <strong>MoMo</strong> qu├⌐t m├ú QR ─æ├¬ thanh to├ín.</p>
+-            <div style="background: #FFF; padding: 20px; display: inline-block; border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
+-                <img id="qr-image" src="" alt="Bank QR Code" style="width: 250px; height: 250px;">
+-            </div>
+-            <div class="mt-4 text-start p-3" style="background: var(--surface-color); border: 2px dashed var(--border);">
+-                <div class="mb-2"><span class="text-muted">Tß╗òng cß╗Öng:</span> <strong class="float-end text-success" id="payment-total-amount" style="font-size: 1.1rem;">0 ─æ</strong></div>
+-                <div class="mb-2"><span class="text-muted">Nß╗Öi dung CK bß║»t buß╗Öc:</span> <strong class="float-end" id="payment-transfer-memo">...</strong></div>
+-                <div class="text-center mt-3"><small class="text-warning"><i class="fa-solid fa-spinner fa-spin"></i> ─Éang chß╗¥ hß╗ç thß╗æng tß╗▒ ─æß╗Öng x├íc nhß║¡n chuyß╗ân khoß║ún...</small></div>
+-            </div>
+-        </div>
+-        <div class="cart-modal-footer">
+-            <button id="confirm-payment-btn" class="btn btn-primary btn-block btn-lg" style="width: 100%;">
+-                <i class="fa-solid fa-check-circle"></i> T├┤i ─æ├ú chuyß╗ân khoß║ún xong
+-            </button>
+-        </div>
+-    </div>
+-</div>
+-
+-<!-- Modal: Order History -->
+-<div class="cart-modal" id="order-history-modal">
+-    <div class="cart-modal-content">
+-        <div class="cart-modal-header flex-between">
+-            <h2>Lß╗ïch sß╗¡ ─É╞ín h├áng</h2>
+-            <button id="close-history-modal" class="btn-icon"><i class="fa-solid fa-times"></i></button>
+-        </div>
+-        <div class="cart-modal-body" id="history-items-container" style="background: var(--bg-color);">
+-            <!-- Order history items will be injected here via JS -->
+-            <div class="empty-cart text-center text-muted mt-4">Bß║ín ch╞░a ─æß║╖t ─æ╞ín h├áng n├áo.</div>
+-        </div>
+-    </div>
+-</div>
+-
+-<!-- Modal: Options Selection -->
+-<div class="cart-modal" id="options-modal">
+-    <div class="cart-modal-content">
+-        <div class="cart-modal-header flex-between">
+-            <h2 id="options-modal-title">T├╣y chß╗ìn m├│n</h2>
+-            <button id="close-options-modal" class="btn-icon"><i class="fa-solid fa-times"></i></button>
+-        </div>
+-        <div class="cart-modal-body" id="options-container" style="background: var(--bg-color); max-height: 60vh; overflow-y: auto;">
+-            <!-- Option groups injected here via JS -->
+-        </div>
+-        <div class="cart-modal-footer">
+-            <button id="confirm-options-btn" class="btn btn-primary btn-block btn-lg" style="width: 100%;">
+-                Cß║¡p nhß║¡t Gi├í & Th├¬m v├áo Giß╗Å
+-            </button>
+-        </div>
+-    </div>
+-</div>
+-
+-<!-- Modal: Upsell / Cross-sell -->
+-<div class="cart-modal" id="upsell-modal" style="z-index: 1065;">
+-    <div class="cart-modal-content" style="background: var(--surface-color);">
+-        <div class="cart-modal-header border-0 pb-0 flex-between">
+-            <h2 class="text-accent" style="font-weight: 800;"><i class="fa-solid fa-fire text-danger"></i> D├╣ng th├¬m b├ính chß╗⌐?</h2>
+-            <button onclick="closeUpsellModal()" class="btn-icon text-muted"><i class="fa-solid fa-times"></i></button>
+-        </div>
+-        <div class="cart-modal-body text-center">
+-            <img src="https://images.unsplash.com/photo-1555507036-ab1f40ce88cb?auto=format&fit=crop&w=300&q=80"
+-                alt="B├ính sß╗½ng tr├óu"
+-                style="width: 120px; height: 120px; border-radius: 16px; object-fit: cover; margin-bottom: 15px; border: 1px solid var(--border); box-shadow: var(--shadow-md);">
+-            <p class="font-bold text-main" style="font-size: 1.1rem; margin-bottom: 5px;">B├ính Sß╗½ng Tr├óu (Croissant)</p>
+-            <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 15px;">Th╞░ß╗ƒng thß╗⌐c c├╣ng ─æß╗ô uß╗æng sß║╜ ngon h╞ín rß║Ñt nhiß╗üu! Trß║úi nghiß╗çm chß╗ë vß╗¢i <strong class="text-danger">15.000─æ</strong>.</p>
+-            <div class="d-grid gap-2">
+-                <button onclick="addUpsellItem()" class="btn btn-primary" style="font-size: 1.1rem; width: 100%;"><i class="fa-solid fa-plus-circle"></i> Th├¬m v├áo giß╗Å (+15K)</button>
+-                <button onclick="closeUpsellModal()" class="btn btn-link text-muted" style="text-decoration: none; font-weight: 600; width: 100%;">Kh├┤ng, cß║úm ╞ín</button>
+-            </div>
+-        </div>
+-    </div>
+-</div>
+-
+-<!-- Feedback Modal -->
+-<div class="modal fade" id="feedbackModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+-    <div class="modal-dialog modal-dialog-centered">
+-        <div class="modal-content" style="border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow-md); background: var(--surface-color);">
+-            <div class="modal-header border-0">
+-                <h5 class="modal-title font-bold text-main"><i class="fa-solid fa-face-smile-beam me-2"></i>─É├ính gi├í trß║úi nghiß╗çm</h5>
+-            </div>
+-            <div class="modal-body text-center p-4">
+-                <p class="text-main mb-4">Cß║úm ╞ín bß║ín ─æ├ú tin t╞░ß╗ƒng Nohope Coffee! Bß║ín thß║Ñy m├│n ─ân v├á dß╗ïch vß╗Ñ cß╗ºa ch├║ng t├┤i thß║┐ n├áo?</p>
+-
+-                <div id="star-rating" class="mb-4 fs-1 w-full justify-center flex gap-2 text-3xl">
+-                    <i class="fa-regular fa-star star-btn text-accent" data-value="1"></i>
+-                    <i class="fa-regular fa-star star-btn text-accent" data-value="2"></i>
+-                    <i class="fa-regular fa-star star-btn text-accent" data-value="3"></i>
+-                    <i class="fa-regular fa-star star-btn text-accent" data-value="4"></i>
+-                    <i class="fa-regular fa-star star-btn text-accent" data-value="5"></i>
+-                </div>
+-
+-                <textarea id="feedback-comment" class="form-control mb-3 w-full p-2" rows="3"
+-                    placeholder="Chia sß║╗ th├¬m cß║úm nhß║¡n cß╗ºa bß║ín..."
+-                    style="border-radius: 8px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); background: var(--surface-color); color: var(--text-main); font-weight: 500;"></textarea>
+-
+-                <div class="d-grid w-full">
+-                    <button class="btn btn-primary py-2 w-full" id="submit-feedback-btn" onclick="submitFeedback()">Gß╗¡i ─æ├ính gi├í</button>
+-                </div>
+-                <button class="btn btn-link text-muted mt-3 text-decoration-none" data-bs-dismiss="modal">─Éß╗â sau</button>
+-            </div>
+-        </div>
+-    </div>
+-</div>
+-
+-<!-- Custom Confirm Modal -->
+-<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
+-    <div class="modal-dialog modal-dialog-centered modal-sm">
+-        <div class="modal-content" style="border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--shadow-md); background: var(--surface-color);">
+-            <div class="modal-header border-0 pb-0">
+-                <h5 class="modal-title" id="confirmModalTitle" style="color: var(--text-main); font-weight: bold;"><i class="fa-solid fa-triangle-exclamation text-accent me-2"></i>X├íc nhß║¡n</h5>
+-            </div>
+-            <div class="modal-body" id="confirmModalBody" style="color: var(--text-muted); font-weight: 500;">Bß║ín c├│ chß║»c chß║»n kh├┤ng?</div>
+-            <div class="modal-footer border-0 pt-0">
+-                <button type="button" class="btn btn-secondary btn-sm" id="confirmModalCancel" data-bs-dismiss="modal" style="border-radius: 4px; border: 1px solid var(--border); background: var(--surface-color); box-shadow: var(--shadow-sm); color: var(--text-main); font-weight: 800;">Kh├┤ng</button>
+-                <button type="button" class="btn btn-danger btn-sm" id="confirmModalOk" style="border-radius: 4px; border: 1px solid var(--border); background: var(--accent); color: #FFF; font-weight: 800; box-shadow: var(--shadow-sm);">C├│, x├íc nhß║¡n</button>
+-            </div>
+-        </div>
+-    </div>
+-</div>
+-
+-<!-- Bootstrap JS (required for modals) -->
+-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+-<script src="js/i18n.js?v=1.2"></script>
+-<script src="js/customer.js?v=2.0"></script>
+-
+-</body>
+-</html>
+\ No newline at end of file
+
+commit 06d41165aeb0a76f26b13f646e3f8918bfd96ec9
+Author: khoaTF <khoaTF@users.noreply.github.com>
+Date:   Tue Mar 17 22:56:44 2026 +0700
+
+    Fix mobile support buttons and convert to custom modals
+
+diff --git a/public/index.html b/public/index.html
+new file mode 100644
+index 0000000..09b3a7c
+--- /dev/null
++++ b/public/index.html
+@@ -0,0 +1,310 @@
++<!DOCTYPE html>
++<html lang="en">
++<head>
++    <meta charset="UTF-8">
++    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
++    <title>Coffee House - Thß╗▒c ─æ╞ín & ─Éß║╖t m├│n QR</title>
++    <meta name="description" content="Trß║úi nghiß╗çm ─æß║╖t m├│n tuyß╗çt vß╗¥i tß║íi Coffee House. Thß╗▒c ─æ╞ín ─æa dß║íng, kh├┤ng gian sang trß╗ìng, ─æß║╖t m├│n nhanh ch├│ng qua m├ú QR.">
++    <!-- Open Graph / Facebook -->
++    <meta property="og:type" content="website">
++    <meta property="og:url" content="https://coffee-house.com/">
++    <meta property="og:title" content="Coffee House - Thß╗▒c ─æ╞ín & ─Éß║╖t m├│n QR">
++    <meta property="og:description" content="Trß║úi nghiß╗çm ─æß║╖t m├│n tuyß╗çt vß╗¥i tß║íi Coffee House. ─Éß║╖t m├│n nhanh ch├│ng, tiß╗çn lß╗úi.">
++    <meta property="og:image" content="/images/og-image.jpg">
++    <!-- Twitter -->
++    <meta property="twitter:card" content="summary_large_image">
++    <meta property="twitter:title" content="Coffee House - Thß╗▒c ─æ╞ín & ─Éß║╖t m├│n QR">
++    <meta property="twitter:description" content="Trß║úi nghiß╗çm ─æß║╖t m├│n tuyß╗çt vß╗¥i tß║íi Coffee House. ─Éß║╖t m├│n nhanh ch├│ng, tiß╗çn lß╗úi.">
++    
++    <!-- Google Fonts -->
++    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
++    <!-- Font Awesome for Icons -->
++    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
++    <link rel="stylesheet" href="styles.css?v=3">
++    <!-- Supabase Client -->
++    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
++    <script src="supabase-config.js"></script>
++    <link rel="manifest" href="manifest.json">
++    <meta name="theme-color" content="#6F4E37">
++</head>
++<body class="bg-light">
++    <!-- Ambient glow orbs -->
++    <div id="ambient-glow" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:hidden;">
++        <div style="position:absolute;width:300px;height:300px;border-radius:50%;background:rgba(111,78,55,0.08);filter:blur(80px);top:-50px;right:-50px;animation:ambientFloat 12s ease-in-out infinite;"></div>
++        <div style="position:absolute;width:250px;height:250px;border-radius:50%;background:rgba(249,115,22,0.05);filter:blur(80px);bottom:-50px;left:-50px;animation:ambientFloat 15s ease-in-out infinite reverse;"></div>
++    </div>
++    <style>
++        @keyframes ambientFloat {
++            0%,100% { transform: translate(0,0) scale(1); }
++            33% { transform: translate(40px,-30px) scale(1.1); }
++            66% { transform: translate(-20px,20px) scale(0.9); }
++        }
++    </style>
++
++    <!-- Header -->
++    <header class="app-header">
++        <div class="header-content">
++            <h1 data-i18n="app_title"><i class="fa-solid fa-mug-hot"></i> Coffee House</h1>
++            <div style="display: flex; gap: 8px; align-items: center;">
++                <button id="lang-toggle" class="btn-icon" title="Toggle Language" style="font-size: 0.9rem; padding: 4px 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #888;">
++                    EN
++                </button>
++                <button id="my-orders-btn" class="pill" style="padding: 6px 10px; background: rgba(212,175,55,0.1); border-color: rgba(212,175,55,0.3); color: var(--primary); font-size: 0.85rem;">
++                    <i class="fa-solid fa-list-ul"></i> <span data-i18n="my_orders">─É╞ín cß╗ºa t├┤i</span>
++                </button>
++                <div class="table-info">B├án <span id="table-number-display">5</span></div>
++            </div>
++        </div>
++    </header>
++
++    <!-- Search Section -->
++    <div class="container" style="position: relative; z-index: 10; margin-top: -10px; padding-bottom: 5px;">
++        <div class="glass-card" style="padding: 8px 15px; display: flex; align-items: center; gap: 10px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05);">
++            <i class="fa-solid fa-search text-muted"></i>
++            <input type="text" id="menu-search" class="form-control border-0 bg-transparent text-white p-0" placeholder="T├¼m kiß║┐m m├│n ─ân..." style="box-shadow: none; font-size: 0.95rem;">
++        </div>
++    </div>
++
++    <!-- Live Order Banner -->
++    <div id="live-order-banner" class="live-order-banner" style="display: none;">
++        <div class="banner-content" style="flex-direction: column; align-items: stretch; gap: 12px;">
++            <div class="flex-between">
++                <div>
++                   <div class="banner-title"><i class="fa-solid fa-clock pulse-icon text-primary me-2"></i> Trß║íng th├íi ─æ╞ín h├áng</div>
++                   <div class="banner-status text-primary" id="live-status">─Éang chß╗¥</div>
++                </div>
++                <button class="btn-icon text-muted" onclick="trackedOrderId=null; document.getElementById('live-order-banner').style.display='none'"><i class="fa-solid fa-times"></i></button>
++            </div>
++            
++            <div class="order-timeline">
++                <div class="timeline-step" id="step-pending">
++                    <div class="step-icon"><i class="fa-solid fa-receipt"></i></div>
++                </div>
++                <div class="timeline-line" id="line-1"></div>
++                <div class="timeline-step" id="step-preparing">
++                    <div class="step-icon"><i class="fa-solid fa-fire-burner"></i></div>
++                </div>
++                <div class="timeline-line" id="line-2"></div>
++                <div class="timeline-step" id="step-ready">
++                    <div class="step-icon"><i class="fa-solid fa-check"></i></div>
++                </div>
++            </div>
++        </div>
++    </div>
++
++    <!-- Main Content: Menu -->
++    <main class="container mb-padding">
++        
++        <!-- Categories (Hardcoded for prototype simplicity) -->
++        <div class="category-pills">
++            <button class="pill active" data-category="All">Tß║Ñt cß║ú</button>
++            <button class="pill" data-category="Coffee">C├á ph├¬</button>
++            <button class="pill" data-category="Tea">Tr├á</button>
++            <button class="pill" data-category="Food">─Éß╗ô ─ân</button>
++        </div>
++
++        <div id="loader" class="text-center mt-4">─Éang tß║úi thß╗▒c ─æ╞ín...</div>
++
++        <!-- Menu Grid -->
++        <div class="menu-grid" id="menu-container">
++            <!-- Menu items will be injected here via JS -->
++        </div>
++
++    </main>
++
++    <!-- Floating Cart Summary -->
++    <div class="floating-cart" id="floating-cart" style="display: none;">
++        <div class="cart-summary flex-between">
++            <div>
++                <span id="cart-item-count" class="badge">0</span> M├│n
++            </div>
++            <div class="font-bold">
++                Tß╗òng: <span id="cart-total-price">0</span>
++            </div>
++            <button id="view-cart-btn" class="btn btn-primary">Xem giß╗Å h├áng</button>
++        </div>
++    </div>
++
++    <!-- Modal: Cart & Checkout -->
++    <div class="cart-modal" id="cart-modal">
++        <div class="cart-modal-content">
++            <div class="cart-modal-header flex-between">
++                <h2>─É╞ín h├áng cß╗ºa bß║ín</h2>
++                <button id="close-modal" class="btn-icon"><i class="fa-solid fa-times"></i></button>
++            </div>
++            <div class="cart-modal-body" id="cart-items-container">
++                <!-- Cart items list -->
++                <div class="empty-cart text-center text-muted">Giß╗Å h├áng ─æang trß╗æng.</div>
++            </div>
++            <div class="cart-modal-body" style="padding-top: 0;">
++                <label for="order-note" class="font-bold text-muted" style="display: block; margin-bottom: 5px;">Ghi ch├║ (T├╣y chß╗ìn):</label>
++                <textarea id="order-note" placeholder="Vd: ├ìt ─æ╞░ß╗¥ng, nhiß╗üu ─æ├í..." rows="2" style="width: 100%; border-radius: 8px; border: 1px solid #ddd; padding: 10px; font-family: inherit; font-size: 0.95rem; resize: none;"></textarea>
++                
++                <div class="promo-section mt-3" style="background: rgba(var(--primary-color-rgb), 0.05); padding: 10px; border-radius: 8px; border: 1px dashed var(--primary-color);">
++                    <label class="font-bold text-muted" style="display: block; margin-bottom: 5px;"><i class="fa-solid fa-ticket-simple text-primary"></i> M├ú khuyß║┐n m├úi:</label>
++                    <div style="display: flex; gap: 8px;">
++                        <input type="text" id="promo-code-input" placeholder="Nhß║¡p m├ú ß╗ƒ ─æ├óy..." style="flex: 1; border-radius: 6px; border: 1px solid #ddd; padding: 8px 12px; text-transform: uppercase; font-family: inherit; font-size: 0.95rem;">
++                        <button id="apply-promo-btn" onclick="applyPromo()" class="btn btn-outline-primary" style="padding: 8px 16px; border-radius: 6px; white-space: nowrap;">├üp dß╗Ñng</button>
++                    </div>
++                    <div id="promo-message" style="display: none; font-size: 0.85rem; margin-top: 6px; font-weight: 500;"></div>
++                </div>
++            </div>
++            <div class="cart-modal-footer">
++                <div class="flex-between mb-1" id="cart-subtotal-row" style="display: none;">
++                    <span class="text-muted">Tß║ím t├¡nh:</span>
++                    <span class="text-muted"><span id="checkout-subtotal">0</span></span>
++                </div>
++                <div class="flex-between mb-1" id="cart-discount-row" style="display: none; color: var(--success);">
++                    <span><i class="fa-solid fa-tag"></i> Giß║úm gi├í:</span>
++                    <span>-<span id="checkout-discount">0</span></span>
++                </div>
++                <div class="flex-between mb-2 mt-2 pt-2" style="border-top: 1px solid var(--border);">
++                    <span class="font-bold" style="font-size: 1.1rem;">Tß╗òng thanh to├ín:</span>
++                    <span class="font-bold text-primary" style="font-size: 1.2rem;"><span id="checkout-total">0</span></span>
++                </div>
++                <!-- Mock Payment Button -->
++                <button id="checkout-btn" class="btn btn-primary btn-block btn-lg" disabled>
++                    <i class="fa-brands fa-apple-pay"></i> Thanh to├ín
++                </button>
++            </div>
++        </div>
++    </div> <!-- Ensure cart-modal is properly closed -->
++
++    <!-- Modal: Order History -->
++    <div class="cart-modal" id="order-history-modal">
++        <div class="cart-modal-content">
++            <div class="cart-modal-header flex-between">
++                <h2>Lß╗ïch sß╗¡ ─É╞ín h├áng</h2>
++                <button id="close-history-modal" class="btn-icon"><i class="fa-solid fa-times"></i></button>
++            </div>
++            <div class="cart-modal-body" id="history-items-container" style="background: var(--bg-color);">
++                <!-- Order history items will be injected here via JS -->
++                <div class="empty-cart text-center text-muted mt-4">Bß║ín ch╞░a ─æß║╖t ─æ╞ín h├áng n├áo.</div>
++            </div>
++        </div>
++    </div>
++
++    <!-- Modal: Options Selection -->
++    <div class="cart-modal" id="options-modal">
++        <div class="cart-modal-content">
++            <div class="cart-modal-header flex-between">
++                <h2 id="options-modal-title">T├╣y chß╗ìn m├│n</h2>
++                <button id="close-options-modal" class="btn-icon"><i class="fa-solid fa-times"></i></button>
++            </div>
++            <div class="cart-modal-body" id="options-container" style="background: var(--bg-color); max-height: 60vh; overflow-y: auto;">
++                <!-- Option groups injected here via JS -->
++            </div>
++            <div class="cart-modal-footer">
++                <button id="confirm-options-btn" class="btn btn-primary btn-block btn-lg">
++                    Cß║¡p nhß║¡t Gi├í & Th├¬m v├áo Giß╗Å
++                </button>
++            </div>
++        </div>
++    </div>
++
++    <!-- Feedback Modal -->
++    <div class="modal fade" id="feedbackModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
++        <div class="modal-dialog modal-dialog-centered">
++            <div class="modal-content glass-card border-gold-light">
++                <div class="modal-header border-0">
++                    <h5 class="modal-title font-bold text-gold"><i class="fa-solid fa-face-smile-beam me-2"></i>─É├ính gi├í trß║úi nghiß╗çm</h5>
++                </div>
++                <div class="modal-body text-center p-4">
++                    <p class="text-light mb-4">Cß║úm ╞ín bß║ín ─æ├ú tin t╞░ß╗ƒng Serenity Cafe! Bß║ín thß║Ñy m├│n ─ân v├á dß╗ïch vß╗Ñ cß╗ºa ch├║ng t├┤i thß║┐ n├áo?</p>
++                    
++                    <div id="star-rating" class="mb-4 fs-1">
++                        <i class="fa-regular fa-star star-btn" data-value="1"></i>
++                        <i class="fa-regular fa-star star-btn" data-value="2"></i>
++                        <i class="fa-regular fa-star star-btn" data-value="3"></i>
++                        <i class="fa-regular fa-star star-btn" data-value="4"></i>
++                        <i class="fa-regular fa-star star-btn" data-value="5"></i>
++                    </div>
++                    
++                    <textarea id="feedback-comment" class="form-control bg-dark border-secondary text-white mb-3" rows="3" placeholder="Chia sß║╗ th├¬m cß║úm nhß║¡n cß╗ºa bß║ín..."></textarea>
++                    
++                    <div class="d-grid">
++                        <button class="btn btn-primary shimmer-btn py-2" id="submit-feedback-btn" onclick="submitFeedback()">Gß╗¡i ─æ├ính gi├í</button>
++                    </div>
++                    <button class="btn btn-link text-muted mt-3 text-decoration-none" data-bs-dismiss="modal">─Éß╗â sau</button>
++                </div>
++            </div>
++        </div>
++    </div>
++
++    <!-- Floating Support Menu -->
++    <div class="fab-container">
++        <div class="fab-menu" id="fab-menu">
++            <button id="call-bill-btn" class="btn-floating fab-item" title="Gß╗ìi thanh to├ín">
++                <i class="fa-solid fa-file-invoice-dollar"></i>
++            </button>
++            <button id="call-staff-btn" class="btn-floating fab-item" title="Gß╗ìi nh├ón vi├¬n">
++                <i class="fa-solid fa-bell-concierge"></i>
++            </button>
++        </div>
++        <button class="btn-floating fab-main" id="fab-main-btn" onclick="toggleFabMenu()">
++            <i class="fa-solid fa-headset"></i>
++        </button>
++    </div>
++
++    <!-- Styles for new buttons -->
++    <style>
++        .fab-container { position: fixed; bottom: 100px; right: 20px; z-index: 998; display: flex; flex-direction: column; align-items: center; gap: 10px; }
++        .fab-menu { display: flex; flex-direction: column; gap: 10px; opacity: 0; transform: translateY(20px); pointer-events: none; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
++        .fab-menu.active { opacity: 1; transform: translateY(0); pointer-events: auto; }
++        
++        .btn-floating { border: none; width: 48px; height: 48px; border-radius: 50%; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s; }
++        .btn-floating:active { transform: scale(0.9); }
++        .btn-floating i { font-size: 1.2rem; transition: transform 0.3s ease; }
++        
++        .fab-main { background: var(--primary-gradient); color: #0b0f14; border: 1px solid var(--primary); }
++        .fab-main.active i { transform: rotate(180deg); opacity: 0; }
++        .fab-main::after { content: '\f00d'; font-family: 'Font Awesome 6 Free'; font-weight: 900; position: absolute; opacity: 0; transform: rotate(-180deg); transition: all 0.3s ease; font-size: 1.4rem; }
++        .fab-main.active::after { opacity: 1; transform: rotate(0); }
++
++        .fab-item:nth-child(1) { background: var(--success); color: white; transition-delay: 0.05s; }
++        .fab-item:nth-child(2) { background: #3498db; color: white; transition-delay: 0s; }
++        
++        /* Mobile adjustment to not overlap with cart */
++        @media (max-width: 768px) {
++            .fab-container { bottom: 85px; right: 15px; }
++            .btn-floating { width: 44px; height: 44px; }
++        }
++    </style>
++    <script>
++        function toggleFabMenu() {
++            document.getElementById('fab-menu').classList.toggle('active');
++            document.getElementById('fab-main-btn').classList.toggle('active');
++        }
++        
++        // Auto close menu when an action is clicked
++        document.querySelectorAll('.fab-item').forEach(btn => {
++            btn.addEventListener('click', () => {
++                if(document.getElementById('fab-menu').classList.contains('active')) {
++                    toggleFabMenu();
++                }
++            });
++        });
++    </script>
++
++    <!-- Custom Confirm Modal -->
++    <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
++        <div class="modal-dialog modal-dialog-centered modal-sm">
++            <div class="modal-content glass-card" style="border: 1px solid rgba(255,255,255,0.1);">
++                <div class="modal-header border-0 pb-0">
++                    <h5 class="modal-title" id="confirmModalTitle" style="color: #e6edf3;"><i class="fa-solid fa-triangle-exclamation text-warning me-2"></i>X├íc nhß║¡n</h5>
++                </div>
++                <div class="modal-body" id="confirmModalBody" style="color: #a0a0a0;">Bß║ín c├│ chß║»c chß║»n kh├┤ng?</div>
++                <div class="modal-footer border-0 pt-0">
++                    <button type="button" class="btn btn-secondary btn-sm" id="confirmModalCancel" data-bs-dismiss="modal">Kh├┤ng</button>
++                    <button type="button" class="btn btn-danger btn-sm" id="confirmModalOk">C├│, x├íc nhß║¡n</button>
++                </div>
++            </div>
++        </div>
++    </div>
++
++    <!-- Bootstrap JS (required for modals) -->
++    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
++    <script src="customer.js"></script>
++</body>
++</html>
++
