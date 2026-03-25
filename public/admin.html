@@ -48,318 +48,431 @@
     <link rel="icon" type="image/png" href="/images/bunny_logo.png">
     <link rel="apple-touch-icon" href="/images/bunny_logo.png">
 </head>
-<body>
-
-    <header class="admin-header">
-        <h1 class="admin-title d-flex align-items-center"><div class="hub-logo me-3" style="font-size: 1.5rem;"><span class="text-1">Nohope</span><span class="text-2">Coffee</span></div> <span class="d-none d-md-inline" style="font-size: 1.1rem; color: #8b949e;">- Quản trị Hệ thống</span></h1>
-        <div class="dropdown">
-            <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="fa-solid fa-bars"></i>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow">
-                <li><a class="dropdown-item" href="/"><i class="fa-solid fa-store me-2"></i> Menu khách</a></li>
-                <li><a class="dropdown-item" href="/kitchen.html"><i class="fa-solid fa-utensils me-2"></i> Bếp</a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><button class="dropdown-item text-danger" onclick="localStorage.clear(); sessionStorage.clear(); window.location.href='/login.html'"><i class="fa-solid fa-sign-out-alt me-2"></i> Đăng xuất</button></li>
-            </ul>
-        </div>
-    </header>
-
-    <div class="container mt-4">
+<style>
+        .nav-link.active {
+            background-color: #3A3528 !important;
+            color: #D4AF37 !important;
+            box-shadow: inset 2px 0 0 0 #C0A062;
+        }
+        .content-section { display: none; }
+        .content-section.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* Custom scrollbar for main area */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #3A3528; border-radius: 10px; }
         
-        <!-- Alerts Container -->
-        <div id="alerts-container"></div>
+        /* Modal overrides for admin so bootstrap modals look native */
+        .modal-content { background-color: #232018; color: #E8DCC4; border: 1px solid #3A3528; border-radius: 1rem; }
+        .modal-header { border-bottom-color: #3A3528; }
+        .modal-footer { border-top-color: #3A3528; }
+        .form-control, .form-select { background-color: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #E8DCC4; }
+        .form-control:focus, .form-select:focus { background-color: rgba(255,255,255,0.1); color: #E8DCC4; border-color: #C0A062; box-shadow: 0 0 0 0.25rem rgba(192, 160, 98, 0.25); }
+        .table { color: #E8DCC4; }
+        .table-light { background-color: #3A3528; color: #D4AF37; }
+        .table-hover tbody tr:hover { background-color: rgba(255,255,255,0.05); color: #E8DCC4; }
+        td, th { border-color: #3A3528 !important; }
+        .card { background-color: #232018; }
+    </style>
+</head>
+<body class="bg-[#1A1814] text-[#E8DCC4] min-h-screen font-manrope selection:bg-[#C0A062] selection:text-[#1A1814]">
 
-        <!-- Simple Navigation (Satisfies Hick's Law Audit) -->
-        <div class="d-flex flex-wrap gap-2 mb-4 admin-tabs" id="admin-main-nav">
-            <button class="btn btn-sm btn-tab active" onclick="switchTab('menu')" id="tab-menu"><i class="fa-solid fa-book-open me-2"></i> Thực đơn</button>
-            <button class="btn btn-sm btn-tab" onclick="switchTab('inventory')" id="tab-inventory"><i class="fa-solid fa-boxes-stacked me-2"></i> Kho</button>
-            <button class="btn btn-sm btn-tab" onclick="switchTab('promo')" id="tab-promo"><i class="fa-solid fa-ticket me-2"></i> Khuyến mãi</button>
-            <button class="btn btn-sm btn-tab" onclick="switchTab('history')" id="tab-history"><i class="fa-solid fa-clock-rotate-left me-2"></i> Đơn hàng</button>
-            <button class="btn btn-sm btn-tab" onclick="switchTab('analytics')" id="tab-analytics"><i class="fa-solid fa-chart-pie me-2"></i> Báo cáo</button>
-            <button class="btn btn-sm btn-tab" onclick="switchTab('tables')" id="tab-tables"><i class="fa-solid fa-table-cells me-2"></i> Bàn</button>
-            <button class="btn btn-sm btn-tab" onclick="switchTab('customers')" id="tab-customers"><i class="fa-solid fa-users me-2"></i> Khách hàng</button>
-            <button class="btn btn-sm btn-tab" onclick="switchTab('staff')" id="tab-staff"><i class="fa-solid fa-user-tie me-2"></i> Nhân viên</button>
-        </div>
+    <div class="flex h-screen overflow-hidden">
+        
+        <!-- Mobile Overlay -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 hidden md:hidden" onclick="closeSidebarMobile()"></div>
 
-
-        <!-- Menu Management Section -->
-        <section id="section-menu" class="content-section active">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h2 class="mb-0">Thực đơn hiện tại</h2>
-                <button class="btn btn-success" onclick="openProductModal()"><i class="fa-solid fa-plus me-1"></i> Thêm món</button>
-            </div>
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Hình ảnh</th>
-                                    <th>Tên món</th>
-                                    <th>Danh mục</th>
-                                    <th>Giá</th>
-                                    <th>Trạng thái</th>
-                                    <th class="text-end">Hành động</th>
-                                </tr>
-                            </thead>
-                            <tbody id="products-table-body">
-                                <tr aria-hidden="true"><td colspan="6" class="text-center py-4">Đang tải thực đơn...</td></tr>
-                            </tbody>
-                        </table>
+        <!-- Sidebar -->
+        <aside class="w-64 flex-shrink-0 bg-[#232018] border-r border-[#3A3528] flex flex-col transition-transform duration-300 md:translate-x-0 -translate-x-full fixed md:relative z-40 h-full shadow-soft" id="admin-sidebar">
+            <div class="p-6 border-b border-[#3A3528] flex justify-between items-center bg-[#232018] sticky top-0 z-10">
+                <div class="flex items-center gap-3">
+                    <img src="/images/bunny_logo.png" alt="Logo" class="w-10 h-10 rounded-xl object-cover shadow-soft border border-[#3A3528]">
+                    <div>
+                        <h1 class="font-noto font-bold text-xl text-[#F2E8D5] tracking-tight leading-tight">Nohope</h1>
+                        <p class="text-[10px] text-[#A89F88] uppercase tracking-widest font-semibold">Admin Panel</p>
                     </div>
                 </div>
-            </div>
-        </section>
-
-        <!-- Analytics / Revenue Section -->
-        <section id="section-analytics" class="content-section">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="mb-0">Thống kê & Báo cáo</h2>
-                <div>
-                    <button class="btn btn-outline-success btn-sm" onclick="exportOrdersToCSV()"><i class="fa-solid fa-file-csv me-1"></i> Xuất Doanh Thu</button>
-                    <button class="btn btn-outline-info btn-sm ms-2" onclick="exportInventoryToCSV()"><i class="fa-solid fa-box-open me-1"></i> Xuất Kho</button>
-                </div>
+                <button class="md:hidden text-[#A89F88] hover:text-[#D4AF37] text-xl" onclick="closeSidebarMobile()"><i class="fa-solid fa-times"></i></button>
             </div>
             
-            <div class="row mb-4 align-items-end">
-                <div class="col-md-3">
-                    <label class="form-label text-muted small">Từ ngày</label>
-                    <input type="date" id="analytics-start-date" class="form-control text-light" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label text-muted small">Đến ngày</label>
-                    <input type="date" id="analytics-end-date" class="form-control text-light" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
-                </div>
-                <div class="col-md-3 mt-3 mt-md-0">
-                    <button class="btn btn-primary w-100 font-bold" onclick="renderAnalytics()"><i class="fa-solid fa-filter me-1"></i> Lọc dữ liệu</button>
-                </div>
-            </div>
+            <nav class="p-4 flex-1 overflow-y-auto space-y-2 custom-scrollbar" id="admin-main-nav">
+                <p class="px-4 text-[11px] font-bold text-[#A89F88] uppercase tracking-wider mb-2 mt-2">Quản lý</p>
+                <button class="nav-link bg-transparent border-0 w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 text-[#A89F88] hover:bg-[#3A3528] hover:text-[#E8DCC4] active" onclick="switchTab('menu'); closeSidebarMobile()" id="tab-menu">
+                    <i class="fa-solid fa-book-open w-5 text-center"></i> Thực đơn
+                </button>
+                <button class="nav-link bg-transparent border-0 w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 text-[#A89F88] hover:bg-[#3A3528] hover:text-[#E8DCC4]" onclick="switchTab('inventory'); closeSidebarMobile()" id="tab-inventory">
+                    <i class="fa-solid fa-boxes-stacked w-5 text-center"></i> Kho
+                </button>
+                <button class="nav-link bg-transparent border-0 w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 text-[#A89F88] hover:bg-[#3A3528] hover:text-[#E8DCC4]" onclick="switchTab('promo'); closeSidebarMobile()" id="tab-promo">
+                    <i class="fa-solid fa-ticket w-5 text-center"></i> Khuyến mãi
+                </button>
+                <button class="nav-link bg-transparent border-0 w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 text-[#A89F88] hover:bg-[#3A3528] hover:text-[#E8DCC4]" onclick="switchTab('history'); closeSidebarMobile()" id="tab-history">
+                    <i class="fa-solid fa-clock-rotate-left w-5 text-center"></i> Đơn hàng
+                </button>
+                <p class="px-4 text-[11px] font-bold text-[#A89F88] uppercase tracking-wider mb-2 mt-6">Cửa hàng</p>
+                <button class="nav-link bg-transparent border-0 w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 text-[#A89F88] hover:bg-[#3A3528] hover:text-[#E8DCC4]" onclick="switchTab('analytics'); closeSidebarMobile()" id="tab-analytics">
+                    <i class="fa-solid fa-chart-pie w-5 text-center"></i> Báo cáo
+                </button>
+                <button class="nav-link bg-transparent border-0 w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 text-[#A89F88] hover:bg-[#3A3528] hover:text-[#E8DCC4]" onclick="switchTab('tables'); closeSidebarMobile()" id="tab-tables">
+                    <i class="fa-solid fa-table-cells w-5 text-center"></i> Bàn
+                </button>
+                <button class="nav-link bg-transparent border-0 w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 text-[#A89F88] hover:bg-[#3A3528] hover:text-[#E8DCC4]" onclick="switchTab('customers'); closeSidebarMobile()" id="tab-customers">
+                    <i class="fa-solid fa-users w-5 text-center"></i> Khách hàng
+                </button>
+                <button class="nav-link bg-transparent border-0 w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 text-[#A89F88] hover:bg-[#3A3528] hover:text-[#E8DCC4]" onclick="switchTab('staff'); closeSidebarMobile()" id="tab-staff">
+                    <i class="fa-solid fa-user-tie w-5 text-center"></i> Nhân viên
+                </button>
+                
+                <p class="px-4 text-[11px] font-bold text-[#A89F88] uppercase tracking-wider mb-2 mt-6">Lối tắt</p>
+                <a href="/" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 text-[#A89F88] hover:bg-[#3A3528] hover:text-[#E8DCC4] text-decoration-none">
+                    <i class="fa-solid fa-store w-5 text-center"></i> Menu khách
+                </a>
+                <a href="/kitchen.html" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 text-[#A89F88] hover:bg-[#3A3528] hover:text-[#E8DCC4] text-decoration-none border-0 bg-transparent">
+                    <i class="fa-solid fa-utensils w-5 text-center"></i> Bếp
+                </a>
+            </nav>
 
-            <div class="row mb-4">
-                <div class="col-md-6 mb-3 mb-md-0">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body">
-                            <h5 class="card-title text-center text-muted mb-3"><i class="fa-regular fa-calendar-days"></i> Biểu đồ Doanh thu</h5>
-                            <div style="height: 300px; width: 100%;">
-                                <canvas id="revenueDailyChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body">
-                            <h5 class="card-title text-center text-muted mb-3"><i class="fa-solid fa-chart-pie"></i> Tỉ trọng Danh mục</h5>
-                            <div style="height: 300px; width: 100%; display: flex; justify-content: center;">
-                                <canvas id="revenueCategoryChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div class="p-4 border-t border-[#3A3528] bg-[#232018] mt-auto">
+                <button class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-red-400 hover:bg-red-400/10 hover:text-red-300 transition-colors border-0 bg-transparent" onclick="localStorage.clear(); sessionStorage.clear(); window.location.href='/login.html'">
+                    <i class="fa-solid fa-sign-out-alt w-5 text-center"></i> Đăng xuất
+                </button>
             </div>
+        </aside>
 
-            <!-- Best Selling Row -->
-            <div class="row mb-4">
-                <div class="col-12">
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-body">
-                            <h5 class="card-title text-muted mb-3"><i class="fa-solid fa-fire text-danger"></i> Top Món Bán Chạy Nhất</h5>
+        <!-- Main Content Wrapper -->
+        <main class="flex-1 flex flex-col h-full overflow-hidden relative bg-[#1A1814]">
+            
+            <!-- Mobile Header -->
+            <header class="md:hidden flex items-center justify-between p-4 bg-[#232018]/80 backdrop-blur-md border-b border-[#3A3528] z-20 sticky top-0 shadow-sm">
+                <div class="flex items-center gap-3">
+                    <img src="/images/bunny_logo.png" alt="Logo" class="w-8 h-8 rounded-lg object-cover border border-[#3A3528]">
+                    <h1 class="font-noto font-bold text-lg text-[#F2E8D5] leading-none mb-0">Admin</h1>
+                </div>
+                <button class="text-[#E8DCC4] p-2 hover:bg-[#3A3528] rounded-lg transition-colors border-0 bg-transparent" onclick="openSidebarMobile()">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
+            </header>
+
+            <script>
+                function openSidebarMobile() {
+                    document.getElementById('admin-sidebar').classList.remove('-translate-x-full');
+                    document.getElementById('sidebar-overlay').classList.remove('hidden');
+                }
+                function closeSidebarMobile() {
+                    if (window.innerWidth < 768) {
+                        document.getElementById('admin-sidebar').classList.add('-translate-x-full');
+                        document.getElementById('sidebar-overlay').classList.add('hidden');
+                    }
+                }
+            </script>
+
+            <div class="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
+                
+                <div id="alerts-container"></div>
+
+                <!-- Menu Management Section -->
+                <section id="section-menu" class="content-section active">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                        <div>
+                            <h2 class="font-noto text-2xl font-bold text-[#F2E8D5] mb-1">Thực đơn</h2>
+                            <p class="text-sm text-[#A89F88] mb-0">Quản lý danh sách món ăn, giá cả và trạng thái.</p>
+                        </div>
+                        <button class="btn btn-success rounded-xl font-semibold shadow-soft whitespace-nowrap" onclick="openProductModal()"><i class="fa-solid fa-plus me-2"></i> Thêm món</button>
+                    </div>
+                    <div class="card bg-[#232018] border border-[#3A3528] rounded-2xl shadow-soft overflow-hidden">
+                        <div class="card-body p-0">
                             <div class="table-responsive">
-                                <table class="table table-hover text-light mb-0">
-                                    <thead>
+                                <table class="table table-hover align-middle mb-0 border-0">
+                                    <thead class="bg-[#3A3528] text-[#D4AF37] border-b border-[#3A3528]">
                                         <tr>
-                                            <th>Tên món</th>
-                                            <th class="text-center">Số lượng bán</th>
-                                            <th class="text-end">Doanh thu thu về</th>
+                                            <th class="border-0 font-semibold py-3 px-4">Hình ảnh</th>
+                                            <th class="border-0 font-semibold py-3 px-4">Tên món</th>
+                                            <th class="border-0 font-semibold py-3 px-4">Danh mục</th>
+                                            <th class="border-0 font-semibold py-3 px-4">Giá</th>
+                                            <th class="border-0 font-semibold py-3 px-4">Trạng thái</th>
+                                            <th class="border-0 font-semibold py-3 px-4 text-end">Hành động</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="top-selling-body">
-                                        <tr><td colspan="3" class="text-center py-3 text-muted">Đang tải biểu mẫu...</td></tr>
+                                    <tbody id="products-table-body" class="border-transparent">
+                                        <tr aria-hidden="true"><td colspan="6" class="text-center py-6 text-[#A89F88]">Đang tải thực đơn...</td></tr>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
+                </section>
 
-            <!-- Feedback Summary Row -->
-            <div class="row mt-4">
-                <div class="col-md-4 mb-3">
-                    <div class="card border-0 shadow-sm h-100 text-center p-4">
-                        <div class="card-body">
-                            <h6 class="text-muted mb-2">Đánh giá Trung bình</h6>
-                            <div class="display-4 font-bold text-gold" id="fb-avg-rating">0.0</div>
-                            <div class="fs-4 mb-2" id="fb-avg-stars"></div>
-                            <small class="text-muted" id="fb-total-count">0 lượt đánh giá</small>
+                <!-- Analytics / Revenue Section -->
+                <section id="section-analytics" class="content-section">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                        <div>
+                            <h2 class="font-noto text-2xl font-bold text-[#F2E8D5] mb-1">Thống kê & Báo cáo</h2>
+                            <p class="text-sm text-[#A89F88] mb-0">Theo dõi doanh thu, hiệu suất và đánh giá.</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="btn btn-outline-success btn-sm rounded-lg" onclick="exportOrdersToCSV()"><i class="fa-solid fa-file-csv me-1"></i> Doanh Thu</button>
+                            <button class="btn btn-outline-info btn-sm rounded-lg" onclick="exportInventoryToCSV()"><i class="fa-solid fa-box-open me-1"></i> Kho</button>
                         </div>
                     </div>
-                </div>
-                <div class="col-md-8 mb-3">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-header border-0 py-3" style="background: rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.08) !important;">
-                            <h6 class="mb-0 font-bold text-light"><i class="fa-solid fa-comment-dots me-2"></i>Đánh giá gần đây</h6>
+                    
+                    <div class="bg-[#232018] p-4 rounded-2xl border border-[#3A3528] shadow-soft mb-6">
+                        <div class="row align-items-end g-3">
+                            <div class="col-md-4">
+                                <label class="form-label text-[#A89F88] text-xs uppercase tracking-wider font-bold mb-1">Từ ngày</label>
+                                <input type="date" id="analytics-start-date" class="form-control bg-[#1A1814] border-[#3A3528] text-[#E8DCC4] rounded-xl focus:border-[#C0A062] focus:ring-1 focus:ring-[#C0A062]">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-[#A89F88] text-xs uppercase tracking-wider font-bold mb-1">Đến ngày</label>
+                                <input type="date" id="analytics-end-date" class="form-control bg-[#1A1814] border-[#3A3528] text-[#E8DCC4] rounded-xl focus:border-[#C0A062] focus:ring-1 focus:ring-[#C0A062]">
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-primary w-100 font-bold rounded-xl" style="background-color: #C0A062; border-color: #C0A062; color: #1A1814;" onclick="renderAnalytics()"><i class="fa-solid fa-filter me-2"></i> Lọc dữ liệu</button>
+                            </div>
                         </div>
-                        <div class="card-body p-0" style="max-height: 250px; overflow-y: auto;" id="fb-recent-list">
-                            <div class="p-4 text-center text-muted">Đang tải đánh giá...</div>
+                    </div>
+
+                    <div class="row g-4 mb-6">
+                        <div class="col-xl-8">
+                            <div class="card bg-[#232018] border border-[#3A3528] rounded-2xl shadow-soft h-100">
+                                <div class="card-body p-5">
+                                    <h5 class="font-noto font-bold text-[#C0A062] mb-4 flex items-center gap-2"><i class="fa-regular fa-calendar-days"></i> Biểu đồ Doanh thu</h5>
+                                    <div style="height: 300px; width: 100%;">
+                                        <canvas id="revenueDailyChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-4">
+                            <div class="card bg-[#232018] border border-[#3A3528] rounded-2xl shadow-soft h-100">
+                                <div class="card-body p-5 flex flex-col">
+                                    <h5 class="font-noto font-bold text-[#C0A062] mb-4 flex items-center gap-2"><i class="fa-solid fa-chart-pie"></i> Tỉ trọng Danh mục</h5>
+                                    <div class="flex-1 flex justify-center items-center" style="min-height: 250px;">
+                                        <canvas id="revenueCategoryChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </section>
 
-        <!-- Khuyến mãi Section -->
-        <section id="section-promo" class="content-section">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h2 class="mb-0"><i class="fa-solid fa-ticket-simple text-warning me-2"></i> Quản lý Khuyến mãi</h2>
-                <button class="btn btn-success" onclick="openPromoModal()"><i class="fa-solid fa-plus me-1"></i> Tạo khuyến mãi mới</button>
-            </div>
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Mã Khuyến Mãi (Code)</th>
-                                    <th>Loại giảm giá</th>
-                                    <th>Mức giảm</th>
-                                    <th>Giới hạn dùng</th>
-                                    <th>Đã dùng</th>
-                                    <th>Trạng thái</th>
-                                    <th class="text-end">Hành động</th>
-                                </tr>
-                            </thead>
-                            <tbody id="promo-table-body">
-                                <tr><td colspan="7" class="text-center py-4">Đang tải biểu mẫu...</td></tr>
-                            </tbody>
-                        </table>
+                    <!-- Best Selling Row -->
+                    <div class="card bg-[#232018] border border-[#3A3528] rounded-2xl shadow-soft mb-6 overflow-hidden">
+                        <div class="card-header bg-[#3A3528] border-b border-[#3A3528] p-4">
+                            <h5 class="font-noto font-bold text-[#E8DCC4] mb-0 flex items-center gap-2"><i class="fa-solid fa-fire text-red-400"></i> Top Món Bán Chạy Nhất</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover text-[#E8DCC4] mb-0 border-0">
+                                    <thead class="bg-[#232018] text-[#A89F88] text-xs uppercase tracking-wider">
+                                        <tr>
+                                            <th class="border-0 px-4 py-3 font-semibold">Tên món</th>
+                                            <th class="border-0 px-4 py-3 font-semibold text-center">Số lượng bán</th>
+                                            <th class="border-0 px-4 py-3 font-semibold text-end">Doanh thu thu về</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="top-selling-body" class="border-transparent">
+                                        <tr><td colspan="3" class="text-center py-4 text-[#A89F88]">Đang tải biểu mẫu...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-        </section>
 
-        <!-- Table Status Section -->
-        <section id="section-tables" class="content-section">
-            <h2 class="mb-4"><i class="fa-solid fa-table-cells text-primary me-2"></i> Trạng thái Bàn hiện tại</h2>
-            <div id="tables-grid" class="row g-3">
-                <div class="col-12 text-center text-muted p-5">Đang tải thông tin bàn...</div>
-            </div>
-        </section>
-
-        <!-- Customer Management Section -->
-        <section id="section-customers" class="content-section">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h2 class="mb-0"><i class="fa-solid fa-users text-info me-2"></i> Quản lý Khách hàng</h2>
-            </div>
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Số điện thoại</th>
-                                    <th>Tên khách hàng</th>
-                                    <th>Điểm tích lũy</th>
-                                    <th>Tổng chi tiêu</th>
-                                    <th>Lần cuối</th>
-                                    <th class="text-end">Hành động</th>
-                                </tr>
-                            </thead>
-                            <tbody id="customers-table-body">
-                                <tr><td colspan="6" class="text-center py-4">Đang tải danh sách...</td></tr>
-                            </tbody>
-                        </table>
+                    <!-- Feedback Summary Row -->
+                    <div class="row g-4 mb-6">
+                        <div class="col-md-4">
+                            <div class="card bg-gradient-to-br from-[#2D2A20] to-[#232018] border border-[#3A3528] rounded-2xl shadow-soft h-100 text-center p-5">
+                                <div class="card-body flex flex-col justify-center items-center">
+                                    <h6 class="text-[#A89F88] font-bold uppercase tracking-wider text-xs mb-3">Đánh giá Trung bình</h6>
+                                    <div class="font-noto text-6xl font-black text-[#D4AF37] mb-3" id="fb-avg-rating" style="text-shadow: 0 4px 10px rgba(212, 175, 55, 0.2);">0.0</div>
+                                    <div class="text-2xl text-[#D4AF37] mb-2 flex gap-1 justify-center" id="fb-avg-stars"></div>
+                                    <span class="bg-[#3A3528] text-[#E8DCC4] text-xs px-3 py-1 rounded-full font-semibold" id="fb-total-count">0 lượt đánh giá</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="card bg-[#232018] border border-[#3A3528] rounded-2xl shadow-soft h-100 flex flex-col">
+                                <div class="card-header bg-transparent border-b border-[#3A3528] p-4">
+                                    <h6 class="mb-0 font-noto font-bold text-[#E8DCC4] flex items-center gap-2"><i class="fa-solid fa-comment-dots text-[#C0A062]"></i> Đánh giá gần đây</h6>
+                                </div>
+                                <div class="card-body p-0 flex-1 overflow-y-auto custom-scrollbar" style="max-height: 250px;" id="fb-recent-list">
+                                    <div class="p-6 text-center text-[#A89F88]">Đang tải đánh giá...</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-        </section>
+                </section>
 
-        <!-- Staff Management Section -->
-        <section id="section-staff" class="content-section">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h2 class="mb-0"><i class="fa-solid fa-user-tie text-success me-2"></i> Quản lý Nhân viên</h2>
-                <button class="btn btn-success" onclick="openStaffModal()"><i class="fa-solid fa-plus me-1"></i> Thêm nhân viên</button>
-            </div>
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Tên nhân viên</th>
-                                    <th>Phân quyền (Role)</th>
-                                    <th>Mã PIN</th>
-                                    <th class="text-end">Hành động</th>
-                                </tr>
-                            </thead>
-                            <tbody id="staff-table-body">
-                                <tr><td colspan="4" class="text-center py-4">Đang tải danh sách...</td></tr>
-                            </tbody>
-                        </table>
+                <!-- Khuyến mãi Section -->
+                <section id="section-promo" class="content-section">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                        <div>
+                            <h2 class="font-noto text-2xl font-bold text-[#F2E8D5] mb-1 flex items-center gap-2"><i class="fa-solid fa-ticket-simple text-[#C0A062]"></i> Khuyến mãi</h2>
+                            <p class="text-sm text-[#A89F88] mb-0">Quản lý các chương trình ưu đãi.</p>
+                        </div>
+                        <button class="btn btn-success rounded-xl font-semibold shadow-soft whitespace-nowrap" onclick="openPromoModal()"><i class="fa-solid fa-plus me-2"></i> Tạo khuyến mãi mới</button>
                     </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Order History Section -->
-        <section id="section-history" class="content-section">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h2 class="mb-0">Lịch sử Đơn hàng</h2>
-                <div class="text-muted" id="total-revenue">Tổng doanh thu: 0 đ</div>
-            </div>
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Mã đơn</th>
-                                    <th>Thời gian</th>
-                                    <th>Bàn</th>
-                                    <th>Các món</th>
-                                    <th>Tổng cộng</th>
-                                    <th>Trạng thái</th>
-                                    <th class="text-end">Hành động</th>
-                                </tr>
-                            </thead>
-                            <tbody id="history-table-body">
-                                <tr><td colspan="6" class="text-center py-4">Đang tải biểu mẫu...</td></tr>
-                            </tbody>
-                        </table>
+                    <div class="card bg-[#232018] border border-[#3A3528] rounded-2xl shadow-soft overflow-hidden">
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0 border-0">
+                                    <thead class="bg-[#3A3528] text-[#D4AF37]">
+                                        <tr>
+                                            <th class="border-0 font-semibold py-3 px-4">Mã Khuyến Mãi</th>
+                                            <th class="border-0 font-semibold py-3 px-4">Loại giảm giá</th>
+                                            <th class="border-0 font-semibold py-3 px-4">Mức giảm</th>
+                                            <th class="border-0 font-semibold py-3 px-4">Giới hạn</th>
+                                            <th class="border-0 font-semibold py-3 px-4">Đã dùng</th>
+                                            <th class="border-0 font-semibold py-3 px-4">Trạng thái</th>
+                                            <th class="border-0 font-semibold py-3 px-4 text-end">Hành động</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="promo-table-body" class="border-transparent">
+                                        <tr><td colspan="7" class="text-center py-6 text-[#A89F88]">Đang tải biểu mẫu...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-        </section>
+                </section>
 
-        <!-- Inventory Section -->
-        <section id="section-inventory" class="content-section">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h2 class="mb-0">Kho nguyên liệu</h2>
-                <button class="btn btn-success" onclick="openIngredientModal()"><i class="fa-solid fa-plus me-1"></i> Thêm nguyên liệu</button>
-            </div>
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Tên nguyên liệu</th>
-                                    <th>Số lượng tồn kho</th>
-                                    <th>Đơn vị tính</th>
-                                    <th class="text-end">Hành động</th>
-                                </tr>
-                            </thead>
-                            <tbody id="inventory-table-body">
-                                <tr><td colspan="4" class="text-center py-4">Đang tải biểu mẫu...</td></tr>
-                            </tbody>
-                        </table>
+                <!-- Table Status Section -->
+                <section id="section-tables" class="content-section">
+                    <div class="mb-6">
+                        <h2 class="font-noto text-2xl font-bold text-[#F2E8D5] mb-1 flex items-center gap-2"><i class="fa-solid fa-table-cells text-[#C0A062]"></i> Trạng thái Bàn</h2>
+                        <p class="text-sm text-[#A89F88] mb-0">Theo dõi thông tin và trạng thái phục vụ tại bàn.</p>
                     </div>
-                </div>
-            </div>
-        </section>
+                    <div id="tables-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        <div class="col-span-full text-center text-[#A89F88] py-10">Đang tải thông tin bàn...</div>
+                    </div>
+                </section>
 
-    </div>
+                <!-- Customer Management Section -->
+                <section id="section-customers" class="content-section">
+                    <div class="mb-6">
+                        <h2 class="font-noto text-2xl font-bold text-[#F2E8D5] mb-1 flex items-center gap-2"><i class="fa-solid fa-users text-[#C0A062]"></i> Khách hàng</h2>
+                        <p class="text-sm text-[#A89F88] mb-0">Quản lý thành viên và thông tin mua hàng.</p>
+                    </div>
+                    <div class="card bg-[#232018] border border-[#3A3528] rounded-2xl shadow-soft overflow-hidden">
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0 border-0">
+                                    <thead class="bg-[#3A3528] text-[#D4AF37]">
+                                        <tr>
+                                            <th class="border-0 font-semibold py-3 px-4">Số điện thoại</th>
+                                            <th class="border-0 font-semibold py-3 px-4">Tên khách hàng</th>
+                                            <th class="border-0 font-semibold py-3 px-4">Điểm tích lũy</th>
+                                            <th class="border-0 font-semibold py-3 px-4">Tổng chi tiêu</th>
+                                            <th class="border-0 font-semibold py-3 px-4">Lần cuối</th>
+                                            <th class="border-0 font-semibold py-3 px-4 text-end">Hành động</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="customers-table-body" class="border-transparent">
+                                        <tr><td colspan="6" class="text-center py-6 text-[#A89F88]">Đang tải danh sách...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Staff Management Section -->
+                <section id="section-staff" class="content-section">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                        <div>
+                            <h2 class="font-noto text-2xl font-bold text-[#F2E8D5] mb-1 flex items-center gap-2"><i class="fa-solid fa-user-tie text-[#C0A062]"></i> Nhân viên</h2>
+                            <p class="text-sm text-[#A89F88] mb-0">Quản lý phân quyền và mã truy cập nội bộ.</p>
+                        </div>
+                        <button class="btn btn-success rounded-xl font-semibold shadow-soft whitespace-nowrap" onclick="openStaffModal()"><i class="fa-solid fa-plus me-2"></i> Thêm nhân viên</button>
+                    </div>
+                    <div class="card bg-[#232018] border border-[#3A3528] rounded-2xl shadow-soft overflow-hidden">
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0 border-0">
+                                    <thead class="bg-[#3A3528] text-[#D4AF37]">
+                                        <tr>
+                                            <th class="border-0 font-semibold py-3 px-4">Tên nhân viên</th>
+                                            <th class="border-0 font-semibold py-3 px-4">Phân quyền (Role)</th>
+                                            <th class="border-0 font-semibold py-3 px-4">Mã PIN</th>
+                                            <th class="border-0 font-semibold py-3 px-4 text-end">Hành động</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="staff-table-body" class="border-transparent">
+                                        <tr><td colspan="4" class="text-center py-6 text-[#A89F88]">Đang tải danh sách...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Order History Section -->
+                <section id="section-history" class="content-section">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                        <div>
+                            <h2 class="font-noto text-2xl font-bold text-[#F2E8D5] mb-1">Lịch sử Đơn hàng</h2>
+                            <p class="text-sm text-[#A89F88] mb-0">Hồ sơ chi tiết tất cả các đơn hàng hệ thống.</p>
+                        </div>
+                        <div class="bg-[#3A3528] px-4 py-2 rounded-xl border border-[#C0A062]/30 shadow-soft" id="total-revenue">
+                            <span class="text-[#A89F88] text-sm">Tổng doanh thu:</span> <span class="text-[#D4AF37] font-bold">0 đ</span>
+                        </div>
+                    </div>
+                    <div class="card bg-[#232018] border border-[#3A3528] rounded-2xl shadow-soft overflow-hidden">
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0 border-0">
+                                    <thead class="bg-[#3A3528] text-[#D4AF37]">
+                                        <tr>
+                                            <th class="border-0 font-semibold py-3 px-4">Mã đơn</th>
+                                            <th class="border-0 font-semibold py-3 px-4">Thời gian</th>
+                                            <th class="border-0 font-semibold py-3 px-4">Bàn</th>
+                                            <th class="border-0 font-semibold py-3 px-4">Các món</th>
+                                            <th class="border-0 font-semibold py-3 px-4">Tổng cộng</th>
+                                            <th class="border-0 font-semibold py-3 px-4">Trạng thái</th>
+                                            <th class="border-0 font-semibold py-3 px-4 text-end">Hành động</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="history-table-body" class="border-transparent">
+                                        <tr><td colspan="7" class="text-center py-6 text-[#A89F88]">Đang tải biểu mẫu...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Inventory Section -->
+                <section id="section-inventory" class="content-section">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                        <div>
+                            <h2 class="font-noto text-2xl font-bold text-[#F2E8D5] mb-1">Kho nguyên liệu</h2>
+                            <p class="text-sm text-[#A89F88] mb-0">Quản lý và cập nhật số lượng tồn kho.</p>
+                        </div>
+                        <button class="btn btn-success rounded-xl font-semibold shadow-soft whitespace-nowrap" onclick="openIngredientModal()"><i class="fa-solid fa-plus me-2"></i> Thêm nguyên liệu</button>
+                    </div>
+                    <div class="card bg-[#232018] border border-[#3A3528] rounded-2xl shadow-soft overflow-hidden">
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0 border-0">
+                                    <thead class="bg-[#3A3528] text-[#D4AF37]">
+                                        <tr>
+                                            <th class="border-0 font-semibold py-3 px-4">Tên nguyên liệu</th>
+                                            <th class="border-0 font-semibold py-3 px-4">Số lượng tồn kho</th>
+                                            <th class="border-0 font-semibold py-3 px-4">Đơn vị</th>
+                                            <th class="border-0 font-semibold py-3 px-4 text-end">Hành động</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="inventory-table-body" class="border-transparent">
+                                        <tr><td colspan="4" class="text-center py-6 text-[#A89F88]">Đang tải biểu mẫu...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div> <!-- End Main Content Scrollable Area -->
+        </main> <!-- End Main -->
+    </div> <!-- End Flex Wrapper -->
 
     <!-- Product Modal -->
     <div class="modal fade" id="productModal" tabindex="-1" aria-hidden="true">

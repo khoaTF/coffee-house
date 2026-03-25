@@ -8,8 +8,14 @@
     <meta property="og:description" content="Quản lý order, tiếp nhận yêu cầu thanh toán và điều phối phục vụ nhanh chóng.">
     <meta property="og:type" content="website">
     <title>Màn Hình Nhân Viên - Nohope Coffee</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Serif:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
     <!-- FontAwesome for standard UI icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tailwind CSS (Compiled for Production) -->
+    <link rel="stylesheet" href="css/tailwind-compiled.css">
     <!-- Liquid Glass CSS -->
     <link rel="stylesheet" href="css/styles.css?v=1.4">
     <link rel="stylesheet" href="css/staff.css">
@@ -19,26 +25,29 @@
 </head>
 <body>
 
-    <nav class="staff-nav">
-        <div class="staff-brand">
-            <i class="fa-solid fa-mug-hot"></i> Dịch Vụ - Nohope
+    <nav class="bg-surface/90 backdrop-blur-md border-b border-surface-glass-border px-5 py-4 flex justify-between items-center sticky top-0 z-50 shadow-sm">
+        <div class="text-2xl font-black text-primary flex items-center gap-3 font-serif tracking-tight">
+            <i class="fa-solid fa-mug-hot text-secondary"></i> Dịch Vụ - Nohope
         </div>
-        <div style="display: flex; gap: 16px; align-items: center;">
-            <button class="btn btn-outline" id="refresh-btn" aria-label="Làm mới dữ liệu">
-                <i class="fa-solid fa-rotate-right"></i> Làm mới
+        <div class="flex gap-4 items-center">
+            <button class="bg-surface-variant text-on-surface-variant px-4 py-2 rounded-xl font-bold text-sm hover:bg-surface-variant/80 transition-colors" id="refresh-btn" aria-label="Làm mới dữ liệu">
+                <i class="fa-solid fa-rotate-right mr-1"></i> Làm mới
             </button>
-            <button class="btn" style="background: var(--surface-color); border: 1px solid var(--border);" id="logout-btn" aria-label="Đăng xuất">
-                <i class="fa-solid fa-right-from-bracket"></i> Thoát
+            <button class="bg-surface text-on-surface border border-outline px-4 py-2 rounded-xl font-bold text-sm hover:bg-surface-container transition-colors" id="logout-btn" aria-label="Đăng xuất">
+                <i class="fa-solid fa-right-from-bracket mr-1"></i> Thoát
             </button>
         </div>
     </nav>
 
-    <div class="staff-container">
+    <div class="max-w-[1200px] mx-auto p-6">
         
-        <div style="margin-bottom: 24px; border-bottom: 2px solid var(--border); padding-bottom: 12px; display: flex; gap: 20px;">
-            <h2 id="tab-tables" style="cursor: pointer; color: var(--primary); font-weight: 800;">Sơ Đồ Bàn</h2>
-            <h2 id="tab-orders" style="cursor: pointer; color: var(--text-muted); font-weight: 600;">Đơn & Món</h2>
-            <h2 id="tab-requests" style="cursor: pointer; color: var(--text-muted); font-weight: 600;">Yêu Cầu Hỗ Trợ <span id="req-badge" style="background: var(--danger); color: white; border-radius: 50%; padding: 4px 8px; font-size: 0.8rem; display: none;">0</span></h2>
+        <div class="flex gap-8 mb-6 pb-4 border-b-2 border-outline-variant/30 overflow-x-auto whitespace-nowrap">
+            <h2 id="tab-tables" class="cursor-pointer text-primary font-black text-xl hover:opacity-80 transition-opacity">Sơ Đồ Bàn</h2>
+            <h2 id="tab-orders" class="cursor-pointer text-on-surface-variant/70 font-bold text-xl hover:opacity-80 transition-opacity">Đơn & Món</h2>
+            <h2 id="tab-requests" class="cursor-pointer text-on-surface-variant/70 font-bold text-xl hover:opacity-80 transition-opacity flex items-center gap-2">
+                Yêu Cầu Hỗ Trợ 
+                <span id="req-badge" class="bg-error text-on-error rounded-full px-2 py-0.5 text-xs font-black" style="display: none;">0</span>
+            </h2>
         </div>
         
         <!-- Tables Section -->
@@ -63,14 +72,45 @@
                 <p class="mt-2 text-muted">Đang lấy dữ liệu đơn hàng...</p>
             </div>
 
-            <div class="request-grid" id="orders-container">
-                <!-- Orders injected by JS -->
+            <!-- Kanban Board -->
+            <div class="hidden" id="orders-kanban-empty">
+                <div class="text-center text-muted col-span-full py-12 bg-surface-container rounded-2xl border border-dashed border-outline-variant">
+                    <span class="material-symbols-outlined text-4xl mb-2 opacity-50">all_inbox</span>
+                    <p class="font-bold">Không có đơn hàng nào cần xử lý.</p>
+                </div>
+            </div>
+
+            <div class="flex flex-col lg:flex-row gap-6 overflow-x-auto pb-6" id="orders-container">
+                <!-- Column 1: Chờ xử lý -->
+                <div class="flex-1 min-w-[320px] bg-surface-container/50 rounded-2xl p-4 border border-outline-variant/30">
+                    <div class="flex justify-between items-center mb-4 pb-2 border-b border-outline-variant/50">
+                        <h3 class="font-bold text-lg text-primary flex items-center gap-2"><i class="fa-regular fa-clock text-secondary"></i> Chờ xử lý</h3>
+                        <span id="count-pending" class="bg-primary text-on-primary px-2.5 py-0.5 rounded-full text-xs font-bold">0</span>
+                    </div>
+                    <div id="kanban-pending" class="flex flex-col gap-4"></div>
+                </div>
+                <!-- Column 2: Đang chuẩn bị -->
+                <div class="flex-1 min-w-[320px] bg-surface-container/50 rounded-2xl p-4 border border-outline-variant/30">
+                    <div class="flex justify-between items-center mb-4 pb-2 border-b border-outline-variant/50">
+                        <h3 class="font-bold text-lg text-primary flex items-center gap-2"><i class="fa-solid fa-fire-burner text-secondary"></i> Đang chuẩn bị</h3>
+                        <span id="count-processing" class="bg-secondary text-on-secondary px-2.5 py-0.5 rounded-full text-xs font-bold">0</span>
+                    </div>
+                    <div id="kanban-processing" class="flex flex-col gap-4"></div>
+                </div>
+                <!-- Column 3: Sẵn sàng -->
+                <div class="flex-1 min-w-[320px] bg-surface-container/50 rounded-2xl p-4 border border-outline-variant/30">
+                    <div class="flex justify-between items-center mb-4 pb-2 border-b border-outline-variant/50">
+                        <h3 class="font-bold text-lg text-primary flex items-center gap-2"><i class="fa-solid fa-bell-concierge text-secondary"></i> Sẵn sàng</h3>
+                        <span id="count-ready" class="bg-tertiary text-on-tertiary px-2.5 py-0.5 rounded-full text-xs font-bold">0</span>
+                    </div>
+                    <div id="kanban-ready" class="flex flex-col gap-4"></div>
+                </div>
             </div>
         </div>
 
         <!-- Requests Section -->
         <div id="section-requests" style="display: none;">
-            <div class="request-grid" id="requests-container">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="requests-container">
                 <!-- Requests injected by JS -->
             </div>
         </div>
@@ -79,15 +119,15 @@
 
     <!-- Modals -->
     <!-- Table Action Modal -->
-    <div id="tableModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);">
-        <div class="order-card" style="width: 90%; max-width: 400px; padding: 24px; position:relative; animation: slideIn 0.3s ease;">
-            <button onclick="closeTableModal()" style="position:absolute; right:15px; top:15px; background:transparent; border:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer;"><i class="fa-solid fa-times"></i></button>
-            <h3 id="modal-table-title" style="color:var(--primary); margin-top:0;">Bàn X</h3>
-            <p id="modal-table-status" style="color:var(--text-muted);">Trạng thái</p>
+    <div id="tableModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(39, 19, 16, 0.4); z-index:1000; align-items:center; justify-content:center; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);">
+        <div class="bg-surface w-[90%] max-w-[400px] p-8 rounded-3xl relative shadow-float animate-slide-up border border-outline-variant/30">
+            <button onclick="closeTableModal()" class="absolute right-5 top-5 bg-surface-container hover:bg-surface-variant text-on-surface-variant w-8 h-8 rounded-full flex items-center justify-center transition-colors"><i class="fa-solid fa-times"></i></button>
+            <h3 id="modal-table-title" class="text-2xl font-black text-primary mb-2 flex items-center gap-2">Bàn X</h3>
+            <p id="modal-table-status" class="text-sm font-medium text-on-surface-variant/80 mb-6">Trạng thái</p>
             
-            <div style="margin-top: 20px; display:flex; flex-direction:column; gap:12px;">
-                <button id="btn-modal-checkout" class="btn btn-primary" onclick="handleTableCheckout()" style="padding:12px; font-size:1.1rem; border-radius:12px;"><i class="fa-solid fa-money-bill-wave me-2"></i> Kế toán / Thu Tiền</button>
-                <button id="btn-modal-move" class="btn btn-outline" onclick="handleTableMove()" style="padding:12px; font-size:1.1rem; border-radius:12px;"><i class="fa-solid fa-people-arrows me-2"></i> Đổi Bàn Ngồi</button>
+            <div class="flex flex-col gap-3">
+                <button id="btn-modal-checkout" class="w-full bg-primary text-on-primary font-bold py-3.5 rounded-xl shadow-soft hover:bg-secondary transition-colors" onclick="handleTableCheckout()"><i class="fa-solid fa-money-bill-wave mr-2"></i> Kế toán / Thu Tiền</button>
+                <button id="btn-modal-move" class="w-full bg-surface-container text-on-surface border border-outline-variant font-bold py-3.5 rounded-xl shadow-sm hover:bg-surface-variant transition-colors" onclick="handleTableMove()"><i class="fa-solid fa-people-arrows mr-2"></i> Đổi Bàn Ngồi</button>
             </div>
         </div>
     </div>
@@ -114,6 +154,10 @@
         // --- 2. Global State ---
         let currentTab = 'tables';
         const ordersContainer = document.getElementById('orders-container');
+        const ordersKanbanEmpty = document.getElementById('orders-kanban-empty');
+        const pendingContainer = document.getElementById('kanban-pending');
+        const processingContainer = document.getElementById('kanban-processing');
+        const readyContainer = document.getElementById('kanban-ready');
         const requestsContainer = document.getElementById('requests-container');
         const loader = document.getElementById('loader');
         
@@ -128,8 +172,13 @@
         function switchTab(tab) {
             currentTab = tab;
             ['tables', 'orders', 'requests'].forEach(t => {
-                document.getElementById(`tab-${t}`).style.color = (t === tab) ? 'var(--primary)' : 'var(--text-muted)';
-                document.getElementById(`tab-${t}`).style.fontWeight = (t === tab) ? '800' : '600';
+                const el = document.getElementById(`tab-${t}`);
+                if (t === tab) {
+                    el.className = 'cursor-pointer text-primary font-black text-xl transition-opacity';
+                } else {
+                    let extra = t === 'requests' ? ' flex items-center gap-2' : '';
+                    el.className = `cursor-pointer text-on-surface-variant/70 font-bold text-xl hover:opacity-80 transition-opacity${extra}`;
+                }
                 document.getElementById(`section-${t}`).style.display = (t === tab) ? 'block' : 'none';
             });
             
@@ -201,50 +250,38 @@
                     const isOccupied = tableOrders.length > 0;
                     const hasUnpaid = tableOrders.some(o => !o.is_paid);
                     
-                    let statusConfig = { color: 'rgba(255,255,255,0.02)', icon: 'fa-chair', text: 'Trống', border: 'rgba(255,255,255,0.1)', pulse: false };
+                    let statusConfig = { color: 'bg-surface-variant/30', icon: 'fa-chair', text: 'Trống', border: 'border-outline-variant/30', pulse: false, iconColor: 'text-on-surface-variant/50' };
                     if (isOccupied) {
                         if (hasUnpaid) {
-                            statusConfig = { color: 'rgba(231, 76, 60, 0.1)', icon: 'fa-money-bill-wave', text: 'Chưa tính tiền', border: '#e74c3c', pulse: true };
+                            statusConfig = { color: 'bg-error/10', icon: 'fa-money-bill-wave', text: 'Chưa tính tiền', border: 'border-error/50', pulse: true, iconColor: 'text-error' };
                         } else {
-                            statusConfig = { color: 'rgba(52, 152, 219, 0.1)', icon: 'fa-utensils', text: 'Đang dùng bữa', border: '#3498db', pulse: false };
+                            statusConfig = { color: 'bg-info/10', icon: 'fa-utensils', text: 'Đang dùng bữa', border: 'border-info/50', pulse: false, iconColor: 'text-info' };
                         }
                     }
                     
                     const card = document.createElement('div');
-                    card.className = `order-card ${statusConfig.pulse ? 'pulse-border' : ''}`;
-                    card.style.background = statusConfig.color;
-                    card.style.border = `1px solid ${statusConfig.border}`;
-                    card.style.textAlign = 'center';
-                    card.style.padding = '20px 10px';
-                    card.style.cursor = 'pointer';
+                    card.className = `rounded-2xl border ${statusConfig.border} ${statusConfig.color} flex flex-col items-center justify-center p-5 cursor-pointer hover:shadow-soft transition-all ${statusConfig.pulse ? 'animate-pulse' : ''}`;
                     
                     card.onclick = () => openTableModal(i, isOccupied, hasUnpaid);
 
                     const iconContainer = document.createElement('div');
-                    iconContainer.style.fontSize = '1.8rem';
-                    iconContainer.style.color = statusConfig.border;
-                    iconContainer.style.marginBottom = '12px';
+                    iconContainer.className = `text-4xl mb-3 ${statusConfig.iconColor}`;
                     iconContainer.innerHTML = `<i class="fa-solid ${statusConfig.icon}"></i>`;
 
                     const idText = document.createElement('div');
-                    idText.style.fontWeight = '800';
-                    idText.style.fontSize = '1.1rem';
+                    idText.className = `text-lg font-black ${isOccupied ? 'text-primary' : 'text-on-surface-variant/70'}`;
                     idText.textContent = `Bàn ${i}`;
-                    idText.style.color = isOccupied ? 'var(--text-main)' : 'var(--text-muted)';
 
                     const statusText = document.createElement('div');
-                    statusText.style.color = statusConfig.border;
-                    statusText.style.fontSize = '0.8rem';
-                    statusText.style.marginTop = '4px';
-                    statusText.style.fontWeight = '600';
+                    statusText.className = `text-xs font-bold mt-1 ${statusConfig.iconColor}`;
                     statusText.textContent = statusConfig.text;
                     
                     card.append(iconContainer, idText, statusText);
                     
                     if (isOccupied) {
                         const badgeContainer = document.createElement('div');
-                        badgeContainer.style.marginTop = '10px';
-                        badgeContainer.innerHTML = `<span style="background:${hasUnpaid?'#e74c3c':'#3498db'}; color:#fff; padding:4px 10px; border-radius:12px; font-size:0.75rem; font-weight:800;">${tableOrders.length} Đơn</span>`;
+                        badgeContainer.className = 'mt-3';
+                        badgeContainer.innerHTML = `<span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${hasUnpaid ? 'bg-error text-on-error' : 'bg-info text-white'}">${tableOrders.length} Đơn</span>`;
                         card.appendChild(badgeContainer);
                     }
                     
@@ -258,28 +295,28 @@
 
         function openTableModal(tableNum, isOccupied, hasUnpaid) {
             currentSelectedTable = tableNum;
-            document.getElementById('modal-table-title').innerHTML = `<i class="fa-solid fa-chair text-primary"></i> Quản Lý Bàn ${tableNum}`;
+            document.getElementById('modal-table-title').innerHTML = `<i class="fa-solid fa-chair text-primary opacity-50 text-xl mr-2"></i> Bàn ${tableNum}`;
             
             const btnCheckout = document.getElementById('btn-modal-checkout');
             const btnMove = document.getElementById('btn-modal-move');
             
             if (!isOccupied) {
-                document.getElementById('modal-table-status').innerHTML = '✅ Bàn hiện tại đang <strong>Trống</strong> và sạch sẽ.';
+                document.getElementById('modal-table-status').innerHTML = '✅ Bàn hiện tại đang <strong class="text-info">Trống</strong> và sạch sẽ.';
                 btnCheckout.style.display = 'none';
                 btnMove.style.display = 'none';
             } else {
                 const orderCount = activeTableOrders[tableNum].length;
-                document.getElementById('modal-table-status').innerHTML = `Bàn đang có <strong>${orderCount} đơn hàng</strong> chờ hoàn tất.`;
+                document.getElementById('modal-table-status').innerHTML = `Bàn đang có <strong class="text-primary">${orderCount} đơn hàng</strong> chờ hoàn tất.`;
                 btnMove.style.display = 'block';
                 
                 if (hasUnpaid) {
                     btnCheckout.style.display = 'block';
-                    btnCheckout.innerHTML = `<i class="fa-solid fa-money-bill-wave me-2"></i> Xác Nhận Đã Thu Tiền toàn bộ (${activeTableOrders[tableNum].filter(o=>!o.is_paid).length} đơn)`;
+                    btnCheckout.innerHTML = `<i class="fa-solid fa-money-bill-wave mr-2"></i> Đã Thu & Hoàn Tất (${activeTableOrders[tableNum].filter(o=>!o.is_paid).length} đơn)`;
                     
                     let loyaltyMsg = '';
                     const phones = [...new Set(activeTableOrders[tableNum].filter(o=>!o.is_paid && o.customer_phone).map(o=>`${o.customer_phone} (+${o.earned_points || 0}đ)`))];
                     if (phones.length > 0) {
-                        loyaltyMsg = `<div class="mt-2" style="color: #f39c12; font-weight: 800;"><i class="fa-solid fa-crown"></i> Sẽ Tích điểm cho KH: ${phones.join(', ')}</div>`;
+                        loyaltyMsg = `<div class="mt-4 bg-tertiary/10 text-tertiary p-3 rounded-lg text-sm font-bold flex items-center gap-2 border border-tertiary/20"><i class="fa-solid fa-crown text-lg"></i> Sẽ Tích điểm cho KH: ${phones.join(', ')}</div>`;
                         document.getElementById('modal-table-status').innerHTML += loyaltyMsg;
                     }
                 } else {
@@ -368,7 +405,11 @@
         // Orders Fetch
         async function fetchOrders() {
             loader.style.display = 'block';
-            ordersContainer.innerHTML = '';
+            pendingContainer.innerHTML = '';
+            processingContainer.innerHTML = '';
+            readyContainer.innerHTML = '';
+            ordersKanbanEmpty.style.display = 'none';
+            ordersContainer.style.display = 'flex';
             
             try {
                 // Fetch orders that are NOT Completed or Cancelled. Include 'Ready' and 'Pending'
@@ -383,19 +424,39 @@
                 loader.style.display = 'none';
 
                 if (!data || data.length === 0) {
-                    ordersContainer.innerHTML = '<div class="text-center text-muted col-span-full">Không có đơn hàng nào cần xử lý.</div>';
+                    ordersContainer.style.display = 'none';
+                    ordersKanbanEmpty.style.display = 'block';
+                    document.getElementById('count-pending').textContent = '0';
+                    document.getElementById('count-processing').textContent = '0';
+                    document.getElementById('count-ready').textContent = '0';
                     return;
                 }
 
+                let counts = { pending: 0, processing: 0, ready: 0 };
+
                 data.forEach(order => {
                     const card = createOrderCard(order);
-                    ordersContainer.appendChild(card);
+                    if (order.status === 'Pending') {
+                        pendingContainer.appendChild(card);
+                        counts.pending++;
+                    } else if (order.status === 'Processing') {
+                        processingContainer.appendChild(card);
+                        counts.processing++;
+                    } else if (order.status === 'Ready') {
+                        readyContainer.appendChild(card);
+                        counts.ready++;
+                    }
                 });
+                
+                document.getElementById('count-pending').textContent = counts.pending;
+                document.getElementById('count-processing').textContent = counts.processing;
+                document.getElementById('count-ready').textContent = counts.ready;
 
             } catch (error) {
                 console.error("Error fetching orders:", error);
                 loader.style.display = 'none';
-                ordersContainer.innerHTML = '<div class="text-danger">Lỗi khi tải dữ liệu!</div>';
+                ordersKanbanEmpty.style.display = 'block';
+                ordersKanbanEmpty.innerHTML = '<div class="text-danger p-6 text-center font-bold">Lỗi khi tải dữ liệu!</div>';
             }
         }
 
@@ -456,27 +517,28 @@
             const isPaid = order.is_paid;
             const hasBankTransfer = order.payment_method === 'bank_transfer';
             
-            let paymentStr = `<span class="order-status ${isPaid ? 'status-paid' : 'status-unpaid'}">${isPaid ? 'Đã TToán' : 'Chưa TToán'}</span>`;
+            let paymentStr = `<span class="px-3 py-1 text-xs font-bold rounded-full ${isPaid ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${isPaid ? 'Đã TToán' : 'Chưa TToán'}</span>`;
             if(!isPaid && hasBankTransfer) {
-                paymentStr = `<span class="order-status" style="background:#e0e7ff; color:#3730a3;"><i class="fa-solid fa-qrcode"></i> Đợi xác nhận CK</span>`;
+                paymentStr = `<span class="px-3 py-1 text-xs font-bold rounded-full bg-indigo-100 text-indigo-700"><i class="fa-solid fa-qrcode mr-1"></i> Đợi xác nhận CK</span>`;
             }
 
-            let kitchenStr = `<span class="order-status" style="background:#f3f4f6; color:#4b5563;">${order.status}</span>`;
+            let kitchenStr = `<span class="px-3 py-1 text-xs font-bold rounded-full bg-gray-100 text-gray-600">${order.status}</span>`;
             if(order.status === 'Ready') {
-                kitchenStr = `<span class="order-status status-ready"><i class="fa-solid fa-bell"></i> Sẵn sàng phục vụ</span>`;
+                kitchenStr = `<span class="px-3 py-1 text-xs font-bold rounded-full bg-tertiary/20 text-tertiary"><i class="fa-solid fa-bell mr-1"></i> Sẵn sàng phục vụ</span>`;
             }
 
             const div = document.createElement('div');
-            div.className = 'order-card';
+            // Tailwind classes for Velvet Crema order card
+            div.className = 'bg-surface border border-outline-variant/30 rounded-2xl p-5 shadow-soft hover:shadow-float transition-all group flex flex-col gap-4';
             
-            let itemsHtml = '<ul class="items-list">';
+            let itemsHtml = '<ul class="flex flex-col gap-2">';
             order.items.forEach(item => {
                 itemsHtml += `
-                    <li class="item-row">
-                        <span><span class="item-qty">${item.quantity}x</span> ${item.name}</span>
+                    <li class="flex justify-between items-start text-sm font-bold text-on-surface">
+                        <span class="flex-1"><span class="text-secondary mr-2">${item.quantity}x</span> ${item.name}</span>
                     </li>`;
                 if(item.selectedOptions && item.selectedOptions.length > 0) {
-                     itemsHtml += `<li style="font-size:0.85rem; color:var(--text-muted); margin-left: 30px; margin-bottom: 8px;">
+                     itemsHtml += `<li class="text-xs text-on-surface-variant/80 ml-8 mb-2 font-medium">
                                      + ${item.selectedOptions.map(o => o.choiceName).join(', ')}
                                    </li>`;
                 }
@@ -484,8 +546,8 @@
             itemsHtml += '</ul>';
 
             let noteHtml = order.order_note ? 
-                `<div style="background:#fefce8; border-left:3px solid #eab308; padding:8px; font-size:0.9rem; border-radius:4px; margin-bottom:12px;">
-                    <strong><i class="fa-regular fa-comment"></i> Ghi chú:</strong> ${order.order_note}
+                `<div class="bg-yellow-50 border-l-4 border-yellow-400 p-3 text-xs rounded-r block mb-2 font-medium text-yellow-800">
+                    <strong><i class="fa-regular fa-comment mr-1"></i> Ghi chú:</strong> ${order.order_note}
                  </div>` : '';
 
             // Generate Action Buttons based on states
@@ -493,37 +555,45 @@
             
             // Confirm Transfer Button
             if(!isPaid) {
-                actionHtml += `<button class="btn btn-primary" style="flex:1;" onclick="confirmPayment('${order.id}')">Đã Thu Tiền</button>`;
+                actionHtml += `<button class="flex-1 bg-primary text-on-primary font-bold py-2.5 rounded-xl text-sm shadow-soft hover:bg-secondary transition-colors" onclick="confirmPayment('${order.id}')">Xác Nhận Đã Thu</button>`;
             }
 
             // Mark Delivered Button (if ready)
             if(order.status === 'Ready') {
-                actionHtml += `<button class="btn" style="flex:1; background:var(--success); color:white; border:none;" onclick="markDelivered('${order.id}')">Hoàn Thành</button>`;
+                actionHtml += `<button class="flex-1 bg-green-600 text-white font-bold py-2.5 rounded-xl text-sm shadow-soft hover:bg-green-700 transition-colors" onclick="markDelivered('${order.id}')">Giao Món / Hoàn Tất</button>`;
             } else {
                  if(isPaid) {
-                     actionHtml += `<div style="text-align:center; flex:1; color:var(--text-muted); padding:10px;">Đang chờ Bếp chế biến...</div>`;
+                     actionHtml += `<div class="flex-1 text-center text-xs text-on-surface-variant bg-surface-variant/40 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2"><i class="fa-solid fa-fire-burner"></i> Đang chờ bếp...</div>`;
                  }
             }
 
             div.innerHTML = `
-                <div class="order-header">
-                    <div class="table-badge">Bàn ${order.table_number}</div>
-                    <div class="time-badge">${timeStr}</div>
+                <div class="flex justify-between items-center pb-3 border-b border-outline-variant/30">
+                    <div class="bg-primary text-on-primary px-4 py-1.5 rounded-full font-black text-sm shadow-sm inline-flex items-center gap-1">
+                        <i class="fa-solid fa-chair text-[10px] opacity-80"></i> Bàn ${order.table_number}
+                    </div>
+                    <div class="text-xs font-bold text-on-surface-variant opacity-80 flex items-center gap-1">
+                        <i class="fa-regular fa-clock"></i> ${timeStr}
+                    </div>
                 </div>
                 
-                <div style="display:flex; gap:8px;">
+                <div class="flex flex-wrap gap-2">
                      ${paymentStr}
                      ${kitchenStr}
                 </div>
 
-                <div style="font-size: 1.1rem; font-weight: 700; color: var(--text-main);">
-                    Tổng: ${order.total_price.toLocaleString('vi-VN')} đ
+                <div class="bg-surface-container rounded-lg p-3 my-1">
+                    ${itemsHtml}
+                </div>
+                
+                ${noteHtml}
+
+                <div class="text-lg font-black text-primary flex justify-between items-center px-1">
+                    <span class="text-xs uppercase tracking-widest font-bold text-on-surface-variant">Tổng tiền</span>
+                    ${order.total_price.toLocaleString('vi-VN')} đ
                 </div>
 
-                ${noteHtml}
-                ${itemsHtml}
-
-                <div class="action-row">
+                <div class="flex gap-3 mt-auto pt-3 border-t border-outline-variant/30">
                     ${actionHtml}
                 </div>
             `;
@@ -535,8 +605,7 @@
             const timeStr = timeDiff === 0 ? "Vừa xong" : `${timeDiff} phút trước`;
             
             const div = document.createElement('div');
-            div.className = 'order-card';
-            div.style.borderLeft = '4px solid var(--danger)';
+            div.className = 'bg-surface border-l-4 border-l-error border-y border-r border-outline-variant/30 rounded-2xl p-5 shadow-soft hover:shadow-float transition-all flex flex-col gap-4';
             
             let icon = 'fa-bell';
             let title = 'Gọi Nhân Viên';
@@ -544,18 +613,25 @@
             else if(req.request_type === 'water') { icon = 'fa-glass-water'; title = 'Thêm Nước Lọc'; }
             
             div.innerHTML = `
-                <div class="order-header">
-                    <div class="table-badge" style="background:var(--bg-color); color:var(--text-main); border:1px solid var(--border); box-shadow:none;">Bàn ${req.table_number}</div>
-                    <div class="time-badge">${timeStr}</div>
+                <div class="flex justify-between items-center pb-3 border-b border-outline-variant/30">
+                    <div class="bg-surface-variant text-on-surface-variant px-4 py-1.5 rounded-full font-black text-sm shadow-sm border border-outline-variant/50">
+                        Bàn ${req.table_number}
+                    </div>
+                    <div class="text-xs font-bold text-on-surface-variant opacity-80 flex items-center gap-1">
+                        <i class="fa-regular fa-clock"></i> ${timeStr}
+                    </div>
                 </div>
                 
-                <div style="font-size: 1.2rem; font-weight: 800; color: var(--danger); margin: 10px 0;">
-                    <i class="fa-solid ${icon}"></i> ${title}
+                <div class="text-xl font-black text-error my-2 flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-error/10 flex justify-center items-center">
+                        <i class="fa-solid ${icon}"></i>
+                    </div> 
+                    ${title}
                 </div>
 
-                <div class="action-row">
-                    <button class="btn btn-primary" style="flex:1; background:var(--danger); box-shadow:0 4px 12px rgba(239, 68, 68, 0.3);" onclick="completeRequest('${req.id}')">
-                        <i class="fa-solid fa-check"></i> Đã xử lý
+                <div class="mt-auto pt-3 border-t border-outline-variant/30 flex">
+                    <button class="flex-1 bg-error text-on-error font-bold py-3 rounded-xl shadow-soft hover:bg-error/80 transition-colors flex items-center justify-center gap-2" onclick="completeRequest('${req.id}')">
+                        <i class="fa-solid fa-check"></i> Hoàn tất yêu cầu
                     </button>
                 </div>
             `;
