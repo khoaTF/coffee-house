@@ -418,7 +418,7 @@ function renderMenu(category) {
 
         card.innerHTML = `
             <div class="aspect-[4/3] bg-slate-100 dark:bg-slate-800 relative overflow-hidden">
-                <img src="${item.imageUrl}" alt="${item.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.src='https://placehold.co/800x600/1B1C1C/FFF?text=${encodeURIComponent(item.name)}'">
+                <img src="${item.imageUrl}" alt="${item.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.onerror=null; this.src='https://placehold.co/800x600/1B1C1C/FFF?text=${encodeURIComponent(item.name)}'">
                 ${isOutOfStock ? '<div class="absolute inset-0 bg-black/40 flex items-center justify-center z-10"><span class="bg-red-600 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">Hết hàng</span></div>' : ''}
                 ${isBestSeller && !isOutOfStock ? `
                 <div class="absolute top-3 left-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs font-bold text-orange-600 dark:text-orange-400 shadow-sm flex items-center gap-1 z-10">
@@ -449,7 +449,13 @@ function renderMenu(category) {
                       <button class="w-10 h-10 rounded-full bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center shadow-sm active:scale-95 transition-transform" onclick="updateCart('${item._id}', -1)">
                         <span class="material-symbols-outlined text-[20px]">remove</span>
                       </button>
-                      <span class="font-bold text-slate-900 dark:text-white text-base flex-grow text-center">${cartItemTotalQty}</span>
+                      <input type="number" min="0" 
+                             class="font-bold text-slate-900 dark:text-white text-base flex-grow text-center bg-transparent w-full focus:outline-none focus:ring-1 focus:ring-orange-500 rounded no-spinners" 
+                             style="-moz-appearance: textfield; appearance: textfield;" 
+                             value="${cartItemTotalQty}" 
+                             ${hasOptions ? 'readonly onclick="openOptionsModal(menuItems.find(i => i._id === \'' + item._id + '\'))"' : ''}
+                             onchange="if(!${hasOptions}) setCartQuantity('${item._id}', this.value)" 
+                             onfocus="this.select()" />
                       <button class="w-10 h-10 rounded-full bg-orange-600 text-white flex items-center justify-center shadow-sm active:scale-95 transition-transform" ${disableAddBtn ? "disabled style='opacity:0.5;'" : ""} onclick="updateCart('${item._id}', 1)">
                         <span class="material-symbols-outlined text-[20px]">add</span>
                       </button>
@@ -544,7 +550,12 @@ function renderModalCart() {
                 <button class="w-8 h-8 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center active:scale-95 transition-transform" onclick="updateCart('${item.cartKey}', -1)">
                     <span class="material-symbols-outlined text-[18px]">remove</span>
                 </button>
-                <span class="w-8 text-center font-bold text-lg leading-none">${item.quantity}</span>
+                <input type="number" min="0" 
+                       class="w-10 text-center font-bold text-lg leading-none bg-transparent focus:outline-none focus:ring-1 focus:ring-[#994700] rounded py-1 no-spinners" 
+                       style="-moz-appearance: textfield; appearance: textfield;" 
+                       value="${item.quantity}" 
+                       onchange="setCartQuantity('${item.cartKey}', this.value)" 
+                       onfocus="this.select()" />
                 <button class="w-8 h-8 rounded-full bg-[#994700] text-white flex items-center justify-center active:scale-95 transition-transform shadow-sm" onclick="updateCart('${item.cartKey}', 1)" ${getAvailableToAdd(item) <= 0 ? 'disabled style="opacity:0.5;background:#888;cursor:not-allowed;"' : ''}>
                     <span class="material-symbols-outlined text-[18px]">add</span>
                 </button>
@@ -1267,6 +1278,47 @@ function handleOrderStatusUpdate(updatedOrderData) {
 let currentOptionsItem = null;
 
 // Add to Cart Logic
+window.setCartQuantity = (productIdOrCartKey, newQty) => {
+    newQty = parseInt(newQty);
+    if (isNaN(newQty) || newQty < 0) return;
+
+    if (!productIdOrCartKey.includes('|')) {
+        const item = menuItems.find(i => i._id === productIdOrCartKey);
+        if(!item) return;
+        
+        if (item.options && item.options.length > 0) {
+            updateCartUI();
+            const activeCategory = getActiveCategory();
+            if (activeCategory) renderMenu(activeCategory);
+            return; 
+        }
+
+        const existingIndex = cart.findIndex(c => c._id === productIdOrCartKey);
+        if (existingIndex > -1) {
+            if (newQty === 0) {
+                cart.splice(existingIndex, 1);
+            } else {
+                cart[existingIndex].quantity = newQty;
+            }
+        } else if (newQty > 0) {
+            cart.push({ ...item, cartKey: productIdOrCartKey, quantity: newQty, selectedOptions: [] });
+        }
+    } else {
+        const existingIndex = cart.findIndex(c => c.cartKey === productIdOrCartKey);
+        if (existingIndex > -1) {
+            if (newQty === 0) {
+                cart.splice(existingIndex, 1);
+            } else {
+                cart[existingIndex].quantity = newQty;
+            }
+        }
+    }
+
+    updateCartUI();
+    const activeCategory = getActiveCategory();
+    if (activeCategory) renderMenu(activeCategory);
+};
+
 window.updateCart = (productIdOrCartKey, change) => {
     // If we're adding from the menu (using raw productId)
     if (!productIdOrCartKey.includes('|')) {
