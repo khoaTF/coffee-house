@@ -558,6 +558,11 @@
                 actionHtml += `<button class="flex-1 bg-primary text-on-primary font-bold py-2.5 rounded-xl text-sm shadow-soft hover:bg-secondary transition-colors" onclick="confirmPayment('${order.id}')">Xác Nhận Đã Thu</button>`;
             }
 
+            // Cancel Button (for unpaid or pending orders)
+            if(!isPaid || order.status === 'Pending') {
+                actionHtml += `<button class="px-3 bg-surface border border-error/50 text-error font-bold py-2.5 rounded-xl text-sm shadow-sm hover:bg-error/10 transition-colors" onclick="cancelOrder('${order.id}')" aria-label="Hủy Đơn"><i class="fa-solid fa-xmark"></i> Hủy</button>`;
+            }
+
             // Mark Delivered Button (if ready)
             if(order.status === 'Ready') {
                 actionHtml += `<button class="flex-1 bg-green-600 text-white font-bold py-2.5 rounded-xl text-sm shadow-soft hover:bg-green-700 transition-colors" onclick="markDelivered('${order.id}')">Giao Món / Hoàn Tất</button>`;
@@ -668,6 +673,17 @@
                 alert("Lỗi: " + e.message);
             }
         }
+
+        window.cancelOrder = async (orderId) => {
+            if(!confirm("Bạn có chắc chắn muốn HỦY đơn hàng này? Thao tác này không thể hoàn tác.")) return;
+            try {
+                const { error } = await supabase.from('orders').update({ status: 'Cancelled' }).eq('id', orderId);
+                if(error) throw error;
+                fetchOrders();
+            } catch(e) {
+                alert("Lỗi khi hủy đơn: " + e.message);
+            }
+        };
 
         async function completeRequest(reqId) {
             try {
