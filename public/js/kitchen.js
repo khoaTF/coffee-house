@@ -59,7 +59,15 @@ function renderOrders() {
         ordersContainer.innerHTML = '';
 
         if (!Array.isArray(orders) || orders.length === 0) {
-            ordersContainer.innerHTML = '<div class="text-muted" style="grid-column: 1 / -1;">Không có đơn hàng nào chờ xử lý.</div>';
+            ordersContainer.innerHTML = `
+                <div class="col-span-1 md:col-span-2 lg:col-span-3 flex flex-col items-center justify-center py-16 text-center bg-white dark:bg-[#2A2B2B] rounded-[1.5rem] border border-gray-200 dark:border-gray-800 shadow-sm min-h-[400px]">
+                    <div class="w-24 h-24 bg-orange-50 dark:bg-orange-900/20 rounded-full flex items-center justify-center text-[#994700] text-4xl mb-4">
+                        <i class="fa-solid fa-mug-hot"></i>
+                    </div>
+                    <h3 class="text-xl font-bold font-headline text-[#1B1C1C] dark:text-[#F6F3F2] mb-2">Bếp rảnh rỗi</h3>
+                    <p class="text-gray-500 dark:text-gray-400">Hiện tại không có đơn hàng nào chờ xử lý.</p>
+                </div>
+            `;
             return;
         }
 
@@ -81,44 +89,58 @@ function renderOrders() {
             const items = Array.isArray(order.items) ? order.items : [];
             const itemsHtml = items.map(item => {
                 const optionsHtml = item.selectedOptions && item.selectedOptions.length > 0
-                    ? `<div class="ms-3 text-muted" style="font-size: 0.85rem;">+ ${item.selectedOptions.map(o => o.choiceName).join(', ')}</div>`
+                    ? `<div class="ml-4 text-gray-500 dark:text-gray-400 text-sm mt-1 border-l-2 border-[#D97531] pl-2">+ ${item.selectedOptions.map(o => o.choiceName).join(', ')}</div>`
                     : '';
                 return `
-                <li>
-                    <span><span class="fw-bold">${item.quantity || 1}x</span> ${item.name || 'Unknown Item'}</span>
+                <li class="py-2 border-b border-gray-100 dark:border-gray-800 last:border-0">
+                    <div class="flex items-start justify-between">
+                        <span class="font-medium text-[#1B1C1C] dark:text-[#F6F3F2]"><span class="font-bold text-[#D97531] mr-1">${item.quantity || 1}x</span> ${item.name || 'Unknown Item'}</span>
+                    </div>
                     ${optionsHtml}
                 </li>`;
             }).join('');
 
             const card = document.createElement('div');
-            card.className = `order-card status-${order.status || 'Pending'}`;
-            card.style.setProperty('--item-idx', index);
+            card.className = `bg-white dark:bg-[#2A2B2B] rounded-[1.25rem] p-5 shadow-sm border border-gray-200 dark:border-gray-800 flex flex-col justify-between transition-all hover:shadow-md order-card-${order.status || 'Pending'} relative overflow-hidden`;
+            if (order.status === 'Pending') card.classList.add('border-l-4', 'border-l-[#D97531]');
+            if (order.status === 'Preparing') card.classList.add('border-l-4', 'border-l-[#994700]');
+            if (order.status === 'Ready') card.classList.add('border-l-4', 'border-l-green-500');
             card.id = `order-${order._id}`;
 
             card.innerHTML = `
-                <div class="order-header">
-                    <div class="order-table">Bàn ${order.tableNumber || '?'}</div>
-                    <div class="order-time">${timeStr}</div>
+                <div>
+                    <div class="flex justify-between items-center mb-4 pb-3 border-b border-gray-100 dark:border-gray-800">
+                        <div class="font-headline font-bold text-lg text-[#1B1C1C] dark:text-white flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-full bg-[#F6F3F2] dark:bg-[#1B1C1C] text-[#994700] flex items-center justify-center text-sm shadow-inner">
+                                ${order.tableNumber || '?'}
+                            </div>
+                            <span>Bàn ${order.tableNumber || '?'}</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 font-medium bg-gray-50 dark:bg-gray-800/50 px-3 py-1.5 rounded-lg">
+                            <i class="fa-regular fa-clock"></i> ${timeStr}
+                        </div>
+                    </div>
+                    <ul class="mb-4 list-none pl-0">
+                        ${itemsHtml}
+                    </ul>
+                    ${order.orderNote ? `<div class="p-3 bg-orange-50 dark:bg-orange-900/20 text-[#994700] dark:text-orange-300 text-sm rounded-xl mb-4 font-medium flex gap-2 items-start border border-orange-100 dark:border-orange-800/50"><i class="fa-solid fa-note-sticky mt-0.5"></i> <span>Ghi chú: ${order.orderNote}</span></div>` : ''}
+                    
+                    <!-- Status / Payment tags -->
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        ${order.payment_method === 'transfer' ? '<span class="px-2.5 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-xs font-semibold rounded-lg border border-blue-100 dark:border-blue-800"><i class="fa-solid fa-qrcode mr-1"></i> Chuyển khoản</span>' : '<span class="px-2.5 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-xs font-semibold rounded-lg border border-gray-200 dark:border-gray-700"><i class="fa-solid fa-money-bill-wave mr-1"></i> Tại quầy</span>'}
+                        ${order.payment_status === 'paid' ? '<span class="px-2.5 py-1 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 text-xs font-semibold rounded-lg border border-green-100 dark:border-green-800"><i class="fa-solid fa-check mr-1"></i> Đã thanh toán</span>' : '<span class="px-2.5 py-1 bg-orange-50 dark:bg-orange-900/20 text-[#D97531] dark:text-orange-400 text-xs font-semibold rounded-lg border border-orange-100 dark:border-orange-800"><i class="fa-solid fa-clock mr-1"></i> Chưa thanh toán</span>'}
+                    </div>
                 </div>
-                <ul class="order-list">
-                    ${itemsHtml}
-                </ul>
-                ${order.orderNote ? `<div style="padding: 10px; background: #fff3cd; color: #856404; font-size: 0.9em; border-radius: 4px; margin-top: 10px; font-weight: bold;"><i class="fa-solid fa-note-sticky"></i> Ghi chú: ${order.orderNote}</div>` : ''}
-                <!-- Payment Badge -->
-                <div class="mb-2">
-                    ${order.payment_method === 'transfer' ? '<span class="badge bg-info text-dark" style="font-size: 0.8rem;"><i class="fa-solid fa-qrcode"></i> Chuyển khoản</span>' : '<span class="badge" style="background: rgba(255,255,255,0.1); color: #c9d1d9; font-size: 0.8rem;"><i class="fa-solid fa-money-bill-wave"></i> Tại quầy</span>'}
-                    ${order.payment_status === 'paid' ? '<span class="badge bg-success ms-1" style="font-size: 0.8rem;"><i class="fa-solid fa-check"></i> Đã TT</span>' : '<span class="badge bg-warning text-dark ms-1" style="font-size: 0.8rem;"><i class="fa-solid fa-clock"></i> Chưa TT</span>'}
-                </div>
-                <!-- Linear Action Buttons -->
-                <div class="mt-2 text-center">
-                    ${order.status === 'Pending' ? `<button class="btn btn-primary w-100 fw-bold mb-2" onclick="updateOrderStatus('${order._id}', 'Preparing', this)"><i class="fa-solid fa-fire"></i> Nhận đơn & Chế biến</button>` : ''}
-                    ${order.status === 'Preparing' ? `<button class="btn btn-success w-100 fw-bold mb-2" onclick="updateOrderStatus('${order._id}', 'Ready', this)"><i class="fa-solid fa-bell-concierge"></i> Đã làm xong (Báo lấy đồ)</button>` : ''}
-                    ${order.status === 'Ready' ? `<button class="btn btn-dark w-100 fw-bold mb-2" onclick="updateOrderStatus('${order._id}', 'Completed', this)"><i class="fa-solid fa-check-circle"></i> Đã Giao Khách (Xóa màn TV)</button>` : ''}
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-sm btn-outline-secondary flex-grow-1" onclick="printReceipt('${order._id}')">
+
+                <div class="mt-auto pt-4 border-t border-gray-100 dark:border-gray-800">
+                    ${order.status === 'Pending' ? `<button class="w-full py-3 mb-3 bg-[#D97531] hover:bg-[#b05f28] text-white rounded-xl font-bold transition-all shadow-sm hover:shadow active:scale-95 flex justify-center items-center gap-2" onclick="updateOrderStatus('${order._id}', 'Preparing', this)"><i class="fa-solid fa-fire"></i> Nhận đơn & Chế biến</button>` : ''}
+                    ${order.status === 'Preparing' ? `<button class="w-full py-3 mb-3 bg-[#994700] hover:bg-[#7a3900] text-white rounded-xl font-bold transition-all shadow-sm hover:shadow active:scale-95 flex justify-center items-center gap-2" onclick="updateOrderStatus('${order._id}', 'Ready', this)"><i class="fa-solid fa-bell-concierge"></i> Đã làm xong (Báo TV)</button>` : ''}
+                    ${order.status === 'Ready' ? `<button class="w-full py-3 mb-3 bg-gray-800 hover:bg-black dark:bg-gray-100 dark:hover:bg-white dark:text-[#1B1C1C] text-white rounded-xl font-bold transition-all shadow-sm hover:shadow active:scale-95 flex justify-center items-center gap-2" onclick="updateOrderStatus('${order._id}', 'Completed', this)"><i class="fa-solid fa-check-circle"></i> Đã Giao Khách (Xóa màn TV)</button>` : ''}
+                    <div class="flex gap-3">
+                        <button class="flex-1 py-2.5 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl font-semibold transition-colors flex justify-center items-center gap-2 text-sm" onclick="printReceipt('${order._id}')">
                             <i class="fa-solid fa-print"></i> In Bill
                         </button>
-                        ${order.status === 'Pending' ? `<button class="btn btn-sm btn-outline-danger" onclick="updateOrderStatus('${order._id}', 'Cancelled', this)"><i class="fa-solid fa-times"></i> Hủy</button>` : ''}
+                        ${order.status === 'Pending' ? `<button class="px-4 py-2.5 border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl font-semibold transition-colors flex justify-center items-center text-sm" onclick="updateOrderStatus('${order._id}', 'Cancelled', this)" aria-label="Cancel Order"><i class="fa-solid fa-times"></i></button>` : ''}
                     </div>
                 </div>
             `;
@@ -140,7 +162,15 @@ function renderGroupedOrders() {
     const activeOrders = orders.filter(o => o.status === 'Pending' || o.status === 'Preparing');
 
     if (activeOrders.length === 0) {
-        ordersContainer.innerHTML = '<div class="text-muted" style="grid-column: 1 / -1;">Không có món nào đang chờ chế biến.</div>';
+            ordersContainer.innerHTML = `
+                <div class="col-span-1 md:col-span-2 lg:col-span-3 flex flex-col items-center justify-center py-16 text-center bg-white dark:bg-[#2A2B2B] rounded-[1.5rem] border border-gray-200 dark:border-gray-800 shadow-sm min-h-[400px]">
+                    <div class="w-24 h-24 bg-orange-50 dark:bg-orange-900/20 rounded-full flex items-center justify-center text-[#994700] text-4xl mb-4">
+                        <i class="fa-solid fa-check-double"></i>
+                    </div>
+                    <h3 class="text-xl font-bold font-headline text-[#1B1C1C] dark:text-[#F6F3F2] mb-2">Tất cả đã hoàn thành</h3>
+                    <p class="text-gray-500 dark:text-gray-400">Không có món nào đang chờ chế biến.</p>
+                </div>
+            `;
         return;
     }
 
@@ -176,16 +206,18 @@ function renderGroupedOrders() {
         // Group tables to show smartly e.g. "Bàn 1 (x2), Bàn 5 (x3)"
         const tableCounts = {};
         group.tables.forEach(t => { tableCounts[t] = (tableCounts[t] || 0) + 1; });
-        const tableStr = Object.keys(tableCounts).map(t => `<span class="badge bg-secondary me-1">Bàn ${t}${tableCounts[t] > 1 ? ` (x${tableCounts[t]})` : ''}</span>`).join('');
+        const tableStr = Object.keys(tableCounts).map(t => `<span class="px-2.5 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-semibold rounded-lg border border-gray-200 dark:border-gray-700">Bàn ${t}${tableCounts[t] > 1 ? ` (x${tableCounts[t]})` : ''}</span>`).join('');
 
         html += `
-            <div class="order-card status-Pending" style="--item-idx: ${index}">
-                <div class="order-header" style="background-color: var(--primary);">
-                    <div class="font-bold text-white fs-5 lh-sm">${group.quantity}x ${group.name}</div>
+            <div class="bg-white dark:bg-[#2A2B2B] rounded-[1.25rem] shadow-sm border border-[#D97531] overflow-hidden relative">
+                <div class="p-4 bg-orange-50 dark:bg-orange-900/20 border-b border-[#D97531]/20">
+                    <div class="font-headline font-bold text-[#1B1C1C] dark:text-[#F6F3F2] text-lg flex items-center gap-2">
+                        <span class="text-[#D97531] text-xl">${group.quantity}x</span> ${group.name}
+                    </div>
                 </div>
-                <div class="p-3">
-                    <p class="mb-2 text-muted small">Cần giao cho các bàn:</p>
-                    <div class="d-flex flex-wrap gap-1">${tableStr}</div>
+                <div class="p-4">
+                    <p class="mb-3 text-gray-500 dark:text-gray-400 text-sm font-medium">Cần giao cho các bàn:</p>
+                    <div class="flex flex-wrap gap-2">${tableStr}</div>
                 </div>
             </div>
         `;
@@ -201,7 +233,12 @@ function renderBatchSidebar() {
     const activeOrders = orders.filter(o => o.status === 'Pending' || o.status === 'Preparing');
     
     if (activeOrders.length === 0) {
-        listContainer.innerHTML = '<div class="text-muted small">Không có món nào đang chờ.</div>';
+        listContainer.innerHTML = `
+            <div class="flex flex-col items-center justify-center py-8 text-center bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-800">
+                <i class="fa-solid fa-check text-2xl text-green-500 mb-2"></i>
+                <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Bếp đang rảnh rỗi</p>
+            </div>
+        `;
         return;
     }
 
@@ -224,9 +261,9 @@ function renderBatchSidebar() {
     let html = '';
     sortedItems.forEach(item => {
         html += `
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
-                <span style="font-size: 0.95rem; color: #e6edf3;">${item.name}</span>
-                <span class="badge bg-primary rounded-pill fs-6" style="min-width: 32px; text-align: center;">${item.qty}</span>
+            <div class="flex justify-between items-center py-2.5 border-b border-gray-100 dark:border-gray-800 cursor-default hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg px-2 transition-colors -mx-2">
+                <span class="text-sm font-medium text-[#1B1C1C] dark:text-gray-300 whitespace-nowrap overflow-hidden text-ellipsis mr-2">${item.name}</span>
+                <span class="px-2.5 py-1 bg-orange-100 dark:bg-orange-900/30 text-[#994700] dark:text-orange-400 text-xs font-bold rounded-full min-w-[28px] text-center border border-orange-200 dark:border-orange-800 flex-shrink-0">${item.qty}</span>
             </div>
         `;
     });
@@ -640,13 +677,13 @@ async function fetchKitchenHistory() {
         }));
 
         if (pastOrders.length === 0) {
-            listContainer.innerHTML = '<div class="p-4 text-center text-muted col-12">Chưa có đơn hàng nào trong lịch sử.</div>';
+            listContainer.innerHTML = '<div class="p-8 text-center text-gray-500 dark:text-gray-400 col-span-full">Chưa có đơn hàng nào trong lịch sử.</div>';
             loader.style.display = 'none';
             return;
         }
 
-        // Use dashboard grid class for consistency
-        listContainer.className = 'dashboard-grid p-3';
+        // Use grid for history items
+        listContainer.className = 'grid grid-cols-1 md:grid-cols-2 gap-4 p-4';
 
         const html = pastOrders.map(order => {
             const timeStr = new Date(order.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
@@ -654,39 +691,57 @@ async function fetchKitchenHistory() {
 
             let itemsHtml = order.items.map(i => {
                 const optionsHtml = i.selectedOptions && i.selectedOptions.length > 0
-                    ? `<div class="ms-3 text-muted" style="font-size: 0.85rem;">+ ${i.selectedOptions.map(o => o.choiceName).join(', ')}</div>`
+                    ? `<div class="ml-4 text-gray-500 dark:text-gray-400 text-sm mt-1 border-l-2 border-[#D97531] pl-2">+ ${i.selectedOptions.map(o => o.choiceName).join(', ')}</div>`
                     : '';
-                return `<li><span class="fw-bold">${i.quantity}x</span> ${i.name} ${optionsHtml}</li>`;
+                return `
+                <li class="py-2 border-b border-gray-200 dark:border-gray-700/50 last:border-0 text-[#1B1C1C] dark:text-[#F6F3F2]">
+                    <div class="flex items-start justify-between">
+                        <span class="font-medium"><span class="font-bold text-[#D97531] mr-1">${i.quantity}x</span> ${i.name}</span>
+                    </div>
+                    ${optionsHtml}
+                </li>`;
             }).join('');
 
             let statusBadge = '';
             if (order.status === 'Ready') {
-                statusBadge = '<span class="badge bg-info text-dark">Sẵn sàng</span>';
+                statusBadge = '<span class="px-2.5 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-xs font-semibold rounded-lg border border-blue-100 dark:border-blue-800"><i class="fa-solid fa-bell-concierge mr-1"></i> Sẵn sàng</span>';
             } else if (order.status === 'Completed') {
-                statusBadge = '<span class="badge bg-success">Hoàn thành</span>';
+                statusBadge = '<span class="px-2.5 py-1 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 text-xs font-semibold rounded-lg border border-green-100 dark:border-green-800"><i class="fa-solid fa-check mr-1"></i> Hoàn thành</span>';
             } else if (order.status === 'Cancelled') {
-                statusBadge = '<span class="badge bg-danger">Đã Hủy</span>';
+                statusBadge = '<span class="px-2.5 py-1 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-xs font-semibold rounded-lg border border-red-100 dark:border-red-800"><i class="fa-solid fa-xmark mr-1"></i> Đã Hủy</span>';
             } else {
-                statusBadge = `<span class="badge bg-secondary">${order.status}</span>`;
+                statusBadge = `<span class="px-2.5 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-xs font-semibold rounded-lg border border-gray-200 dark:border-gray-700">${order.status}</span>`;
             }
 
             return `
-                <div class="order-card status-${order.status}">
-                    <div class="order-header">
-                        <div class="order-table">Bàn ${order.tableNumber || '?'}</div>
-                        <div class="order-time"><i class="fa-regular fa-clock"></i> ${timeStr} <br><small class="text-muted" style="font-size: 0.75rem;">${dateStr}</small></div>
+                <div class="bg-[#F6F3F2] dark:bg-[#2A2B2B] rounded-[1.25rem] p-5 shadow-sm border border-gray-200 dark:border-gray-800 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">
+                            <div class="font-headline font-bold text-lg text-[#1B1C1C] dark:text-white flex items-center gap-2">
+                                <div class="w-8 h-8 rounded-full bg-white dark:bg-[#1B1C1C] text-[#994700] flex items-center justify-center text-sm shadow-sm border border-gray-100 dark:border-gray-800">
+                                    ${order.tableNumber || '?'}
+                                </div>
+                                <span>Bàn ${order.tableNumber || '?'}</span>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-gray-600 dark:text-gray-400 font-medium"><i class="fa-regular fa-clock"></i> ${timeStr}</div>
+                                <div class="text-xs text-gray-400 dark:text-gray-500">${dateStr}</div>
+                            </div>
+                        </div>
+                        <ul class="mb-4 list-none pl-0">
+                            ${itemsHtml}
+                        </ul>
+                        ${order.orderNote ? `<div class="p-3 bg-orange-50 dark:bg-orange-900/20 text-[#994700] dark:text-orange-300 text-sm rounded-xl mb-4 font-medium flex gap-2 items-start border border-orange-100 dark:border-orange-800/50"><i class="fa-solid fa-note-sticky mt-0.5"></i> <span>Ghi chú: ${order.orderNote}</span></div>` : ''}
                     </div>
-                    <ul class="order-list">
-                        ${itemsHtml}
-                    </ul>
-                    ${order.orderNote ? `<div class="mt-2 text-warning" style="font-size: 0.9rem; padding: 8px; background: rgba(255,193,7,0.1); border-radius: 8px;"><i class="fa-solid fa-note-sticky"></i> ${order.orderNote}</div>` : ''}
                     
-                    <div class="d-flex justify-content-between align-items-center mt-3 pt-3" style="border-top: 1px solid var(--border);">
-                        <div>${statusBadge}</div>
-                        <span class="text-success font-bold">${(order.totalPrice || 0).toLocaleString('vi-VN')} đ</span>
-                    </div>
-                    <div class="mt-3">
-                         <button class="btn btn-outline-light btn-sm w-100" onclick="printReceipt('${order._id}')"><i class="fa-solid fa-print"></i> In Hóa Đơn</button>
+                    <div class="mt-auto pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <div class="flex justify-between items-center mb-4">
+                            <div>${statusBadge}</div>
+                            <span class="text-[#D97531] font-bold text-lg">${(order.totalPrice || 0).toLocaleString('vi-VN')} đ</span>
+                        </div>
+                        <button class="w-full py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 rounded-xl font-semibold transition-colors flex justify-center items-center gap-2 text-sm bg-gray-50 dark:bg-gray-700" onclick="printReceipt('${order._id}')">
+                            <i class="fa-solid fa-print"></i> In Hóa Đơn
+                        </button>
                     </div>
                 </div>
             `;
