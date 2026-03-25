@@ -229,7 +229,7 @@
                 const { data, error } = await supabase
                     .from('orders')
                     .select('*')
-                    .in('status', ['Pending', 'Processing', 'Ready']);
+                    .in('status', ['Pending', 'Preparing', 'Ready']);
                     
                 if (error) throw error;
                 
@@ -416,7 +416,7 @@
                 const { data, error } = await supabase
                     .from('orders')
                     .select('*')
-                    .in('status', ['Pending', 'Processing', 'Ready'])
+                    .in('status', ['Pending', 'Preparing', 'Ready'])
                     .order('created_at', { ascending: false });
 
                 if (error) throw error;
@@ -439,7 +439,7 @@
                     if (order.status === 'Pending') {
                         pendingContainer.appendChild(card);
                         counts.pending++;
-                    } else if (order.status === 'Processing') {
+                    } else if (order.status === 'Preparing') {
                         processingContainer.appendChild(card);
                         counts.processing++;
                     } else if (order.status === 'Ready') {

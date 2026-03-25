@@ -112,7 +112,8 @@ function renderOrders() {
                 <!-- Linear Action Buttons -->
                 <div class="mt-2 text-center">
                     ${order.status === 'Pending' ? `<button class="btn btn-primary w-100 fw-bold mb-2" onclick="updateOrderStatus('${order._id}', 'Preparing', this)"><i class="fa-solid fa-fire"></i> Nhận đơn & Chế biến</button>` : ''}
-                    ${order.status === 'Preparing' ? `<button class="btn btn-success w-100 fw-bold mb-2" onclick="updateOrderStatus('${order._id}', 'Completed', this)"><i class="fa-solid fa-check-double"></i> Đã làm xong & Giao</button>` : ''}
+                    ${order.status === 'Preparing' ? `<button class="btn btn-success w-100 fw-bold mb-2" onclick="updateOrderStatus('${order._id}', 'Ready', this)"><i class="fa-solid fa-bell"></i> Món Đã Xong (Sẵn Sàng)</button>` : ''}
+                    ${order.status === 'Ready' ? `<button class="btn btn-secondary w-100 fw-bold mb-2" onclick="updateOrderStatus('${order._id}', 'Completed', this)"><i class="fa-solid fa-check-double"></i> Khách Đã Lấy (Hoàn Tất)</button>` : ''}
                     <div class="d-flex gap-2">
                         <button class="btn btn-sm btn-outline-secondary flex-grow-1" onclick="printReceipt('${order._id}')">
                             <i class="fa-solid fa-print"></i> In Bill
