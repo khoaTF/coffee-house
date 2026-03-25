@@ -138,24 +138,29 @@
             </div>
         </div>
 
-        <!-- Welcome Bento Hero -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-            <div class="md:col-span-2 relative h-64 rounded-xl overflow-hidden group">
-                <img src="/images/banner-coffee.jpg" onerror="this.src='https://images.unsplash.com/photo-1517701550927-30cf0ba1cad0?auto=format&fit=crop&q=80'" alt="Hero" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
-                <div class="absolute bottom-6 left-8 text-white">
-                    <span class="uppercase tracking-widest text-[10px] font-bold bg-primary px-3 py-1 rounded-full mb-3 inline-block">Đặc Trưng</span>
-                    <h3 class="text-3xl font-bold font-headline">Cà Phê Nohope</h3>
-                    <p class="text-sm opacity-80 mt-1">Hương vị nguyên bản, đánh thức mọi giác quan</p>
+        <!-- Welcome Hero - Compact Redesign -->
+        <div class="mb-8">
+            <div class="relative h-36 md:h-48 rounded-[1.5rem] overflow-hidden shadow-sm ring-1 ring-black/5">
+                <img src="/images/banner-coffee.jpg" onerror="this.src='https://images.unsplash.com/photo-1517701550927-30cf0ba1cad0?auto=format&fit=crop&q=80'" alt="Hero" class="absolute inset-0 w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
+                
+                <div class="absolute inset-0 p-5 flex flex-col justify-between">
+                    <!-- Top notification pill -->
+                    <div class="self-end bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 shadow-lg flex items-center gap-2">
+                        <span class="relative flex h-2 w-2">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#34C759] opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-[#34C759]"></span>
+                        </span>
+                        <span class="text-[10px] text-white font-semibold tracking-wide">Đặt món trực tuyến đang mở</span>
+                    </div>
+
+                    <!-- Bottom Titles -->
+                    <div class="text-white">
+                        <span class="uppercase tracking-widest text-[8px] font-bold bg-[#994700] px-2.5 py-1 rounded-[6px] mb-2 inline-block">Đặc Trưng</span>
+                        <h3 class="text-2xl font-black font-headline leading-tight tracking-tight">Nohope Coffee</h3>
+                        <p class="text-xs opacity-90 font-light mt-1">Đánh thức mọi giác quan</p>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="bg-primary-container rounded-xl p-8 flex flex-col justify-between text-on-primary-container relative overflow-hidden">
-                <div class="z-10">
-                    <h4 class="text-xl font-bold mb-2">Thông báo mới</h4>
-                    <p class="text-sm opacity-90">Theo dõi trạng thái đơn hàng trực tiếp ngay trên điện thoại của bạn.</p>
-                </div>
-                <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
             </div>
         </div>
 
@@ -216,7 +221,7 @@
 
 <!-- Mobile Navigation Bar -->
 <nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-end px-6 pb-6 lg:hidden bg-[#FCF9F8]/90 dark:bg-[#1B1C1C]/90 backdrop-blur-2xl rounded-t-[2rem] border-t border-[#1B1C1C]/5 pt-4">
-    <a href="#" class="flex flex-col items-center justify-center bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white rounded-full w-14 h-14 -mt-8 shadow-lg shadow-[#FF7A00]/30 transition-all duration-300 scale-110">
+    <a href="#" onclick="openCategoryModal(); return false;" class="flex flex-col items-center justify-center bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white rounded-full w-14 h-14 -mt-8 shadow-lg shadow-[#FF7A00]/30 transition-all duration-300 scale-110">
         <span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
     </a>
     <a href="#" id="mobile-my-orders-btn" class="flex flex-col items-center justify-center text-[#1B1C1C]/50 py-2 hover:text-[#994700] transition-colors">
@@ -234,14 +239,40 @@
 </nav>
 
 <!-- Existing Modals - Hidden by default but structure retained -->
+<!-- Modal: Category Full Menu -->
+<div class="cart-modal" id="category-modal">
+    <div class="cart-modal-content" style="max-height: 80vh; border-radius: 28px 28px 0 0; background: var(--surface-color);">
+        <!-- Drag Handle Indicator -->
+        <div class="flex justify-center pt-3 pb-2">
+            <div class="w-12 h-1.5 rounded-full bg-outline-variant/30"></div>
+        </div>
+        <div class="cart-modal-header border-0 pb-2 pt-0 flex-between">
+            <div>
+                <h2 class="text-2xl font-black text-on-surface tracking-tight" style="font-family: 'Plus Jakarta Sans', sans-serif;">Danh mục</h2>
+                <p class="text-on-surface-variant text-sm mt-1">Tìm món nhanh chóng</p>
+            </div>
+            <button onclick="closeCategoryModal()" class="btn-icon bg-surface-container-low w-10 h-10 rounded-full flex items-center justify-center ml-4"><i class="fa-solid fa-times text-on-surface"></i></button>
+        </div>
+        <div class="cart-modal-body hide-scrollbar" style="padding-top: 10px; padding-bottom: 40px;">
+            <div id="category-modal-list" class="flex flex-col gap-3">
+                <!-- Categories injected here -->
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Modal: Cart & Checkout -->
 <div class="cart-modal" id="cart-modal">
-    <div class="cart-modal-content" style="max-height: 90vh; overflow-y: auto;">
-        <div class="cart-modal-header flex-between">
-            <h2>Đơn hàng của bạn</h2>
-            <button id="close-modal" class="btn-icon"><i class="fa-solid fa-times"></i></button>
+    <div class="cart-modal-content" style="max-height: 90vh; overflow-y: auto; border-radius: 28px 28px 0 0;">
+        <!-- Drag Handle Indicator -->
+        <div class="flex justify-center pt-3 pb-2">
+            <div class="w-12 h-1.5 rounded-full bg-outline-variant/30"></div>
         </div>
-        <div class="cart-modal-body" id="cart-items-container">
+        <div class="cart-modal-header flex-between border-0 pb-2 pt-0">
+            <h2 class="text-2xl font-black text-on-surface tracking-tight" style="font-family: 'Plus Jakarta Sans', sans-serif;">Đơn hàng của bạn</h2>
+            <button id="close-modal" class="btn-icon bg-surface-container-low w-10 h-10 rounded-full flex items-center justify-center ml-4"><i class="fa-solid fa-times text-on-surface"></i></button>
+        </div>
+        <div class="cart-modal-body" id="cart-items-container" style="padding-top: 10px;">
             <!-- Cart items list -->
             <div class="empty-cart text-center text-muted">Giỏ hàng đang trống.</div>
         </div>

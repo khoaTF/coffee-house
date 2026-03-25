@@ -397,10 +397,10 @@ body {
     display: flex; 
     align-items: center; 
     background: var(--surface-color); 
-    border-radius: 16px; 
+    border-radius: 50px; 
     padding: 4px;
     border: 1px solid var(--border);
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
 }
 .qty-btn { 
     width: 32px; 
@@ -474,20 +474,20 @@ body {
     width: 100%; 
     max-width: 650px; 
     height: 90vh; 
-    border-radius: 16px; 
+    border-radius: 28px 28px 0 0; 
     display: flex; 
     flex-direction: column; 
-    animation: slideUpModal 0.4s ease; 
+    animation: slideUpModal 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
     border-top: 1px solid var(--border);
-    box-shadow: 0 -10px 0px rgba(0, 0, 0, 1);
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.15); /* Soft, beautiful shadow */
 }
 .cart-modal-header { 
-    padding: 24px; 
+    padding: 24px 24px 16px 24px; 
     border-bottom: 1px solid var(--border); 
 }
 .cart-modal-header h2 {
-    font-size: 1.4rem;
-    font-weight: 700;
+    font-size: 1.5rem;
+    font-weight: 800;
 }
 .cart-modal-body { padding: 24px; flex: 1; overflow-y: auto; }
 .cart-modal-footer { 
@@ -503,13 +503,17 @@ body {
     display: flex; 
     justify-content: space-between; 
     align-items: center; 
-    padding-bottom: 20px; 
-    border-bottom: 1px solid var(--border); 
-    margin-bottom: 20px; 
+    padding: 16px; 
+    background: var(--surface-color);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+    transition: all 0.2s ease;
 }
 .cart-item-info { flex: 1; padding-right: 16px; }
-.cart-item-title { font-weight: 600; font-size: 1.05rem; color: var(--text-main); }
-.cart-item-price { color: var(--primary); font-size: 0.95rem; font-weight: 700; margin-top: 6px; }
+.cart-item-title { font-weight: 700; font-size: 1.1rem; color: var(--text-main); font-family: 'Plus Jakarta Sans', sans-serif;}
+.cart-item-price { color: var(--primary); font-size: 1rem; font-weight: 800; margin-top: 6px; }
 
 /* Textarea styling */
 .input-glass {

@@ -114,6 +114,20 @@ function renderCategories(activeCategory = 'All') {
         mobileContainer.innerHTML = categories.map(cat => generateHTML(cat, false)).join('');
     }
 
+    // Render logic for new Category Modal (Mobile)
+    const modalContainer = document.getElementById('category-modal-list');
+    if (modalContainer) {
+        modalContainer.innerHTML = categories.map(cat => {
+            const isActive = cat === activeCategory;
+            return `
+                <button data-category="${cat}" class="category-pill w-full flex items-center justify-between px-6 py-4 rounded-2xl transition-all ${isActive ? 'bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white font-bold shadow-md shadow-[#FF7A00]/20' : 'bg-[#FCF9F8] dark:bg-[#1B1C1C] text-on-surface-variant font-semibold border border-outline-variant/20 hover:border-[#994700]/30'}">
+                    <span class="text-lg">${cat === 'All' ? 'Tất cả món' : cat}</span>
+                    <span class="material-symbols-outlined ${isActive ? 'text-white' : 'text-on-surface-variant/50'}">chevron_right</span>
+                </button>
+            `;
+        }).join('');
+    }
+
     // Attach listener
     document.querySelectorAll('.category-pill').forEach(pill => {
         pill.addEventListener('click', (e) => {
@@ -121,8 +135,32 @@ function renderCategories(activeCategory = 'All') {
             const selectedCat = e.currentTarget.dataset.category || e.currentTarget.getAttribute('data-category');
             renderCategories(selectedCat);
             renderMenu(selectedCat);
+            // Close modal if clicked inside category modal
+            if (e.currentTarget.closest('#category-modal-list')) {
+                closeCategoryModal();
+                // Smooth scroll to top of menu
+                document.getElementById('menu-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
         });
     });
+}
+
+// Category Modal Functions
+function openCategoryModal() {
+    const catModal = document.getElementById('category-modal');
+    if (catModal) catModal.classList.add('active');
+    const fab = document.querySelector('.fab-container');
+    if (fab) fab.style.display = 'none';
+}
+
+function closeCategoryModal() {
+    const catModal = document.getElementById('category-modal');
+    if (catModal) catModal.classList.remove('active');
+    // Don't show fab yet if another modal is active, but keeping simple for now
+    if (!document.querySelector('.cart-modal.active')) {
+        const fab = document.querySelector('.fab-container');
+        if (fab) fab.style.display = 'flex';
+    }
 }
 
 // ---- Table Lock (via Supabase table_sessions) ----
@@ -498,14 +536,18 @@ function renderModalCart() {
         row.className = 'cart-item';
         row.innerHTML = `
             <div class="cart-item-info">
-                <div class="cart-item-title">${item.name}</div>
-                <div class="cart-item-price">${(itemBasePrice + optionsPrice).toLocaleString('vi-VN')} đ</div>
+                <div class="cart-item-title leading-tight mb-1" style="font-family: 'Plus Jakarta Sans', sans-serif;">${item.name}</div>
                 ${optionsHtml}
+                <div class="cart-item-price" style="color: #994700;">${(itemBasePrice + optionsPrice).toLocaleString('vi-VN')} đ</div>
             </div>
-            <div class="qty-controls">
-                <button class="qty-btn" onclick="updateCart('${item.cartKey}', -1)">-</button>
-                <span class="qty-num">${item.quantity}</span>
-                <button class="qty-btn" onclick="updateCart('${item.cartKey}', 1)" ${getAvailableToAdd(item) <= 0 ? 'disabled style="opacity:0.5;background:#888;cursor:not-allowed;"' : ''}>+</button>
+            <div class="qty-controls ml-4 shrink-0">
+                <button class="w-8 h-8 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center active:scale-95 transition-transform" onclick="updateCart('${item.cartKey}', -1)">
+                    <span class="material-symbols-outlined text-[18px]">remove</span>
+                </button>
+                <span class="w-8 text-center font-bold text-lg leading-none">${item.quantity}</span>
+                <button class="w-8 h-8 rounded-full bg-[#994700] text-white flex items-center justify-center active:scale-95 transition-transform shadow-sm" onclick="updateCart('${item.cartKey}', 1)" ${getAvailableToAdd(item) <= 0 ? 'disabled style="opacity:0.5;background:#888;cursor:not-allowed;"' : ''}>
+                    <span class="material-symbols-outlined text-[18px]">add</span>
+                </button>
             </div>
         `;
         cartItemsContainer.appendChild(row);
