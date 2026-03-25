@@ -13,7 +13,9 @@
     <meta property="og:image" content="/images/og-image.jpg">
     
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Serif:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     
     <!-- Bootstrap CSS (Kept for existing feedback/confirm modals) -->
@@ -31,8 +33,8 @@
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
         }
-        body { font-family: 'Inter', sans-serif; }
-        h1, h2, h3, .brand-font { font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { font-family: 'Manrope', sans-serif; }
+        h1, h2, h3, .brand-font { font-family: 'Noto Serif', serif; }
         
         /* Fix for Tailwind Preflight vs Bootstrap */
         .modal { z-index: 1050 !important; }
@@ -55,10 +57,10 @@
 <body class="bg-surface text-on-surface overflow-x-hidden no-tap-highlight">
 
 <!-- SideNavBar (Desktop Shell) -->
-<aside class="h-screen w-64 fixed left-0 top-0 hidden lg:flex flex-col bg-[#F6F3F2] dark:bg-[#1B1C1C] py-8 shadow-[20px_0_40px_rgba(88,66,53,0.04)] z-40">
+<aside class="h-screen w-64 fixed left-0 top-0 hidden lg:flex flex-col bg-surface-container dark:bg-inverse-surface py-8 shadow-soft z-40 border-r border-outline-variant/30">
     <div class="px-8 mb-10">
-        <h1 class="text-[#994700] font-['Plus_Jakarta_Sans'] font-extrabold text-2xl tracking-tight">Nohope</h1>
-        <p class="text-on-surface-variant text-xs mt-1 font-medium opacity-60">Digital Barista Experience</p>
+        <h1 class="text-primary font-headline font-black text-3xl tracking-tight">Nohope</h1>
+        <p class="text-tertiary text-[10px] mt-2 font-bold uppercase tracking-widest">Coffee House</p>
     </div>
     
     <nav class="flex-1 flex flex-col space-y-2" id="desktop-category-filters">
@@ -66,20 +68,20 @@
     </nav>
 
     <div class="mt-auto px-4">
-        <button id="my-orders-btn" class="w-full bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white py-4 px-6 rounded-xl flex items-center justify-between shadow-lg shadow-[#FF7A00]/20 hover:scale-[0.98] transition-all">
+        <button id="my-orders-btn" class="w-full bg-primary text-on-primary py-4 px-6 rounded-xl flex items-center justify-between shadow-soft hover:bg-secondary transition-colors group">
             <div class="flex items-center space-x-3">
-                <span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
-                <span class="font-bold text-sm">Đơn của tôi</span>
+                <span class="material-symbols-outlined group-hover:scale-110 transition-transform" data-icon="receipt_long">receipt_long</span>
+                <span class="font-bold text-sm tracking-wide">Đơn của tôi</span>
             </div>
             <!-- Notifications badge here if needed -->
         </button>
         
         <div class="mt-6 flex flex-col space-y-4">
-            <a href="#" onclick="requestStaffService('staff'); return false;" class="text-[#1B1C1C]/70 pl-4 py-2 hover:text-[#994700] flex items-center space-x-3 text-sm">
+            <a href="#" onclick="requestStaffService('staff'); return false;" class="text-on-surface-variant hover:text-secondary flex items-center space-x-3 text-sm font-semibold transition-colors px-4 py-2 rounded-lg hover:bg-surface-variant/50">
                 <span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
                 <span>Gọi Nhân Viên</span>
             </a>
-            <button id="lang-toggle" class="text-start text-[#1B1C1C]/70 pl-4 py-2 hover:text-[#994700] flex items-center space-x-3 text-sm bg-transparent border-0">
+            <button id="lang-toggle" class="text-start text-on-surface-variant hover:text-secondary flex items-center space-x-3 text-sm font-semibold transition-colors bg-transparent border-0 px-4 py-2 rounded-lg hover:bg-surface-variant/50">
                 <span class="material-symbols-outlined" data-icon="language">language</span>
                 <span>EN / VI</span>
             </button>
@@ -90,11 +92,11 @@
 <!-- Main Content Canvas -->
 <main class="lg:ml-64 min-h-screen pb-32">
     <!-- TopAppBar -->
-    <header class="fixed top-0 right-0 left-0 lg:left-64 z-30 bg-[#FCF9F8]/80 dark:bg-[#1B1C1C]/80 backdrop-blur-xl">
+    <header class="fixed top-0 right-0 left-0 lg:left-64 z-30 bg-background/85 dark:bg-inverse-surface/85 backdrop-blur-xl border-b border-outline-variant/30">
         <div class="flex justify-between items-center px-6 py-4 max-w-screen-2xl mx-auto">
             <div>
-                <h2 class="text-2xl font-black tracking-tight text-[#1B1C1C] dark:text-[#FCF9F8]">Bàn <span id="table-number-display"></span></h2>
-                <p class="text-on-surface-variant text-xs font-medium">Chào mừng bạn đến với Nohope Coffee</p>
+                <h2 class="text-3xl font-headline font-black tracking-tight text-on-surface">Bàn <span id="table-number-display"></span></h2>
+                <p class="text-secondary text-xs mt-1 font-bold uppercase tracking-widest">Sẵn sàng phục vụ</p>
             </div>
             
             <div class="flex items-center space-x-4">
@@ -102,9 +104,9 @@
                     <input type="text" id="menu-search-desktop" placeholder="Tìm kiếm món uống..." class="bg-surface-container-high border-none rounded-full py-2.5 px-12 text-sm w-64 focus:ring-2 focus:ring-primary/20 transition-all text-on-surface">
                     <span class="material-symbols-outlined absolute left-4 top-2.5 text-on-surface-variant text-sm" data-icon="search">search</span>
                 </div>
-                <button id="floating-cart" class="p-2.5 hover:bg-[#F6F3F2] dark:hover:bg-[#2A2B2B] rounded-full transition-all relative">
-                    <span class="material-symbols-outlined text-[#994700]" data-icon="shopping_cart">shopping_cart</span>
-                    <span id="cart-count" class="absolute top-1 right-1 w-4 h-4 bg-tertiary text-white rounded-full text-[10px] font-bold flex items-center justify-center hidden">0</span>
+                <button id="floating-cart" class="p-2.5 hover:bg-surface-container rounded-full transition-colors relative group">
+                    <span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform" data-icon="shopping_cart">shopping_cart</span>
+                    <span id="cart-count" class="absolute top-1 right-1 w-4 h-4 bg-secondary text-on-secondary rounded-full text-[10px] font-bold flex items-center justify-center hidden">0</span>
                 </button>
             </div>
         </div>
@@ -112,7 +114,7 @@
         <div class="lg:hidden px-4 pb-3 overflow-x-auto hide-scrollbar flex gap-2" id="mobile-category-filters">
             <!-- Categories will be injected here via JS -->
         </div>
-        <div class="bg-[#F6F3F2] dark:bg-[#2A2B2B] h-[1px] w-full"></div>
+        <div class="bg-outline-variant/50 h-[1px] w-full hidden"></div>
     </header>
 
     <!-- Page Content -->
@@ -140,22 +142,25 @@
 
         <!-- Welcome Bento Hero -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-            <div class="md:col-span-2 relative h-64 rounded-xl overflow-hidden group">
+            <div class="md:col-span-2 relative h-64 rounded-2xl overflow-hidden group shadow-soft border border-outline-variant/30 flex items-end">
                 <img src="/images/banner-coffee.jpg" onerror="this.src='https://images.unsplash.com/photo-1517701550927-30cf0ba1cad0?auto=format&fit=crop&q=80'" alt="Hero" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
-                <div class="absolute bottom-6 left-8 text-white">
-                    <span class="uppercase tracking-widest text-[10px] font-bold bg-primary px-3 py-1 rounded-full mb-3 inline-block">Đặc Trưng</span>
-                    <h3 class="text-3xl font-bold font-headline">Cà Phê Nohope</h3>
-                    <p class="text-sm opacity-80 mt-1">Hương vị nguyên bản, đánh thức mọi giác quan</p>
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
+                <div class="relative z-10 p-8 w-full">
+                    <span class="uppercase tracking-widest text-[10px] font-bold bg-secondary/90 text-on-secondary px-3 py-1 rounded-full mb-3 inline-block backdrop-blur-md border border-white/20">Đặc Trưng</span>
+                    <h3 class="text-4xl font-black font-headline text-surface">Velvet Crema</h3>
+                    <p class="text-sm text-surface-variant font-medium mt-2 max-w-md">Khám phá nghệ thuật cà phê thủ công - đánh thức mọi giác quan trong từng hương vị.</p>
                 </div>
             </div>
             
-            <div class="bg-primary-container rounded-xl p-8 flex flex-col justify-between text-on-primary-container relative overflow-hidden">
+            <div class="bg-tertiary rounded-2xl p-8 flex flex-col justify-between text-on-tertiary relative overflow-hidden shadow-soft">
                 <div class="z-10">
-                    <h4 class="text-xl font-bold mb-2">Thông báo mới</h4>
-                    <p class="text-sm opacity-90">Theo dõi trạng thái đơn hàng trực tiếp ngay trên điện thoại của bạn.</p>
+                    <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center mb-4 backdrop-blur-md">
+                        <span class="material-symbols-outlined text-surface">auto_awesome</span>
+                    </div>
+                    <h4 class="text-2xl font-bold font-headline mb-2 leading-tight">Trải nghiệm<br>Đẳng cấp</h4>
+                    <p class="text-sm text-surface-variant font-medium leading-relaxed mt-2">Theo dõi trạng thái và tận hưởng không gian phục vụ hoàn hảo.</p>
                 </div>
-                <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+                <div class="absolute -right-16 -bottom-16 w-56 h-56 bg-surface/10 rounded-full blur-3xl"></div>
             </div>
         </div>
 
@@ -166,10 +171,10 @@
         </div>
 
         <!-- Menu Grid -->
-        <div class="flex justify-between items-end mb-6">
+        <div class="flex justify-between items-end mb-8 border-b border-outline-variant/50 pb-4">
             <div>
-                <h3 class="text-2xl font-bold text-on-surface">Thực đơn đặc sắc</h3>
-                <p class="text-on-surface-variant text-sm mt-1">Được pha chế thủ công bởi các barista tận tâm</p>
+                <h3 class="text-3xl font-black font-headline text-on-surface">Thực đơn</h3>
+                <p class="text-secondary tracking-widest uppercase font-bold text-[10px] mt-2">Dành riêng cho bạn</p>
             </div>
         </div>
 
@@ -195,17 +200,17 @@
     <!-- Order Summary Bar (Docked) -->
     <div id="docked-cart-summary" class="fixed bottom-20 lg:bottom-0 right-0 left-0 lg:left-64 p-4 pointer-events-none z-40 hidden">
         <div class="max-w-screen-xl mx-auto pointer-events-auto">
-            <div class="bg-[#FCF9F8]/90 dark:bg-[#1B1C1C]/90 backdrop-blur-2xl px-6 py-4 rounded-2xl shadow-[0_10px_30px_rgba(88,66,53,0.15)] flex items-center justify-between border border-outline-variant/20">
-                <div class="flex items-center space-x-3">
-                    <div class="w-12 h-12 rounded-full bg-surface-container-low flex items-center justify-center text-primary relative">
+            <div class="bg-surface/95 dark:bg-inverse-surface/95 backdrop-blur-2xl px-6 py-4 rounded-2xl shadow-float flex items-center justify-between border border-outline-variant/40">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center text-secondary relative">
                         <span class="material-symbols-outlined">shopping_bag</span>
                     </div>
                     <div>
-                        <p class="text-[10px] uppercase tracking-widest font-bold text-on-surface-variant/80"><span id="cart-item-count-docked">0</span> món trong giỏ</p>
-                        <p class="font-bold text-lg text-[#994700]" id="cart-total-price-docked">0đ</p>
+                        <p class="text-[10px] uppercase tracking-widest font-bold text-on-surface-variant"><span id="cart-item-count-docked">0</span> món trong giỏ</p>
+                        <p class="font-bold text-xl text-primary font-headline" id="cart-total-price-docked">0đ</p>
                     </div>
                 </div>
-                <button id="view-cart-btn-docked" class="bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white px-6 py-3 rounded-full font-bold shadow-lg shadow-[#FF7A00]/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2">
+                <button id="view-cart-btn-docked" class="bg-primary text-on-primary px-8 py-3 rounded-full font-bold shadow-soft hover:bg-secondary transition-colors flex items-center gap-2">
                     <span>Thanh toán</span>
                     <span class="material-symbols-outlined text-sm">arrow_forward</span>
                 </button>
@@ -215,21 +220,21 @@
 </main>
 
 <!-- Mobile Navigation Bar -->
-<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-end px-6 pb-6 lg:hidden bg-[#FCF9F8]/90 dark:bg-[#1B1C1C]/90 backdrop-blur-2xl rounded-t-[2rem] border-t border-[#1B1C1C]/5 pt-4">
-    <a href="#" class="flex flex-col items-center justify-center bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white rounded-full w-14 h-14 -mt-8 shadow-lg shadow-[#FF7A00]/30 transition-all duration-300 scale-110">
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-end px-6 pb-6 lg:hidden bg-surface/95 dark:bg-inverse-surface/95 backdrop-blur-2xl rounded-t-[2rem] border-t border-outline-variant/30 pt-4 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
+    <a href="#" class="flex flex-col items-center justify-center bg-primary text-on-primary rounded-full w-14 h-14 -mt-8 shadow-float transition-all duration-300 hover:scale-105 active:scale-95">
         <span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
     </a>
-    <a href="#" id="mobile-my-orders-btn" class="flex flex-col items-center justify-center text-[#1B1C1C]/50 py-2 hover:text-[#994700] transition-colors">
+    <a href="#" id="mobile-my-orders-btn" class="flex flex-col items-center justify-center text-on-surface-variant py-2 hover:text-secondary hover:-translate-y-1 transition-all">
         <span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
-        <span class="font-['Inter'] text-[10px] uppercase tracking-widest font-bold mt-1">Đơn hàng</span>
+        <span class="font-['Manrope'] text-[9px] uppercase tracking-widest font-bold mt-1">Đơn hàng</span>
     </a>
-    <a href="#" onclick="requestStaffService('checkout'); return false;" class="flex flex-col items-center justify-center text-[#1B1C1C]/50 py-2 hover:text-[#994700] transition-colors">
+    <a href="#" onclick="requestStaffService('checkout'); return false;" class="flex flex-col items-center justify-center text-on-surface-variant py-2 hover:text-secondary hover:-translate-y-1 transition-all">
         <span class="material-symbols-outlined" data-icon="point_of_sale">point_of_sale</span>
-        <span class="font-['Inter'] text-[10px] uppercase tracking-widest font-bold mt-1">Tính tiền</span>
+        <span class="font-['Manrope'] text-[9px] uppercase tracking-widest font-bold mt-1">Tính tiền</span>
     </a>
-    <a href="#" onclick="requestStaffService('staff'); return false;" class="flex flex-col items-center justify-center text-[#1B1C1C]/50 py-2 hover:text-[#994700] transition-colors">
+    <a href="#" onclick="requestStaffService('staff'); return false;" class="flex flex-col items-center justify-center text-on-surface-variant py-2 hover:text-secondary hover:-translate-y-1 transition-all">
         <span class="material-symbols-outlined" data-icon="contact_support">contact_support</span>
-        <span class="font-['Inter'] text-[10px] uppercase tracking-widest font-bold mt-1">Gọi NV</span>
+        <span class="font-['Manrope'] text-[9px] uppercase tracking-widest font-bold mt-1">Gọi NV</span>
     </a>
 </nav>
 
