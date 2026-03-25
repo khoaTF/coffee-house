@@ -340,7 +340,9 @@ function getAvailableToAdd(product) {
 // Render Menu
 function renderMenu(category) {
     menuContainer.innerHTML = '';
-    const searchQuery = document.getElementById('menu-search')?.value.toLowerCase() || '';
+    const sqDesktop = document.getElementById('menu-search-desktop')?.value || '';
+    const sqMobile = document.getElementById('menu-search-mobile')?.value || '';
+    const searchQuery = (sqDesktop || sqMobile).toLowerCase();
 
     const filteredItems = menuItems.filter(item => {
         const matchesCategory = category === 'All' || item.category === category;
@@ -653,10 +655,14 @@ function attachEventListeners() {
     closeOptionsBtn.addEventListener('click', closeOptionsModal);
 
     // Search input listener
-    document.getElementById('menu-search').addEventListener('input', () => {
+    const searchHandler = () => {
         const activeCategory = getActiveCategory();
         renderMenu(activeCategory);
-    });
+    };
+    const sDesktop = document.getElementById('menu-search-desktop');
+    const sMobile = document.getElementById('menu-search-mobile');
+    if (sDesktop) sDesktop.addEventListener('input', searchHandler);
+    if (sMobile) sMobile.addEventListener('input', searchHandler);
 
     // Language Toggle
     document.getElementById('lang-toggle').addEventListener('click', toggleLanguage);
