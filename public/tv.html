@@ -10,173 +10,42 @@
     <meta property="og:description" content="Màn hình hiển thị trạng thái đơn hàng (TV Queue) cho quán Nohope Coffee.">
     
     <title>TV Queue - Nohope Coffee</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Serif:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS (Compiled for Production) -->
+    <link rel="stylesheet" href="css/tailwind-compiled.css">
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/js/supabase-config.js?v=1.1"></script>
     
     <style>
-        :root {
-            --bg-color: #0d1117;
-            --surface-color: #161b22;
-            --gold: #d4a76a;
-            --danger: #ff4d4d;
-            --success: #2ecc71;
-        }
-        body {
-            background-color: var(--bg-color);
-            color: #ffffff;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            overflow: hidden; /* Hide scrollbars for TV */
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        /* Header */
-        .tv-header {
-            background: rgba(22, 27, 34, 0.95);
-            padding: 20px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid rgba(212, 167, 106, 0.2);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-        }
-        
-        .tv-header h1 {
-            color: var(--gold);
-            font-family: 'Playfair Display', serif;
-            font-weight: 800;
-            font-size: 3rem;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .clock {
-            font-size: 2rem;
-            font-weight: 700;
-            color: rgba(255,255,255,0.8);
-            font-family: monospace;
-        }
-
-        /* Main Grid */
-        .tv-grid {
-            display: flex;
-            flex: 1;
-            padding: 20px;
-            gap: 20px;
-        }
-
-        .tv-column {
-            flex: 1;
-            background: var(--surface-color);
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.05);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            box-shadow: inset 0 0 100px rgba(0,0,0,0.5);
-        }
-
-        .column-header {
-            padding: 20px;
-            text-align: center;
-            font-size: 2.5rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            background: rgba(0,0,0,0.2);
-            border-bottom: 2px solid rgba(255,255,255,0.1);
-        }
-
-        .preparing-col .column-header { color: #f1c40f; border-bottom-color: rgba(241, 196, 15, 0.3); }
-        .ready-col .column-header { color: #2ecc71; border-bottom-color: rgba(46, 204, 113, 0.3); background: rgba(46, 204, 113, 0.1); }
-
-        .orders-list {
-            padding: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            align-content: flex-start;
-            overflow-y: auto;
-            flex: 1;
-        }
-
-        /* Queue Item Card */
-        .queue-item {
-            width: calc(50% - 10px);
-            background: rgba(255,255,255,0.05);
-            border: 2px solid rgba(255,255,255,0.1);
-            border-radius: 15px;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 1.5rem;
-            font-weight: 700;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            transition: all 0.5s ease;
-        }
-
-        .preparing-col .queue-item {
-            border-left: 8px solid #f1c40f;
-        }
-
-        .ready-col .queue-item {
-            border-left: 8px solid #2ecc71;
-            background: linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(0,0,0,0.2));
-            animation: pulse-ready 2s infinite;
-        }
-
-        @keyframes pulse-ready {
-            0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.4); transform: scale(1); }
-            50% { box-shadow: 0 0 20px 10px rgba(46, 204, 113, 0); transform: scale(1.02); }
-            100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); transform: scale(1); }
-        }
-        
-        /* New Item Highlight Animation */
         @keyframes slideIn {
-            from { opacity: 0; transform: translateY(-50px) scale(0.9); }
+            from { opacity: 0; transform: translateY(-20px) scale(0.95); }
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
+        @keyframes pulseReady {
+            0% { box-shadow: 0 0 0 0 rgba(76,175,80,0.6); }
+            70% { box-shadow: 0 0 25px 20px rgba(76,175,80,0); }
+            100% { box-shadow: 0 0 0 0 rgba(76,175,80,0); }
+        }
+        .animate-slideIn {
+            animation: slideIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        .animate-pulseReady {
+            animation: pulseReady 2s infinite;
+        }
+        /* Custom scrollbar for TV (subtle) */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #3A3528; border-radius: 10px; }
         
-        .new-item { animation: slideIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .ready-col-scrollbar::-webkit-scrollbar-thumb { background: rgba(76,175,80,0.3); border-radius: 10px; }
 
-        .table-badge {
-            font-size: 2.2rem;
-            font-weight: 900;
-            color: #fff;
-            background: rgba(0,0,0,0.3);
-            padding: 10px 20px;
-            border-radius: 10px;
-        }
-        .ready-col .table-badge {
-            background: #2ecc71;
-            color: #000;
-        }
-
-        .order-id-badge {
-            font-size: 1.2rem;
-            color: rgba(255,255,255,0.5);
-            font-family: monospace;
-        }
-
-        /* Overlay Full Screen Prompt */
-        .fullscreen-prompt {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 9999;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-        }
+        /* Prevent burn-in by hiding cursor */
+        body { cursor: none; }
     </style>
 
     <link rel="stylesheet" href="css/logo.css">
@@ -184,39 +53,53 @@
     <link rel="icon" type="image/png" href="/images/bunny_logo.png">
     <link rel="apple-touch-icon" href="/images/bunny_logo.png">
 </head>
-<body>
+<body class="bg-[#1A1814] text-[#E8DCC4] font-manrope h-screen flex flex-col overflow-hidden selection:bg-[#C0A062] selection:text-[#1A1814]">
 
-    <div id="setup-prompt" class="fullscreen-prompt" aria-label="TV Setup">
-        <h2 style="color: var(--gold); font-size: 4rem; margin-bottom: 30px;"><i class="fa-solid fa-tv"></i> MÀN HÌNH TIVI</h2>
-        <p style="font-size: 1.5rem; color: #aaa; margin-bottom: 40px;">Bấm nút bên dưới để cấp quyền phát âm thanh và mở toàn màn hình.</p>
-        <button onclick="startTVMode()" class="btn btn-lg" style="background: var(--gold); color: #000; font-size: 2rem; font-weight: bold; padding: 20px 50px; border-radius: 20px;">BẮT ĐẦU <i class="fa-solid fa-play"></i></button>
+    <div id="setup-prompt" class="fixed inset-0 bg-black/95 z-50 flex flex-col justify-center items-center" aria-label="TV Setup">
+        <h2 class="text-[#D4AF37] text-5xl md:text-7xl font-noto font-black mb-8 drop-shadow-lg"><i class="fa-solid fa-tv me-4"></i> MÀN HÌNH TIVI</h2>
+        <p class="text-xl md:text-2xl text-[#A89F88] mb-12">Bấm nút bên dưới để cấp quyền phát âm thanh và mở toàn màn hình.</p>
+        <button onclick="startTVMode()" class="bg-gradient-to-r from-[#D4AF37] to-[#C0A062] text-[#1A1814] text-3xl font-black px-12 py-5 rounded-2xl shadow-[0_0_40px_rgba(212,175,55,0.4)] hover:scale-105 transition-transform" style="cursor: pointer;">
+            BẮT ĐẦU <i class="fa-solid fa-play ms-2"></i>
+        </button>
     </div>
 
-    <header class="tv-header">
-        <div class="hub-logo mb-4" style="font-size: 3rem; justify-content: center; width: 100%;"><span class="text-1">Nohope</span><span class="text-2">Coffee</span></div>
-        <div class="clock" id="tv-clock">00:00:00</div>
+    <!-- Header -->
+    <header class="bg-[#232018]/90 backdrop-blur-md px-6 md:px-10 py-5 flex justify-between items-center border-b border-[#3A3528] shadow-soft z-10 sticky top-0">
+        <div class="flex items-center gap-4">
+            <img src="/images/bunny_logo.png" alt="Logo" class="w-14 h-14 md:w-16 md:h-16 rounded-2xl object-cover shadow-soft border border-[#3A3528]">
+            <div>
+                <h1 class="font-noto font-black text-3xl md:text-4xl text-[#F2E8D5] tracking-tight leading-none mb-1">Nohope</h1>
+                <p class="text-[#D4AF37] uppercase tracking-[0.2em] font-bold text-xs md:text-sm mb-0">Coffee & Tea</p>
+            </div>
+        </div>
+        <div class="font-mono text-3xl md:text-4xl font-black text-[#E8DCC4] bg-[#1A1814] px-6 py-3 rounded-2xl border border-[#3A3528] tracking-widest shadow-inner" id="tv-clock">
+            00:00:00
+        </div>
     </header>
 
-    <div class="tv-grid">
+    <!-- Main Grid -->
+    <div class="flex-1 flex flex-col md:flex-row gap-6 md:gap-8 p-6 md:p-8 overflow-hidden">
+        
         <!-- Đang Chuẩn Bị -->
-        <div class="tv-column preparing-col">
-            <div class="column-header">
-                <i class="fa-solid fa-fire-burner me-2 text-warning"></i> ĐANG CHUẨN BỊ
+        <div class="flex-1 bg-[#232018] rounded-[2rem] border border-[#3A3528] flex flex-col overflow-hidden shadow-soft relative">
+            <div class="bg-[#3A3528]/50 p-5 md:p-6 text-center border-b border-[#3A3528]">
+                <h2 class="font-noto text-3xl md:text-4xl font-black text-[#A89F88] tracking-widest uppercase mb-0"><i class="fa-solid fa-fire-burner text-[#D4AF37] me-3"></i>Đang Chuẩn Bị</h2>
             </div>
-            <div class="orders-list" id="preparing-list">
+            <div class="flex-1 p-5 md:p-6 overflow-y-auto custom-scrollbar content-start flex flex-wrap gap-4 md:gap-6" id="preparing-list">
                 <!-- Items injected here -->
             </div>
         </div>
 
         <!-- Mời Nhận Đồ -->
-        <div class="tv-column ready-col">
-            <div class="column-header">
-                <i class="fa-solid fa-bell-concierge me-2"></i> MỜI NHẬN ĐỒ
+        <div class="flex-1 bg-gradient-to-b from-[#2d3a28] to-[#1A1814] rounded-[2rem] border border-[#4CAF50]/30 flex flex-col overflow-hidden shadow-[0_0_50px_rgba(76,175,80,0.1)] relative">
+            <div class="bg-[#4CAF50]/20 p-5 md:p-6 text-center border-b border-[#4CAF50]/30 backdrop-blur-sm">
+                <h2 class="font-noto text-3xl md:text-5xl font-black text-[#4CAF50] tracking-widest uppercase mb-0 drop-shadow-[0_2px_10px_rgba(76,175,80,0.4)]"><i class="fa-solid fa-bell-concierge me-3"></i>Mời Nhận Đồ</h2>
             </div>
-            <div class="orders-list" id="ready-list">
+            <div class="flex-1 p-5 md:p-6 overflow-y-auto ready-col-scrollbar content-start flex flex-wrap gap-4 md:gap-6" id="ready-list">
                 <!-- Items injected here -->
             </div>
         </div>
+        
     </div>
     
     <!-- Audio element for Ding Dong -->
@@ -224,6 +107,7 @@
         <source src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" type="audio/mpeg">
     </audio>
 
-    <script src="js/tv.js?v=1.1"></script>
+    <script src="js/tv.js?v=2.0"></script>
 </body>
 </html>
+
