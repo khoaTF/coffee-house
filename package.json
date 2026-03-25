@@ -5,7 +5,8 @@
   "scripts": {
     "start": "node src/server.js",
     "test": "jest",
-    "build": "echo 'No build step required'"
+    "build:css": "tailwindcss -i ./src/css/input.css -o ./public/css/index.css --minify",
+    "build": "npm run build:css"
   },
   "keywords": [],
   "author": "",
