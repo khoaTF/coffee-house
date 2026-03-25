@@ -77,6 +77,13 @@ function init() {
     acquireTableLock();
 }
 
+function getActiveCategory() {
+    const activeDesktopNode = document.querySelector('.category-pill.bg-white');
+    const activeMobileNode = document.querySelector('.category-pill.bg-gradient-to-br');
+    const node = activeDesktopNode || activeMobileNode;
+    return node && node.dataset ? node.dataset.category : 'All';
+}
+
 function renderCategories(activeCategory = 'All') {
     const categories = ['All', ...new Set(menuItems.map(item => item.category).filter(Boolean))];
     
@@ -647,7 +654,7 @@ function attachEventListeners() {
 
     // Search input listener
     document.getElementById('menu-search').addEventListener('input', () => {
-        const activeCategory = document.querySelector('.pill.active').dataset.category;
+        const activeCategory = getActiveCategory();
         renderMenu(activeCategory);
     });
 
@@ -939,9 +946,7 @@ function handleOrderConfirmed(savedOrder) {
     document.getElementById('step-pending').classList.add('active');
     
     // Re-render menu so that the '+' buttons get locked out
-    const activeCategory = document.querySelector('.category-pill.bg-white') 
-                            ? document.querySelector('.category-pill.bg-white').dataset.category 
-                            : (document.querySelector('.category-pill.bg-gradient-to-br') ? document.querySelector('.category-pill.bg-gradient-to-br').dataset.category : 'All');
+    const activeCategory = getActiveCategory();
     renderMenu(activeCategory);
 }
 
@@ -1125,7 +1130,7 @@ function handleOrderStatusUpdate(updatedOrderData) {
         playNotificationSound('error');
         customerAlert(`❌ Đơn hàng của bạn đã bị Hủy. Bạn có thể đặt món mới!`);
         // Re-render menu to ensure UI is active
-        const activeCategory = document.querySelector('.pill.active').dataset.category;
+        const activeCategory = getActiveCategory();
         renderMenu(activeCategory);
     } else if (updatedOrder.status === 'Ready') {
         playNotificationSound('success');
@@ -1164,7 +1169,7 @@ function handleOrderStatusUpdate(updatedOrderData) {
                 activeOrderId = null;
                 playNotificationSound('success');
                 customerAlert(`Bếp đã nhận đơn và đang làm món! Bạn có thể tiếp tục đặt thêm.`);
-                const activeCategory = document.querySelector('.pill.active').dataset.category;
+                const activeCategory = getActiveCategory();
                 renderMenu(activeCategory);
             }
             
@@ -1271,7 +1276,7 @@ function handleCartUpdate(cartKey, baseItem, change, selectedOptions) {
     }
 
     updateCartUI();
-    const activeCategory = document.querySelector('.pill.active').dataset.category;
+    const activeCategory = getActiveCategory();
     renderMenu(activeCategory);
 
     // Upsell popup logic
@@ -1630,7 +1635,7 @@ function applyTranslations() {
     document.getElementById('menu-search').placeholder = t.search_placeholder;
     
     // Refresh menu to update dynamic labels
-    const activeCategory = document.querySelector('.pill.active').dataset.category;
+    const activeCategory = getActiveCategory();
     renderMenu(activeCategory);
 }
 
