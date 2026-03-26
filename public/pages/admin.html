@@ -26,7 +26,7 @@
         supabase.auth.getSession().then(({ data: { session } }) => {
             if (!session) {
                 localStorage.clear(); sessionStorage.clear();
-                window.location.href = '/login.html';
+                window.location.href = '/login';
             }
         });
     </script>
@@ -38,7 +38,7 @@
     <script>
         const role = localStorage.getItem('cafe_role') || sessionStorage.getItem('cafe_role');
         if (role !== 'admin' && role !== 'manager') {
-            window.location.href = '/login.html';
+            window.location.href = '/login';
         }
     </script>
     <link rel="stylesheet" href="css/tailwind-compiled.css">
@@ -131,13 +131,13 @@
                 <a href="/" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 text-[#A89F88] hover:bg-[#3A3528] hover:text-[#E8DCC4] text-decoration-none">
                     <i class="fa-solid fa-store w-5 text-center"></i> Menu khách
                 </a>
-                <a href="/kitchen.html" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 text-[#A89F88] hover:bg-[#3A3528] hover:text-[#E8DCC4] text-decoration-none border-0 bg-transparent">
+                <a href="/kitchen" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 text-[#A89F88] hover:bg-[#3A3528] hover:text-[#E8DCC4] text-decoration-none border-0 bg-transparent">
                     <i class="fa-solid fa-utensils w-5 text-center"></i> Bếp
                 </a>
             </nav>
 
             <div class="p-4 border-t border-[#3A3528] bg-[#232018] mt-auto">
-                <button class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-red-400 hover:bg-red-400/10 hover:text-red-300 transition-colors border-0 bg-transparent" onclick="supabase.auth.signOut().then(() => { localStorage.clear(); sessionStorage.clear(); window.location.href='/login.html'; })">
+                <button class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-red-400 hover:bg-red-400/10 hover:text-red-300 transition-colors border-0 bg-transparent" onclick="supabase.auth.signOut().then(() => { localStorage.clear(); sessionStorage.clear(); window.location.href='/login'; })">
                     <i class="fa-solid fa-sign-out-alt w-5 text-center"></i> Đăng xuất
                 </button>
             </div>

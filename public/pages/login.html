@@ -169,9 +169,9 @@
                     btn.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
 
                     setTimeout(() => {
-                        if (role === 'admin') window.location.href = '/admin.html';
-                        else if (role === 'kitchen') window.location.href = '/kitchen.html';
-                        else window.location.href = '/staff.html';
+                        if (role === 'admin' || role === 'manager') window.location.href = '/admin';
+                        else if (role === 'kitchen') window.location.href = '/kitchen';
+                        else window.location.href = '/staff';
                     }, 500);
                 } else {
                     // PIN Mode via Supabase RPC mapped to Auth
@@ -219,9 +219,9 @@
                     btn.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
 
                     setTimeout(() => {
-                        if (data.role === 'kitchen') window.location.href = '/kitchen.html';
-                        else if (data.role === 'admin' || data.role === 'manager') window.location.href = '/admin.html';
-                        else window.location.href = '/staff.html';
+                        if (data.role === 'admin' || data.role === 'manager') window.location.href = '/admin';
+                        else if (data.role === 'kitchen') window.location.href = '/kitchen';
+                        else window.location.href = '/staff';
                     }, 500);
                 }
             } catch (err) {

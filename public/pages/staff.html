@@ -141,21 +141,21 @@
         // --- 1. Authentication Check ---
         // Fast sync check
         if (sessionStorage.getItem('nohope_staff_auth') !== 'true' && localStorage.getItem('nohope_staff_auth') !== 'true') {
-            window.location.href = 'login.html';
+            window.location.href = '/login';
         }
         
         // STRICT Auth Check via Supabase
         supabase.auth.getSession().then(({ data: { session } }) => {
             if (!session) {
                 localStorage.clear(); sessionStorage.clear();
-                window.location.href = 'login.html';
+                window.location.href = '/login';
             }
         });
 
         document.getElementById('logout-btn').addEventListener('click', async () => {
             await supabase.auth.signOut();
             localStorage.clear(); sessionStorage.clear();
-            window.location.href = 'login.html';
+            window.location.href = '/login';
         });
 
         // --- 2. Global State ---
