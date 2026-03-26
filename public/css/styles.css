@@ -1133,6 +1133,32 @@ input, select, textarea {
     border: 1px solid rgba(212, 167, 106, 0.3) !important; 
 }
 
+/* ===== MODAL REFACTOR CLASSES ===== */
+.cart-category-body { padding-top: 10px; padding-bottom: 40px; }
+.cart-items-body { padding-top: 10px; }
+.cart-note-container { padding: 0 24px 10px; flex-shrink: 0; overflow-y: visible; }
+.cart-note-label { display: block; margin-bottom: 5px; }
+.cart-note-input { width: 100%; }
+
+.payment-modal-body { background: var(--bg-color); }
+.payment-qr-wrapper { background: #FFF; padding: 20px; display: inline-block; border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+.payment-qr-image { width: 250px; height: 250px; }
+.payment-details-box { background: var(--surface-color); border: 2px dashed var(--border); }
+.payment-total-text { font-size: 1.1rem; }
+
+.history-modal-body { background: var(--bg-color); }
+.options-modal-body { background: var(--bg-color); max-height: 60vh; overflow-y: auto; }
+
+.upsell-modal-wrapper { z-index: 1065; }
+.upsell-modal-content { background: var(--surface-color); }
+.upsell-title { font-weight: 800; }
+.upsell-image { width: 120px; height: 120px; border-radius: 16px; object-fit: cover; margin-bottom: 15px; border: 1px solid var(--border); box-shadow: var(--shadow-md); }
+.upsell-name { font-size: 1.1rem; margin-bottom: 5px; }
+.upsell-desc { font-size: 0.9rem; margin-bottom: 15px; }
+.btn-upsell-add { font-size: 1.1rem; width: 100%; }
+.btn-upsell-cancel { text-decoration: none; font-weight: 600; width: 100%; }
+
+
 /* ===== Responsive Adjustments (Tablet & iPad) ===== */
 @media (min-width: 600px) and (max-width: 1024px) {
     .container {
