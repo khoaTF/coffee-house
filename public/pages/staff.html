@@ -139,16 +139,23 @@
     
     <script>
         // --- 1. Authentication Check ---
+        // Fast sync check
         if (sessionStorage.getItem('nohope_staff_auth') !== 'true' && localStorage.getItem('nohope_staff_auth') !== 'true') {
-            window.location.href = 'staff-login.html';
+            window.location.href = 'login.html';
         }
+        
+        // STRICT Auth Check via Supabase
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (!session) {
+                localStorage.clear(); sessionStorage.clear();
+                window.location.href = 'login.html';
+            }
+        });
 
-        document.getElementById('logout-btn').addEventListener('click', () => {
-            localStorage.removeItem('nohope_staff_auth');
-            localStorage.removeItem('nohope_staff_name');
-            sessionStorage.removeItem('nohope_staff_auth');
-            sessionStorage.removeItem('nohope_staff_name');
-            window.location.href = 'staff-login.html';
+        document.getElementById('logout-btn').addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            localStorage.clear(); sessionStorage.clear();
+            window.location.href = 'login.html';
         });
 
         // --- 2. Global State ---
@@ -535,11 +542,11 @@
             order.items.forEach(item => {
                 itemsHtml += `
                     <li class="flex justify-between items-start text-sm font-bold text-on-surface">
-                        <span class="flex-1"><span class="text-secondary mr-2">${item.quantity}x</span> ${item.name}</span>
+                        <span class="flex-1"><span class="text-secondary mr-2">${item.quantity}x</span> ${window.escapeHTML(item.name)}</span>
                     </li>`;
                 if(item.selectedOptions && item.selectedOptions.length > 0) {
                      itemsHtml += `<li class="text-xs text-on-surface-variant/80 ml-8 mb-2 font-medium">
-                                     + ${item.selectedOptions.map(o => o.choiceName).join(', ')}
+                                     + ${item.selectedOptions.map(o => window.escapeHTML(o.choiceName)).join(', ')}
                                    </li>`;
                 }
             });
@@ -547,7 +554,7 @@
 
             let noteHtml = order.order_note ? 
                 `<div class="bg-yellow-50 border-l-4 border-yellow-400 p-3 text-xs rounded-r block mb-2 font-medium text-yellow-800">
-                    <strong><i class="fa-regular fa-comment mr-1"></i> Ghi chú:</strong> ${order.order_note}
+                    <strong><i class="fa-regular fa-comment mr-1"></i> Ghi chú:</strong> ${window.escapeHTML(order.order_note)}
                  </div>` : '';
 
             // Generate Action Buttons based on states
@@ -575,7 +582,7 @@
             div.innerHTML = `
                 <div class="flex justify-between items-center pb-3 border-b border-outline-variant/30">
                     <div class="bg-primary text-on-primary px-4 py-1.5 rounded-full font-black text-sm shadow-sm inline-flex items-center gap-1">
-                        <i class="fa-solid fa-chair text-[10px] opacity-80"></i> Bàn ${order.table_number}
+                        <i class="fa-solid fa-chair text-[10px] opacity-80"></i> Bàn ${window.escapeHTML(String(order.table_number))}
                     </div>
                     <div class="text-xs font-bold text-on-surface-variant opacity-80 flex items-center gap-1">
                         <i class="fa-regular fa-clock"></i> ${timeStr}
@@ -620,7 +627,7 @@
             div.innerHTML = `
                 <div class="flex justify-between items-center pb-3 border-b border-outline-variant/30">
                     <div class="bg-surface-variant text-on-surface-variant px-4 py-1.5 rounded-full font-black text-sm shadow-sm border border-outline-variant/50">
-                        Bàn ${req.table_number}
+                        Bàn ${window.escapeHTML(String(req.table_number))}
                     </div>
                     <div class="text-xs font-bold text-on-surface-variant opacity-80 flex items-center gap-1">
                         <i class="fa-regular fa-clock"></i> ${timeStr}

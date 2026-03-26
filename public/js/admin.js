@@ -11,7 +11,7 @@ let confirmModalInstance;
 let customerModalInstance;
 let staffModalInstance;
 let quickPromoModalInstance;
-const authHeaders = () => ({ 'Authorization': 'Bearer ' + (sessionStorage.getItem('cafe_token') || localStorage.getItem('cafe_token')) });
+
 
 // DOM Elements (Initialized in DOMContentLoaded to prevent null errors)
 let productsTableBody, historyTableBody, inventoryTableBody, totalRevenueEl;
@@ -145,6 +145,8 @@ function switchTab(tabId) {
         fetchCustomers();
     } else if (tabId === 'staff') {
         fetchStaff();
+    } else if (tabId === 'audit') {
+        fetchAuditLogs();
     } else {
         fetchProducts();
     }
@@ -605,10 +607,12 @@ async function saveProduct() {
             // Update
             const { error } = await supabase.from('products').update(productData).eq('id', id);
             if (error) throw error;
+            logAudit('Cập nhật món', `ID: ${id}, Tên: ${productData.name}`);
         } else {
             // Insert
             const { error } = await supabase.from('products').insert([productData]);
             if (error) throw error;
+            logAudit('Thêm món mới', `Tên: ${productData.name}`);
         }
 
         productModalInstance.hide();
@@ -673,6 +677,7 @@ async function saveQuickPromo() {
     try {
         const { error } = await supabase.from('products').update(promoData).eq('id', id);
         if (error) throw error;
+        logAudit('Cập nhật Quick Promo', `ID món: ${id}, Giá mới: ${priceStr}`);
         
         quickPromoModalInstance.hide();
         fetchProducts();
@@ -1938,9 +1943,11 @@ async function savePromo() {
         if (id) {
             const { error } = await supabase.from('discounts').update(data).eq('id', id);
             if(error) throw error;
+            logAudit('Cập nhật mã KM', `Mã: ${data.code}`);
         } else {
             const { error } = await supabase.from('discounts').insert([data]);
             if(error) throw error;
+            logAudit('Thêm mã KM mới', `Mã: ${data.code}`);
         }
         promoModalInstance.hide();
         fetchDiscounts();
@@ -1956,6 +1963,7 @@ async function togglePromoStatus(id, currentlyActive) {
     try {
         const { error } = await supabase.from('discounts').update({ active: !currentlyActive }).eq('id', id);
         if(error) throw error;
+        logAudit(currentlyActive ? 'Ngưng mã KM' : 'Bật mã KM', `ID: ${id}`);
         fetchDiscounts();
     } catch(e) {
         console.error(e);
@@ -2198,6 +2206,7 @@ async function saveRestock() {
             new_stock: newStock,
             reason: 'Nhập kho nhanh từ Dashboard'
         }]);
+        logAudit('Quản lý Kho', `Nhập nhanh +${addAmount} cho Nguyên liệu ID: ${id}`);
         
         restockModalInstance.hide();
         fetchIngredients(); // reload table
@@ -2239,13 +2248,13 @@ function renderCustomersTable() {
     customersList.forEach(c => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td class="fw-bold">${c.phone}</td>
-            <td>${c.name || '<i>Khách vô danh</i>'}</td>
+            <td class="fw-bold">${window.escapeHTML(c.phone || '')}</td>
+            <td>${window.escapeHTML(c.name || '') || '<i>Khách vô danh</i>'}</td>
             <td class="text-warning fw-bold"><i class="fa-solid fa-star"></i> ${c.current_points || 0}</td>
             <td class="text-success">${(c.total_spent || 0).toLocaleString('vi-VN')} đ</td>
             <td>${c.created_at ? new Date(c.created_at).toLocaleDateString() : 'N/A'}</td>
             <td class="text-end">
-                <button class="action-btn edit-btn" title="Chỉnh sửa điểm" onclick="editCustomer('${c.id}')">
+                <button class="action-btn edit-btn" title="Chỉnh sửa điểm" onclick="editCustomer('${window.escapeHTML(c.id || '')}')">
                     <i class="fa-solid fa-pen"></i>
                 </button>
             </td>
@@ -2270,6 +2279,7 @@ async function saveCustomer() {
     try {
         const { error } = await supabase.from('customers').update({ current_points: points }).eq('id', id);
         if (error) throw error;
+        logAudit('Sửa điểm KH', `ID: ${id}, Điểm cập nhật: ${points}`);
         customerModalInstance.hide();
         fetchCustomers();
     } catch (e) {
@@ -2304,14 +2314,14 @@ function renderStaffTable() {
     staffList.forEach(s => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td class="fw-bold"><i class="fa-solid fa-user-circle me-2 text-secondary"></i>${s.name || '<i>NV Mới</i>'}</td>
+            <td class="fw-bold"><i class="fa-solid fa-user-circle me-2 text-secondary"></i>${window.escapeHTML(s.name || '') || '<i>NV Mới</i>'}</td>
             <td><span class="badge ${badgeMap[s.role] || 'bg-secondary'}">${roleMap[s.role] || s.role}</span></td>
-            <td class="text-muted"><kbd>${s.pin}</kbd></td>
+            <td class="text-muted"><kbd>${window.escapeHTML(String(s.pin) || '')}</kbd></td>
             <td class="text-end">
-                <button class="action-btn edit-btn" title="Chỉnh sửa" onclick="editStaff('${s.id}')">
+                <button class="action-btn edit-btn" title="Chỉnh sửa" onclick="editStaff('${window.escapeHTML(s.id || '')}')">
                     <i class="fa-solid fa-pen"></i>
                 </button>
-                <button class="action-btn delete" title="Xóa nhân viên" onclick="deleteStaff('${s.id}')">
+                <button class="action-btn delete" title="Xóa nhân viên" onclick="deleteStaff('${window.escapeHTML(s.id || '')}')">
                     <i class="fa-solid fa-trash"></i>
                 </button>
             </td>
@@ -2355,9 +2365,11 @@ async function saveStaff() {
         if (id) {
             const { error } = await supabase.from('users').update(staffData).eq('id', id);
             if (error) throw error;
+            logAudit('Chỉnh sửa NV', `Tên: ${staffData.name || ''}, Vai trò: ${staffData.role}`);
         } else {
             const { error } = await supabase.from('users').insert([staffData]);
             if (error) throw error;
+            logAudit('Thêm NV', `Tên: ${staffData.name || ''}, Vai trò: ${staffData.role}`);
         }
         staffModalInstance.hide();
         fetchStaff();
@@ -2378,9 +2390,61 @@ async function deleteStaff(id) {
     try {
         const { error } = await supabase.from('users').delete().eq('id', id);
         if (error) throw error;
+        logAudit('Xóa nhân viên', `ID: ${id}`);
         fetchStaff();
     } catch (e) {
         console.error(e);
         alert("Lỗi kết nối máy chủ khi xóa nhân viên.");
     }
+}
+
+// --- Audit Logs ---
+async function logAudit(action, details) {
+    const adminRole = sessionStorage.getItem('cafe_role') || localStorage.getItem('cafe_role') || 'Unknown';
+    try {
+        await supabase.from('audit_logs').insert([{
+            admin_identifier: 'Vai trò: ' + adminRole,
+            action: action,
+            details: details
+        }]);
+    } catch(e) {
+        console.error("Lỗi ghi log:", e);
+    }
+}
+
+async function fetchAuditLogs() {
+    try {
+        const { data, error } = await supabase.from('audit_logs')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(100);
+            
+        if (error) throw error;
+        renderAuditLogs(data);
+    } catch (e) {
+        console.error("Lỗi lấy nhật ký:", e);
+        document.getElementById('audit-table-body').innerHTML = '<tr><td colspan="4" class="text-center text-danger">Lỗi tải dữ liệu.</td></tr>';
+    }
+}
+
+function renderAuditLogs(logs) {
+    const tbody = document.getElementById('audit-table-body');
+    if (!tbody) return;
+    tbody.replaceChildren();
+    
+    if (!logs || logs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Chưa có nhật ký hoạt động nào.</td></tr>';
+        return;
+    }
+    
+    logs.forEach(log => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${new Date(log.created_at).toLocaleString('vi-VN')}</td>
+            <td><span class="badge bg-secondary">${window.escapeHTML(log.admin_identifier || '')}</span></td>
+            <td class="font-bold text-info">${window.escapeHTML(log.action || '')}</td>
+            <td class="text-end text-muted small">${window.escapeHTML(log.details || '')}</td>
+        `;
+        tbody.appendChild(tr);
+    });
 }

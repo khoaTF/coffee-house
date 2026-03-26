@@ -126,32 +126,34 @@
                     const pass = document.getElementById('password')?.value || '';
                     if (!user || !pass) throw new Error("Vui lòng nhập đủ Tên đăng nhập và Mật khẩu.");
 
-                    const response = await fetch('/api/login', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ username: user, password: pass })
+                    let email = user.includes('@') ? user : user + '@nohope.cafe';
+                    const { data: authData, error: authErr } = await supabase.auth.signInWithPassword({
+                        email: email,
+                        password: pass
                     });
 
-                    if (response.ok) {
-                        const data = await response.json();
-                        sessionStorage.setItem('cafe_token', data.token);
-                        sessionStorage.setItem('cafe_role', data.role);
-                        localStorage.removeItem('cafe_token');
-                        localStorage.removeItem('cafe_role');
-
-                        btn.innerHTML = '<i class="fa-solid fa-check me-2"></i>Thành công!';
-                        btn.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
-
-                        setTimeout(() => {
-                            if (data.role === 'admin') window.location.href = '/admin.html';
-                            else if (data.role === 'kitchen') window.location.href = '/kitchen.html';
-                            else window.location.href = '/index.html';
-                        }, 500);
-                    } else {
-                        throw new Error("Tài khoản hoặc mật khẩu không đúng!");
+                    if (authErr) {
+                         throw new Error("Tài khoản hoặc mật khẩu không đúng!");
                     }
+
+                    let role = 'staff';
+                    if (email.startsWith('admin')) role = 'admin';
+                    else if (email.startsWith('kitchen')) role = 'kitchen';
+
+                    sessionStorage.setItem('cafe_role', role);
+                    localStorage.removeItem('cafe_token');
+                    localStorage.removeItem('cafe_role');
+
+                    btn.innerHTML = '<i class="fa-solid fa-check me-2"></i>Thành công!';
+                    btn.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
+
+                    setTimeout(() => {
+                        if (role === 'admin') window.location.href = '/admin.html';
+                        else if (role === 'kitchen') window.location.href = '/kitchen.html';
+                        else window.location.href = '/staff.html';
+                    }, 500);
                 } else {
-                    // PIN Mode via Supabase
+                    // PIN Mode via Supabase RPC mapped to Auth
                     const pin = document.getElementById('staff-pin')?.value || '';
                     if (!pin) throw new Error("Vui lòng nhập Mã PIN.");
 
@@ -160,6 +162,29 @@
                         .single();
 
                     if (error || !data) throw new Error("Mã PIN không hợp lệ (sai mã)!");
+
+                    // Map role to silent Supabase Auth login
+                    let authEmail = '';
+                    let authPass = '';
+                    if (data.role === 'kitchen') {
+                        authEmail = 'kitchen@nohope.cafe';
+                        authPass = 'SharedKitchenPwd#123';
+                    } else if (data.role === 'staff') {
+                        authEmail = 'staff@nohope.cafe';
+                        authPass = 'SharedStaffPwd#123';
+                    } else if (data.role === 'admin' || data.role === 'manager') {
+                        authEmail = 'admin@nohope.cafe';
+                        authPass = 'AdminPassword!2024';
+                    } else {
+                        throw new Error('Vai trò không hợp lệ');
+                    }
+
+                    const authRes = await supabase.auth.signInWithPassword({
+                        email: authEmail,
+                        password: authPass
+                    });
+
+                    if (authRes.error) throw new Error("Lỗi xác thực hệ thống: " + authRes.error.message);
 
                     sessionStorage.setItem('cafe_role', data.role);
                     sessionStorage.setItem('nohope_staff_auth', 'true');

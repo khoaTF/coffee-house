@@ -419,7 +419,7 @@ function renderMenu(category) {
 
         card.innerHTML = `
             <div class="aspect-[4/3] bg-[#F0EDEC] dark:bg-slate-800 relative overflow-hidden">
-                <img src="${item.imageUrl}" alt="${item.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.onerror=null; this.src='https://placehold.co/800x600/1B1C1C/FFF?text=${encodeURIComponent(item.name)}'">
+                <img src="${item.imageUrl}" alt="${window.escapeHTML(item.name)}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.onerror=null; this.src='https://placehold.co/800x600/1B1C1C/FFF?text=${encodeURIComponent(item.name)}'">
                 ${isOutOfStock ? '<div class="absolute inset-0 bg-black/40 flex items-center justify-center z-10"><span class="bg-[#ba1a1a] text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">Hết hàng</span></div>' : ''}
                 ${isBestSeller && !isOutOfStock ? `
                 <div class="absolute top-3 left-3 bg-white/90 dark:bg-[#1B1C1B]/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs font-bold text-[#FF7A00] shadow-sm flex items-center gap-1 z-10">
@@ -432,7 +432,7 @@ function renderMenu(category) {
             </div>
             <div class="p-4 flex flex-col h-[calc(100%-75%)] min-h-[150px]">
                 <div class="flex justify-between items-start gap-2 mb-1">
-                    <h3 class="font-bold text-[#1b1c1b] dark:text-[#fcf9f8] leading-tight">${item.name}</h3>
+                    <h3 class="font-bold text-[#1b1c1b] dark:text-[#fcf9f8] leading-tight">${window.escapeHTML(item.name)}</h3>
                 </div>
                 <div class="mb-3">
                     ${hasPromo ? `
@@ -442,7 +442,7 @@ function renderMenu(category) {
                         <span class="font-bold text-[#FF7A00] whitespace-nowrap">${item.price.toLocaleString('vi-VN')}đ</span>
                     `}
                 </div>
-                <p class="text-sm text-[#584235] dark:text-[#E0C0AF] line-clamp-2 mb-4 leading-relaxed flex-grow">${item.description}</p>
+                <p class="text-sm text-[#584235] dark:text-[#E0C0AF] line-clamp-2 mb-4 leading-relaxed flex-grow">${window.escapeHTML(item.description)}</p>
                 
                 <div class="flex items-center justify-between mt-auto">
                     ${(cartItemTotalQty > 0) ? `
@@ -535,7 +535,7 @@ function renderModalCart() {
         let optionsHtml = '';
         if (item.selectedOptions && item.selectedOptions.length > 0) {
             optionsHtml = '<div style="font-size: 0.8rem; color: #888; margin-top: 4px;">' + 
-                item.selectedOptions.map(o => `+ ${o.choiceName}`).join(', ') + 
+                item.selectedOptions.map(o => `+ ${window.escapeHTML(o.choiceName)}`).join(', ') + 
                 '</div>';
         }
 
@@ -543,7 +543,7 @@ function renderModalCart() {
         row.className = 'cart-item';
         row.innerHTML = `
             <div class="cart-item-info">
-                <div class="cart-item-title leading-tight mb-1" style="font-family: 'Plus Jakarta Sans', sans-serif;">${item.name}</div>
+                <div class="cart-item-title leading-tight mb-1" style="font-family: 'Plus Jakarta Sans', sans-serif;">${window.escapeHTML(item.name)}</div>
                 ${optionsHtml}
                 <div class="cart-item-price" style="color: #994700;">${(itemBasePrice + optionsPrice).toLocaleString('vi-VN')} đ</div>
             </div>
@@ -654,7 +654,7 @@ function openOptionsModal(item) {
         const optName = opt.name || opt.optionName;
         const group = document.createElement('div');
         group.className = 'option-group mb-3';
-        group.innerHTML = `<h3 style="font-size: 1.1rem; margin-bottom: 10px; font-weight: bold; color: var(--text-main);">${optName}</h3>`;
+        group.innerHTML = `<h3 style="font-size: 1.1rem; margin-bottom: 10px; font-weight: bold; color: var(--text-main);">${window.escapeHTML(optName)}</h3>`;
         
         opt.choices.forEach((choice, choiceIndex) => {
             const choiceName = choice.name || choice.choiceName;
@@ -672,8 +672,8 @@ function openOptionsModal(item) {
             
             row.innerHTML = `
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <input type="radio" name="opt_${optIndex}" value="${choiceName}" data-price="${choice.priceExtra}" ${isChecked} style="accent-color: var(--primary);">
-                    <span>${choiceName}</span>
+                    <input type="radio" name="opt_${optIndex}" value="${window.escapeHTML(choiceName)}" data-price="${choice.priceExtra}" ${isChecked} style="accent-color: var(--primary);">
+                    <span>${window.escapeHTML(choiceName)}</span>
                 </div>
                 <span class="text-muted">${choice.priceExtra > 0 ? '+' + choice.priceExtra.toLocaleString('vi-VN') + ' đ' : ''}</span>
             `;
@@ -864,6 +864,18 @@ async function placeOrder(method = 'cash') {
         price: item.price,
         selectedOptions: item.selectedOptions || []
     }));
+    
+    // Calculate inventory reductions based on cart items and their recipes
+    const reductions = {};
+    cart.forEach(item => {
+        if (item.recipe && Array.isArray(item.recipe)) {
+            item.recipe.forEach(ri => {
+                const iId = ri.ingredientId || ri.ingredient_id;
+                if (!reductions[iId]) reductions[iId] = 0;
+                reductions[iId] += (ri.quantity * item.quantity);
+            });
+        }
+    });
 
     const orderNote = document.getElementById('order-note') ? document.getElementById('order-note').value : '';
     const earnedPts = Math.floor(Math.max(0, totalPrice) / 1000);
@@ -874,6 +886,7 @@ async function placeOrder(method = 'cash') {
         customer_phone: window.currentCustomerPhone,
         earned_points: earnedPts,
         items: formattedItems,
+        reductions: reductions,
         total_price: Math.max(0, totalPrice),
         discount_code: appliedPromo ? appliedPromo.code : null,
         discount_amount: currentDiscountAmount,
@@ -885,10 +898,10 @@ async function placeOrder(method = 'cash') {
     };
 
     try {
-        const { data, error } = await supabase.from('orders').insert([orderData]).select().single();
+        const { data: newOrderId, error } = await supabase.rpc('place_order_and_deduct_inventory', { payload: orderData });
         if (error) throw error;
         
-        const savedOrder = { ...data, _id: data.id, createdAt: data.created_at, totalPrice: data.total_price, orderNote: data.order_note };
+        const savedOrder = { ...orderData, id: newOrderId, _id: newOrderId, createdAt: new Date().toISOString(), totalPrice: orderData.total_price, orderNote: orderData.order_note };
         
         if (method === 'transfer') {
             activeOrderId = savedOrder._id;
@@ -1527,9 +1540,9 @@ function renderHistoryModal() {
         let itemsHtml = order.items.map(i => `
             <li style="display: flex; justify-content: space-between; font-size: 0.9rem; padding: 4px 0; border-bottom: 1px dashed var(--border);">
                 <div>
-                    <div>${i.quantity}x ${i.name}</div>
+                    <div>${i.quantity}x ${window.escapeHTML(i.name)}</div>
                     ${i.selectedOptions && i.selectedOptions.length > 0 ? 
-                        `<div style="font-size: 0.75rem; color: #888; padding-left: 15px;">+${i.selectedOptions.map(o => o.choiceName).join(', +')}</div>` 
+                        `<div style="font-size: 0.75rem; color: #888; padding-left: 15px;">+${i.selectedOptions.map(o => window.escapeHTML(o.choiceName)).join(', +')}</div>` 
                         : ''}
                 </div>
                 <span>${((i.price + (i.selectedOptions || []).reduce((s, o) => s + o.priceExtra, 0)) * i.quantity).toLocaleString('vi-VN')} đ</span>
@@ -1553,7 +1566,7 @@ function renderHistoryModal() {
             <div style="text-align: right; font-weight: 700; color: var(--primary);">
                 Tổng: ${order.totalPrice.toLocaleString('vi-VN')} đ
             </div>
-            ${order.orderNote ? `<div class="mt-2 text-muted" style="font-size: 0.85rem; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 6px;"><i>Ghi chú: ${order.orderNote}</i></div>` : ''}
+            ${order.orderNote ? `<div class="mt-2 text-muted" style="font-size: 0.85rem; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 6px;"><i>Ghi chú: ${window.escapeHTML(order.orderNote)}</i></div>` : ''}
             ${order.status === 'Pending' ? `<div style="text-align: right; margin-top: 10px;"><button class="btn btn-sm btn-outline text-danger" style="border-color: var(--danger);" onclick="cancelOrder('${order._id}')">Hủy đơn</button></div>` : ''}
         `;
         historyItemsContainer.appendChild(card);

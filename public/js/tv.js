@@ -82,7 +82,7 @@ function renderLists() {
                 </div>
                 <div class="text-right flex flex-col items-end border-l border-surface-variant/20 pl-6">
                     <div class="text-outline-variant text-xs md:text-sm uppercase tracking-wider font-bold mb-1">Bàn số</div>
-                    <div class="bg-primary border border-tertiary/30 text-tertiary text-4xl md:text-5xl font-black px-5 py-2 rounded-2xl min-w-[80px] text-center shadow-inner">${order.table_number || '?'}</div>
+                    <div class="bg-primary border border-tertiary/30 text-tertiary text-4xl md:text-5xl font-black px-5 py-2 rounded-2xl min-w-[80px] text-center shadow-inner">${window.escapeHTML(order.table_number || '?')}</div>
                 </div>
             </div>
         `;
@@ -99,7 +99,7 @@ function renderLists() {
                 </div>
                 <div class="text-right flex flex-col items-end border-l border-secondary/30 pl-6 md:pl-8">
                     <div class="text-secondary/80 text-sm md:text-base uppercase tracking-wider font-bold mb-1">Bàn số</div>
-                    <div class="bg-secondary text-on-secondary text-5xl md:text-6xl font-black px-6 md:px-8 py-3 rounded-2xl min-w-[90px] text-center shadow-[0_0_25px_rgba(217,117,49,0.5)]">${order.table_number || '?'}</div>
+                    <div class="bg-secondary text-on-secondary text-5xl md:text-6xl font-black px-6 md:px-8 py-3 rounded-2xl min-w-[90px] text-center shadow-[0_0_25px_rgba(217,117,49,0.5)]">${window.escapeHTML(order.table_number || '?')}</div>
                 </div>
             </div>
         `;
