@@ -384,7 +384,7 @@ function renderMenu(category) {
 
     const filteredItems = menuItems.filter(item => {
         // If user is searching, we should search across ALL categories (ignore category filter)
-        const matchesCategory = !!searchQuery || window.currentCategory === 'all' || item.category === window.currentCategory;
+        const matchesCategory = !!searchQuery || category === 'All' || item.category === category;
         const matchesSearch = !searchQuery || 
                                item.name.toLowerCase().includes(searchQuery) || 
                                (item.description && item.description.toLowerCase().includes(searchQuery));
