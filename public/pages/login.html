@@ -126,23 +126,44 @@
                     const pass = document.getElementById('password')?.value || '';
                     if (!user || !pass) throw new Error("Vui lòng nhập đủ Tên đăng nhập và Mật khẩu.");
 
-                    let email = user.includes('@') ? user : user + '@nohope.cafe';
-                    const { data: authData, error: authErr } = await supabase.auth.signInWithPassword({
-                        email: email,
-                        password: pass
-                    });
+                    const { data, error } = await supabase
+                        .rpc('verify_credentials', { p_username: user, p_password: pass })
+                        .single();
 
-                    if (authErr) {
-                         throw new Error("Tài khoản hoặc mật khẩu không đúng!");
+                    if (error || !data) throw new Error("Tài khoản hoặc mật khẩu không đúng!");
+
+                    let authEmail = '';
+                    let authPass = '';
+                    if (data.role === 'kitchen') {
+                        authEmail = 'kitchen@nohope.cafe';
+                        authPass = 'SharedKitchenPwd#123';
+                    } else if (data.role === 'staff') {
+                        authEmail = 'staff@nohope.cafe';
+                        authPass = 'SharedStaffPwd#123';
+                    } else if (data.role === 'admin' || data.role === 'manager') {
+                        authEmail = 'admin@nohope.cafe';
+                        authPass = 'AdminPassword!2024';
+                    } else {
+                        throw new Error('Vai trò không hợp lệ');
                     }
 
-                    let role = 'staff';
-                    if (email.startsWith('admin')) role = 'admin';
-                    else if (email.startsWith('kitchen')) role = 'kitchen';
+                    const authRes = await supabase.auth.signInWithPassword({
+                        email: authEmail,
+                        password: authPass
+                    });
 
-                    sessionStorage.setItem('cafe_role', role);
+                    if (authRes.error) throw new Error("Lỗi xác thực hệ thống: " + authRes.error.message);
+
+                    sessionStorage.setItem('cafe_role', data.role);
+                    sessionStorage.setItem('nohope_staff_auth', 'true');
+                    sessionStorage.setItem('nohope_staff_name', data.name || user);
+                    
                     localStorage.removeItem('cafe_token');
                     localStorage.removeItem('cafe_role');
+                    localStorage.removeItem('nohope_staff_auth');
+                    localStorage.removeItem('nohope_staff_name');
+                    
+                    let role = data.role;
 
                     btn.innerHTML = '<i class="fa-solid fa-check me-2"></i>Thành công!';
                     btn.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
