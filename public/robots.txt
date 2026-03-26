@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://coffee-house-topaz.vercel.app/sitemap.xml
