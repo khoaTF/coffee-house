@@ -30,6 +30,15 @@
             <i class="fa-solid fa-mug-hot text-secondary"></i> Dịch Vụ - Nohope
         </div>
         <div class="flex gap-4 items-center">
+            <div class="hidden sm:flex items-center gap-2 mr-2">
+                <div class="w-8 h-8 rounded-full bg-surface-variant flex items-center justify-center border border-outline-variant">
+                    <i class="fa-solid fa-user text-on-surface-variant text-sm"></i>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-[10px] text-on-surface-variant uppercase font-bold leading-none mb-1">Xin chào</span>
+                    <span id="staff-name-display" class="text-sm font-bold text-primary leading-tight">Nhân viên</span>
+                </div>
+            </div>
             <button class="bg-surface-variant text-on-surface-variant px-4 py-2 rounded-xl font-bold text-sm hover:bg-surface-variant/80 transition-colors" id="refresh-btn" aria-label="Làm mới dữ liệu">
                 <i class="fa-solid fa-rotate-right mr-1"></i> Làm mới
             </button>
@@ -143,6 +152,10 @@
         if (sessionStorage.getItem('nohope_staff_auth') !== 'true' && localStorage.getItem('nohope_staff_auth') !== 'true') {
             window.location.href = '/login';
         }
+
+        const staffName = sessionStorage.getItem('nohope_staff_name') || localStorage.getItem('nohope_staff_name') || 'Nhân viên';
+        const staffNameEl = document.getElementById('staff-name-display');
+        if (staffNameEl) staffNameEl.textContent = staffName;
         
         // STRICT Auth Check via Supabase
         supabase.auth.getSession().then(({ data: { session } }) => {

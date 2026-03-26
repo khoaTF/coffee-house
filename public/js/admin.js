@@ -77,6 +77,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // RBAC: Hide restricted tabs for Shift Manager
     const role = sessionStorage.getItem('cafe_role') || localStorage.getItem('cafe_role');
+    const staffName = sessionStorage.getItem('nohope_staff_name') || localStorage.getItem('nohope_staff_name') || (role === 'admin' ? 'Administrator' : 'Nhân viên');
+    
+    // Display logged in user name
+    const desktopNameEl = document.getElementById('desktop-staff-name');
+    const mobileNameEl = document.getElementById('mobile-staff-name');
+    if (desktopNameEl) desktopNameEl.textContent = staffName;
+    if (mobileNameEl) mobileNameEl.textContent = staffName;
+
     if (role === 'manager') {
         const restrictedTabs = ['tab-menu', 'tab-promo', 'tab-analytics', 'tab-customers', 'tab-staff'];
         restrictedTabs.forEach(id => {
