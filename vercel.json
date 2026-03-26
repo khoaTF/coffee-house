@@ -4,47 +4,51 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/api/index.js"
+      "destination": "/api"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "/api"
     },
     {
       "source": "/",
-      "destination": "/api/index.js"
+      "destination": "/api"
     },
     {
       "source": "/login",
-      "destination": "/api/index.js"
+      "destination": "/api"
     },
     {
       "source": "/admin",
-      "destination": "/api/index.js"
+      "destination": "/api"
     },
     {
       "source": "/kitchen",
-      "destination": "/api/index.js"
+      "destination": "/api"
     },
     {
       "source": "/staff",
-      "destination": "/api/index.js"
+      "destination": "/api"
     },
     {
       "source": "/staff-login",
-      "destination": "/api/index.js"
+      "destination": "/api"
     },
     {
       "source": "/tv",
-      "destination": "/api/index.js"
+      "destination": "/api"
     },
     {
       "source": "/live_index",
-      "destination": "/api/index.js"
+      "destination": "/api"
     },
     {
       "source": "/index",
-      "destination": "/api/index.js"
+      "destination": "/api"
     },
     {
       "source": "/(.*)",
-      "destination": "/api/index.js"
+      "destination": "/api"
     }
   ]
 }
