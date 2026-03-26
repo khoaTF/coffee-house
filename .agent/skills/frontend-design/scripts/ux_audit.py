@@ -647,7 +647,7 @@ class UXAuditor:
             self.warnings.append(f"[Motion] {filename}: Particle effects detected. Ensure fallback or reduced-quality option for mobile devices.")
 
         # 6.6 Scroll-Driven Animation Performance
-        has_scroll_driven = bool(re.search(r'IntersectionObserver.*animate|scroll.*progress|view-timeline', content))
+        has_scroll_driven = bool(re.search(r'IntersectionObserver.{0,100}animate|scroll.{0,100}progress|view-timeline', content))
         if has_scroll_driven:
             # Check for throttling/debouncing
             has_throttle = bool(re.search(r'throttle|debounce|requestAnimationFrame', content))
@@ -689,6 +689,12 @@ class UXAuditor:
         }
 
 def main():
+    if sys.stdout.encoding.lower() != 'utf-8':
+        try:
+            sys.stdout.reconfigure(encoding='utf-8')
+        except AttributeError:
+            pass
+
     if len(sys.argv) < 2: sys.exit(1)
     
     path = sys.argv[1]
