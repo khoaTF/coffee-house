@@ -79,9 +79,12 @@ function renderOrders() {
         orders.forEach((order, index) => {
             // Defensive checks
             let timeStr = "Vừa xong";
+            let diffInMinutes = 0;
             if (order.createdAt) {
                 try {
-                    timeStr = new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    const orderTime = new Date(order.createdAt);
+                    timeStr = orderTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    diffInMinutes = Math.floor((new Date() - orderTime) / 60000);
                 } catch (e) { }
             }
 
@@ -89,19 +92,36 @@ function renderOrders() {
             const items = Array.isArray(order.items) ? order.items : [];
             const itemsHtml = items.map(item => {
                 const optionsHtml = item.selectedOptions && item.selectedOptions.length > 0
-                    ? `<div class="ml-4 text-gray-500 dark:text-gray-400 text-sm mt-1 border-l-2 border-[#D97531] pl-2">+ ${item.selectedOptions.map(o => o.choiceName).join(', ')}</div>`
+                    ? `<div class="ml-4 text-gray-500 dark:text-gray-400 text-sm mt-1 border-l-2 border-[#D97531] pl-2">+ ${item.selectedOptions.map(o => window.escapeHTML(o.choiceName)).join(', ')}</div>`
                     : '';
                 return `
                 <li class="py-2 border-b border-gray-100 dark:border-gray-800 last:border-0">
                     <div class="flex items-start justify-between">
-                        <span class="font-medium text-[#1B1C1C] dark:text-[#F6F3F2]"><span class="font-bold text-[#D97531] mr-1">${item.quantity || 1}x</span> ${item.name || 'Unknown Item'}</span>
+                        <span class="font-medium text-[#1B1C1C] dark:text-[#F6F3F2]"><span class="font-bold text-[#D97531] mr-1">${item.quantity || 1}x</span> ${window.escapeHTML(item.name || 'Unknown Item')}</span>
                     </div>
                     ${optionsHtml}
                 </li>`;
             }).join('');
 
+            // Determine Background and Border based on wait time
+            let bgClass = 'bg-white dark:bg-[#2A2B2B]';
+            let borderClass = 'border-gray-200 dark:border-gray-800';
+            let pulseClass = '';
+
+            if (order.status === 'Pending' || order.status === 'Preparing') {
+                if (diffInMinutes >= 10) {
+                    bgClass = 'bg-red-50 dark:bg-red-900/20';
+                    borderClass = 'border-red-500 dark:border-red-700';
+                    pulseClass = 'animate-pulse';
+                } else if (diffInMinutes >= 5) {
+                    bgClass = 'bg-yellow-50 dark:bg-yellow-900/20';
+                    borderClass = 'border-yellow-500 dark:border-yellow-700';
+                }
+            }
+
             const card = document.createElement('div');
-            card.className = `bg-white dark:bg-[#2A2B2B] rounded-[1.25rem] p-5 shadow-sm border border-gray-200 dark:border-gray-800 flex flex-col justify-between transition-all hover:shadow-md order-card-${order.status || 'Pending'} relative overflow-hidden`;
+            card.className = `${bgClass} rounded-[1.25rem] p-5 shadow-sm border ${borderClass} flex flex-col justify-between transition-all hover:shadow-md order-card-${order.status || 'Pending'} relative overflow-hidden ${pulseClass}`;
+            
             if (order.status === 'Pending') card.classList.add('border-l-4', 'border-l-[#D97531]');
             if (order.status === 'Preparing') card.classList.add('border-l-4', 'border-l-[#994700]');
             if (order.status === 'Ready') card.classList.add('border-l-4', 'border-l-green-500');
@@ -112,18 +132,21 @@ function renderOrders() {
                     <div class="flex justify-between items-center mb-4 pb-3 border-b border-gray-100 dark:border-gray-800">
                         <div class="font-headline font-bold text-lg text-[#1B1C1C] dark:text-white flex items-center gap-2">
                             <div class="w-8 h-8 rounded-full bg-[#F6F3F2] dark:bg-[#1B1C1C] text-[#994700] flex items-center justify-center text-sm shadow-inner">
-                                ${order.tableNumber || '?'}
+                                ${window.escapeHTML(order.tableNumber || '?')}
                             </div>
-                            <span>Bàn ${order.tableNumber || '?'}</span>
+                            <span>Bàn ${window.escapeHTML(order.tableNumber || '?')}</span>
                         </div>
-                        <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 font-medium bg-gray-50 dark:bg-gray-800/50 px-3 py-1.5 rounded-lg">
-                            <i class="fa-regular fa-clock"></i> ${timeStr}
+                        <div class="flex flex-col items-end">
+                            <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 font-medium bg-gray-50 dark:bg-gray-800/50 px-3 py-1.5 rounded-lg">
+                                <i class="fa-regular fa-clock"></i> ${timeStr}
+                            </div>
+                            ${diffInMinutes > 0 ? `<div class="text-xs font-bold mt-1 ${diffInMinutes >= 10 ? 'text-red-500' : diffInMinutes >= 5 ? 'text-yellow-600' : 'text-green-500'}">${diffInMinutes} phút trước</div>` : ''}
                         </div>
                     </div>
                     <ul class="mb-4 list-none pl-0">
                         ${itemsHtml}
                     </ul>
-                    ${order.orderNote ? `<div class="p-3 bg-orange-50 dark:bg-orange-900/20 text-[#994700] dark:text-orange-300 text-sm rounded-xl mb-4 font-medium flex gap-2 items-start border border-orange-100 dark:border-orange-800/50"><i class="fa-solid fa-note-sticky mt-0.5"></i> <span>Ghi chú: ${order.orderNote}</span></div>` : ''}
+                    ${order.orderNote ? `<div class="p-3 bg-orange-50 dark:bg-orange-900/20 text-[#994700] dark:text-orange-300 text-sm rounded-xl mb-4 font-medium flex gap-2 items-start border border-orange-100 dark:border-orange-800/50"><i class="fa-solid fa-note-sticky mt-0.5"></i> <span>Ghi chú: ${window.escapeHTML(order.orderNote)}</span></div>` : ''}
                     
                     <!-- Status / Payment tags -->
                     <div class="flex flex-wrap gap-2 mb-4">
@@ -212,7 +235,7 @@ function renderGroupedOrders() {
             <div class="bg-white dark:bg-[#2A2B2B] rounded-[1.25rem] shadow-sm border border-[#D97531] overflow-hidden relative">
                 <div class="p-4 bg-orange-50 dark:bg-orange-900/20 border-b border-[#D97531]/20">
                     <div class="font-headline font-bold text-[#1B1C1C] dark:text-[#F6F3F2] text-lg flex items-center gap-2">
-                        <span class="text-[#D97531] text-xl">${group.quantity}x</span> ${group.name}
+                        <span class="text-[#D97531] text-xl">${group.quantity}x</span> ${window.escapeHTML(group.name)}
                     </div>
                 </div>
                 <div class="p-4">
@@ -262,7 +285,7 @@ function renderBatchSidebar() {
     sortedItems.forEach(item => {
         html += `
             <div class="flex justify-between items-center py-2.5 border-b border-gray-100 dark:border-gray-800 cursor-default hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg px-2 transition-colors -mx-2">
-                <span class="text-sm font-medium text-[#1B1C1C] dark:text-gray-300 whitespace-nowrap overflow-hidden text-ellipsis mr-2">${item.name}</span>
+                <span class="text-sm font-medium text-[#1B1C1C] dark:text-gray-300 whitespace-nowrap overflow-hidden text-ellipsis mr-2">${window.escapeHTML(item.name)}</span>
                 <span class="px-2.5 py-1 bg-orange-100 dark:bg-orange-900/30 text-[#994700] dark:text-orange-400 text-xs font-bold rounded-full min-w-[28px] text-center border border-orange-200 dark:border-orange-800 flex-shrink-0">${item.qty}</span>
             </div>
         `;
@@ -427,17 +450,26 @@ function playDing() {
     if (!audioEnabled) return;
     try {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const oscillator = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
-        oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
-        oscillator.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.5); // Drop to A4
-        gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-        oscillator.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-        oscillator.start();
-        oscillator.stop(audioCtx.currentTime + 0.5);
+        
+        // Helper to play a single beep
+        const playBeep = (freq, startTime, duration) => {
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(freq, startTime);
+            gainNode.gain.setValueAtTime(1, startTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.start(startTime);
+            oscillator.stop(startTime + duration);
+        };
+
+        const now = audioCtx.currentTime;
+        // Double Beep for higher attention
+        playBeep(880, now, 0.2); // First beep
+        playBeep(1046.50, now + 0.3, 0.3); // Second higher beep (C6)
+        
     } catch (e) { console.error("Audio API not supported or blocked", e); }
 }
 
@@ -549,7 +581,7 @@ function renderStaffRequest(data) {
     alertDiv.innerHTML = `
         <i class="fa-solid ${iconClass} fs-3 me-3"></i>
         <div class="flex-grow-1">
-            <h5 class="mb-1">${msg}</h5>
+            <h5 class="mb-1">${window.escapeHTML(msg)}</h5>
             <small style="opacity: 0.8;"><i class="fa-regular fa-clock"></i> ${new Date(created_at).toLocaleTimeString()}</small>
         </div>
         <button class="btn btn-light btn-sm font-bold ms-3" onclick="clearRequest('${id}', this)">Xong rồi</button>
@@ -691,12 +723,12 @@ async function fetchKitchenHistory() {
 
             let itemsHtml = order.items.map(i => {
                 const optionsHtml = i.selectedOptions && i.selectedOptions.length > 0
-                    ? `<div class="ml-4 text-gray-500 dark:text-gray-400 text-sm mt-1 border-l-2 border-[#D97531] pl-2">+ ${i.selectedOptions.map(o => o.choiceName).join(', ')}</div>`
+                    ? `<div class="ml-4 text-gray-500 dark:text-gray-400 text-sm mt-1 border-l-2 border-[#D97531] pl-2">+ ${i.selectedOptions.map(o => window.escapeHTML(o.choiceName)).join(', ')}</div>`
                     : '';
                 return `
                 <li class="py-2 border-b border-gray-200 dark:border-gray-700/50 last:border-0 text-[#1B1C1C] dark:text-[#F6F3F2]">
                     <div class="flex items-start justify-between">
-                        <span class="font-medium"><span class="font-bold text-[#D97531] mr-1">${i.quantity}x</span> ${i.name}</span>
+                        <span class="font-medium"><span class="font-bold text-[#D97531] mr-1">${i.quantity}x</span> ${window.escapeHTML(i.name)}</span>
                     </div>
                     ${optionsHtml}
                 </li>`;
@@ -719,9 +751,9 @@ async function fetchKitchenHistory() {
                         <div class="flex justify-between items-center mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">
                             <div class="font-headline font-bold text-lg text-[#1B1C1C] dark:text-white flex items-center gap-2">
                                 <div class="w-8 h-8 rounded-full bg-white dark:bg-[#1B1C1C] text-[#994700] flex items-center justify-center text-sm shadow-sm border border-gray-100 dark:border-gray-800">
-                                    ${order.tableNumber || '?'}
+                                    ${window.escapeHTML(String(order.tableNumber)) || '?'}
                                 </div>
-                                <span>Bàn ${order.tableNumber || '?'}</span>
+                                <span>Bàn ${window.escapeHTML(String(order.tableNumber)) || '?'}</span>
                             </div>
                             <div class="text-right">
                                 <div class="text-sm text-gray-600 dark:text-gray-400 font-medium"><i class="fa-regular fa-clock"></i> ${timeStr}</div>
@@ -731,7 +763,7 @@ async function fetchKitchenHistory() {
                         <ul class="mb-4 list-none pl-0">
                             ${itemsHtml}
                         </ul>
-                        ${order.orderNote ? `<div class="p-3 bg-orange-50 dark:bg-orange-900/20 text-[#994700] dark:text-orange-300 text-sm rounded-xl mb-4 font-medium flex gap-2 items-start border border-orange-100 dark:border-orange-800/50"><i class="fa-solid fa-note-sticky mt-0.5"></i> <span>Ghi chú: ${order.orderNote}</span></div>` : ''}
+                        ${order.orderNote ? `<div class="p-3 bg-orange-50 dark:bg-orange-900/20 text-[#994700] dark:text-orange-300 text-sm rounded-xl mb-4 font-medium flex gap-2 items-start border border-orange-100 dark:border-orange-800/50"><i class="fa-solid fa-note-sticky mt-0.5"></i> <span>Ghi chú: ${window.escapeHTML(order.orderNote)}</span></div>` : ''}
                     </div>
                     
                     <div class="mt-auto pt-4 border-t border-gray-200 dark:border-gray-700">

@@ -7,8 +7,12 @@
       "destination": "/api/index.js"
     },
     {
-      "source": "/(login|admin|kitchen|staff|tv)",
-      "destination": "/public/$1.html"
+      "source": "/",
+      "destination": "/public/pages/index.html"
+    },
+    {
+      "source": "/(login|admin|kitchen|staff|tv|live_index|index)",
+      "destination": "/public/pages/$1.html"
     },
     {
       "source": "/(.*)",
