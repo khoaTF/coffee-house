@@ -8,39 +8,43 @@
     },
     {
       "source": "/",
-      "destination": "/pages/index.html"
+      "destination": "/api/index.js"
     },
     {
       "source": "/login",
-      "destination": "/pages/login.html"
+      "destination": "/api/index.js"
     },
     {
       "source": "/admin",
-      "destination": "/pages/admin.html"
+      "destination": "/api/index.js"
     },
     {
       "source": "/kitchen",
-      "destination": "/pages/kitchen.html"
+      "destination": "/api/index.js"
     },
     {
       "source": "/staff",
-      "destination": "/pages/staff.html"
+      "destination": "/api/index.js"
     },
     {
       "source": "/staff-login",
-      "destination": "/pages/staff-login.html"
+      "destination": "/api/index.js"
     },
     {
       "source": "/tv",
-      "destination": "/pages/tv.html"
+      "destination": "/api/index.js"
     },
     {
       "source": "/live_index",
-      "destination": "/pages/live_index.html"
+      "destination": "/api/index.js"
     },
     {
       "source": "/index",
-      "destination": "/pages/index.html"
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/api/index.js"
     }
   ]
 }

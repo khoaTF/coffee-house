@@ -24,6 +24,17 @@ app.get('/ping', (req, res) => res.status(200).send('pong'));
 // Serve static frontend files from 'public' directory at root
 app.use(express.static(path.join(__dirname, '../public')));
 
+// Explicit HTML Page Routes to support Clean URLs locally and on Vercel
+const pages = ['login', 'admin', 'kitchen', 'staff', 'staff-login', 'tv', 'live_index', 'index'];
+pages.forEach(page => {
+    app.get(`/${page}`, (req, res) => {
+        res.sendFile(path.join(__dirname, `../public/pages/${page}.html`));
+    });
+});
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/pages/index.html'));
+});
+
 // API Routes mounting
 app.use('/api', apiRoutes);
 
