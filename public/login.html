@@ -156,9 +156,7 @@
                     if (!pin) throw new Error("Vui lòng nhập Mã PIN.");
 
                     const { data, error } = await supabase
-                        .from('users')
-                        .select('*')
-                        .eq('pin', pin)
+                        .rpc('verify_pin', { pin_code: pin })
                         .single();
 
                     if (error || !data) throw new Error("Mã PIN không hợp lệ (sai mã)!");
