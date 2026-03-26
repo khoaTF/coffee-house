@@ -11,8 +11,36 @@
       "destination": "/public/pages/index.html"
     },
     {
-      "source": "/(login|admin|kitchen|staff|tv|live_index|index)",
-      "destination": "/public/pages/$1.html"
+      "source": "/login",
+      "destination": "/public/pages/login.html"
+    },
+    {
+      "source": "/admin",
+      "destination": "/public/pages/admin.html"
+    },
+    {
+      "source": "/kitchen",
+      "destination": "/public/pages/kitchen.html"
+    },
+    {
+      "source": "/staff",
+      "destination": "/public/pages/staff.html"
+    },
+    {
+      "source": "/staff-login",
+      "destination": "/public/pages/staff-login.html"
+    },
+    {
+      "source": "/tv",
+      "destination": "/public/pages/tv.html"
+    },
+    {
+      "source": "/live_index",
+      "destination": "/public/pages/live_index.html"
+    },
+    {
+      "source": "/index",
+      "destination": "/public/pages/index.html"
     },
     {
       "source": "/(.*)",
