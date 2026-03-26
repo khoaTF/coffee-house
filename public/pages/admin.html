@@ -137,7 +137,16 @@
             </nav>
 
             <div class="p-4 border-t border-[#3A3528] bg-[#232018] mt-auto">
-                <button class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-red-400 hover:bg-red-400/10 hover:text-red-300 transition-colors border-0 bg-transparent" onclick="supabase.auth.signOut().then(() => { localStorage.clear(); sessionStorage.clear(); window.location.href='/login'; })">
+                <div class="mb-3 px-2 flex flex-col">
+                    <span class="text-[10px] text-[#A89F88] uppercase tracking-wider font-bold mb-1">Đang đăng nhập:</span>
+                    <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 rounded-full bg-[#3A3528] flex items-center justify-center border border-[#C0A062]">
+                            <i class="fa-solid fa-user text-[#C0A062] text-xs"></i>
+                        </div>
+                        <span id="desktop-staff-name" class="text-[#E8DCC4] font-bold text-sm truncate">...</span>
+                    </div>
+                </div>
+                <button class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-red-400 hover:bg-red-400/10 hover:text-red-300 transition-colors border-0 bg-transparent" onclick="supabase.auth.signOut().then(() => { localStorage.clear(); sessionStorage.clear(); window.location.href='/login.html'; })">
                     <i class="fa-solid fa-sign-out-alt w-5 text-center"></i> Đăng xuất
                 </button>
             </div>
@@ -150,7 +159,10 @@
             <header class="md:hidden flex items-center justify-between p-4 bg-[#232018]/80 backdrop-blur-md border-b border-[#3A3528] z-20 sticky top-0 shadow-sm">
                 <div class="flex items-center gap-3">
                     <img src="/images/bunny_logo.png" alt="Logo" class="w-8 h-8 rounded-lg object-cover border border-[#3A3528]">
-                    <span class="font-noto font-bold text-lg text-[#F2E8D5] leading-none mb-0">Admin</span>
+                    <div class="flex flex-col">
+                        <span class="font-noto font-bold text-lg text-[#F2E8D5] leading-none mb-1">Admin Panel</span>
+                        <span id="mobile-staff-name" class="text-[10px] text-[#C0A062] font-semibold leading-none truncate max-w-[120px]">...</span>
+                    </div>
                 </div>
                 <button class="text-[#E8DCC4] p-2 hover:bg-[#3A3528] rounded-lg transition-colors border-0 bg-transparent" onclick="openSidebarMobile()">
                     <i class="fa-solid fa-bars text-xl"></i>
