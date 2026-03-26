@@ -8,43 +8,39 @@
     },
     {
       "source": "/",
-      "destination": "/public/pages/index.html"
+      "destination": "/pages/index.html"
     },
     {
       "source": "/login",
-      "destination": "/public/pages/login.html"
+      "destination": "/pages/login.html"
     },
     {
       "source": "/admin",
-      "destination": "/public/pages/admin.html"
+      "destination": "/pages/admin.html"
     },
     {
       "source": "/kitchen",
-      "destination": "/public/pages/kitchen.html"
+      "destination": "/pages/kitchen.html"
     },
     {
       "source": "/staff",
-      "destination": "/public/pages/staff.html"
+      "destination": "/pages/staff.html"
     },
     {
       "source": "/staff-login",
-      "destination": "/public/pages/staff-login.html"
+      "destination": "/pages/staff-login.html"
     },
     {
       "source": "/tv",
-      "destination": "/public/pages/tv.html"
+      "destination": "/pages/tv.html"
     },
     {
       "source": "/live_index",
-      "destination": "/public/pages/live_index.html"
+      "destination": "/pages/live_index.html"
     },
     {
       "source": "/index",
-      "destination": "/public/pages/index.html"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/public/$1"
+      "destination": "/pages/index.html"
     }
   ]
 }
