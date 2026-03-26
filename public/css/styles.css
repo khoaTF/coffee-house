@@ -1259,11 +1259,12 @@ input, select, textarea {
     
     /* Remove brutalist shadows from modals on desktop */
     .cart-modal {
-        align-items: center;
+        align-items: flex-start;
+        padding-top: 10vh;
     }
     .cart-modal-content {
         max-width: 500px;
-        margin: auto; /* Override margin-top: auto from default CSS */
+        margin: 0 auto; /* Override margin-top: auto from default CSS */
         box-shadow: 0 40px 100px rgba(30, 26, 24, 0.2) !important;
         border-radius: 28px !important;
         border: 1px solid var(--border) !important;
