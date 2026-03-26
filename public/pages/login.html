@@ -122,15 +122,19 @@
 
             try {
                 if (currentMode === 'account') {
-                    const user = document.getElementById('username')?.value || '';
-                    const pass = document.getElementById('password')?.value || '';
+                    const user = document.getElementById('username')?.value?.trim() || '';
+                    const pass = document.getElementById('password')?.value?.trim() || '';
                     if (!user || !pass) throw new Error("Vui lòng nhập đủ Tên đăng nhập và Mật khẩu.");
 
                     const { data, error } = await supabase
                         .rpc('verify_credentials', { p_username: user, p_password: pass })
                         .single();
 
-                    if (error || !data) throw new Error("Tài khoản hoặc mật khẩu không đúng!");
+                    if (error) {
+                        if (error.code === 'PGRST116') throw new Error("Tài khoản hoặc mật khẩu không đúng!");
+                        else throw new Error("Lỗi hệ thống: " + error.message);
+                    }
+                    if (!data) throw new Error("Tài khoản hoặc mật khẩu không đúng!");
 
                     let authEmail = '';
                     let authPass = '';
