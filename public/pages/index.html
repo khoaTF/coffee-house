@@ -275,27 +275,24 @@
         </div>
         <div class="cart-modal-body hide-scrollbar p-0 flex flex-col flex-1 overflow-hidden" style="min-height: 0;">
             <!-- Scrollable Cart Items -->
-            <div class="cart-items-body px-6 pt-4 pb-4 flex flex-col gap-2 overflow-y-auto hide-scrollbar flex-1" id="cart-items-container">
+            <div class="cart-items-body px-6 pt-4 pb-2 flex flex-col gap-2 overflow-y-auto hide-scrollbar flex-1" id="cart-items-container">
                 <!-- Cart items list -->
                 <div class="empty-cart text-center text-muted">Giỏ hàng đang trống.</div>
             </div>
 
-            <!-- Divider -->
-            <div class="border-t border-outline-variant/30 w-full shrink-0"></div>
-
-            <!-- Fixed / Semi-Scrollable Options -->
-            <div class="cart-options-wrapper px-6 pt-5 pb-2 flex flex-col gap-4 overflow-y-auto hide-scrollbar shrink-0 max-h-[45vh]">
-                <div class="cart-note-container flex flex-col gap-2 shrink-0">
-                    <label for="order-note" class="cart-note-label font-bold text-main mb-0">Ghi chú (Tùy chọn):</label>
-                    <textarea id="order-note" class="cart-note-input input-glass" placeholder="Vd: Ít đường, nhiều đá..." rows="2"></textarea>
+            <!-- Fixed Stationary Options (Note, Loyalty, Promo) -->
+            <div class="cart-options-wrapper px-6 pt-4 pb-2 flex flex-col gap-3 shrink-0 border-t border-outline-variant/20 shadow-[0_-4px_20px_rgba(0,0,0,0.02)] relative z-10 bg-[var(--surface-color)]">
+                <div class="cart-note-container flex flex-col gap-1.5 shrink-0">
+                    <label for="order-note" class="cart-note-label font-bold text-main mb-0 text-[0.95rem]">Ghi chú (Tùy chọn):</label>
+                    <textarea id="order-note" class="cart-note-input input-glass px-4 py-2.5 rounded-xl text-sm" placeholder="Vd: Ít đường, nhiều đá..." rows="1" style="min-height: 44px;"></textarea>
                 </div>
 
 
-                <div class="loyalty-section m-0 bg-[#F0EDEC] dark:bg-[#2A2B2B] rounded-2xl p-4 shrink-0">
-                    <label class="font-bold mb-2 flex items-center text-[#1b1c1b] dark:text-[#fcf9f8]"><i class="fa-solid fa-crown text-[#FF7A00] mr-2"></i> Tích điểm / Thành viên</label>
+                <div class="loyalty-section m-0 bg-[#F0EDEC] dark:bg-[#2A2B2B] rounded-2xl p-4 shrink-0 transition-all">
+                    <label class="font-bold mb-2 flex items-center text-[#1b1c1b] dark:text-[#fcf9f8] text-[0.95rem]"><i class="fa-solid fa-crown text-[#FF7A00] mr-2"></i> Tích điểm / Thành viên</label>
                     <div class="flex gap-2">
-                        <input type="tel" id="customer-phone-input" class="bg-[#FCF9F8] dark:bg-[#1B1C1B] rounded-xl px-4 py-3 flex-1 text-[#1b1c1b] dark:text-[#fcf9f8] focus:outline-none focus:ring-1 focus:ring-[#994700]/30" placeholder="Nhập SĐT...">
-                        <button id="verify-phone-btn" onclick="verifyCustomerPhone()" class="bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white px-5 rounded-xl font-bold whitespace-nowrap active:scale-95 transition-transform"><i class="fa-solid fa-check"></i> Xác nhận</button>
+                        <input type="tel" id="customer-phone-input" class="bg-[#FCF9F8] dark:bg-[#1B1C1B] rounded-xl px-4 py-2.5 flex-1 text-[#1b1c1b] dark:text-[#fcf9f8] text-sm focus:outline-none focus:ring-1 focus:ring-[#994700]/30" placeholder="Nhập SĐT...">
+                        <button id="verify-phone-btn" onclick="verifyCustomerPhone()" class="bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white px-5 rounded-xl text-sm font-bold whitespace-nowrap active:scale-95 transition-transform"><i class="fa-solid fa-check"></i> Xác nhận</button>
                     </div>
                     <div id="loyalty-message" class="hidden text-sm mt-2 font-bold text-[#FF7A00]"></div>
 
@@ -327,11 +324,11 @@
                     </div>
                 </div>
 
-                <div class="promo-section m-0 bg-[#F0EDEC] dark:bg-[#2A2B2B] rounded-2xl p-4 shrink-0">
-                    <label class="font-bold mb-2 flex items-center text-[#1b1c1b] dark:text-[#fcf9f8]"><i class="fa-solid fa-ticket-simple text-[#FF7A00] mr-2"></i> Mã khuyến mãi</label>
+                <div class="promo-section m-0 bg-[#F0EDEC] dark:bg-[#2A2B2B] rounded-xl p-3 shrink-0 transition-all mb-1">
+                    <label class="font-bold mb-2 flex items-center text-[#1b1c1b] dark:text-[#fcf9f8] text-[0.95rem]"><i class="fa-solid fa-ticket-simple text-[#FF7A00] mr-2"></i> Mã khuyến mãi</label>
                     <div class="flex gap-2">
-                        <input type="text" id="promo-code-input" class="bg-[#FCF9F8] dark:bg-[#1B1C1B] rounded-xl px-4 py-3 flex-1 text-[#1b1c1b] dark:text-[#fcf9f8] focus:outline-none focus:ring-1 focus:ring-[#994700]/30 uppercase" placeholder="Nhập mã...">
-                        <button id="apply-promo-btn" onclick="applyPromo()" class="bg-white dark:bg-[#1B1C1C] text-[#1b1c1b] dark:text-white border border-[#e0c0af] px-5 rounded-xl font-bold whitespace-nowrap active:scale-95 transition-transform">Áp dụng</button>
+                        <input type="text" id="promo-code-input" class="bg-white dark:bg-[#1f2020] rounded-lg px-3 py-2.5 flex-1 text-sm text-[#1b1c1b] dark:text-[#fcf9f8] focus:outline-none focus:ring-1 focus:ring-[#994700]/30 border border-transparent focus:border-[#994700]/30 uppercase" placeholder="Nhập mã...">
+                        <button id="apply-promo-btn" onclick="applyPromo()" class="bg-white dark:bg-[#1f2020] text-[#1b1c1b] dark:text-white border border-[#e0c0af] px-4 rounded-lg text-sm font-bold whitespace-nowrap active:scale-95 transition-transform shadow-sm">Áp dụng</button>
                     </div>
                     <div id="promo-message" class="hidden text-sm mt-2 font-medium"></div>
                 </div>
