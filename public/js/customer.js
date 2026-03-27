@@ -411,6 +411,7 @@ function renderMenu(category) {
         const disableAddBtn = isOutOfStock || hasActiveOrder || !canAddMore;
 
         const card = document.createElement('article');
+        card.setAttribute('data-product-id', item._id);
         card.className = `bg-[#FCF9F8] dark:bg-[#1B1C1B] rounded-[24px] overflow-hidden group cursor-pointer active:scale-[0.98] transition-all hover:bg-white dark:hover:bg-[#2A2B2B] ${isOutOfStock ? 'opacity-60 saturate-50' : ''}`;
         
         const isBestSeller = !!item.isBestSeller;
@@ -418,9 +419,9 @@ function renderMenu(category) {
         const hasPromo = !!item.isPromo;
 
         card.innerHTML = `
-            <div class="aspect-[4/3] bg-[#F0EDEC] dark:bg-slate-800 relative overflow-hidden">
-                <img src="${item.imageUrl}" alt="${window.escapeHTML(item.name)}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.onerror=null; this.src='https://placehold.co/800x600/1B1C1C/FFF?text=${encodeURIComponent(item.name)}'">
-                ${isOutOfStock ? '<div class="absolute inset-0 bg-black/40 flex items-center justify-center z-10"><span class="bg-[#ba1a1a] text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">Hết hàng</span></div>' : ''}
+            <div class="img-wrap aspect-[4/3] bg-[#F0EDEC] dark:bg-slate-800 relative overflow-hidden">
+                <img src="${item.imageUrl}" alt="${window.escapeHTML(item.name)}" loading="lazy" decoding="async" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.onerror=null; this.src='https://placehold.co/800x600/1B1C1C/FFF?text=${encodeURIComponent(item.name)}'">
+                ${isOutOfStock ? '<div class="oos-overlay absolute inset-0 bg-black/40 flex items-center justify-center z-10"><span class="bg-[#ba1a1a] text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">Hết hàng</span></div>' : ''}
                 ${isBestSeller && !isOutOfStock ? `
                 <div class="absolute top-3 left-3 bg-white/90 dark:bg-[#1B1C1B]/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs font-bold text-[#FF7A00] shadow-sm flex items-center gap-1 z-10">
                     <i class="fa-solid fa-fire text-[#FF7A00] text-[12px]"></i> Bán chạy
@@ -444,7 +445,7 @@ function renderMenu(category) {
                 </div>
                 <p class="text-sm text-[#584235] dark:text-[#E0C0AF] line-clamp-2 mb-4 leading-relaxed flex-grow">${window.escapeHTML(item.description)}</p>
                 
-                <div class="flex items-center justify-between mt-auto">
+                <div class="action-btn-container flex items-center justify-between mt-auto">
                     ${(cartItemTotalQty > 0) ? `
                     <div class="flex items-center gap-3 bg-white dark:bg-[#2A2B2B] rounded-full p-1 w-full shadow-sm" onclick="event.stopPropagation()">
                       <button class="w-10 h-10 rounded-full bg-[#F0EDEC] dark:bg-[#1B1C1B] text-[#1b1c1b] dark:text-white flex items-center justify-center active:scale-95 transition-transform" onclick="updateCart('${item._id}', -1)">
@@ -454,7 +455,7 @@ function renderMenu(category) {
                              class="font-bold text-[#1b1c1b] dark:text-white text-base flex-grow text-center bg-transparent w-full focus:outline-none rounded no-spinners" 
                              style="-moz-appearance: textfield; appearance: textfield;" 
                              value="${cartItemTotalQty}" 
-                             ${hasOptions ? 'readonly onclick="openOptionsModal(menuItems.find(i => i._id === \'' + item._id + '\'))"' : ''}
+                             ${hasOptions ? 'readonly onclick="openOptionsModal(menuItems.find(i => i._id === \\\'' + item._id + '\\\'))"' : ''}
                              onchange="if(!${hasOptions}) setCartQuantity('${item._id}', this.value)" 
                              onfocus="this.select()" />
                       <button class="w-10 h-10 rounded-full bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white flex items-center justify-center shadow-md active:scale-95 transition-transform" ${disableAddBtn ? "disabled style='opacity:0.5;'" : ""} onclick="updateCart('${item._id}', 1)">
@@ -473,17 +474,88 @@ function renderMenu(category) {
         `;
         
         // Also make card clicking add to cart if not optioned and not already out of stock
-        card.addEventListener('click', () => {
-             if (disableAddBtn) return;
+        card.onclick = () => {
+             const currentCartItemTotalQty = cart.filter(c => c._id === item._id).reduce((sum, c) => sum + c.quantity, 0);
+             const currentCanAddMore = getAvailableToAdd(item) > 0;
+             const currentIsOutOfStock = !currentCanAddMore && currentCartItemTotalQty === 0;
+             const currentHasActiveOrder = activeOrderId !== null;
+             const currentDisableAddBtn = currentIsOutOfStock || currentHasActiveOrder || !currentCanAddMore;
+
+             if (currentDisableAddBtn) return;
              if (hasOptions) openOptionsModal(item);
              else updateCart(item._id, 1);
-        });
+        };
 
         menuContainer.appendChild(card);
     });
 };
 
+function updateMenuCardsUI() {
+    const cards = document.querySelectorAll('article[data-product-id]');
+    cards.forEach(card => {
+        const id = card.getAttribute('data-product-id');
+        const item = menuItems.find(i => i._id === id);
+        if (!item) return;
+
+        const cartItemTotalQty = cart.filter(c => c._id === item._id).reduce((sum, c) => sum + c.quantity, 0);
+        const canAddMore = getAvailableToAdd(item) > 0;
+        const isOutOfStock = !canAddMore && cartItemTotalQty === 0;
+        const hasActiveOrder = activeOrderId !== null;
+        const disableAddBtn = isOutOfStock || hasActiveOrder || !canAddMore;
+        const hasOptions = item.options && item.options.length > 0;
+
+        // Update card styling
+        if (isOutOfStock) {
+            card.classList.add('opacity-60', 'saturate-50');
+            let oosOverlay = card.querySelector('.oos-overlay');
+            if(!oosOverlay) {
+                const imgWrap = card.querySelector('.img-wrap');
+                if(imgWrap) {
+                    imgWrap.insertAdjacentHTML('beforeend', '<div class="oos-overlay absolute inset-0 bg-black/40 flex items-center justify-center z-10"><span class="bg-[#ba1a1a] text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">Hết hàng</span></div>');
+                }
+            }
+        } else {
+            card.classList.remove('opacity-60', 'saturate-50');
+            let oosOverlay = card.querySelector('.oos-overlay');
+            if(oosOverlay) oosOverlay.remove();
+        }
+
+        // Update button container
+        const actionBtnContainer = card.querySelector('.action-btn-container');
+        if (actionBtnContainer) {
+            if (cartItemTotalQty > 0) {
+                actionBtnContainer.innerHTML = `
+                    <div class="flex items-center gap-3 bg-white dark:bg-[#2A2B2B] rounded-full p-1 w-full shadow-sm" onclick="event.stopPropagation()">
+                      <button class="w-10 h-10 rounded-full bg-[#F0EDEC] dark:bg-[#1B1C1B] text-[#1b1c1b] dark:text-white flex items-center justify-center active:scale-95 transition-transform" onclick="updateCart('${item._id}', -1)">
+                        <i class="fa-solid fa-minus text-[16px]"></i>
+                      </button>
+                      <input type="number" min="0" 
+                             class="font-bold text-[#1b1c1b] dark:text-white text-base flex-grow text-center bg-transparent w-full focus:outline-none rounded no-spinners" 
+                             style="-moz-appearance: textfield; appearance: textfield;" 
+                             value="${cartItemTotalQty}" 
+                             ${hasOptions ? 'readonly onclick="openOptionsModal(menuItems.find(i => i._id === \\\'' + item._id + '\\\'))"' : ''}
+                             onchange="if(!${hasOptions}) setCartQuantity('${item._id}', this.value)" 
+                             onfocus="this.select()" />
+                      <button class="w-10 h-10 rounded-full bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white flex items-center justify-center shadow-md active:scale-95 transition-transform" ${disableAddBtn ? "disabled style='opacity:0.5;'" : ""} onclick="updateCart('${item._id}', 1)">
+                        <i class="fa-solid fa-plus text-[16px]"></i>
+                      </button>
+                    </div>
+                `;
+            } else {
+                actionBtnContainer.innerHTML = `
+                    <button class="w-full bg-[#1b1c1b] dark:bg-[#F0EDEC] text-white dark:text-[#1b1c1b] font-bold py-2.5 rounded-full hover:bg-black active:scale-95 transition-transform flex items-center justify-center gap-2" 
+                        onclick="event.stopPropagation(); updateCart('${item._id}', 1)" ${disableAddBtn ? "disabled style='opacity:0.5;background:#888;cursor:not-allowed;color:white;'" : ""}>
+                      <i class="fa-solid ${hasOptions ? 'fa-sliders' : 'fa-plus'} text-[16px]"></i>
+                      ${hasOptions ? 'Tùy chọn' : 'Thêm vào giỏ'}
+                    </button>
+                `;
+            }
+        }
+    });
+}
+
 function updateCartUI() {
+    updateMenuCardsUI();
     const totalQty = cart.reduce((sum, item) => sum + item.quantity, 0);
     const totalPrice = cart.reduce((sum, item) => {
         const itemOptionsPrice = (item.selectedOptions || []).reduce((s, o) => s + o.priceExtra, 0);
@@ -1025,9 +1097,6 @@ function handleOrderConfirmed(savedOrder) {
     document.querySelectorAll('.timeline-line').forEach(el => el.className = 'timeline-line');
     document.getElementById('step-pending')?.classList.add('active');
     
-    // Re-render menu so that the '+' buttons get locked out
-    const activeCategory = getActiveCategory();
-    renderMenu(activeCategory);
 }
 
 // User Action: Call Staff
@@ -1315,8 +1384,6 @@ window.setCartQuantity = (productIdOrCartKey, newQty) => {
         
         if (item.options && item.options.length > 0) {
             updateCartUI();
-            const activeCategory = getActiveCategory();
-            if (activeCategory) renderMenu(activeCategory);
             return; 
         }
 
@@ -1359,8 +1426,6 @@ window.setCartQuantity = (productIdOrCartKey, newQty) => {
     }
 
     updateCartUI();
-    const activeCategory = getActiveCategory();
-    if (activeCategory) renderMenu(activeCategory);
 };
 
 window.updateCart = (productIdOrCartKey, change) => {
@@ -1431,8 +1496,6 @@ function handleCartUpdate(cartKey, baseItem, change, selectedOptions) {
     }
 
     updateCartUI();
-    const activeCategory = getActiveCategory();
-    renderMenu(activeCategory);
 
     // Upsell popup logic
     if (change > 0 && !window.upsellShown) {
