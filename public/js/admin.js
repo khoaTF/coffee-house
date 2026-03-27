@@ -368,6 +368,9 @@ function editProduct(id) {
     document.getElementById('prodDesc').value = product.description || '';
     document.getElementById('prodImg').value = product.imageUrl || '';
     document.getElementById('prodBestSeller').checked = !!product.isBestSeller;
+    if(document.getElementById('prodCostPrice')) {
+        document.getElementById('prodCostPrice').value = product.cost_price || '';
+    }
     
     // Promo fields
     const promoStartMatch = product.promotional_price && product.promo_start_time ? new Date(product.promo_start_time) : null;
@@ -622,6 +625,7 @@ async function saveProduct() {
         promotional_price: promoPriceStr ? parseFloat(promoPriceStr) : null,
         promo_start_time: promoStartStr ? new Date(promoStartStr).toISOString() : null,
         promo_end_time: promoEndStr ? new Date(promoEndStr).toISOString() : null,
+        cost_price: document.getElementById('prodCostPrice') ? (parseFloat(document.getElementById('prodCostPrice').value) || 0) : 0,
         recipe: recipe,
         options: options
     };
@@ -794,6 +798,7 @@ function renderHistoryTable() {
     historyTableBody.replaceChildren();
     let grossRevenue = 0;
     let netRevenue = 0;
+    let totalProfit = 0;
 
     if (orderHistory.length === 0) {
         const tr = document.createElement('tr');
@@ -803,7 +808,7 @@ function renderHistoryTable() {
         td.textContent = 'Chưa có đơn hàng nào trong quá khứ.';
         tr.appendChild(td);
         historyTableBody.appendChild(tr);
-        totalRevenueEl.innerHTML = `Tổng doanh thu nguyên giá: <strong>0 đ</strong> <span class="ms-3 text-success">Doanh thu thực nhận: <strong>0 đ</strong></span>`;
+        totalRevenueEl.innerHTML = `Tổng doanh thu nguyên giá: <strong>0 đ</strong> <span class="ms-3 text-success">Doanh thu thực nhận: <strong>0 đ</strong></span><span class="ms-3 text-primary">Lợi nhuận: <strong>0 đ</strong></span>`;
         return;
     }
 
@@ -822,6 +827,7 @@ function renderHistoryTable() {
         if (order.status === 'Completed') {
             netRevenue += total;
             grossRevenue += (total + discount);
+            totalProfit += (order.profit || 0);
         }
 
         const statusMap = {
@@ -929,7 +935,15 @@ function renderHistoryTable() {
     spanNet.className = 'text-success ms-2 fw-bold fs-5';
     spanNet.textContent = `${netRevenue.toLocaleString('vi-VN')} đ`;
     
-    totalRevenueEl.append(strongGross, spanGross, strongNet, spanNet);
+    // Profit
+    const strongProfit = document.createElement('strong');
+    strongProfit.className = 'ms-4';
+    strongProfit.textContent = 'Tổng Lợi nhuận:';
+    const spanProfit = document.createElement('span');
+    spanProfit.className = 'text-primary ms-2 fw-bold fs-5';
+    spanProfit.textContent = `${totalProfit.toLocaleString('vi-VN')} đ`;
+    
+    totalRevenueEl.append(strongGross, spanGross, strongNet, spanNet, strongProfit, spanProfit);
 }
 
 window.cancelOrder = async (orderId) => {
@@ -1235,6 +1249,9 @@ function openIngredientModal(ingredientId = null) {
             document.getElementById('ingStock').value = ingredient.stock;
             document.getElementById('ingOldStock').value = ingredient.stock;
             document.getElementById('ingThreshold').value = ingredient.lowStockThreshold || 50;
+            if(document.getElementById('ingCostPrice')) {
+                document.getElementById('ingCostPrice').value = ingredient.cost_price || '';
+            }
             if(document.getElementById('ingSupplierName')) {
                 document.getElementById('ingSupplierName').value = ingredient.supplier_name || '';
             }
@@ -1245,6 +1262,7 @@ function openIngredientModal(ingredientId = null) {
         if(document.getElementById('ingOldStock')) document.getElementById('ingOldStock').value = '0';
         document.getElementById('ingStock').value = '0';
         document.getElementById('ingThreshold').value = '50';
+        if(document.getElementById('ingCostPrice')) document.getElementById('ingCostPrice').value = '';
         if(document.getElementById('ingSupplierName')) document.getElementById('ingSupplierName').value = '';
     }
     
@@ -1258,6 +1276,7 @@ async function saveIngredient() {
     const stock = parseFloat(document.getElementById('ingStock').value) || 0;
     const oldStock = document.getElementById('ingOldStock') ? (parseFloat(document.getElementById('ingOldStock').value) || 0) : 0;
     const lowStockThreshold = parseFloat(document.getElementById('ingThreshold').value) || 50;
+    const costPrice = document.getElementById('ingCostPrice') ? (parseFloat(document.getElementById('ingCostPrice').value) || 0) : 0;
     const supplierName = document.getElementById('ingSupplierName') ? document.getElementById('ingSupplierName').value.trim() : null;
 
     if (!name || !unit) {
@@ -1269,7 +1288,8 @@ async function saveIngredient() {
         name, 
         unit, 
         stock, 
-        low_stock_threshold: lowStockThreshold
+        low_stock_threshold: lowStockThreshold,
+        cost_price: costPrice
     };
     if (supplierName !== null) payload.supplier_name = supplierName;
 
