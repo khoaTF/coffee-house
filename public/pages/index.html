@@ -274,16 +274,16 @@
             <button id="close-modal" class="btn-icon bg-surface-container-low w-10 h-10 rounded-full flex items-center justify-center ml-4"><i class="fa-solid fa-times text-on-surface"></i></button>
         </div>
         <div class="cart-modal-body hide-scrollbar p-0 flex flex-col gap-4">
-            <div class="cart-items-body px-6 pt-6 flex flex-col gap-2" id="cart-items-container">
+            <div class="cart-items-body px-6 pt-6 flex flex-col gap-2 shrink-0" id="cart-items-container">
                 <!-- Cart items list -->
                 <div class="empty-cart text-center text-muted">Giỏ hàng đang trống.</div>
             </div>
-            <div class="cart-note-container px-6 flex flex-col gap-2">
+            <div class="cart-note-container px-6 flex flex-col gap-2 shrink-0">
                 <label for="order-note" class="cart-note-label font-bold text-main mb-0">Ghi chú (Tùy chọn):</label>
             <textarea id="order-note" class="cart-note-input input-glass" placeholder="Vd: Ít đường, nhiều đá..." rows="2"></textarea>
 
 
-            <div class="loyalty-section mt-4 mb-4 bg-[#F0EDEC] dark:bg-[#2A2B2B] rounded-2xl p-4">
+            <div class="loyalty-section mt-4 mb-4 bg-[#F0EDEC] dark:bg-[#2A2B2B] rounded-2xl p-4 shrink-0">
                 <label class="font-bold mb-2 flex items-center text-[#1b1c1b] dark:text-[#fcf9f8]"><i class="fa-solid fa-crown text-[#FF7A00] mr-2"></i> Tích điểm / Thành viên</label>
                 <div class="flex gap-2">
                     <input type="tel" id="customer-phone-input" class="bg-[#FCF9F8] dark:bg-[#1B1C1B] rounded-xl px-4 py-3 flex-1 text-[#1b1c1b] dark:text-[#fcf9f8] focus:outline-none focus:ring-1 focus:ring-[#994700]/30" placeholder="Nhập SĐT...">
@@ -319,7 +319,7 @@
                 </div>
             </div>
 
-            <div class="promo-section mb-4 bg-[#F0EDEC] dark:bg-[#2A2B2B] rounded-2xl p-4">
+            <div class="promo-section mb-4 bg-[#F0EDEC] dark:bg-[#2A2B2B] rounded-2xl p-4 shrink-0">
                 <label class="font-bold mb-2 flex items-center text-[#1b1c1b] dark:text-[#fcf9f8]"><i class="fa-solid fa-ticket-simple text-[#FF7A00] mr-2"></i> Mã khuyến mãi</label>
                 <div class="flex gap-2">
                     <input type="text" id="promo-code-input" class="bg-[#FCF9F8] dark:bg-[#1B1C1B] rounded-xl px-4 py-3 flex-1 text-[#1b1c1b] dark:text-[#fcf9f8] focus:outline-none focus:ring-1 focus:ring-[#994700]/30 uppercase" placeholder="Nhập mã...">
