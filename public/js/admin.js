@@ -358,7 +358,7 @@ function openProductModal() {
 }
 
 function editProduct(id) {
-    const product = products.find(p => p._id === id);
+    const product = products.find(p => String(p._id) === String(id));
     if (!product) return;
 
     document.getElementById('prodId').value = product._id;
@@ -660,7 +660,7 @@ async function saveProduct() {
 
 // Giảm Giá Nhanh
 function openQuickPromo(id) {
-    const product = products.find(p => p._id === id);
+    const product = products.find(p => String(p._id) === String(id));
     if (!product) return;
     
     document.getElementById('quickPromoId').value = product._id;
@@ -961,7 +961,7 @@ window.markOrderPaid = async (orderId) => {
 };
 
 window.printInvoice = (orderId) => {
-    const order = orderHistory.find(o => o._id === orderId);
+    const order = orderHistory.find(o => String(o._id) === String(orderId));
     if (!order) return;
 
     const printWindow = document.createElement('iframe');
@@ -1227,7 +1227,7 @@ function openIngredientModal(ingredientId = null) {
     document.getElementById('ingredientModalLabel').textContent = isEditing ? 'Sửa Nguyên Liệu' : 'Thêm Nguyên Liệu';
     
     if (isEditing) {
-        const ingredient = ingredients.find(i => i._id === ingredientId);
+        const ingredient = ingredients.find(i => String(i._id) === String(ingredientId));
         if (ingredient) {
             document.getElementById('ingId').value = ingredient._id;
             document.getElementById('ingName').value = ingredient.name;
@@ -1928,7 +1928,7 @@ function openStaffModal(id = null) {
     document.querySelectorAll('.perm-cb').forEach(cb => cb.checked = false);
 
     if (id) {
-        const s = staffList.find(x => x.id === id);
+        const s = staffList.find(x => String(x.id) === String(id));
         if (s) {
             document.getElementById('staff-name').value = s.name || '';
             document.getElementById('staff-pin').value = s.pin || '';
@@ -1995,7 +1995,7 @@ async function saveStaff() {
 }
 
 async function deleteStaff(id) {
-    const s = staffList.find(x => x.id === id);
+    const s = staffList.find(x => String(x.id) === String(id));
     const confirmed = await customConfirm(`Bạn có chắc chắn muốn xóa nhân viên ${s ? s.name : ''}?`, 'Xác nhận xóa');
     if (!confirmed) return;
     
@@ -2099,7 +2099,7 @@ async function exportInventoryToCSV() {
 }
 
 function editPromo(id) {
-    const p = discounts.find(i => i.id === id);
+    const p = discounts.find(i => String(i.id) === String(id));
     if(!p) return;
     document.getElementById('promoId').value = p.id;
     document.getElementById('promoCode').value = p.code;
@@ -2272,7 +2272,7 @@ function saveChoiceRecipe() {
 
 // --- Admin Print Receipt ---
 window.printInvoice = (orderId) => {
-    const order = orderHistory.find(o => o._id === orderId);
+    const order = orderHistory.find(o => String(o._id) === String(orderId));
     if (!order) return;
 
     const itemsHtml = order.items.map(i => {
@@ -2626,7 +2626,7 @@ function renderCustomersTable() {
 }
 
 function editCustomer(id) {
-    const c = customersList.find(x => x.id === id);
+    const c = customersList.find(x => String(x.id) === String(id));
     if (!c) return;
     document.getElementById('customerId').value = c.id;
     document.getElementById('customerName').value = c.name || '';
