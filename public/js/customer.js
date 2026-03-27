@@ -474,8 +474,9 @@ function renderMenu(category) {
         
         // Also make card clicking add to cart if not optioned and not already out of stock
         card.addEventListener('click', () => {
+             if (disableAddBtn) return;
              if (hasOptions) openOptionsModal(item);
-             else if (!disableAddBtn) updateCart(item._id, 1);
+             else updateCart(item._id, 1);
         });
 
         menuContainer.appendChild(card);
@@ -1320,6 +1321,14 @@ window.setCartQuantity = (productIdOrCartKey, newQty) => {
         }
 
         const existingIndex = cart.findIndex(c => c._id === productIdOrCartKey);
+        const currentQty = existingIndex > -1 ? cart[existingIndex].quantity : 0;
+        const available = getAvailableToAdd(item);
+        
+        if (newQty > currentQty + available) {
+            newQty = currentQty + available;
+            customerAlert("Đã đạt giới hạn tối đa có thể đặt cho món này!");
+        }
+
         if (existingIndex > -1) {
             if (newQty === 0) {
                 cart.splice(existingIndex, 1);
@@ -1332,6 +1341,15 @@ window.setCartQuantity = (productIdOrCartKey, newQty) => {
     } else {
         const existingIndex = cart.findIndex(c => c.cartKey === productIdOrCartKey);
         if (existingIndex > -1) {
+            const currentItemFromCart = cart[existingIndex];
+            const item = menuItems.find(i => i._id === currentItemFromCart._id);
+            const available = getAvailableToAdd(item);
+            
+            if (newQty > currentItemFromCart.quantity + available) {
+                newQty = currentItemFromCart.quantity + available;
+                customerAlert("Đã đạt giới hạn tối đa có thể đặt cho món này!");
+            }
+            
             if (newQty === 0) {
                 cart.splice(existingIndex, 1);
             } else {
@@ -1351,6 +1369,11 @@ window.updateCart = (productIdOrCartKey, change) => {
         const item = menuItems.find(i => i._id === productIdOrCartKey);
         if(!item) return;
         
+        if (change > 0 && getAvailableToAdd(item) <= 0) {
+            customerAlert("Món này đã hết nguyên liệu, không thể thêm nữa!");
+            return;
+        }
+        
         // If adding and item has options, show modal instead of adding directly
         if (change > 0 && item.options && item.options.length > 0) {
             openOptionsModal(item);
@@ -1365,6 +1388,12 @@ window.updateCart = (productIdOrCartKey, change) => {
         if(!cartItem && change < 0) return;
         
         const item = menuItems.find(i => i._id === (cartItem ? cartItem._id : productIdOrCartKey.split('|')[0]));
+        
+        if (change > 0 && getAvailableToAdd(item) <= 0) {
+            customerAlert("Món này đã hết nguyên liệu, không thể thêm nữa!");
+            return;
+        }
+        
         handleCartUpdate(productIdOrCartKey, item, change, cartItem ? cartItem.selectedOptions : []);
     }
 };
