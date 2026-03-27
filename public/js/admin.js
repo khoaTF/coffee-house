@@ -1998,8 +1998,11 @@ async function saveStaff() {
     
     try {
         if (id) {
-            const { error } = await supabase.from('users').update(payload).eq('id', id);
+            const { data, error } = await supabase.from('users').update(payload).eq('id', id).select();
             if (error) throw error;
+            if (!data || data.length === 0) {
+                throw new Error("Không thể cập nhật dữ liệu. Có thể do lỗi phân quyền (RLS) hoặc nhân viên không tồn tại.");
+            }
         } else {
             const { error } = await supabase.from('users').insert([payload]);
             if (error) throw error;
@@ -2010,7 +2013,7 @@ async function saveStaff() {
         fetchStaff();
     } catch (e) {
         console.error("Save staff error:", e);
-        alert("Lỗi khi lưu thông tin nhân viên.");
+        alert("Lỗi khi lưu thông tin nhân viên: " + (e.message || JSON.stringify(e)));
     }
 }
 
