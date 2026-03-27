@@ -644,6 +644,45 @@
         </div>
     </div>
 
+    <!-- Staff Modal -->
+    <div class="modal fade" id="staffModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-[#1A1814] border border-[#3A3528] rounded-2xl shadow-xl">
+                <div class="modal-header border-b border-[#3A3528] px-6 py-4">
+                    <h5 class="modal-title font-noto font-bold text-[#F2E8D5]" id="staffModalTitle">Thêm nhân viên</h5>
+                    <button type="button" class="btn-close btn-close-white opacity-50 hover:opacity-100" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body px-6 py-4">
+                    <form id="staff-form">
+                        <input type="hidden" id="staff-id">
+                        <div class="mb-4">
+                            <label class="form-label text-[#A89F88] text-xs uppercase tracking-wider font-bold mb-2">Tên nhân viên</label>
+                            <input type="text" class="form-control bg-[#232018] border-[#3A3528] text-[#E8DCC4] rounded-xl focus:border-[#C0A062] focus:ring-1 focus:ring-[#C0A062]" id="staff-name" required placeholder="Nhập tên nhân viên...">
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label text-[#A89F88] text-xs uppercase tracking-wider font-bold mb-2">Mã PIN đăng nhập</label>
+                            <input type="text" class="form-control bg-[#232018] border-[#3A3528] text-[#E8DCC4] rounded-xl focus:border-[#C0A062] focus:ring-1 focus:ring-[#C0A062]" id="staff-pin" required placeholder="VD: 123456" pattern="[0-9]{4,6}" title="Mã PIN 4 đến 6 chữ số">
+                            <small class="text-[#A89F88] mt-1 d-block">Giúp nhân viên đăng nhập nhanh vào hệ thống bằng PIN.</small>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label text-[#A89F88] text-xs uppercase tracking-wider font-bold mb-2">Vai trò (Phân quyền)</label>
+                            <select class="form-select bg-[#232018] border-[#3A3528] text-[#E8DCC4] rounded-xl focus:border-[#C0A062] focus:ring-1 focus:ring-[#C0A062]" id="staff-role" required>
+                                <option value="staff">Nhân viên Lễ Tân/Chạy bàn</option>
+                                <option value="kitchen">Nhân viên Bếp</option>
+                                <option value="manager">Quản lý (Manager)</option>
+                                <option value="admin">Quản trị viên (Admin)</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-t border-[#3A3528] px-6 py-4">
+                    <button type="button" class="btn bg-transparent border border-[#3A3528] text-[#A89F88] hover:bg-[#3A3528] hover:text-[#E8DCC4] rounded-xl font-semibold" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary rounded-xl font-semibold" style="background-color: #C0A062; border-color: #C0A062; color: #1A1814;" onclick="saveStaff()">Lưu nhân viên</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Create Restock Modal (Phiếu Nhập) -->
     <div class="modal fade" id="createRestockModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
         <div class="modal-dialog modal-lg">
