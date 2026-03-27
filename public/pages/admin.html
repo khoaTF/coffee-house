@@ -645,6 +645,50 @@
     </div>
 
     <!-- Staff Modal -->
+    <style>
+        #staffModal .modal-content {
+            background-color: #1A1814 !important;
+            border-color: #3A3528 !important;
+            color: #E8DCC4 !important;
+        }
+        #staffModal .form-control, #staffModal .form-select {
+            background-color: #232018 !important;
+            border-color: #3A3528 !important;
+            color: #E8DCC4 !important;
+        }
+        #staffModal .form-control:focus, #staffModal .form-select:focus {
+            border-color: #C0A062 !important;
+            box-shadow: 0 0 0 1px #C0A062 !important;
+        }
+        #staffModal label {
+            color: #E8DCC4 !important;
+        }
+        #staffModal .form-label,
+        #staffModal small.text-\[\#A89F88\] {
+            color: #A89F88 !important;
+        }
+        #perms-checkbox-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        #perms-checkbox-list label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        #perms-checkbox-list input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            background-color: #1A1814;
+            border: 1px solid #3A3528;
+            border-radius: 4px;
+            accent-color: #C0A062;
+            cursor: pointer;
+        }
+    </style>
     <div class="modal fade" id="staffModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content bg-[#1A1814] border border-[#3A3528] rounded-2xl shadow-xl">
