@@ -1824,7 +1824,132 @@ function renderAnalytics() {
         }
     }
 }
+// --- Staff Management ---
 
+function initStaffModal() {
+    const el = document.getElementById('staffModal');
+    if (el) staffModalInstance = new bootstrap.Modal(el);
+}
+
+// Call this manually once on load, or inside DOMContentLoaded
+document.addEventListener('DOMContentLoaded', () => {
+    initStaffModal();
+});
+
+async function fetchStaff() {
+    const tbody = document.getElementById('staff-table-body');
+    if (!tbody) return;
+    try {
+        const { data, error } = await supabase.from('users').select('*').order('created_at', { ascending: false });
+        if (error) throw error;
+        staffList = data || [];
+        renderStaff(staffList);
+    } catch (e) {
+        console.error("Error fetching staff:", e);
+        tbody.innerHTML = '<tr><td colspan="4" class="text-danger text-center">Lỗi tải dữ liệu nhân viên.</td></tr>';
+    }
+}
+
+function renderStaff(data) {
+    const tbody = document.getElementById('staff-table-body');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    
+    if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-muted text-center py-4">Chưa có nhân viên nào.</td></tr>';
+        return;
+    }
+    
+    const roleMap = {
+        'admin': 'Quản trị viên (Admin)',
+        'manager': 'Quản lý (Manager)',
+        'kitchen': 'Nhân viên Bếp',
+        'staff': 'Nhân viên Lễ Tân/Chạy bàn'
+    };
+
+    data.forEach(s => {
+        const tr = document.createElement('tr');
+        const roleLabel = roleMap[s.role] || s.role;
+        const badgeClass = s.role === 'admin' ? 'bg-danger' : (s.role === 'manager' ? 'bg-warning' : 'bg-info');
+        
+        tr.innerHTML = `
+            <td class="font-bold text-light"><i class="fa-solid fa-user me-2 text-muted"></i>${s.name}</td>
+            <td><span class="badge ${badgeClass} text-dark rounded-xl px-2 py-1">${roleLabel}</span></td>
+            <td class="font-mono text-warning font-bold tracking-widest">${s.pin || '---'}</td>
+            <td class="text-end">
+                <button class="action-btn text-info" title="Sửa" onclick="openStaffModal('${s.id}')"><i class="fa-solid fa-pen"></i></button>
+                <button class="action-btn delete" title="Xóa" onclick="deleteStaff('${s.id}')"><i class="fa-solid fa-trash"></i></button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function openStaffModal(id = null) {
+    document.getElementById('staff-form').reset();
+    document.getElementById('staff-id').value = id || '';
+    if (id) {
+        const s = staffList.find(x => x.id === id);
+        if (s) {
+            document.getElementById('staff-name').value = s.name || '';
+            document.getElementById('staff-pin').value = s.pin || '';
+            document.getElementById('staff-role').value = s.role || 'staff';
+            document.getElementById('staffModalTitle').innerText = 'Sửa thông tin nhân viên';
+        }
+    } else {
+        document.getElementById('staffModalTitle').innerText = 'Thêm nhân viên mới';
+    }
+    if(!staffModalInstance) initStaffModal();
+    staffModalInstance.show();
+}
+
+async function saveStaff() {
+    const id = document.getElementById('staff-id').value;
+    const name = document.getElementById('staff-name').value.trim();
+    const pin = document.getElementById('staff-pin').value.trim();
+    const role = document.getElementById('staff-role').value;
+    
+    if (!name || !pin) {
+        alert("Vui lòng điền đầy đủ Tên và Mã PIN.");
+        return;
+    }
+    if (!/^[0-9]{4,6}$/.test(pin)) {
+        alert("Mã PIN phải từ 4 đến 6 chữ số.");
+        return;
+    }
+
+    const payload = { name, pin, role };
+    
+    try {
+        if (id) {
+            const { error } = await supabase.from('users').update(payload).eq('id', id);
+            if (error) throw error;
+        } else {
+            const { error } = await supabase.from('users').insert([payload]);
+            if (error) throw error;
+        }
+        staffModalInstance.hide();
+        fetchStaff();
+    } catch (e) {
+        console.error("Save staff error:", e);
+        alert("Lỗi khi lưu thông tin nhân viên.");
+    }
+}
+
+async function deleteStaff(id) {
+    const s = staffList.find(x => x.id === id);
+    const confirmed = await customConfirm(`Bạn có chắc chắn muốn xóa nhân viên ${s ? s.name : ''}?`, 'Xác nhận xóa');
+    if (!confirmed) return;
+    
+    try {
+        const { error } = await supabase.from('users').delete().eq('id', id);
+        if (error) throw error;
+        fetchStaff();
+    } catch (e) {
+        console.error("Delete staff error:", e);
+        alert("Lỗi khi xóa nhân viên.");
+    }
+}
 
 // --- Promo Management ---
 async function fetchDiscounts() {
