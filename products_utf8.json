@@ -1,0 +1,77 @@
+﻿[
+    {
+        "id":  "fb384a76-c946-4ff6-b37a-abcfaaaed89a",
+        "name":  "Espresso",
+        "category":  "Coffee",
+        "recipe":  [
+                       {
+                           "quantity":  300,
+                           "ingredientId":  "3dbcb181-0e6e-4643-aa2f-acf43f95e856"
+                       },
+                       {
+                           "quantity":  200,
+                           "ingredientId":  "534b7767-d6d8-4816-a0ef-e5d0606db4cd"
+                       }
+                   ]
+    },
+    {
+        "id":  "175826e9-1088-4a6d-aee6-d4658f4de3d1",
+        "name":  "Trà Đào Cam Sả",
+        "category":  "Trà trái cây",
+        "recipe":  null
+    },
+    {
+        "id":  "fbc2bb26-1017-444e-ac83-89d17cf8d935",
+        "name":  "Trà Sữa Oolong Nướng",
+        "category":  "Trà sữa",
+        "recipe":  null
+    },
+    {
+        "id":  "2ebc47d7-9810-454b-a0af-e27821d26c43",
+        "name":  "Cold Brew Cam Vàng",
+        "category":  "Cà phê",
+        "recipe":  null
+    },
+    {
+        "id":  "4464a75b-97bc-4d7d-ba86-1b5baea4f75d",
+        "name":  "Matcha Đá Xay",
+        "category":  "Đá xay",
+        "recipe":  null
+    },
+    {
+        "id":  "43b36e77-2a01-421f-bd81-8316f9fdba29",
+        "name":  "Trà Vải Nhiệt Đới",
+        "category":  "Trà trái cây",
+        "recipe":  null
+    },
+    {
+        "id":  "20e68fd2-b102-46a9-8e18-6af28ebdcaf1",
+        "name":  "Cà phê Dừa Đá Xay",
+        "category":  "Đá xay",
+        "recipe":  null
+    },
+    {
+        "id":  "a633ef15-6e06-43c7-a897-044339634810",
+        "name":  "Bánh Croissant Bơ Tỏi",
+        "category":  "Bánh ngọt",
+        "recipe":  null
+    },
+    {
+        "id":  "8a618673-7a3d-4949-8269-86d9ed7bb1ba",
+        "name":  "Bánh Tiramisu",
+        "category":  "Bánh ngọt",
+        "recipe":  null
+    },
+    {
+        "id":  "d454e9b3-7c9c-4343-a314-df37ab5d392b",
+        "name":  "Sinh Tố Xoài Chanh Dây",
+        "category":  "Sinh tố",
+        "recipe":  null
+    },
+    {
+        "id":  "dc549168-5db1-47b0-9796-c166c1d2f556",
+        "name":  "Bạc Xỉu",
+        "category":  "Cà phê",
+        "recipe":  null
+    }
+]

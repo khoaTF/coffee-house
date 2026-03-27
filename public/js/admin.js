@@ -147,6 +147,8 @@ function switchTab(tabId) {
         fetchTablesStatus();
     } else if (tabId === 'inventory') {
         fetchIngredients();
+    } else if (tabId === 'restock') {
+        loadRestockLogs();
     } else if (tabId === 'promo') {
         fetchDiscounts();
     } else if (tabId === 'customers') {
@@ -1124,17 +1126,8 @@ function renderIngredients() {
             const tdAction = document.createElement('td');
             tdAction.className = 'text-end';
             
-            const restockBtn = document.createElement('button');
-            restockBtn.className = 'action-btn me-2';
-            restockBtn.style.color = '#3fb950';
-            restockBtn.title = 'Nhập kho nhanh';
-            const restockIcon = document.createElement('i');
-            restockIcon.className = 'fa-solid fa-boxes-packing';
-            restockBtn.appendChild(restockIcon);
-            restockBtn.onclick = () => openRestockModal(i._id, i.name, i.stock, i.unit);
-            
             const editBtn = document.createElement('button');
-            editBtn.className = 'action-btn';
+            editBtn.className = 'action-btn me-2';
             const editIcon = document.createElement('i');
             editIcon.className = 'fa-solid fa-pen-to-square';
             editBtn.appendChild(editIcon);
@@ -1147,7 +1140,7 @@ function renderIngredients() {
             delBtn.appendChild(delIcon);
             delBtn.onclick = () => deleteIngredient(i._id, i.stock);
             
-            tdAction.append(restockBtn, editBtn, delBtn);
+            tdAction.append(editBtn, delBtn);
             tr.append(tdName, tdStock, tdUnit, tdAction);
             inventoryTableBody.appendChild(tr);
         });
@@ -2160,78 +2153,256 @@ window.printInvoice = (orderId) => {
     }, 200);
 };
 
-let restockModalInstance;
+// --- Advanced Restock Management ---
+let createRestockModalInstance;
 
-function openRestockModal(id, name, stock, unit) {
-    document.getElementById('restockForm').reset();
-    document.getElementById('restockIngId').value = id;
-    document.getElementById('restockIngUnit').value = unit;
-    document.getElementById('restockIngName').textContent = name;
-    document.getElementById('restockCurrentStock').textContent = stock + ' ' + unit;
-    document.getElementById('restockUnitDisplay').textContent = unit;
-    
-    if (!restockModalInstance) {
-        restockModalInstance = new bootstrap.Modal(document.getElementById('restockModal'));
+async function loadRestockLogs() {
+    try {
+        const tbody = document.getElementById('restock-logs-table-body');
+        if (!tbody) return;
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-6 text-[#A89F88]"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tải dữ liệu...</td></tr>';
+        
+        const { data, error } = await supabase.from('inventory_logs')
+            .select('*, ingredients(name, unit)')
+            .eq('change_type', 'restock')
+            .order('created_at', { ascending: false })
+            .limit(100);
+            
+        if (error) throw error;
+        renderRestockLogs(data);
+    } catch (e) {
+        console.error(e);
+        const tbody = document.getElementById('restock-logs-table-body');
+        if(tbody) tbody.innerHTML = '<tr><td colspan="4" class="text-center py-6 text-danger">Lỗi tải dữ liệu.</td></tr>';
     }
-    restockModalInstance.show();
-    setTimeout(() => {
-        const input = document.getElementById('restockAmount');
-        if(input) input.focus();
-    }, 500);
 }
 
-async function saveRestock() {
-    const id = document.getElementById('restockIngId').value;
-    const addAmountStr = document.getElementById('restockAmount').value;
-    const addAmount = parseFloat(addAmountStr);
+function renderRestockLogs(logs) {
+    const tbody = document.getElementById('restock-logs-table-body');
+    if (!tbody) return;
     
-    if (!id || isNaN(addAmount) || addAmount <= 0) {
-        alert("Vui lòng nhập số lượng hợp lệ lớn hơn 0.");
+    tbody.innerHTML = '';
+    
+    if (!logs || logs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-[#A89F88]">Chưa có lịch sử nhập hàng nào.</td></tr>';
         return;
     }
     
+    const groupedLogs = {};
+    logs.forEach(log => {
+        const timeKey = new Date(log.created_at).toISOString().substring(0, 16); // group by minute
+        const reasonKey = log.reason || 'Không có ghi chú';
+        const key = timeKey + '|' + reasonKey;
+        
+        if (!groupedLogs[key]) {
+            groupedLogs[key] = {
+                id: log.id,
+                time: log.created_at,
+                note: log.reason,
+                items: []
+            };
+        }
+        groupedLogs[key].items.push({
+            name: log.ingredients ? log.ingredients.name : 'Unknown',
+            amount: log.amount,
+            unit: log.ingredients ? log.ingredients.unit : ''
+        });
+    });
+    
+    Object.values(groupedLogs).sort((a,b) => new Date(b.time) - new Date(a.time)).forEach(group => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-[#3A3528] hover:bg-[#2A271D] transition-colors';
+        
+        const timeStr = new Date(group.time).toLocaleString('vi-VN');
+        const itemsHtml = group.items.map(i => `<span class="badge bg-[#3A3528] text-[#E8DCC4] border border-[#A89F88] border-opacity-25 me-1 mb-1">+${i.amount} ${i.unit} ${i.name}</span>`).join('');
+        
+        tr.innerHTML = `
+            <td class="text-[#A89F88] font-mono text-xs">#${group.id.substring(0,8)}</td>
+            <td class="text-[#E8DCC4] text-sm">${timeStr}</td>
+            <td class="max-w-xs flex-wrap gap-1">${itemsHtml}</td>
+            <td class="text-[#A89F88] text-sm italic">${group.note || '-'}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function openCreateRestockModal() {
+    if (!createRestockModalInstance) {
+        createRestockModalInstance = new bootstrap.Modal(document.getElementById('createRestockModal'));
+    }
+    document.getElementById('createRestockForm').reset();
+    document.getElementById('restock-items-container').innerHTML = '';
+    
+    if (ingredients.length === 0) {
+        fetchIngredients().then(() => {
+            updateRestockEmptyState();
+            createRestockModalInstance.show();
+        });
+    } else {
+        updateRestockEmptyState();
+        createRestockModalInstance.show();
+    }
+}
+
+function updateRestockEmptyState() {
+    const container = document.getElementById('restock-items-container');
+    const emptyState = document.getElementById('restock-empty-state');
+    if (container.children.length === 0) {
+        emptyState.style.display = 'block';
+    } else {
+        emptyState.style.display = 'none';
+    }
+}
+
+function addRestockItemRow() {
+    const container = document.getElementById('restock-items-container');
+    
+    const tr = document.createElement('tr');
+    tr.className = 'restock-item-row border-b border-[#3A3528] border-opacity-50';
+    
+    let optionsHtml = '<option value="">-- Chọn nguyên liệu --</option>';
+    ingredients.forEach(ing => {
+        optionsHtml += `<option value="${ing._id}" data-unit="${ing.unit}" data-stock="${ing.stock}">${ing.name} (Tồn hiện tại: ${ing.stock} ${ing.unit})</option>`;
+    });
+    
+    tr.innerHTML = `
+        <td class="py-2 pe-2">
+            <select class="form-select form-select-sm bg-[#1A1814] text-[#E8DCC4] border-[#3A3528] restock-ing-select" required>
+                ${optionsHtml}
+            </select>
+        </td>
+        <td class="py-2 px-2">
+            <div class="input-group input-group-sm">
+                <input type="number" class="form-control bg-[#1A1814] text-[#E8DCC4] border-[#3A3528] restock-amount-input" placeholder="0" required min="0.1" step="any">
+                <span class="input-group-text bg-[#3A3528] text-[#A89F88] border-[#3A3528] restock-unit-display">-</span>
+            </div>
+        </td>
+        <td class="py-2 ps-2 text-end">
+            <button type="button" class="btn btn-sm btn-outline-danger border-0 rounded-lg w-8 h-8 flex items-center justify-center p-0" onclick="removeRestockItemRow(this)">
+                <i class="fa-solid fa-trash"></i>
+            </button>
+        </td>
+    `;
+    
+    const select = tr.querySelector('.restock-ing-select');
+    const unitDisplay = tr.querySelector('.restock-unit-display');
+    select.addEventListener('change', function() {
+        const option = this.options[this.selectedIndex];
+        unitDisplay.textContent = option.dataset.unit || '-';
+    });
+    
+    container.appendChild(tr);
+    updateRestockEmptyState();
+}
+
+function removeRestockItemRow(btn) {
+    btn.closest('tr').remove();
+    updateRestockEmptyState();
+}
+
+async function submitRestockTicket() {
+    const note = document.getElementById('restockNote').value.trim();
+    const rows = document.querySelectorAll('.restock-item-row');
+    
+    if (rows.length === 0) {
+        alert("Giỏ nhập kho đang trống! Vui lòng thêm ít nhất một nguyên liệu.");
+        return;
+    }
+    
+    const restockItems = [];
+    let hasError = false;
+    
+    rows.forEach(row => {
+        const select = row.querySelector('.restock-ing-select');
+        const amountInput = row.querySelector('.restock-amount-input');
+        
+        const ingId = select.value;
+        const amount = parseFloat(amountInput.value);
+        
+        if (!ingId) {
+            hasError = true;
+            select.classList.add('border-danger');
+        } else {
+            select.classList.remove('border-danger');
+        }
+        
+        if (isNaN(amount) || amount <= 0) {
+            hasError = true;
+            amountInput.classList.add('border-danger');
+        } else {
+            amountInput.classList.remove('border-danger');
+        }
+        
+        if (ingId && amount > 0) {
+            const currentStock = parseFloat(select.options[select.selectedIndex].dataset.stock) || 0;
+            restockItems.push({
+                ingredient_id: ingId,
+                amount: amount,
+                current_stock: currentStock
+            });
+        }
+    });
+    
+    if (hasError) {
+        alert("Vui lòng kiểm tra lại thông tin nguyên liệu và số lượng nhập.");
+        return;
+    }
+    
+    const conf = await customConfirm(`Bạn chắc chắn muốn nhập ${restockItems.length} loại nguyên liệu vào kho?`, "Xác nhận Nhập Kho");
+    if (!conf) return;
+    
     try {
-        const btn = document.querySelector('#restockModal .btn-success');
+        const btn = document.getElementById('saveRestockBtn');
         btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...';
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i> Đang xử lý...';
         
-        // Fetch current to avoid race conditions
-        const { data: currentData, error: fetchErr } = await supabase.from('ingredients').select('stock').eq('id', id).single();
-        if (fetchErr) throw fetchErr;
+        const updates = [];
+        const logs = [];
+        const reason = note || 'Phiếu nhập kho gộp';
         
-        const currentStock = parseFloat(currentData.stock) || 0;
-        const newStock = currentStock + addAmount;
+        for (const item of restockItems) {
+            const newStock = item.current_stock + item.amount;
+            
+            updates.push(
+                supabase.from('ingredients').update({ stock: newStock }).eq('id', item.ingredient_id)
+            );
+            
+            logs.push({
+                ingredient_id: item.ingredient_id,
+                change_type: 'restock',
+                amount: item.amount,
+                previous_stock: item.current_stock,
+                new_stock: newStock,
+                reason: reason
+            });
+        }
         
-        const { error: updateErr } = await supabase.from('ingredients').update({ stock: newStock }).eq('id', id);
-        if (updateErr) throw updateErr;
+        await Promise.all(updates);
         
-        // Log Restock
-        await supabase.from('inventory_logs').insert([{
-            ingredient_id: id,
-            change_type: 'restock',
-            amount: addAmount,
-            previous_stock: currentStock,
-            new_stock: newStock,
-            reason: 'Nhập kho nhanh từ Dashboard'
-        }]);
-        logAudit('Quản lý Kho', `Nhập nhanh +${addAmount} cho Nguyên liệu ID: ${id}`);
+        const { error: logErr } = await supabase.from('inventory_logs').insert(logs);
+        if (logErr) throw logErr;
         
-        restockModalInstance.hide();
-        fetchIngredients(); // reload table
+        logAudit('Quản lý Kho', `Tạo phiếu nhập kho cho ${restockItems.length} nguyên liệu. Ghi chú: ${reason}`);
+        
+        createRestockModalInstance.hide();
+        
+        fetchIngredients();
+        loadRestockLogs();
         
         setTimeout(() => {
             btn.disabled = false;
-            btn.innerHTML = 'Nhập +';
+            btn.innerHTML = 'Hoàn thành Phiếu Nhập';
         }, 500);
+        
     } catch (e) {
         console.error(e);
-        alert("Lỗi kết nối khi nhập kho.");
-        
-        const btn = document.querySelector('#restockModal .btn-success');
+        alert("Có lỗi xảy ra khi nhập kho: " + e.message);
+        const btn = document.getElementById('saveRestockBtn');
         btn.disabled = false;
-        btn.innerHTML = 'Nhập +';
+        btn.innerHTML = 'Hoàn thành Phiếu Nhập';
     }
 }
+
 
 // --- Customer Management ---
 async function fetchCustomers() {

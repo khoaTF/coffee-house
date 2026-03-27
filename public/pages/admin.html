@@ -102,7 +102,10 @@
                     <i class="fa-solid fa-book-open w-5 text-center"></i> Thực đơn
                 </button>
                 <button class="nav-link bg-transparent border-0 w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 text-[#A89F88] hover:bg-[#3A3528] hover:text-[#E8DCC4]" onclick="switchTab('inventory'); closeSidebarMobile()" id="tab-inventory">
-                    <i class="fa-solid fa-boxes-stacked w-5 text-center"></i> Kho
+                    <i class="fa-solid fa-boxes-stacked w-5 text-center"></i> Tồn kho
+                </button>
+                <button class="nav-link bg-transparent border-0 w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 text-[#A89F88] hover:bg-[#3A3528] hover:text-[#E8DCC4]" onclick="switchTab('restock'); closeSidebarMobile()" id="tab-restock">
+                    <i class="fa-solid fa-truck-ramp-box w-5 text-center"></i> Nhập hàng
                 </button>
                 <button class="nav-link bg-transparent border-0 w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 text-[#A89F88] hover:bg-[#3A3528] hover:text-[#E8DCC4]" onclick="switchTab('promo'); closeSidebarMobile()" id="tab-promo">
                     <i class="fa-solid fa-ticket w-5 text-center"></i> Khuyến mãi
@@ -486,6 +489,35 @@
                     </div>
                 </section>
 
+                <!-- Restock Section -->
+                <section id="section-restock" class="content-section">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                        <div>
+                            <h2 class="font-noto text-2xl font-bold text-[#F2E8D5] mb-1">Chi tiết Nhập hàng</h2>
+                            <p class="text-sm text-[#A89F88] mb-0">Lịch sử các đợt nhập nguyên liệu vào kho.</p>
+                        </div>
+                        <button class="btn btn-success rounded-xl font-semibold shadow-soft whitespace-nowrap" onclick="openCreateRestockModal()"><i class="fa-solid fa-plus me-2"></i> Tạo Phiếu Nhập</button>
+                    </div>
+                    <div class="card bg-[#232018] border border-[#3A3528] rounded-2xl shadow-soft overflow-hidden">
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0 border-0">
+                                    <thead class="bg-[#3A3528] text-[#D4AF37]">
+                                        <tr>
+                                            <th class="border-0 font-semibold py-3 px-4">Mã Phiếu</th>
+                                            <th class="border-0 font-semibold py-3 px-4">Thời gian</th>
+                                            <th class="border-0 font-semibold py-3 px-4">Sản phẩm nhập</th>
+                                            <th class="border-0 font-semibold py-3 px-4">Ghi chú</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="restock-logs-table-body" class="border-transparent">
+                                        <tr><td colspan="4" class="text-center py-6 text-[#A89F88]">Đang tải biểu mẫu...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
             </div> <!-- End Main Content Scrollable Area -->
         </main> <!-- End Main -->
     </div> <!-- End Flex Wrapper -->
@@ -612,35 +644,55 @@
         </div>
     </div>
 
-    <!-- Restock Modal -->
-    <div class="modal fade" id="restockModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
-        <div class="modal-dialog modal-dialog-centered modal-sm">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title"><i class="fa-solid fa-boxes-packing text-success me-2"></i> Nhập Kho Nhanh</h5>
+    <!-- Create Restock Modal (Phiếu Nhập) -->
+    <div class="modal fade" id="createRestockModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content border-[#3A3528]">
+                <div class="modal-header border-b border-[#3A3528]">
+                    <h5 class="modal-title font-noto font-bold text-[#F2E8D5]"><i class="fa-solid fa-truck-ramp-box text-[#C0A062] me-2"></i> Tạo Phiếu Nhập Kho</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="restockForm">
-                        <input type="hidden" id="restockIngId">
-                        <input type="hidden" id="restockIngUnit">
-                        <div class="text-center mb-3">
-                            <h6 id="restockIngName" class="text-info fw-bold mb-1">Tên nguyên liệu</h6>
-                            <div class="badge bg-secondary bg-opacity-25 text-light border border-secondary p-2">Tồn hiện tại: <span id="restockCurrentStock" class="fw-bold text-warning">0</span></div>
+                    <form id="createRestockForm">
+                        <div class="mb-4">
+                            <label class="form-label text-[#A89F88] text-sm font-bold uppercase tracking-wider">Thông tin chung</label>
+                            <input type="text" class="form-control" id="restockNote" placeholder="Ví dụ: Lô hàng tháng 10 - NCC XYZ, Hóa đơn #1234">
+                            <small class="text-muted">Ghi chú/Tên nhà cung cấp để dễ tra cứu</small>
                         </div>
-                        <div class="mb-2">
-                            <label class="form-label text-light small">Số lượng mua thêm</label>
-                            <div class="input-group input-group-sm">
-                                <span class="input-group-text bg-success bg-opacity-25 text-success border-success border-opacity-50"><i class="fa-solid fa-plus"></i></span>
-                                <input type="number" id="restockAmount" class="form-control bg-dark text-light border-success" placeholder="Nhập số..." required min="0.1" step="any">
-                                <span class="input-group-text bg-dark text-light border-success border-opacity-50" id="restockUnitDisplay">g</span>
+                        
+                        <div class="mb-2 flex justify-between items-end border-b border-[#3A3528] pb-2">
+                            <label class="form-label text-[#A89F88] text-sm font-bold uppercase tracking-wider mb-0">Danh sách Nguyên liệu nhập</label>
+                            <button type="button" class="btn btn-outline-success btn-sm rounded-lg font-semibold" onclick="addRestockItemRow()">
+                                <i class="fa-solid fa-plus"></i> Thêm món
+                            </button>
+                        </div>
+                        
+                        <div class="table-responsive rounded-xl mb-3">
+                            <table class="table table-borderless table-sm align-middle mb-0">
+                                <thead>
+                                    <tr class="text-[#A89F88] text-xs uppercase opacity-75">
+                                        <th style="width: 50%;">Tên nguyên liệu</th>
+                                        <th style="width: 30%;">Số lượng nhập</th>
+                                        <th style="width: 20%;" class="text-end">Xóa</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="restock-items-container">
+                                    <!-- Dynamic rows will be added here -->
+                                </tbody>
+                            </table>
+                            <div id="restock-empty-state" class="text-center py-4 bg-[#1A1814] rounded-lg border border-dashed border-[#3A3528] text-[#A89F88]">
+                                Giỏ nhập kho đang trống.<br>Nhấn "Thêm món" để chọn nguyên liệu.
                             </div>
+                        </div>
+                        
+                        <div class="bg-warning bg-opacity-10 border border-warning text-warning p-3 rounded-xl mt-3 text-sm">
+                            <i class="fa-solid fa-circle-info me-1"></i> Số lượng nhập sẽ được cộng dồn trực tiếp vào tồn kho hiện tại và không thể hoàn tác.
                         </div>
                     </form>
                 </div>
-                <div class="modal-footer border-secondary">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Hủy</button>
-                    <button type="button" class="btn btn-success btn-sm fw-bold" onclick="saveRestock()">Nhập +</button>
+                <div class="modal-footer border-t border-[#3A3528]">
+                    <button type="button" class="btn btn-secondary rounded-xl font-semibold" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-success rounded-xl font-semibold px-4" id="saveRestockBtn" onclick="submitRestockTicket()">Hoàn thành Phiếu Nhập</button>
                 </div>
             </div>
         </div>
