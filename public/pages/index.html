@@ -244,7 +244,7 @@
 <div class="cart-modal" id="category-modal">
     <div class="cart-modal-content" style="max-height: 80vh; border-radius: 28px 28px 0 0; background: var(--surface-color);">
         <!-- Drag Handle Indicator -->
-        <div class="flex justify-center pt-3 pb-2">
+        <div class="flex justify-center pt-3 pb-2 desktop-hide">
             <div class="w-12 h-1.5 rounded-full bg-outline-variant/30"></div>
         </div>
         <div class="cart-modal-header border-0 pb-2 pt-0 flex-between">
@@ -266,19 +266,20 @@
 <div class="cart-modal" id="cart-modal">
     <div class="cart-modal-content">
         <!-- Drag Handle Indicator -->
-        <div class="flex justify-center pt-3 pb-2">
+        <div class="flex justify-center pt-3 pb-2 desktop-hide">
             <div class="w-12 h-1.5 rounded-full bg-outline-variant/30"></div>
         </div>
         <div class="cart-modal-header flex-between border-0 pb-2 pt-0">
             <h2 class="text-2xl font-black text-on-surface tracking-tight" style="font-family: 'Plus Jakarta Sans', sans-serif;">Đơn hàng của bạn</h2>
             <button id="close-modal" class="btn-icon bg-surface-container-low w-10 h-10 rounded-full flex items-center justify-center ml-4"><i class="fa-solid fa-times text-on-surface"></i></button>
         </div>
-        <div class="cart-modal-body cart-items-body" id="cart-items-container">
-            <!-- Cart items list -->
-            <div class="empty-cart text-center text-muted">Giỏ hàng đang trống.</div>
-        </div>
-        <div class="cart-note-container">
-            <label for="order-note" class="cart-note-label font-bold text-main">Ghi
+        <div class="cart-modal-body hide-scrollbar p-0">
+            <div class="cart-items-body px-6 pt-6" id="cart-items-container">
+                <!-- Cart items list -->
+                <div class="empty-cart text-center text-muted">Giỏ hàng đang trống.</div>
+            </div>
+            <div class="cart-note-container px-6 pb-6">
+                <label for="order-note" class="cart-note-label font-bold text-main">Ghi
                 chú (Tùy chọn):</label>
             <textarea id="order-note" class="cart-note-input input-glass" placeholder="Vd: Ít đường, nhiều đá..." rows="2"></textarea>
 
@@ -326,6 +327,7 @@
                 </div>
                 <div id="promo-message" class="hidden text-sm mt-2 font-medium"></div>
             </div>
+        </div>
         </div>
         <div class="cart-modal-footer">
             <div class="flex-between mb-1" id="cart-subtotal-row" style="display: none;">

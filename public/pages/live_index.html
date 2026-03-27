@@ -306,12 +306,13 @@
             <h2>Đơn hàng của bạn</h2>
             <button id="close-modal" class="btn-icon"><i class="fa-solid fa-times"></i></button>
         </div>
-        <div class="cart-modal-body cart-items-body" id="cart-items-container">
-            <!-- Cart items list -->
-            <div class="empty-cart text-center text-muted">Giỏ hàng đang trống.</div>
-        </div>
-        <div class="cart-note-container">
-            <label for="order-note" class="cart-note-label font-bold text-main">Ghi
+        <div class="cart-modal-body hide-scrollbar p-0">
+            <div class="cart-items-body px-6 pt-6" id="cart-items-container">
+                <!-- Cart items list -->
+                <div class="empty-cart text-center text-muted">Giỏ hàng đang trống.</div>
+            </div>
+            <div class="cart-note-container px-6 pb-6">
+                <label for="order-note" class="cart-note-label font-bold text-main">Ghi
                 chú (Tùy chọn):</label>
             <textarea id="order-note" class="cart-note-input input-glass" placeholder="Vd: Ít đường, nhiều đá..." rows="2"></textarea>
 
@@ -382,6 +383,7 @@
                 </div>
                 <div id="promo-message" style="display: none; font-size: 0.85rem; margin-top: 6px; font-weight: 500;"></div>
             </div>
+        </div>
         </div>
         <div class="cart-modal-footer">
             <div class="flex-between mb-1" id="cart-subtotal-row" style="display: none;">
