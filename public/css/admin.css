@@ -41,8 +41,9 @@ h3 { color: #d4a76a; font-size: 1.1rem; margin-bottom: 15px; }
 .modal-footer { border-top-color: rgba(255,255,255,0.08); }
 .btn-close { filter: invert(1) grayscale(100%) brightness(200%); }
 
-/* Fix History Contrast */
+/* Fix Contrasts for Admin Dark Theme */
 .text-dark-id { color: #8b949e !important; font-family: monospace; }
+.text-muted { color: #8b949e !important; }
 
 /* Responsive Header Fix */
 @media (max-width: 992px) {
