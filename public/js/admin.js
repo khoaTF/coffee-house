@@ -1945,9 +1945,11 @@ function openStaffModal(id = null) {
     } else {
         document.getElementById('staffModalTitle').innerText = 'Thêm nhân viên mới';
     }
+    if (!window.staffModalInstance) {
+        window.staffModalInstance = new bootstrap.Modal(document.getElementById('staffModal'));
+    }
     togglePermissionsBlock();
-    if(!staffModalInstance) initStaffModal();
-    staffModalInstance.show();
+    window.staffModalInstance.show();
 }
 
 async function saveStaff() {
@@ -1982,7 +1984,9 @@ async function saveStaff() {
             const { error } = await supabase.from('users').insert([payload]);
             if (error) throw error;
         }
-        staffModalInstance.hide();
+        if (window.staffModalInstance) {
+            window.staffModalInstance.hide();
+        }
         fetchStaff();
     } catch (e) {
         console.error("Save staff error:", e);
