@@ -95,8 +95,8 @@
             currentMode = 'account';
             document.getElementById('tab-account').classList.add('active');
             document.getElementById('tab-pin').classList.remove('active');
-            document.getElementById('account-section').style.display = 'block';
-            document.getElementById('pin-section').style.display = 'none';
+            document.getElementById('account-section').classList.remove('hidden');
+            document.getElementById('pin-section').classList.add('hidden');
             document.getElementById('error-msg').style.display = 'none';
         });
 
@@ -104,8 +104,8 @@
             currentMode = 'pin';
             document.getElementById('tab-pin').classList.add('active');
             document.getElementById('tab-account').classList.remove('active');
-            document.getElementById('pin-section').style.display = 'block';
-            document.getElementById('account-section').style.display = 'none';
+            document.getElementById('pin-section').classList.remove('hidden');
+            document.getElementById('account-section').classList.add('hidden');
             document.getElementById('error-msg').style.display = 'none';
             document.getElementById('staff-pin').focus();
         });
