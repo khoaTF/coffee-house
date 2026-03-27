@@ -272,3 +272,12 @@ body::after {
     color: var(--gold-light);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
+
+/* --- Login Page Semantic Classes --- */
+.login-brand-logo { text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 5px; }
+.login-brand-image { height: 55px; width: 55px; border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+.login-brand-text { font-weight: 900; font-size: 1.8rem; color: #ffffff; letter-spacing: -0.5px; text-transform: uppercase; }
+.login-pin-label { text-align: center; display: block; width: 100%; }
+.login-pin-input { text-align: center; font-size: 1.5rem; letter-spacing: 0.5em; font-weight: bold; }
+.login-pin-icon { left: 20px; }
+.hidden { display: none !important; }

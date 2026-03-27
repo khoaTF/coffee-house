@@ -1288,3 +1288,41 @@ input[type="number"].no-spinners {
   -moz-appearance: textfield;
   appearance: textfield;
 }
+
+/* --- Live Index Specific Semantic Classes --- */
+.loyalty-section { background: var(--bg-color); padding: 16px; border: 2px solid #f39c12; box-shadow: 2px 2px 0px #f39c12; }
+.loyalty-label { display: block; margin-bottom: 5px; color: #d35400; }
+.loyalty-flex-group { display: flex; gap: 8px; }
+.loyalty-input { flex: 1; border: 2px solid #e67e22; box-shadow: 2px 2px 0px #e67e22; }
+.loyalty-btn-verify { padding: 8px 16px; border: 2px solid #d35400; box-shadow: 2px 2px 0px #d35400; white-space: nowrap; background: #e67e22; color: #fff; }
+.loyalty-message-box { font-size: 0.85rem; margin-top: 6px; font-weight: 600; color: #d35400; }
+.vip-card-wrapper { margin-top: 15px; perspective: 1000px; }
+.vip-card-el { transform-style: preserve-3d; position: relative; }
+.vip-card-header { display: flex; justify-content: space-between; align-items: flex-start; position: relative; z-index: 2; }
+.vip-card-label { font-size: 0.75rem; opacity: 0.8; font-weight: bold; letter-spacing: 1px; }
+.vip-card-name { font-size: 1.2rem; font-weight: 800; letter-spacing: 0.5px; }
+.vip-card-icon { font-size: 2.2rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+.vip-card-body { margin-top: 25px; position: relative; z-index: 2; }
+.vip-card-tier-title { font-size: 0.7rem; opacity: 0.8; letter-spacing: 1px; }
+.vip-card-tier-flex { display: flex; justify-content: space-between; align-items: flex-end; }
+.vip-card-tier-name { font-size: 1.5rem; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; }
+.vip-card-discount-badge { font-size: 0.95rem; font-weight: bold; background: rgba(0,0,0,0.3); padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); }
+.loyalty-discount-btn-wrapper { margin-top: 10px; }
+.loyalty-discount-action-btn { width: 100%; font-size: 0.85rem; border: 2px solid #d35400; box-shadow: 2px 2px 0px #d35400; color: #d35400; }
+.promo-section-box { background: var(--bg-color); padding: 16px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+.promo-label { display: block; margin-bottom: 5px; }
+.promo-input-glass { flex: 1; text-transform: uppercase; border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+.promo-apply-btn { padding: 8px 16px; white-space: nowrap; }
+.promo-message-box { font-size: 0.85rem; margin-top: 6px; font-weight: 500; }
+.cart-summary-total-container { border-top: 2px dashed var(--border); }
+.cart-summary-total-label { font-size: 1.1rem; }
+.cart-summary-total-price { font-size: 1.2rem; }
+.w-full-btn { width: 100%; }
+.custom-modal-content-glass { border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow-md); background: var(--surface-color); }
+.feedback-textarea { border-radius: 8px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); background: var(--surface-color); color: var(--text-main); font-weight: 500; }
+.confirm-modal-wrapper { z-index: 1060; }
+.confirm-modal-content { border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--shadow-md); background: var(--surface-color); }
+.confirm-modal-title { color: var(--text-main); font-weight: bold; }
+.confirm-modal-body { color: var(--text-muted); font-weight: 500; }
+.confirm-modal-btn-cancel { border-radius: 4px; border: 1px solid var(--border); background: var(--surface-color); box-shadow: var(--shadow-sm); color: var(--text-main); font-weight: 800; }
+.confirm-modal-btn-ok { border-radius: 4px; border: 1px solid var(--border); background: var(--accent); color: #FFF; font-weight: 800; box-shadow: var(--shadow-sm); }

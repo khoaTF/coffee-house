@@ -29,3 +29,24 @@
     -ms-overflow-style: none; /* IE and Edge */
     scrollbar-width: none; /* Firefox */
 }
+
+/* --- Modals and Layout Specific --- */
+.status-bar-connect {
+    margin-bottom: 20px;
+    font-weight: 600;
+    color: var(--success);
+}
+
+.staff-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(39, 19, 16, 0.4);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
