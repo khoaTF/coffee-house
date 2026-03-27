@@ -455,7 +455,7 @@ function renderMenu(category) {
                              class="font-bold text-[#1b1c1b] dark:text-white text-base flex-grow text-center bg-transparent w-full focus:outline-none rounded no-spinners" 
                              style="-moz-appearance: textfield; appearance: textfield;" 
                              value="${cartItemTotalQty}" 
-                             ${hasOptions ? 'readonly onclick="openOptionsModal(menuItems.find(i => i._id === \\\'' + item._id + '\\\'))"' : ''}
+                             ${hasOptions ? `readonly onclick="openOptionsModal('${item._id}')"` : ''}
                              onchange="if(!${hasOptions}) setCartQuantity('${item._id}', this.value)" 
                              onfocus="this.select()" />
                       <button class="w-10 h-10 rounded-full bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white flex items-center justify-center shadow-md active:scale-95 transition-transform" ${disableAddBtn ? "disabled style='opacity:0.5;'" : ""} onclick="updateCart('${item._id}', 1)">
@@ -504,6 +504,16 @@ function updateMenuCardsUI() {
         const disableAddBtn = isOutOfStock || hasActiveOrder || !canAddMore;
         const hasOptions = item.options && item.options.length > 0;
 
+        const lastQty = parseInt(card.getAttribute('data-last-qty') || '-1');
+        const lastState = card.getAttribute('data-last-state');
+        const currentState = `${isOutOfStock}-${hasActiveOrder}-${canAddMore}`;
+        
+        if (lastQty === cartItemTotalQty && lastState === currentState) {
+            return; // Skip DOM reflow if state is unchanged!
+        }
+        card.setAttribute('data-last-qty', cartItemTotalQty);
+        card.setAttribute('data-last-state', currentState);
+
         // Update card styling
         if (isOutOfStock) {
             card.classList.add('opacity-60', 'saturate-50');
@@ -533,7 +543,7 @@ function updateMenuCardsUI() {
                              class="font-bold text-[#1b1c1b] dark:text-white text-base flex-grow text-center bg-transparent w-full focus:outline-none rounded no-spinners" 
                              style="-moz-appearance: textfield; appearance: textfield;" 
                              value="${cartItemTotalQty}" 
-                             ${hasOptions ? 'readonly onclick="openOptionsModal(menuItems.find(i => i._id === \\\'' + item._id + '\\\'))"' : ''}
+                             ${hasOptions ? `readonly onclick="openOptionsModal('${item._id}')"` : ''}
                              onchange="if(!${hasOptions}) setCartQuantity('${item._id}', this.value)" 
                              onfocus="this.select()" />
                       <button class="w-10 h-10 rounded-full bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white flex items-center justify-center shadow-md active:scale-95 transition-transform" ${disableAddBtn ? "disabled style='opacity:0.5;'" : ""} onclick="updateCart('${item._id}', 1)">
@@ -723,7 +733,9 @@ function closeHistoryModal() {
     if (fab) fab.style.display = 'flex';
 }
 
-function openOptionsModal(item) {
+function openOptionsModal(itemOrId) {
+    const item = typeof itemOrId === 'string' ? menuItems.find(i => i._id === itemOrId) : itemOrId;
+    if (!item) return;
     currentOptionsItem = item;
     document.getElementById('options-modal-title').textContent = item.name;
     const container = document.getElementById('options-container');
