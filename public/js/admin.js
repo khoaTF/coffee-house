@@ -2688,73 +2688,7 @@ function renderStaffTable() {
     });
 }
 
-function openStaffModal() {
-    document.getElementById('staffForm').reset();
-    document.getElementById('staffId').value = '';
-    document.getElementById('staffModalLabel').textContent = 'Thêm nhân viên mới';
-    staffModalInstance.show();
-}
 
-function editStaff(id) {
-    const s = staffList.find(x => x.id === id);
-    if (!s) return;
-    document.getElementById('staffId').value = s.id;
-    document.getElementById('staffName').value = s.name || '';
-    document.getElementById('staffRole').value = s.role || 'staff';
-    document.getElementById('staffPin').value = s.pin || '';
-    document.getElementById('staffModalLabel').textContent = 'Chỉnh sửa nhân viên';
-    staffModalInstance.show();
-}
-
-async function saveStaff() {
-    const id = document.getElementById('staffId').value;
-    const staffData = {
-        name: document.getElementById('staffName').value,
-        role: document.getElementById('staffRole').value,
-        pin: document.getElementById('staffPin').value.trim()
-    };
-    
-    if (!/^\d{4,6}$/.test(staffData.pin)) {
-        alert("Mã PIN không hợp lệ! Vui lòng nhập từ 4 đến 6 chữ số đễ đảm bảo tính bảo mật.");
-        return;
-    }
-    
-    try {
-        if (id) {
-            const { error } = await supabase.from('users').update(staffData).eq('id', id);
-            if (error) throw error;
-            logAudit('Chỉnh sửa NV', `Tên: ${staffData.name || ''}, Vai trò: ${staffData.role}`);
-        } else {
-            const { error } = await supabase.from('users').insert([staffData]);
-            if (error) throw error;
-            logAudit('Thêm NV', `Tên: ${staffData.name || ''}, Vai trò: ${staffData.role}`);
-        }
-        staffModalInstance.hide();
-        fetchStaff();
-    } catch (e) {
-        console.error(e);
-        if (e.code === '23505') {
-            alert('LỖI: Mã PIN này đã có nhân viên khác sử dụng. Vui lòng chọn mã PIN khác để tránh trùng hệ thống.');
-        } else {
-            alert('Lỗi lưu thông tin: ' + (e.message || 'Vui lòng thử lại.'));
-        }
-    }
-}
-
-async function deleteStaff(id) {
-    const confirmed = await customConfirm('Bạn có chắc chắn muốn xóa nhân viên này khỏi hệ thống không?', 'Xóa nhân viên');
-    if (!confirmed) return;
-    
-    try {
-        const { error } = await supabase.from('users').delete().eq('id', id);
-        if (error) throw error;
-        logAudit('Xóa nhân viên', `ID: ${id}`);
-        fetchStaff();
-    } catch (e) {
-        console.error(e);
-        alert("Lỗi kết nối máy chủ khi xóa nhân viên.");
-    }
-}
 
 // --- Audit Logs ---
 async function logAudit(action, details) {

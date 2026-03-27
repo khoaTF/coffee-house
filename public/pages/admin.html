@@ -1033,45 +1033,6 @@
         </section>
     </div>
 
-    <!-- Staff Modal -->
-    <div class="modal fade" id="staffModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="staffModalLabel">Thêm / Sửa Nhân Viên</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="staffForm">
-                        <input type="hidden" id="staffId">
-                        <div class="mb-3">
-                            <label class="form-label">Tên nhân viên (nếu có)</label>
-                            <input type="text" class="form-control" id="staffName" placeholder="Nguyễn Văn A">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Phân quyền</label>
-                            <select class="form-select" id="staffRole" required>
-                                <option value="staff">Nhân viên phục vụ (Staff)</option>
-                                <option value="kitchen">Nhân viên bếp (Kitchen)</option>
-                                <option value="manager">Quản lý ca (Manager)</option>
-                                <option value="admin">Quản lý tổng (Admin)</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Mã PIN đăng nhập</label>
-                            <input type="text" class="form-control fw-bold text-light bg-dark" id="staffPin" required placeholder="4-6 số (VD: 1234)">
-                            <small class="text-muted">Mã PIN dùng để đăng nhập hệ thống nội bộ.</small>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="button" class="btn btn-success" onclick="saveStaff()">Lưu chi tiết</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Custom Confirm Modal (replaces native confirm() which can be blocked) -->
     <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-sm">
