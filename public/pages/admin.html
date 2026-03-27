@@ -551,9 +551,16 @@
                                 <option value="Other">Khác</option>
                             </select>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Giá (VNĐ)</label>
-                            <input type="number" class="form-control" id="prodPrice" required>
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label class="form-label">Giá bán (VNĐ)</label>
+                                <input type="number" class="form-control" id="prodPrice" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Giá vốn tĩnh (VNĐ)</label>
+                                <input type="number" class="form-control" id="prodCostPrice" placeholder="VD: 5000">
+                                <small class="text-muted" style="font-size:10px;">Dành cho món bán sẵn (Lon nước...). Món pha chế sẽ tự tính vốn qua Định Lượng.</small>
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Giá khuyến mãi (VNĐ) <span class="text-muted small">(Để trống nếu không có)</span></label>
@@ -857,6 +864,10 @@
                         <div class="mb-3">
                             <label class="form-label">Số lượng tồn kho</label>
                             <input type="number" id="ingStock" class="form-control bg-dark text-light border-secondary" required min="0" step="any">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Giá nhập (VNĐ / 1 đơn vị)</label>
+                            <input type="number" id="ingCostPrice" class="form-control bg-dark text-light border-secondary" placeholder="Tự động dùng để tính lợi nhuận" min="0">
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Mức báo động (Sắp hết)</label>
