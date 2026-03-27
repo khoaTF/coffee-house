@@ -55,7 +55,7 @@
             <h2 id="tab-orders" class="cursor-pointer text-on-surface-variant/70 font-bold text-xl hover:opacity-80 transition-opacity">Đơn & Món</h2>
             <h2 id="tab-requests" class="cursor-pointer text-on-surface-variant/70 font-bold text-xl hover:opacity-80 transition-opacity flex items-center gap-2">
                 Yêu Cầu Hỗ Trợ 
-                <span id="req-badge" class="bg-error text-on-error rounded-full px-2 py-0.5 text-xs font-black" style="display: none;">0</span>
+                <span id="req-badge" class="bg-error text-on-error rounded-full px-2 py-0.5 text-xs font-black hidden">0</span>
             </h2>
         </div>
         
@@ -71,8 +71,8 @@
         </div>
 
         <!-- Orders Section -->
-        <div id="section-orders" style="display: none;">
-            <div id="status-bar" style="margin-bottom: 20px; font-weight: 600; color: var(--success); display: none;">
+        <div id="section-orders" class="hidden">
+            <div id="status-bar" class="status-bar-connect hidden">
                 Đã kết nối với hệ thống thời gian thực.
             </div>
             
@@ -118,7 +118,7 @@
         </div>
 
         <!-- Requests Section -->
-        <div id="section-requests" style="display: none;">
+        <div id="section-requests" class="hidden">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="requests-container">
                 <!-- Requests injected by JS -->
             </div>
@@ -128,7 +128,7 @@
 
     <!-- Modals -->
     <!-- Table Action Modal -->
-    <div id="tableModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(39, 19, 16, 0.4); z-index:1000; align-items:center; justify-content:center; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);">
+    <div id="tableModal" class="staff-modal-overlay hidden">
         <div class="bg-surface w-[90%] max-w-[400px] p-8 rounded-3xl relative shadow-float animate-slide-up border border-outline-variant/30">
             <button onclick="closeTableModal()" class="absolute right-5 top-5 bg-surface-container hover:bg-surface-variant text-on-surface-variant w-8 h-8 rounded-full flex items-center justify-center transition-colors"><i class="fa-solid fa-times"></i></button>
             <h3 id="modal-table-title" class="text-2xl font-black text-primary mb-2 flex items-center gap-2">Bàn X</h3>
