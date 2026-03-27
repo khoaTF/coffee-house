@@ -1204,8 +1204,8 @@ function customerAlert(message) {
         const closeModal = () => {
             modal.classList.add('hidden');
             modal.classList.remove('flex');
-            newOk.className = 'bg-[#ba1a1a] text-white py-2.5 rounded-full font-bold active:scale-95 transition-transform shadow-lg shadow-[#ba1a1a]/20';
-            newOk.textContent = 'Xóa';
+            newOk.className = 'bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white py-2.5 rounded-full font-bold active:scale-95 transition-transform shadow-lg shadow-[#FF7A00]/20';
+            newOk.textContent = 'Đồng ý';
             newCancel.style.display = 'block';
             titleEl.innerHTML = prevTitleHTML;
             resolve(true);
