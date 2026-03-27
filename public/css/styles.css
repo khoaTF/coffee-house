@@ -1136,8 +1136,8 @@ input, select, textarea {
 
 /* ===== MODAL REFACTOR CLASSES ===== */
 .cart-category-body { padding-top: 10px; padding-bottom: 40px; }
-.cart-items-body { padding-top: 10px; }
-.cart-note-container { padding: 0 24px 10px; flex-shrink: 0; overflow-y: visible; }
+.cart-items-body { padding-bottom: 24px; }
+.cart-note-container { flex-shrink: 0; overflow-y: visible; }
 .cart-note-label { display: block; margin-bottom: 5px; }
 .cart-note-input { width: 100%; }
 
@@ -1264,12 +1264,16 @@ input, select, textarea {
         padding-top: 10vh;
     }
     .cart-modal-content {
-        max-width: 500px;
+        max-width: 600px;
         max-height: 85vh; /* Keep it nicely inside the screen */
         margin: 0 auto; /* Override margin-top: auto from default CSS */
         box-shadow: 0 40px 100px rgba(30, 26, 24, 0.2) !important;
         border-radius: 28px !important;
         border: 1px solid var(--border) !important;
+    }
+
+    .desktop-hide {
+        display: none !important;
     }
 }
 
