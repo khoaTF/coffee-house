@@ -75,9 +75,13 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchHistory();
     fetchIngredients();
 
-    // RBAC: Hide restricted tabs for Shift Manager
+    // RBAC: Apply Detailed Permissions
     const role = sessionStorage.getItem('cafe_role') || localStorage.getItem('cafe_role');
     const staffName = sessionStorage.getItem('nohope_staff_name') || localStorage.getItem('nohope_staff_name') || (role === 'admin' ? 'Administrator' : 'Nhân viên');
+    let permissions = [];
+    try {
+        permissions = JSON.parse(sessionStorage.getItem('nohope_permissions') || localStorage.getItem('nohope_permissions') || '[]');
+    } catch(e) {}
     
     // Display logged in user name
     const desktopNameEl = document.getElementById('desktop-staff-name');
@@ -85,20 +89,41 @@ document.addEventListener('DOMContentLoaded', () => {
     if (desktopNameEl) desktopNameEl.textContent = staffName;
     if (mobileNameEl) mobileNameEl.textContent = staffName;
 
-    if (role === 'manager') {
-        const restrictedTabs = ['tab-menu', 'tab-promo', 'tab-analytics', 'tab-customers', 'tab-staff'];
-        restrictedTabs.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.style.display = 'none';
+    // Apply allowed tabs visibility
+    const allTabsId = ['orders', 'pos', 'history', 'tables', 'menu', 'inventory', 'restock', 'promo', 'customers', 'staff', 'analytics', 'audit'];
+    let defaultTab = '';
+    
+    if (role !== 'admin') {
+        allTabsId.forEach(tab => {
+            const el = document.getElementById(`tab-${tab}`);
+            if (el) {
+                if (!permissions.includes(tab)) {
+                    el.style.display = 'none';
+                } else {
+                    el.style.display = '';
+                    if (!defaultTab) defaultTab = tab; // Set the first allowed tab as default
+                }
+            }
         });
         
-        // Hide add staff or promo CTA buttons if they exist outside the main tabs
+        // Specific CTA buttons
         const btnAddPromo = document.querySelector('button[onclick="openPromoModal()"]');
-        if (btnAddPromo) btnAddPromo.style.display = 'none';
+        if (btnAddPromo && !permissions.includes('promo')) btnAddPromo.style.display = 'none';
 
-        // Set default active tab
-        switchTab('tables');
+        if (defaultTab) {
+            switchTab(defaultTab);
+        } else {
+            // Fallback if no permissions are somehow specified
+            document.querySelector('.content-section.active')?.classList.remove('active');
+            const mainContent = document.querySelector('main');
+            mainContent.innerHTML = '<div class="flex items-center justify-center h-full"><div class="text-center"><i class="fa-solid fa-lock text-[#A89F88] text-6xl mb-4"></i><h2 class="text-2xl text-[#E8DCC4]">Bạn chưa được cấp quyền truy cập</h2><p class="text-[#A89F88] mt-2">Vui lòng liên hệ Quản trị viên</p></div></div>';
+        }
     } else {
+        // Admin: Show all
+        allTabsId.forEach(tab => {
+            const el = document.getElementById(`tab-${tab}`);
+            if (el) el.style.display = '';
+        });
         switchTab('menu');
     }
 
@@ -1885,9 +1910,23 @@ function renderStaff(data) {
     });
 }
 
+function togglePermissionsBlock() {
+    const role = document.getElementById('staff-role').value;
+    const block = document.getElementById('staff-permissions-block');
+    if (role === 'admin') {
+        block.style.display = 'none';
+    } else {
+        block.style.display = 'block';
+    }
+}
+
 function openStaffModal(id = null) {
     document.getElementById('staff-form').reset();
     document.getElementById('staff-id').value = id || '';
+    
+    // reset checkboxes
+    document.querySelectorAll('.perm-cb').forEach(cb => cb.checked = false);
+
     if (id) {
         const s = staffList.find(x => x.id === id);
         if (s) {
@@ -1895,10 +1934,18 @@ function openStaffModal(id = null) {
             document.getElementById('staff-pin').value = s.pin || '';
             document.getElementById('staff-role').value = s.role || 'staff';
             document.getElementById('staffModalTitle').innerText = 'Sửa thông tin nhân viên';
+            
+            if (s.permissions && Array.isArray(s.permissions)) {
+                s.permissions.forEach(p => {
+                    const cb = document.querySelector(`.perm-cb[value="${p}"]`);
+                    if (cb) cb.checked = true;
+                });
+            }
         }
     } else {
         document.getElementById('staffModalTitle').innerText = 'Thêm nhân viên mới';
     }
+    togglePermissionsBlock();
     if(!staffModalInstance) initStaffModal();
     staffModalInstance.show();
 }
@@ -1918,7 +1965,14 @@ async function saveStaff() {
         return;
     }
 
-    const payload = { name, pin, role };
+    const permissions = [];
+    if (role !== 'admin') {
+        document.querySelectorAll('.perm-cb:checked').forEach(cb => {
+            permissions.push(cb.value);
+        });
+    }
+
+    const payload = { name, pin, role, permissions };
     
     try {
         if (id) {
