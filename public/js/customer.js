@@ -599,11 +599,23 @@ function openModal() {
     cartModal.classList.add('active'); 
     const fab = document.querySelector('.fab-container');
     if (fab) fab.style.display = 'none';
+    
+    // Prevent background scrolling while modal is open
+    document.body.style.overflow = 'hidden';
+    
+    // Scroll cart modal body to the top (order summary)
+    const modalBody = cartModal.querySelector('.cart-modal-body');
+    if (modalBody) {
+        modalBody.scrollTop = 0;
+    }
 }
 function closeModal() { 
     cartModal.classList.remove('active'); 
     const fab = document.querySelector('.fab-container');
     if (fab) fab.style.display = 'flex';
+    
+    // Restore background scrolling
+    document.body.style.overflow = '';
 }
 
 function openPaymentModal(order) {
