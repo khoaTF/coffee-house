@@ -29,6 +29,10 @@
     {
       "source": "/tv",
       "destination": "/api"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/api"
     }
   ]
 }
