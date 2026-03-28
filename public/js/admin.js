@@ -2627,8 +2627,18 @@ async function submitRestockTicket() {
         return;
     }
     
+    // Hide restock modal first to avoid stacking modals (Bootstrap limitation)
+    createRestockModalInstance.hide();
+    await new Promise(resolve => {
+        document.getElementById('createRestockModal').addEventListener('hidden.bs.modal', resolve, { once: true });
+    });
+
     const conf = await customConfirm(`Bạn chắc chắn muốn nhập ${restockItems.length} loại nguyên liệu vào kho?`, "Xác nhận Nhập Kho");
-    if (!conf) return;
+    if (!conf) {
+        // Re-open restock modal if user cancels
+        createRestockModalInstance.show();
+        return;
+    }
     
     try {
         const btn = document.getElementById('saveRestockBtn');
@@ -2663,8 +2673,6 @@ async function submitRestockTicket() {
         if (logErr) throw logErr;
         
         logAudit('Quản lý Kho', `Tạo phiếu nhập kho cho ${restockItems.length} nguyên liệu. Ghi chú: ${reason}`);
-        
-        createRestockModalInstance.hide();
         
         fetchIngredients();
         loadRestockLogs();
@@ -3362,10 +3370,11 @@ async function fetchCashflowData() {
         
         if (ordersErr) throw ordersErr;
 
-        // Fetch restock logs for automated expense
+        // Fetch restock logs from inventory_logs (change_type = 'restock')
         const { data: restockData, error: restockErr } = await supabase
-            .from('restock_logs')
-            .select('*')
+            .from('inventory_logs')
+            .select('*, ingredients(name, unit)')
+            .eq('change_type', 'restock')
             .gte('created_at', startISO)
             .lte('created_at', endISO);
 
@@ -3397,13 +3406,15 @@ async function fetchCashflowData() {
             });
         });
 
-        // Transform restocks
+        // Transform restocks from inventory_logs
         restockData.forEach(r => {
+            const cost = parseFloat(r.unit_price || 0) * parseFloat(r.amount || 0);
+            const ingName = r.ingredients ? r.ingredients.name : 'Hàng hóa';
             combinedData.push({
                 type: 'expense',
                 source: 'restock',
-                amount: parseFloat(r.total_cost || 0),
-                desc: `Nhập nguyên liệu: ${r.ingredient_name || 'Hàng hóa'}`,
+                amount: cost,
+                desc: `Nhập nguyên liệu: ${ingName}`,
                 refId: '#R_' + (r.id ? r.id.toString() : '...'),
                 createdAt: new Date(r.created_at)
             });
