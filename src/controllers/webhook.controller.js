@@ -1,6 +1,18 @@
 const supabase = require('../config/supabase');
 
 const handlePaymentWebhook = async (req, res) => {
+    const webhookSecret = process.env.WEBHOOK_SECRET;
+    if (!webhookSecret) {
+        console.error('❌ FATAL: WEBHOOK_SECRET is not set. Payment webhook is disabled for security.');
+        return res.status(500).json({ error: 'Server misconfiguration: Webhook secret missing' });
+    }
+
+    const incomingToken = req.headers['authorization'] || req.headers['x-sepay-signature'] || req.query.token;
+    if (!incomingToken || incomingToken !== webhookSecret) {
+        console.warn('Webhook rejected: Invalid or missing signature');
+        return res.status(401).json({ error: 'Unauthorized webhook' });
+    }
+
     try {
         const payload = req.body;
         // SePay format usually puts list of transactions in 'data' array

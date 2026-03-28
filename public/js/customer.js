@@ -1969,5 +1969,139 @@ document.querySelectorAll('.fab-item').forEach(btn => {
     });
 });
 
+// ============================================
+// FEEDBACK SYSTEM — Đánh giá sau khi nhận món
+// ============================================
+const feedbackShownOrders = new Set();
+
+window.handleOrderStatusUpdate = function(updatedOrder) {
+    // Hiện popup feedback khi đơn Ready hoặc Completed
+    if ((updatedOrder.status === 'Ready' || updatedOrder.status === 'Completed') 
+        && !feedbackShownOrders.has(updatedOrder.id)) {
+        feedbackShownOrders.add(updatedOrder.id);
+        currentFeedbackOrderId = updatedOrder.id;
+        
+        // Delay 2s để khách kịp thấy trạng thái mới trước khi hiện feedback
+        setTimeout(() => showFeedbackPopup(updatedOrder.id), 2000);
+    }
+};
+
+function showFeedbackPopup(orderId) {
+    // Kiểm tra đã feedback chưa
+    if (sessionStorage.getItem('feedback_' + orderId)) return;
+    
+    const overlay = document.createElement('div');
+    overlay.id = 'feedback-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn 0.3s ease;backdrop-filter:blur(4px);';
+    
+    overlay.innerHTML = `
+        <div style="background:#fff;border-radius:24px;max-width:380px;width:100%;padding:32px;text-align:center;box-shadow:0 25px 60px rgba(0,0,0,0.3);animation:slideUp 0.4s ease;">
+            <div style="font-size:48px;margin-bottom:12px;">☕</div>
+            <h3 style="font-size:20px;font-weight:800;color:#1A1814;margin-bottom:8px;">Đánh giá trải nghiệm</h3>
+            <p style="font-size:14px;color:#666;margin-bottom:20px;">Bạn cảm thấy thế nào về đơn hàng này?</p>
+            
+            <div id="feedback-stars" style="display:flex;justify-content:center;gap:8px;margin-bottom:20px;cursor:pointer;">
+                ${[1,2,3,4,5].map(i => `
+                    <span class="fb-star" data-rating="${i}" style="font-size:36px;color:#ddd;transition:all 0.2s;cursor:pointer;" 
+                          onclick="selectFeedbackRating(${i})" 
+                          onmouseenter="hoverFeedbackRating(${i})" 
+                          onmouseleave="resetFeedbackHover()">★</span>
+                `).join('')}
+            </div>
+            
+            <textarea id="feedback-comment" placeholder="Góp ý thêm (tùy chọn)..." 
+                      style="width:100%;border:2px solid #eee;border-radius:16px;padding:14px;font-size:14px;resize:none;height:80px;outline:none;transition:border 0.2s;font-family:inherit;"
+                      onfocus="this.style.borderColor='#C0A062'" onblur="this.style.borderColor='#eee'"></textarea>
+            
+            <div style="display:flex;gap:10px;margin-top:16px;">
+                <button onclick="closeFeedbackPopup()" style="flex:1;padding:14px;border-radius:14px;border:2px solid #eee;background:#fff;color:#666;font-weight:700;font-size:14px;cursor:pointer;transition:all 0.2s;">Bỏ qua</button>
+                <button id="submit-feedback-btn" onclick="submitFeedback('${orderId}')" style="flex:1;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,#C0A062,#D4AF37);color:#fff;font-weight:700;font-size:14px;cursor:pointer;box-shadow:0 4px 15px rgba(192,160,98,0.3);transition:all 0.2s;">Gửi đánh giá</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(overlay);
+}
+
+let popupSelectedRating = 0;
+
+window.selectFeedbackRating = function(rating) {
+    popupSelectedRating = rating;
+    const stars = document.querySelectorAll('.fb-star');
+    stars.forEach((star, idx) => {
+        star.style.color = idx < rating ? '#D4AF37' : '#ddd';
+        star.style.transform = idx < rating ? 'scale(1.15)' : 'scale(1)';
+    });
+};
+
+window.hoverFeedbackRating = function(rating) {
+    const stars = document.querySelectorAll('.fb-star');
+    stars.forEach((star, idx) => {
+        star.style.color = idx < rating ? '#EAC87D' : '#ddd';
+    });
+};
+
+window.resetFeedbackHover = function() {
+    const stars = document.querySelectorAll('.fb-star');
+    stars.forEach((star, idx) => {
+        star.style.color = idx < popupSelectedRating ? '#D4AF37' : '#ddd';
+    });
+};
+
+window.submitFeedback = async function(orderId) {
+    if (popupSelectedRating === 0) {
+        const stars = document.getElementById('feedback-stars');
+        if (stars) stars.style.animation = 'shake 0.4s ease';
+        setTimeout(() => { if (stars) stars.style.animation = ''; }, 400);
+        return;
+    }
+    
+    const comment = document.getElementById('feedback-comment')?.value || '';
+    const btn = document.getElementById('submit-feedback-btn');
+    if (btn) { btn.textContent = 'Đang gửi...'; btn.disabled = true; }
+    
+    try {
+        await supabase.from('feedback').insert([{
+            order_id: orderId,
+            table_number: TABLE_NUMBER.toString(),
+            rating: popupSelectedRating,
+            comment: comment,
+            customer_phone: window.currentCustomerPhone || null
+        }]);
+        
+        sessionStorage.setItem('feedback_' + orderId, 'true');
+        
+        // Hiệu ứng thành công
+        const overlay = document.getElementById('feedback-overlay');
+        if (overlay) {
+            overlay.querySelector('div').innerHTML = `
+                <div style="font-size:64px;margin-bottom:16px;">🎉</div>
+                <h3 style="font-size:20px;font-weight:800;color:#1A1814;margin-bottom:8px;">Cảm ơn bạn!</h3>
+                <p style="font-size:14px;color:#666;">Đánh giá của bạn giúp chúng mình cải thiện dịch vụ.</p>
+            `;
+            setTimeout(() => overlay.remove(), 2000);
+        }
+    } catch(e) {
+        console.error('Feedback error:', e);
+        if (btn) { btn.textContent = 'Thử lại'; btn.disabled = false; }
+    }
+    
+    popupSelectedRating = 0;
+};
+
+window.closeFeedbackPopup = function() {
+    const overlay = document.getElementById('feedback-overlay');
+    if (overlay) overlay.remove();
+};
+
+// CSS animations cho feedback
+const feedbackStyles = document.createElement('style');
+feedbackStyles.textContent = `
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+`;
+document.head.appendChild(feedbackStyles);
+
 // Start the app
 init();

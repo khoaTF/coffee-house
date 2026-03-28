@@ -3535,3 +3535,129 @@ function renderCashflowTable(data) {
     });
     tbody.innerHTML = html;
 }
+
+// ============================================
+// EXPORT CSV UTILITIES
+// ============================================
+
+/**
+ * Xuất dữ liệu bảng thành file CSV có thể mở bằng Excel
+ * @param {Array} rows - Mảng objects dữ liệu
+ * @param {Array} columns - Mảng {key, label} mô tả cột
+ * @param {string} filename - Tên file xuất ra
+ */
+function exportToCSV(rows, columns, filename) {
+    if (!rows || rows.length === 0) {
+        alert('Không có dữ liệu để xuất!');
+        return;
+    }
+    
+    // BOM for Excel UTF-8 compatibility (Vietnamese characters)
+    const BOM = '\uFEFF';
+    
+    // Header row
+    const header = columns.map(c => `"${c.label}"`).join(',');
+    
+    // Data rows
+    const csvRows = rows.map(row => {
+        return columns.map(c => {
+            let val = row[c.key];
+            if (val === null || val === undefined) val = '';
+            if (typeof val === 'object') val = JSON.stringify(val);
+            // Escape quotes
+            val = String(val).replace(/"/g, '""');
+            return `"${val}"`;
+        }).join(',');
+    });
+    
+    const csvContent = BOM + header + '\n' + csvRows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
+// Xuất lịch sử đơn hàng
+window.exportOrderHistory = function() {
+    const columns = [
+        { key: 'id_short', label: 'Mã Đơn' },
+        { key: 'table_number', label: 'Bàn' },
+        { key: 'status', label: 'Trạng Thái' },
+        { key: 'total_price', label: 'Tổng Tiền (VNĐ)' },
+        { key: 'payment_method', label: 'PT Thanh Toán' },
+        { key: 'payment_status', label: 'TT Thanh Toán' },
+        { key: 'item_names', label: 'Danh Sách Món' },
+        { key: 'order_note', label: 'Ghi Chú' },
+        { key: 'customer_phone', label: 'SĐT Khách' },
+        { key: 'created_at_str', label: 'Thời Gian' }
+    ];
+    
+    const rows = (orderHistory || []).map(o => ({
+        id_short: (o._id || o.id || '').substring(0, 8),
+        table_number: o.tableNumber || o.table_number || '',
+        status: o.status || '',
+        total_price: o.totalPrice || o.total_price || 0,
+        payment_method: o.payment_method === 'transfer' ? 'Chuyển khoản' : 'Tiền mặt',
+        payment_status: o.payment_status === 'paid' ? 'Đã thanh toán' : 'Chưa thanh toán',
+        item_names: (o.items || []).map(i => `${i.quantity}x ${i.name}`).join(', '),
+        order_note: o.orderNote || o.order_note || '',
+        customer_phone: o.customer_phone || '',
+        created_at_str: new Date(o.createdAt || o.created_at).toLocaleString('vi-VN')
+    }));
+    
+    const dateStr = new Date().toISOString().split('T')[0];
+    exportToCSV(rows, columns, `don_hang_${dateStr}.csv`);
+};
+
+// Xuất sổ quỹ
+window.exportCashflow = function() {
+    const columns = [
+        { key: 'date', label: 'Ngày' },
+        { key: 'refId', label: 'Mã Tham Chiếu' },
+        { key: 'type', label: 'Loại' },
+        { key: 'desc', label: 'Mô Tả' },
+        { key: 'amount', label: 'Số Tiền (VNĐ)' }
+    ];
+    
+    const rows = (cashTransactions || []).map(item => ({
+        date: item.createdAt.toLocaleString('vi-VN'),
+        refId: item.refId || '',
+        type: item.type === 'income' ? 'Thu' : 'Chi',
+        desc: item.desc || '',
+        amount: item.type === 'income' ? item.amount : -item.amount
+    }));
+    
+    const dateStr = new Date().toISOString().split('T')[0];
+    exportToCSV(rows, columns, `so_quy_${dateStr}.csv`);
+};
+
+// Alias cho HTML onclick references
+window.exportOrdersToCSV = window.exportOrderHistory;
+
+// Xuất tồn kho
+window.exportInventoryToCSV = async function() {
+    const { data } = await supabase.from('ingredients').select('*').order('name');
+    if (!data || data.length === 0) return alert('Không có dữ liệu kho!');
+    
+    const columns = [
+        { key: 'name', label: 'Tên Nguyên Liệu' },
+        { key: 'stock', label: 'Tồn Kho' },
+        { key: 'unit', label: 'Đơn Vị' },
+        { key: 'min_stock', label: 'Mức Tối Thiểu' },
+        { key: 'status', label: 'Trạng Thái' }
+    ];
+    
+    const rows = data.map(i => ({
+        ...i,
+        status: i.stock <= (i.min_stock || 0) ? 'SẮP HẾT' : 'Đủ hàng'
+    }));
+    
+    const dateStr = new Date().toISOString().split('T')[0];
+    exportToCSV(rows, columns, `ton_kho_${dateStr}.csv`);
+};

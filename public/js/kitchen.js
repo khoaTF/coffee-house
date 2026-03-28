@@ -309,62 +309,8 @@ window.updateOrderStatus = async (orderId, newStatus, btn) => {
     try {
         if (newStatus === 'Completed') {
             const order = orders.find(o => o._id === orderId);
-            if (order && order.items && order.items.length > 0) {
-                const { data: productsData } = await supabase.from('products').select('id, name, recipe, options');
-                if (productsData) {
-                    const reductions = {};
-                    order.items.forEach(item => {
-                        const product = productsData.find(p => p.id === item._id || p.name === item.name);
-                        if (product) {
-                            let finalRecipe = [];
-                            let isAbsoluted = false;
-                            
-                            if (item.selectedOptions && Array.isArray(item.selectedOptions) && product.options && Array.isArray(product.options)) {
-                                item.selectedOptions.forEach(selOpt => {
-                                    const optGroup = product.options.find(o => o.name === selOpt.optionName || o.optionName === selOpt.optionName);
-                                    if (optGroup && Array.isArray(optGroup.choices)) {
-                                        const choice = optGroup.choices.find(c => c.name === selOpt.choiceName || c.choiceName === selOpt.choiceName);
-                                        if (choice && choice.recipe && Array.isArray(choice.recipe)) {
-                                            if (choice.isAbsoluteRecipe) {
-                                                isAbsoluted = true;
-                                                finalRecipe = [...choice.recipe];
-                                            } else {
-                                                finalRecipe = finalRecipe.concat(choice.recipe);
-                                            }
-                                        }
-                                    }
-                                });
-                            }
-                            
-                            if (!isAbsoluted && Array.isArray(product.recipe)) {
-                                finalRecipe = finalRecipe.concat(product.recipe);
-                            }
-                            
-                            finalRecipe.forEach(r => {
-                                if (!reductions[r.ingredientId]) reductions[r.ingredientId] = 0;
-                                reductions[r.ingredientId] += (r.quantity * item.quantity);
-                            });
-                        }
-                    });
-
-                    for (const [ingId, qtyToDeduct] of Object.entries(reductions)) {
-                        const { data: ingData } = await supabase.from('ingredients').select('stock').eq('id', ingId).single();
-                        if (ingData) {
-                            const newStock = Math.max(0, ingData.stock - qtyToDeduct);
-                            await supabase.from('ingredients').update({ stock: newStock }).eq('id', ingId);
-                            await supabase.from('inventory_logs').insert([{
-                                ingredient_id: ingId,
-                                change_type: 'deduction',
-                                amount: qtyToDeduct,
-                                previous_stock: ingData.stock,
-                                new_stock: newStock,
-                                reference_id: orderId,
-                                reason: 'Xuất kho tự động cho đơn hàng'
-                            }]);
-                        }
-                    }
-                }
-            }
+            // NOTE: Trừ kho đã được xử lý bởi RPC place_order_and_deduct_inventory
+            // khi khách đặt đơn. KHÔNG trừ kho lại ở đây để tránh double deduction.
 
             // Earn Loyalty Points
             if (order && order.customer_phone) {

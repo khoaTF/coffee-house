@@ -1,8 +1,19 @@
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_key_123';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
-const KITCHEN_PASSWORD = process.env.KITCHEN_PASSWORD || 'bep123';
+// BẮT BUỘC phải cấu hình env vars — không dùng fallback mặc định
+const JWT_SECRET = process.env.JWT_SECRET;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+const KITCHEN_PASSWORD = process.env.KITCHEN_PASSWORD;
+
+if (!JWT_SECRET || !ADMIN_PASSWORD) {
+    console.error('❌ FATAL: Missing required environment variables: JWT_SECRET, ADMIN_PASSWORD');
+    console.error('   Set them in .env or hosting platform environment settings.');
+    if (process.env.NODE_ENV === 'production') {
+        process.exit(1);
+    } else {
+        console.warn('⚠️  Running in dev mode with insecure defaults. DO NOT use in production!');
+    }
+}
 
 const login = (req, res) => {
     const { username, password } = req.body;
