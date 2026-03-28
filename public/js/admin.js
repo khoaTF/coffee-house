@@ -2674,47 +2674,6 @@ async function saveCustomer() {
 }
 
 // --- Staff Management ---
-async function fetchStaff() {
-    try {
-        const { data, error } = await supabase.from('users').select('*').order('created_at', { ascending: false });
-        if (error) throw error;
-        staffList = data;
-        renderStaffTable();
-    } catch (e) {
-        console.error(e);
-        document.getElementById('staff-table-body').innerHTML = '<tr><td colspan="4" class="text-center text-danger">Lỗi tải dữ liệu.</td></tr>';
-    }
-}
-
-function renderStaffTable() {
-    const tbody = document.getElementById('staff-table-body');
-    tbody.replaceChildren();
-    if (staffList.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Chưa có nhân viên nào.</td></tr>';
-        return;
-    }
-    const roleMap = { 'staff': 'Phục vụ', 'kitchen': 'Bếp', 'manager': 'Quản lý ca', 'admin': 'Quản lý tổng' };
-    const badgeMap = { 'staff': 'bg-primary text-white', 'kitchen': 'bg-warning text-dark', 'manager': 'bg-info text-dark', 'admin': 'bg-danger text-white' };
-    
-    staffList.forEach(s => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td class="fw-bold"><i class="fa-solid fa-user-circle me-2 text-secondary"></i>${window.escapeHTML(s.name || '') || '<i>NV Mới</i>'}</td>
-            <td><span class="badge ${badgeMap[s.role] || 'bg-secondary'}">${roleMap[s.role] || s.role}</span></td>
-            <td class="text-muted"><kbd>${window.escapeHTML(String(s.pin) || '')}</kbd></td>
-            <td class="text-end">
-                <button class="action-btn edit-btn" title="Chỉnh sửa" onclick="editStaff('${window.escapeHTML(s.id || '')}')">
-                    <i class="fa-solid fa-pen"></i>
-                </button>
-                <button class="action-btn delete" title="Xóa nhân viên" onclick="deleteStaff('${window.escapeHTML(s.id || '')}')">
-                    <i class="fa-solid fa-trash"></i>
-                </button>
-            </td>
-        `;
-        tbody.appendChild(tr);
-    });
-}
-
 
 
 // --- Audit Logs ---
