@@ -27,23 +27,7 @@
       "destination": "/api"
     },
     {
-      "source": "/staff-login",
-      "destination": "/api"
-    },
-    {
       "source": "/tv",
-      "destination": "/api"
-    },
-    {
-      "source": "/live_index",
-      "destination": "/api"
-    },
-    {
-      "source": "/index",
-      "destination": "/api"
-    },
-    {
-      "source": "/(.*)",
       "destination": "/api"
     }
   ]

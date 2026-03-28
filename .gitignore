@@ -1,5 +1,13 @@
 node_modules/
 .env
 .DS_Store
-
 .vercel
+
+# Debug outputs
+*.log
+remote_*.txt
+live_content.txt
+
+# IDE
+.vscode/
+.idea/
