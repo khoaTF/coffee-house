@@ -1,5 +1,5 @@
 // Auto-versioned cache using build date — increment CACHE_VERSION when deploying
-const CACHE_VERSION = 'v3';
+const CACHE_VERSION = 'v4';
 const CACHE_NAME = `cafe-qr-${CACHE_VERSION}`;
 
 const ASSETS = [
