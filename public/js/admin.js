@@ -11,6 +11,12 @@ let confirmModalInstance;
 let customerModalInstance;
 let staffModalInstance;
 let quickPromoModalInstance;
+let createRestockModalInstance = null;
+
+// Debounce timers for realtime subscriptions
+let historyDebounceTimer = null;
+let tablesDebounceTimer = null;
+let inventoryDebounceTimer = null;
 
 
 // DOM Elements (Initialized in DOMContentLoaded to prevent null errors)
@@ -1553,57 +1559,99 @@ async function fetchTablesStatus() {
 
 window.showTableActions = async (tableNum, tableOrders) => {
     const hasUnpaid = tableOrders.some(o => !o.is_paid);
-    let msg = `Bàn ${tableNum} đang có ${tableOrders.length} đơn hàng.\nBạn muốn làm gì?\n\n1. Chuyển Bàn\n`;
-    if (hasUnpaid) msg += `2. Xác nhận Đã Thanh Toán toàn bộ\n`;
-    msg += `\nNhập phím (1${hasUnpaid ? " hoặc 2" : ""}):`;
-    
-    const action = window.prompt(msg);
-    if (!action) return;
-    
-    if (action === '1') {
-        const newTable = window.prompt(`Nhập số Bàn mới cho Bàn ${tableNum}:`);
-        if (newTable && newTable.trim() !== '' && newTable != tableNum) {
-            try {
-                const orderIds = tableOrders.map(o => o._id);
-                for (const oid of orderIds) {
-                    await supabase.from('orders').update({ table_number: newTable.toString() }).eq('id', oid);
-                }
-                const sessionIds = [...new Set(tableOrders.map(o => o.session_id))];
-                for (const sid of sessionIds) {
-                    await supabase.from('table_sessions').update({ table_number: newTable.toString() }).eq('session_id', sid).eq('table_number', tableNum.toString());
-                }
-                alert(`Đã chuyển sang Bàn ${newTable}!`);
-                fetchTablesStatus();
-            } catch(e) {
-                alert("Lỗi khi chuyển bàn: " + e.message);
-            }
+    let tableActionsModalInstance = bootstrap.Modal.getOrCreateInstance(document.getElementById('tableActionsModal'));
+
+    // Populate modal info
+    document.getElementById('tableActionsInfo').textContent =
+        `Bàn ${tableNum} có ${tableOrders.length} đơn hàng.${hasUnpaid ? ` (${tableOrders.filter(o => !o.is_paid).length} chưa thanh toán)` : ' (Đã thanh toán)'}`;
+
+    // Show/hide pay button based on unpaid status
+    const payBtn = document.getElementById('tableActionPayBtn');
+    payBtn.style.display = hasUnpaid ? 'flex' : 'none';
+
+    // Reset transfer form
+    const transferForm = document.getElementById('tableTransferForm');
+    transferForm.style.display = 'none';
+    document.getElementById('tableNewNumberInput').value = '';
+
+    // Wire up Transfer button
+    const transferBtn = document.getElementById('tableActionTransferBtn');
+    const newTransferBtn = transferBtn.cloneNode(true);
+    transferBtn.parentNode.replaceChild(newTransferBtn, transferBtn);
+    newTransferBtn.addEventListener('click', () => {
+        transferForm.style.display = 'block';
+        document.getElementById('tableNewNumberInput').focus();
+    });
+
+    // Wire up Transfer Confirm button
+    const confirmTransferBtn = document.getElementById('tableTransferConfirmBtn');
+    const newConfirmBtn = confirmTransferBtn.cloneNode(true);
+    confirmTransferBtn.parentNode.replaceChild(newConfirmBtn, confirmTransferBtn);
+    newConfirmBtn.addEventListener('click', async () => {
+        const newTable = document.getElementById('tableNewNumberInput').value.trim();
+        if (!newTable || newTable == tableNum) {
+            document.getElementById('tableNewNumberInput').classList.add('is-invalid');
+            return;
         }
-    } else if (action === '2' && hasUnpaid) {
-        if (confirm(`Xác nhận đã thu tiền cho toàn bộ đơn của Bàn ${tableNum}?\n(Sau khi thu, các đơn sẽ gửi xuống Bếp và dọn Bàn tự động để khách mới có thể quét mã)`)) {
-            try {
-                 const unpaidOrders = tableOrders.filter(o=>!o.is_paid);
-                 for(const ord of unpaidOrders) {
-                     await supabase.from('orders').update({ is_paid: true }).eq('id', ord._id);
-                 }
-                 await supabase.from('table_sessions').delete().eq('table_number', tableNum.toString());
-                 alert("Thanh toán thành công!");
-                 fetchTablesStatus();
-            } catch(e) {
-                 alert("Lỗi thanh toán: " + e.message);
+        newConfirmBtn.disabled = true;
+        newConfirmBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i>';
+        try {
+            const orderIds = tableOrders.map(o => o._id);
+            for (const oid of orderIds) {
+                await supabase.from('orders').update({ table_number: newTable }).eq('id', oid);
             }
+            const sessionIds = [...new Set(tableOrders.map(o => o.session_id))];
+            for (const sid of sessionIds) {
+                await supabase.from('table_sessions').update({ table_number: newTable }).eq('session_id', sid).eq('table_number', tableNum.toString());
+            }
+            logAudit('Chuyển bàn', `Bàn ${tableNum} → Bàn ${newTable}`);
+            tableActionsModalInstance.hide();
+            fetchTablesStatus();
+        } catch(e) {
+            alert('Lỗi khi chuyển bàn: ' + e.message);
+            newConfirmBtn.disabled = false;
+            newConfirmBtn.textContent = 'Chuyển';
         }
-    }
+    });
+
+    // Wire up Pay button
+    const newPayBtn = payBtn.cloneNode(true);
+    payBtn.parentNode.replaceChild(newPayBtn, payBtn);
+    newPayBtn.style.display = hasUnpaid ? 'flex' : 'none';
+    newPayBtn.addEventListener('click', async () => {
+        tableActionsModalInstance.hide();
+        const confirmed = await customConfirm(
+            `Xác nhận đã thu tiền cho toàn bộ đơn của Bàn ${tableNum}?\n(Sau khi thu, bàn sẽ được dọn để khách mới có thể quét mã)`,
+            'Xác nhận Thanh Toán'
+        );
+        if (!confirmed) return;
+        try {
+            const unpaidOrders = tableOrders.filter(o => !o.is_paid);
+            for (const ord of unpaidOrders) {
+                await supabase.from('orders').update({ is_paid: true }).eq('id', ord._id);
+            }
+            await supabase.from('table_sessions').delete().eq('table_number', tableNum.toString());
+            logAudit('Thanh toán bàn', `Bàn ${tableNum}, ${unpaidOrders.length} đơn`);
+            fetchTablesStatus();
+        } catch(e) {
+            alert('Lỗi thanh toán: ' + e.message);
+        }
+    });
+
+    tableActionsModalInstance.show();
 }
 
-// Setup Realtime for admin
+// Setup Realtime for admin — debounced to prevent N calls on bulk updates
 supabase.channel('admin-orders')
   .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, payload => {
       if (document.getElementById('section-history').classList.contains('active') || 
           document.getElementById('section-analytics').classList.contains('active')) {
-          fetchHistory();
+          clearTimeout(historyDebounceTimer);
+          historyDebounceTimer = setTimeout(() => fetchHistory(), 400);
       }
       if (document.getElementById('section-tables').classList.contains('active')) {
-          fetchTablesStatus();
+          clearTimeout(tablesDebounceTimer);
+          tablesDebounceTimer = setTimeout(() => fetchTablesStatus(), 400);
       }
   })
   .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'staff_requests' }, payload => {
@@ -1613,9 +1661,18 @@ supabase.channel('admin-orders')
       if(payload.new.status === 'completed') removeStaffRequestUI(payload.new.id);
   })
   .subscribe((status, err) => {
-      console.log('ADMIN REALTIME STATUS:', status);
       if (err) console.error('ADMIN REALTIME ERROR:', err);
   });
+
+// Realtime for ingredients inventory
+supabase.channel('admin-ingredients')
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'ingredients' }, () => {
+      if (document.getElementById('section-inventory')?.classList.contains('active')) {
+          clearTimeout(inventoryDebounceTimer);
+          inventoryDebounceTimer = setTimeout(() => fetchIngredients(), 400);
+      }
+  })
+  .subscribe();
 
 // --- Staff Requests (Top-Right Floating Alerts) ---
 async function fetchActiveStaffRequests() {
@@ -1627,55 +1684,50 @@ async function fetchActiveStaffRequests() {
 }
 
 function renderStaffRequest(data) {
+    // Ensure container exists (CSS handles positioning/layout)
     if (!document.getElementById('admin-alerts-container')) {
         const container = document.createElement('div');
         container.id = 'admin-alerts-container';
-        container.style.cssText = 'position: fixed; top: 80px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; width: 320px;';
         document.body.appendChild(container);
     }
 
     const { id, table_number, type, created_at } = data;
-    if(document.querySelector(`.admin-alert[data-request-id="${id}"]`)) return;
+    if (document.querySelector(`.admin-alert[data-request-id="${id}"]`)) return;
 
-    const msg = type === 'bill' ? `Bàn ${table_number} thanh toán!` : `Bàn ${table_number} gọi phục vụ!`;
-    const bg = type === 'bill' ? 'linear-gradient(135deg, #2ecc71, #27ae60)' : 'linear-gradient(135deg, #f39c12, #e67e22)';
-    const icon = type === 'bill' ? 'fa-file-invoice-dollar' : 'fa-bell-concierge';
+    const isBill = type === 'bill';
+    const msg = isBill ? `Bàn ${table_number} thanh toán!` : `Bàn ${table_number} gọi phục vụ!`;
+    const iconClass = isBill ? 'fa-file-invoice-dollar' : 'fa-bell-concierge';
+    const alertTypeClass = isBill ? 'alert-bill' : 'alert-call';
 
     const alertDiv = document.createElement('div');
-    alertDiv.className = 'admin-alert custom-alert shadow-lg';
+    alertDiv.className = `admin-alert ${alertTypeClass}`;
     alertDiv.setAttribute('data-request-id', id);
-    alertDiv.style.cssText = `background: ${bg}; padding: 15px; border-radius: 12px; color: white; display: flex; align-items: center; justify-content: space-between; animation: slideInRight 0.3s ease;`;
-    
+
     const alertContent = document.createElement('div');
-    alertContent.style.display = 'flex';
-    alertContent.style.alignItems = 'center';
-    alertContent.style.gap = '15px';
+    alertContent.className = 'alert-content';
 
     const alertIcon = document.createElement('i');
-    alertIcon.className = `fa-solid ${icon} fs-3`;
-    
+    alertIcon.className = `fa-solid ${iconClass} fs-3`;
+
     const textDiv = document.createElement('div');
     const titleH = document.createElement('h6');
     titleH.className = 'mb-0 fw-bold';
     titleH.textContent = msg;
-    
+
     const timeSm = document.createElement('small');
-    timeSm.style.opacity = '0.8';
-    timeSm.textContent = new Date(created_at).toLocaleTimeString();
-    
+    timeSm.className = 'alert-time';
+    timeSm.textContent = new Date(created_at).toLocaleTimeString('vi-VN');
+
     textDiv.append(titleH, timeSm);
     alertContent.append(alertIcon, textDiv);
 
     const doneBtn = document.createElement('button');
-    doneBtn.className = 'btn btn-sm btn-light font-bold';
+    doneBtn.className = 'btn btn-sm btn-light fw-bold';
     doneBtn.textContent = 'Xong';
     doneBtn.onclick = (e) => clearStaffRequest(id, e.target);
 
     alertDiv.append(alertContent, doneBtn);
-    
     document.getElementById('admin-alerts-container').prepend(alertDiv);
-    
-    // Play sound if you want, similar to kitchen
     playAdminAudio();
 }
 
@@ -1713,9 +1765,7 @@ function playAdminAudio() {
     } catch(e) {}
 }
 
-const slideInStyle = document.createElement('style');
-slideInStyle.innerHTML = '@keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }';
-document.head.appendChild(slideInStyle);
+// slideInRight animation is now defined in admin.css
 
 // Init fetch
 fetchActiveStaffRequests();
@@ -2360,7 +2410,7 @@ window.printInvoice = (orderId) => {
 };
 
 // --- Advanced Restock Management ---
-let createRestockModalInstance;
+
 
 async function loadRestockLogs() {
     try {
@@ -2679,9 +2729,10 @@ async function saveCustomer() {
 // --- Audit Logs ---
 async function logAudit(action, details) {
     const adminRole = sessionStorage.getItem('cafe_role') || localStorage.getItem('cafe_role') || 'Unknown';
+    const staffName = sessionStorage.getItem('nohope_staff_name') || localStorage.getItem('nohope_staff_name') || 'Ẩn danh';
     try {
         await supabase.from('audit_logs').insert([{
-            admin_identifier: 'Vai trò: ' + adminRole,
+            admin_identifier: `${staffName} (${adminRole})`,
             action: action,
             details: details
         }]);
