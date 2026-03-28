@@ -8,11 +8,7 @@ const KITCHEN_PASSWORD = process.env.KITCHEN_PASSWORD;
 if (!JWT_SECRET || !ADMIN_PASSWORD) {
     console.error('❌ FATAL: Missing required environment variables: JWT_SECRET, ADMIN_PASSWORD');
     console.error('   Set them in .env or hosting platform environment settings.');
-    if (process.env.NODE_ENV === 'production') {
-        process.exit(1);
-    } else {
-        console.warn('⚠️  Running in dev mode with insecure defaults. DO NOT use in production!');
-    }
+    console.warn('⚠️  Auth routes will return 500 errors until variables are configured.');
 }
 
 const login = (req, res) => {
