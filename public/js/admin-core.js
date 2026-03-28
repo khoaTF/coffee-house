@@ -130,12 +130,12 @@ function switchTab(tabId) {
         fetchCustomers();
     } else if (tabId === 'staff') {
         fetchStaff();
+    } else if (tabId === 'shifts') {
+        if (typeof initShiftsModule === 'function') initShiftsModule();
     } else if (tabId === 'audit') {
         fetchAuditLogs();
     } else if (tabId === 'settings') {
         loadStoreSettings();
-    } else if (tabId === 'qr') {
-        // No specific initial data needed
     } else if (tabId === 'cashflow') {
         fetchCashflowData();
     } else {

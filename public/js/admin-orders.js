@@ -212,9 +212,21 @@ window.markOrderPaid = async (orderId) => {
     }
 };
 
-window.printInvoice = (orderId) => {
+window.printInvoice = async (orderId) => {
     const order = orderHistory.find(o => String(o._id) === String(orderId));
     if (!order) return;
+
+    // Load from store_settings (with localStorage fallback)
+    let storeSettings = {};
+    try {
+        const { data } = await supabase.from('store_settings').select('*').eq('id', 1).maybeSingle();
+        storeSettings = data || JSON.parse(localStorage.getItem('store_settings') || '{}');
+    } catch(e) {
+        storeSettings = JSON.parse(localStorage.getItem('store_settings') || '{}');
+    }
+    const storeName = storeSettings.store_name || 'Nohope Coffee';
+    const storeAddress = storeSettings.store_address ? `Đ/C: ${storeSettings.store_address}` : '';
+    const wifiInfo = storeSettings.wifi_name ? `Wifi: ${storeSettings.wifi_name} / Pass: ${storeSettings.wifi_pass || ''}` : '';
 
     const itemsHtml = order.items.map(i => {
         const optionNames = i.selectedOptions && i.selectedOptions.length > 0 ? ` (+ ${i.selectedOptions.map(o => o.choiceName).join(', ')})` : '';
@@ -245,8 +257,8 @@ window.printInvoice = (orderId) => {
             </head>
             <body>
                 <div class="header">
-                    <h2 style="margin: 0 0 5px 0;">Nohope Coffee</h2>
-                    <div>Đ/C: Số 123 Đường Tình Yêu</div>
+                    <h2 style="margin: 0 0 5px 0;">${storeName}</h2>
+                    <div>${storeAddress}</div>
                     <div>Hóa đơn thanh toán</div>
                     <div style="margin-top: 10px;">Bàn số: <strong>${order.tableNumber}</strong></div>
                     <div>Thời gian: ${timeStr}</div>
@@ -259,7 +271,7 @@ window.printInvoice = (orderId) => {
                 ${discount > 0 ? `<div class="summary">Giảm giá: -${discount.toLocaleString('vi-VN')} đ</div>` : ''}
                 <div class="total">Tổng cộng: ${finalTotal.toLocaleString('vi-VN')} đ</div>
                 <div class="footer">
-                    <div>Wifi: NohopeCoffee / Pass: 12345678</div>
+                    <div>${wifiInfo}</div>
                     <div style="margin-top: 5px;">Cảm ơn quý khách! Hẹn gặp lại.</div>
                 </div>
             </body>

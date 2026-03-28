@@ -178,18 +178,20 @@ async function fetchCustomers() {
     }
 }
 
-function renderCustomersTable() {
+function renderCustomersTable(data = null) {
     const tbody = document.getElementById('customers-table-body');
     tbody.replaceChildren();
-    if (customersList.length === 0) {
+    const list = data !== null ? data : customersList;
+    if (list.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Chưa có khách hàng nào.</td></tr>';
         return;
     }
-    customersList.forEach(c => {
+    list.forEach(c => {
+        const vipBadge = (c.total_spent || 0) >= 500000 ? '<span class="badge bg-warning text-dark ms-1"><i class="fa-solid fa-crown"></i> VIP</span>' : '';
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td class="fw-bold">${window.escapeHTML(c.phone || '')}</td>
-            <td>${window.escapeHTML(c.name || '') || '<i>Khách vô danh</i>'}</td>
+            <td>${window.escapeHTML(c.name || '') || '<i>Khách vô danh</i>'}${vipBadge}</td>
             <td class="text-warning fw-bold"><i class="fa-solid fa-star"></i> ${c.current_points || 0}</td>
             <td class="text-success">${(c.total_spent || 0).toLocaleString('vi-VN')} đ</td>
             <td>${c.created_at ? new Date(c.created_at).toLocaleDateString() : 'N/A'}</td>
@@ -202,6 +204,20 @@ function renderCustomersTable() {
         tbody.appendChild(tr);
     });
 }
+
+window.filterCustomers = function(query) {
+    if (!query || !query.trim()) {
+        renderCustomersTable();
+        return;
+    }
+    const q = query.trim().toLowerCase();
+    const filtered = customersList.filter(c =>
+        (c.name || '').toLowerCase().includes(q) ||
+        (c.phone || '').toLowerCase().includes(q)
+    );
+    renderCustomersTable(filtered);
+};
+
 
 function editCustomer(id) {
     const c = customersList.find(x => String(x.id) === String(id));
