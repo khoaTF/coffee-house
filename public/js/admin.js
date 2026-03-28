@@ -2421,7 +2421,7 @@ async function loadRestockLogs() {
     try {
         const tbody = document.getElementById('restock-logs-table-body');
         if (!tbody) return;
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-6 text-[#A89F88]"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tải dữ liệu...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-6 text-[#A89F88]"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tải dữ liệu...</td></tr>';
         
         const { data, error } = await supabase.from('inventory_logs')
             .select('*, ingredients(name, unit)')
@@ -2434,7 +2434,7 @@ async function loadRestockLogs() {
     } catch (e) {
         console.error(e);
         const tbody = document.getElementById('restock-logs-table-body');
-        if(tbody) tbody.innerHTML = '<tr><td colspan="4" class="text-center py-6 text-danger">Lỗi tải dữ liệu.</td></tr>';
+        if(tbody) tbody.innerHTML = '<tr><td colspan="5" class="text-center py-6 text-danger">Lỗi tải dữ liệu.</td></tr>';
     }
 }
 
@@ -2445,7 +2445,7 @@ function renderRestockLogs(logs) {
     tbody.innerHTML = '';
     
     if (!logs || logs.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-[#A89F88]">Chưa có lịch sử nhập hàng nào.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-[#A89F88]">Chưa có lịch sử nhập hàng nào.</td></tr>';
         return;
     }
     
@@ -2466,7 +2466,8 @@ function renderRestockLogs(logs) {
         groupedLogs[key].items.push({
             name: log.ingredients ? log.ingredients.name : 'Unknown',
             amount: log.amount,
-            unit: log.ingredients ? log.ingredients.unit : ''
+            unit: log.ingredients ? log.ingredients.unit : '',
+            unit_price: log.unit_price || 0
         });
     });
     
@@ -2475,12 +2476,18 @@ function renderRestockLogs(logs) {
         tr.className = 'border-b border-[#3A3528] hover:bg-[#2A271D] transition-colors';
         
         const timeStr = new Date(group.time).toLocaleString('vi-VN');
-        const itemsHtml = group.items.map(i => `<span class="badge bg-[#3A3528] text-[#E8DCC4] border border-[#A89F88] border-opacity-25 me-1 mb-1">+${i.amount} ${i.unit} ${i.name}</span>`).join('');
+        const itemsHtml = group.items.map(i => {
+            const priceTag = i.unit_price > 0 ? ` <span class="text-[#A89F88] text-[10px]">(${i.unit_price.toLocaleString('vi-VN')}đ/${i.unit})</span>` : '';
+            return `<span class="badge bg-[#3A3528] text-[#E8DCC4] border border-[#A89F88] border-opacity-25 me-1 mb-1">+${i.amount} ${i.unit} ${i.name}${priceTag}</span>`;
+        }).join('');
+        const totalCost = group.items.reduce((sum, i) => sum + (i.unit_price * i.amount), 0);
+        const totalCostHtml = totalCost > 0 ? `<span class="text-[#D4AF37] font-bold">${totalCost.toLocaleString('vi-VN')}đ</span>` : '<span class="text-[#A89F88]">-</span>';
         
         tr.innerHTML = `
             <td class="text-[#A89F88] font-mono text-xs">#${group.id.substring(0,8)}</td>
             <td class="text-[#E8DCC4] text-sm">${timeStr}</td>
             <td class="max-w-xs flex-wrap gap-1">${itemsHtml}</td>
+            <td class="text-end">${totalCostHtml}</td>
             <td class="text-[#A89F88] text-sm italic">${group.note || '-'}</td>
         `;
         tbody.appendChild(tr);
@@ -2536,6 +2543,12 @@ function addRestockItemRow() {
             <div class="input-group input-group-sm">
                 <input type="number" class="form-control bg-[#1A1814] text-[#E8DCC4] border-[#3A3528] restock-amount-input" placeholder="0" required min="0.1" step="any">
                 <span class="input-group-text bg-[#3A3528] text-[#A89F88] border-[#3A3528] restock-unit-display">-</span>
+            </div>
+        </td>
+        <td class="py-2 px-2">
+            <div class="input-group input-group-sm">
+                <input type="number" class="form-control bg-[#1A1814] text-[#E8DCC4] border-[#3A3528] restock-price-input" placeholder="0" min="0" step="any">
+                <span class="input-group-text bg-[#3A3528] text-[#A89F88] border-[#3A3528]">đ</span>
             </div>
         </td>
         <td class="py-2 ps-2 text-end">
@@ -2596,10 +2609,13 @@ async function submitRestockTicket() {
         
         if (ingId && amount > 0) {
             const currentStock = parseFloat(select.options[select.selectedIndex].dataset.stock) || 0;
+            const priceInput = row.querySelector('.restock-price-input');
+            const unitPrice = parseFloat(priceInput ? priceInput.value : 0) || 0;
             restockItems.push({
                 ingredient_id: ingId,
                 amount: amount,
-                current_stock: currentStock
+                current_stock: currentStock,
+                unit_price: unitPrice
             });
         }
     });
@@ -2634,7 +2650,8 @@ async function submitRestockTicket() {
                 amount: item.amount,
                 previous_stock: item.current_stock,
                 new_stock: newStock,
-                reason: reason
+                reason: reason,
+                unit_price: item.unit_price
             });
         }
         
