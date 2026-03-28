@@ -8,6 +8,7 @@ let trackedOrderId = null; // Updates the banner
 let ingredientStock = {};
 let sessionOrders = [];
 let currentFeedbackOrderId = null;
+let currentOptionsItem = null; // Tracks item being configured in options modal
 
 // translations moved to i18n.js
 
@@ -1381,9 +1382,6 @@ function handleOrderStatusUpdate(updatedOrderData) {
         }
     }
 }
-
-// Options state for currently viewed item
-let currentOptionsItem = null;
 
 // Add to Cart Logic
 window.setCartQuantity = (productIdOrCartKey, newQty) => {
