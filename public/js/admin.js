@@ -188,6 +188,10 @@ function switchTab(tabId) {
         fetchStaff();
     } else if (tabId === 'audit') {
         fetchAuditLogs();
+    } else if (tabId === 'settings') {
+        loadStoreSettings();
+    } else if (tabId === 'qr') {
+        // No specific initial data needed for QR
     } else {
         fetchProducts();
     }
@@ -3112,3 +3116,118 @@ document.addEventListener('DOMContentLoaded', () => {
     // Set default filter to 'all'
     historyFilteredData = [];
 });
+
+// =============================================================
+// PHASE 4 — QR Management & Store Settings
+// =============================================================
+
+window.generateQRCodes = function() {
+    const countInput = document.getElementById('qr-table-count');
+    const count = parseInt(countInput.value);
+    if (!count || isNaN(count) || count <= 0) {
+        if(typeof showAdminToast === 'function') showAdminToast('Vui lòng nhập số lượng bàn hợp lệ.', 'error');
+        else alert('Vui lòng nhập số lượng bàn hợp lệ.');
+        return;
+    }
+
+    const printArea = document.getElementById('qr-print-area');
+    printArea.innerHTML = '';
+    
+    // Base URL for the menu
+    const baseUrl = window.location.origin;
+
+    for (let i = 1; i <= count; i++) {
+        const tableUrl = `${baseUrl}/?table=${i}`;
+        
+        const wrapper = document.createElement('div');
+        wrapper.className = 'qr-card bg-[#232018] border border-[#3A3528] rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-soft relative';
+        
+        const titleSpan = document.createElement('h5');
+        titleSpan.className = 'text-[#C0A062] font-noto font-bold mb-3 text-lg';
+        titleSpan.textContent = `Bàn ${i}`;
+        
+        const qrContainer = document.createElement('div');
+        qrContainer.className = 'bg-white p-2 rounded-xl mb-3 flex justify-center w-full';
+        
+        // Generate QR Code
+        new QRCode(qrContainer, {
+            text: tableUrl,
+            width: 128,
+            height: 128,
+            colorDark : "#000000",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.H
+        });
+        
+        const linkElem = document.createElement('a');
+        linkElem.href = tableUrl;
+        linkElem.target = '_blank';
+        linkElem.className = 'text-[10px] text-[#A89F88] break-all truncate w-full hover:text-[#C0A062] transition-colors mt-2';
+        linkElem.textContent = tableUrl;
+        
+        wrapper.appendChild(titleSpan);
+        wrapper.appendChild(qrContainer);
+        wrapper.appendChild(linkElem);
+        
+        printArea.appendChild(wrapper);
+    }
+    
+    if(typeof showAdminToast === 'function') showAdminToast(`Đã tạo thành công ${count} mã QR!`, 'success');
+};
+
+window.saveStoreSettings = async function(type) {
+    let updates = {};
+    if (type === 'general') {
+        updates = {
+            store_name: document.getElementById('setting-store-name').value,
+            store_address: document.getElementById('setting-store-address').value,
+            wifi_name: document.getElementById('setting-wifi-name').value,
+            wifi_pass: document.getElementById('setting-wifi-pass').value
+        };
+    } else if (type === 'bank') {
+        updates = {
+            bank_id: document.getElementById('setting-bank-id').value,
+            bank_acc: document.getElementById('setting-bank-acc').value,
+            bank_name: document.getElementById('setting-bank-name').value
+        };
+    }
+    
+    try {
+        if (typeof supabase !== 'undefined') {
+            const { error } = await supabase.from('store_settings').upsert({ id: 1, ...updates });
+            if (error && error.code !== '42P01') console.warn(error);
+        }
+    } catch (e) {
+        console.warn('Supabase context missing or table missing, using localStorage');
+    }
+
+    const existing = JSON.parse(localStorage.getItem('store_settings') || '{}');
+    const newSettings = { ...existing, ...updates };
+    localStorage.setItem('store_settings', JSON.stringify(newSettings));
+    
+    if(typeof showAdminToast === 'function') showAdminToast(`Đã lưu thiết lập ${type === 'general' ? 'thông tin' : 'thanh toán'} thành công!`, 'success');
+    else alert('Đã lưu cài đặt!');
+};
+
+window.loadStoreSettings = async function() {
+    let settings = {};
+    try {
+        if (typeof supabase !== 'undefined') {
+            const { data, error } = await supabase.from('store_settings').select('*').eq('id', 1).single();
+            if (data) settings = data;
+			else throw new Error("No table");
+        } else {
+            throw new Error("No supabase client");
+        }
+    } catch(e) {
+        settings = JSON.parse(localStorage.getItem('store_settings') || '{}');
+    }
+    
+    if (document.getElementById('setting-store-name')) document.getElementById('setting-store-name').value = settings.store_name || '';
+    if (document.getElementById('setting-store-address')) document.getElementById('setting-store-address').value = settings.store_address || '';
+    if (document.getElementById('setting-wifi-name')) document.getElementById('setting-wifi-name').value = settings.wifi_name || '';
+    if (document.getElementById('setting-wifi-pass')) document.getElementById('setting-wifi-pass').value = settings.wifi_pass || '';
+    if (document.getElementById('setting-bank-id')) document.getElementById('setting-bank-id').value = settings.bank_id || '';
+    if (document.getElementById('setting-bank-acc')) document.getElementById('setting-bank-acc').value = settings.bank_acc || '';
+    if (document.getElementById('setting-bank-name')) document.getElementById('setting-bank-name').value = settings.bank_name || '';
+};
