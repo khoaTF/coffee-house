@@ -1,4 +1,156 @@
 let currentShift = null;
+let shiftsModuleInitialized = false;
+
+async function initShiftsModule() {
+    const container = document.getElementById('shifts-tab-content');
+    if (!container) return;
+
+    container.innerHTML = `
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+            <div>
+                <h2 class="font-noto text-2xl font-bold text-[#F2E8D5] mb-1 flex items-center gap-2"><i class="fa-solid fa-business-time text-[#C0A062]"></i> Ca làm việc</h2>
+                <p class="text-sm text-[#A89F88] mb-0">Quản lý mở/đóng ca và xem lịch sử các ca làm việc.</p>
+            </div>
+            <div id="shift-main-action-btn"></div>
+        </div>
+
+        <!-- Current shift status card -->
+        <div id="shift-status-card" class="card bg-[#232018] border border-[#3A3528] rounded-2xl shadow-soft p-6 mb-6">
+            <div class="text-center text-[#A89F88]"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang kiểm tra ca...</div>
+        </div>
+
+        <!-- Shift history -->
+        <div class="card bg-[#232018] border border-[#3A3528] rounded-2xl shadow-soft overflow-hidden">
+            <div class="card-body p-0">
+                <div class="p-4 border-b border-[#3A3528]">
+                    <h5 class="font-bold text-[#F2E8D5] mb-0"><i class="fa-solid fa-history me-2 text-[#C0A062]"></i>Lịch sử ca</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 border-0">
+                        <thead class="bg-[#3A3528] text-[#D4AF37]">
+                            <tr>
+                                <th class="border-0 py-3 px-4">Người mở</th>
+                                <th class="border-0 py-3 px-4">Mở lúc</th>
+                                <th class="border-0 py-3 px-4">Đóng lúc</th>
+                                <th class="border-0 py-3 px-4">Doanh thu</th>
+                                <th class="border-0 py-3 px-4">Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody id="shifts-history-body">
+                            <tr><td colspan="5" class="text-center py-4 text-[#A89F88]"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tải...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    `;
+
+    await renderShiftStatusCard();
+    await loadShiftsHistory();
+}
+
+async function renderShiftStatusCard() {
+    await checkCurrentShift();
+    const card = document.getElementById('shift-status-card');
+    const actionBtn = document.getElementById('shift-main-action-btn');
+    if (!card) return;
+
+    if (currentShift) {
+        const openedAt = new Date(currentShift.opened_at);
+        const durationMs = new Date() - openedAt;
+        const hours = Math.floor(durationMs / 3600000);
+        const mins = Math.floor((durationMs % 3600000) / 60000);
+
+        card.innerHTML = `
+            <div class="flex flex-col md:flex-row gap-6 items-start">
+                <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-12 h-12 rounded-full bg-green-400/20 flex items-center justify-center">
+                            <i class="fa-solid fa-lock-open text-green-400 text-xl"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-[#F2E8D5] text-lg">Ca đang mở</div>
+                            <div class="text-sm text-green-400">Bởi: ${window.escapeHTML(currentShift.opened_by || '')}</div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-[#1A1814] rounded-xl p-3">
+                            <div class="text-xs text-[#A89F88] mb-1">Mở lúc</div>
+                            <div class="font-bold text-[#E8DCC4]">${openedAt.toLocaleTimeString('vi-VN', {hour:'2-digit',minute:'2-digit'})}</div>
+                        </div>
+                        <div class="bg-[#1A1814] rounded-xl p-3">
+                            <div class="text-xs text-[#A89F88] mb-1">Thời gian</div>
+                            <div class="font-bold text-[#E8DCC4]">${hours}h ${mins}m</div>
+                        </div>
+                        <div class="bg-[#1A1814] rounded-xl p-3">
+                            <div class="text-xs text-[#A89F88] mb-1">Vốn đầu ca</div>
+                            <div class="font-bold text-[#C0A062]">${(currentShift.start_balance || 0).toLocaleString('vi-VN')} đ</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        if (actionBtn) {
+            actionBtn.innerHTML = `<button class="btn rounded-xl font-bold py-2 px-5 text-sm text-white" style="background:#ef4444;" onclick="openCloseShiftModal()"><i class="fa-solid fa-moon me-2"></i>Kết ca</button>`;
+        }
+    } else {
+        card.innerHTML = `
+            <div class="flex flex-col items-center justify-center py-8 text-center">
+                <div class="w-16 h-16 rounded-full bg-[#3A3528] flex items-center justify-center mb-4">
+                    <i class="fa-solid fa-lock text-[#A89F88] text-2xl"></i>
+                </div>
+                <div class="font-bold text-[#F2E8D5] text-lg mb-1">Chưa mở ca</div>
+                <div class="text-sm text-[#A89F88]">Bấm "Mở ca" để bắt đầu ca làm việc mới.</div>
+            </div>
+        `;
+        if (actionBtn) {
+            actionBtn.innerHTML = `<button class="btn rounded-xl font-bold py-2 px-5 text-sm" style="background:#C0A062;color:#1A1814;" onclick="openStartShiftModal()"><i class="fa-solid fa-sun me-2"></i>Mở ca</button>`;
+        }
+    }
+}
+
+async function loadShiftsHistory() {
+    const tbody = document.getElementById('shifts-history-body');
+    if (!tbody) return;
+
+    try {
+        const { data, error } = await supabase
+            .from('shifts')
+            .select('*')
+            .order('opened_at', { ascending: false })
+            .limit(30);
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-[#A89F88]">Chưa có lịch sử ca.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = data.map(s => {
+            const isOpen = s.status === 'open';
+            const openedAt = new Date(s.opened_at).toLocaleString('vi-VN');
+            const closedAt = s.closed_at ? new Date(s.closed_at).toLocaleString('vi-VN') : '—';
+            const revenue = (s.total_revenue || 0).toLocaleString('vi-VN');
+            const badge = isOpen
+                ? '<span class="badge bg-success">Đang mở</span>'
+                : '<span class="badge bg-secondary">Đã đóng</span>';
+            return `
+                <tr>
+                    <td class="font-bold text-[#E8DCC4]">${window.escapeHTML(s.opened_by || '—')}</td>
+                    <td class="text-[#A89F88] text-sm">${openedAt}</td>
+                    <td class="text-[#A89F88] text-sm">${closedAt}</td>
+                    <td class="text-[#C0A062] font-bold">${isOpen ? '—' : revenue + ' đ'}</td>
+                    <td>${badge}</td>
+                </tr>
+            `;
+        }).join('');
+    } catch(e) {
+        console.error('Shifts history error:', e);
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Lỗi tải lịch sử.</td></tr>';
+    }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     checkCurrentShift();

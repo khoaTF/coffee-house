@@ -134,7 +134,10 @@ function renderOrders() {
                             <div class="w-8 h-8 rounded-full bg-[#F6F3F2] dark:bg-[#1B1C1C] text-[#994700] flex items-center justify-center text-sm shadow-inner">
                                 ${window.escapeHTML(order.tableNumber || '?')}
                             </div>
-                            <span>Bàn ${window.escapeHTML(order.tableNumber || '?')}</span>
+                            <div>
+                                <span>Bàn ${window.escapeHTML(order.tableNumber || '?')}</span>
+                                ${order.customer_phone ? `<div class="text-xs font-normal mt-0.5 flex items-center gap-1.5"><span class="text-amber-500 font-bold"><i class="fa-solid fa-crown"></i> VIP</span><span class="text-gray-500 dark:text-gray-400">${window.escapeHTML(order.customer_phone)}</span></div>` : ''}
+                            </div>
                         </div>
                         <div class="flex flex-col items-end">
                             <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 font-medium bg-gray-50 dark:bg-gray-800/50 px-3 py-1.5 rounded-lg">

@@ -91,6 +91,9 @@
                 <button class="nav-link bg-transparent border-0 w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 text-[#A89F88] hover:bg-[#3A3528] hover:text-[#E8DCC4]" onclick="switchTab('history'); closeSidebarMobile()" id="tab-history">
                     <i class="fa-solid fa-clock-rotate-left w-5 text-center"></i> Đơn hàng
                 </button>
+                <button class="nav-link bg-transparent border-0 w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 text-[#A89F88] hover:bg-[#3A3528] hover:text-[#E8DCC4]" onclick="switchTab('shifts'); closeSidebarMobile()" id="tab-shifts">
+                    <i class="fa-solid fa-business-time w-5 text-center"></i> Ca làm việc
+                </button>
                 <p class="px-4 text-[11px] font-bold text-[#A89F88] uppercase tracking-wider mb-2 mt-6">Cửa hàng</p>
                 <button class="nav-link bg-transparent border-0 w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 text-[#A89F88] hover:bg-[#3A3528] hover:text-[#E8DCC4]" onclick="switchTab('analytics'); closeSidebarMobile()" id="tab-analytics">
                     <i class="fa-solid fa-chart-pie w-5 text-center"></i> Báo cáo
@@ -421,6 +424,12 @@
                         <h2 class="font-noto text-2xl font-bold text-[#F2E8D5] mb-1 flex items-center gap-2"><i class="fa-solid fa-users text-[#C0A062]"></i> Khách hàng</h2>
                         <p class="text-sm text-[#A89F88] mb-0">Quản lý thành viên và thông tin mua hàng.</p>
                     </div>
+                    <div class="mb-4">
+                        <div class="relative">
+                            <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-[#A89F88] pointer-events-none"></i>
+                            <input id="customer-search-input" type="search" placeholder="Tìm theo tên hoặc số điện thoại..." class="w-full pl-10 pr-4 py-2.5 bg-[#232018] border border-[#3A3528] rounded-xl text-[#E8DCC4] placeholder-[#A89F88] focus:outline-none focus:border-[#C0A062] text-sm" oninput="filterCustomers(this.value)">
+                        </div>
+                    </div>
                     <div class="card bg-[#232018] border border-[#3A3528] rounded-2xl shadow-soft overflow-hidden">
                         <div class="card-body p-0">
                             <div class="table-responsive">
@@ -443,6 +452,15 @@
                         </div>
                     </div>
                 </section>
+
+                <!-- Shifts Section -->
+                <section id="section-shifts" class="content-section">
+                    <div id="shifts-tab-content">
+                        <!-- Populated by admin-shifts.js initShiftsModule() -->
+                        <div class="text-center py-10 text-[#A89F88]"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tải dữ liệu ca...</div>
+                    </div>
+                </section>
+
 
                 <!-- Staff Management Section -->
                 <section id="section-staff" class="content-section">
