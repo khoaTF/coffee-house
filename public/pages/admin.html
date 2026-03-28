@@ -92,6 +92,9 @@
                 <button class="nav-link bg-transparent border-0 w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 text-[#A89F88] hover:bg-[#3A3528] hover:text-[#E8DCC4]" onclick="switchTab('analytics'); closeSidebarMobile()" id="tab-analytics">
                     <i class="fa-solid fa-chart-pie w-5 text-center"></i> Báo cáo
                 </button>
+                <button class="nav-link bg-transparent border-0 w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 text-[#A89F88] hover:bg-[#3A3528] hover:text-[#E8DCC4]" onclick="switchTab('cashflow'); closeSidebarMobile()" id="tab-cashflow">
+                    <i class="fa-solid fa-wallet w-5 text-center"></i> Sổ quỹ
+                </button>
                 <button class="nav-link bg-transparent border-0 w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 text-[#A89F88] hover:bg-[#3A3528] hover:text-[#E8DCC4]" onclick="switchTab('tables'); closeSidebarMobile()" id="tab-tables">
                     <i class="fa-solid fa-table-cells w-5 text-center"></i> Bàn
                 </button>
@@ -302,6 +305,61 @@
                                 <div class="card-body p-0 flex-1 overflow-y-auto custom-scrollbar" style="max-height: 250px;" id="fb-recent-list">
                                     <div class="p-6 text-center text-[#A89F88]">Đang tải đánh giá...</div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Cash Flow / Sổ Quỹ Section -->
+                <section id="section-cashflow" class="content-section">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                        <div>
+                            <h2 class="font-noto text-2xl font-bold text-[#F2E8D5] mb-1 flex items-center gap-2"><i class="fa-solid fa-wallet text-[#C0A062]"></i> Sổ Quỹ</h2>
+                            <p class="text-sm text-[#A89F88] mb-0">Quản lý dòng tiền, thu chi và lợi nhuận.</p>
+                        </div>
+                        <button class="btn btn-success rounded-xl font-semibold shadow-soft whitespace-nowrap" onclick="openCreateCashflowModal()"><i class="fa-solid fa-plus me-2"></i> Tạo Phiếu Thu / Chi</button>
+                    </div>
+
+                    <!-- Cashflow KPI Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6" id="cashflow-kpi-container">
+                        <!-- Cards will be injected by JS -->
+                        <div class="card bg-[#232018] border border-[#3A3528] rounded-2xl p-4 shadow-soft text-center"><div class="text-[#A89F88]">Đang tải...</div></div>
+                        <div class="card bg-[#232018] border border-[#3A3528] rounded-2xl p-4 shadow-soft text-center"><div class="text-[#A89F88]">Đang tải...</div></div>
+                        <div class="card bg-[#232018] border border-[#3A3528] rounded-2xl p-4 shadow-soft text-center"><div class="text-[#A89F88]">Đang tải...</div></div>
+                    </div>
+
+                    <!-- Cashflow Filter -->
+                    <div class="bg-[#232018] border border-[#3A3528] rounded-2xl p-4 mb-4 shadow-soft">
+                        <div class="flex flex-wrap gap-2 mb-3">
+                            <button id="cf-today" class="history-filter-btn" onclick="setCashflowFilter('today')">Hôm nay</button>
+                            <button id="cf-yesterday" class="history-filter-btn" onclick="setCashflowFilter('yesterday')">Hôm qua</button>
+                            <button id="cf-7days" class="history-filter-btn" onclick="setCashflowFilter('7days')">7 ngày</button>
+                            <button id="cf-30days" class="history-filter-btn active" onclick="setCashflowFilter('30days')">30 ngày</button>
+                            <button id="cf-all" class="history-filter-btn" onclick="setCashflowFilter('all')">Tất cả</button>
+                        </div>
+                        <div class="relative">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-[#A89F88] text-sm"></i>
+                            <input type="text" id="cashflow-search-input" placeholder="Tìm kiếm theo mã, ghi chú..." class="form-control bg-[#1A1814] border-[#3A3528] text-[#E8DCC4] rounded-xl ps-9 placeholder-[#A89F88]">
+                        </div>
+                    </div>
+
+                    <div class="card bg-[#232018] border border-[#3A3528] rounded-2xl shadow-soft overflow-hidden">
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0 border-0 text-[#E8DCC4]">
+                                    <thead class="bg-[#3A3528] text-[#D4AF37]">
+                                        <tr>
+                                            <th class="border-0 font-semibold py-3 px-4">Thời gian</th>
+                                            <th class="border-0 font-semibold py-3 px-4">Mã Giao Dịch</th>
+                                            <th class="border-0 font-semibold py-3 px-4">Loại</th>
+                                            <th class="border-0 font-semibold py-3 px-4">Diễn giải</th>
+                                            <th class="border-0 font-semibold py-3 px-4 text-end">Số tiền (VNĐ)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="cashflow-table-body" class="border-transparent">
+                                        <tr><td colspan="5" class="text-center py-6 text-[#A89F88]"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tải dữ liệu Sổ Quỹ...</td></tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -718,7 +776,7 @@
     </div>
 
     <!-- Choice Recipe Modal -->
-    <div class="modal fade" id="choiceRecipeModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
+    <div class="modal fade" id="choiceRecipeModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content bg-dark text-light border-secondary">
                 <div class="modal-header border-secondary">
@@ -802,7 +860,7 @@
             cursor: pointer;
         }
     </style>
-    <div class="modal fade" id="staffModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
+    <div class="modal fade" id="staffModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content bg-[#1A1814] border border-[#3A3528] rounded-2xl shadow-xl">
                 <div class="modal-header border-b border-[#3A3528] px-6 py-4">
@@ -878,6 +936,10 @@
                                     <span>Báo cáo Thống kê</span>
                                 </label>
                                 <label class="flex items-center space-x-2 text-sm text-[#E8DCC4] cursor-pointer">
+                                    <input type="checkbox" class="form-checkbox bg-[#1A1814] border-[#3A3528] text-[#C0A062] rounded focus:ring-0 perm-cb" value="cashflow">
+                                    <span>Sổ Quỹ (Thu/Chi)</span>
+                                </label>
+                                <label class="flex items-center space-x-2 text-sm text-[#E8DCC4] cursor-pointer">
                                     <input type="checkbox" class="form-checkbox bg-[#1A1814] border-[#3A3528] text-[#C0A062] rounded focus:ring-0 perm-cb" value="audit">
                                     <span>Lịch sử thao tác</span>
                                 </label>
@@ -902,7 +964,7 @@
     </div>
 
     <!-- Create Restock Modal (Phiếu Nhập) -->
-    <div class="modal fade" id="createRestockModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
+    <div class="modal fade" id="createRestockModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content border-[#3A3528]">
                 <div class="modal-header border-b border-[#3A3528]">
@@ -956,6 +1018,48 @@
         </div>
     </div>
 
+    <!-- Create Cashflow Modal -->
+    <div class="modal fade" id="createCashflowModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content border-[#3A3528] bg-[#1A1814] text-[#E8DCC4] rounded-2xl shadow-xl">
+                <div class="modal-header border-b border-[#3A3528]">
+                    <h5 class="modal-title font-noto font-bold text-[#F2E8D5]"><i class="fa-solid fa-file-invoice-dollar text-[#C0A062] me-2"></i> Tạo Phiếu Thu / Chi Khác</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createCashflowForm">
+                        <div class="mb-4">
+                            <label class="form-label text-[#A89F88] text-xs font-bold uppercase tracking-wider">Hành động</label>
+                            <div class="d-flex gap-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="cfType" id="cfTypeExpense" value="expense" checked>
+                                    <label class="form-check-label text-danger font-semibold" for="cfTypeExpense">Báo Chi (Trừ tiền)</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="cfType" id="cfTypeIncome" value="income">
+                                    <label class="form-check-label text-success font-semibold" for="cfTypeIncome">Báo Thu (Cộng tiền)</label>
+                                </div>
+                            </div>
+                            <small class="text-muted mt-1 d-block">Không dùng cho đơn hàng (đã tự động). Dùng cho Tiền nhà, Điện, Nước, Phạt...</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-[#A89F88] text-xs font-bold uppercase tracking-wider">Số tiền (VNĐ)</label>
+                            <input type="number" class="form-control bg-[#232018] border-[#3A3528] text-[#E8DCC4] rounded-xl" id="cfAmount" required min="1000" placeholder="0">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-[#A89F88] text-xs font-bold uppercase tracking-wider">Diễn giải / Ghi chú</label>
+                            <textarea class="form-control bg-[#232018] border-[#3A3528] text-[#E8DCC4] rounded-xl" id="cfDescription" rows="3" required placeholder="Ví dụ: Tiền điện tháng 10"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-t border-[#3A3528]">
+                    <button type="button" class="btn btn-secondary border border-[#3A3528] text-[#A89F88] bg-transparent rounded-xl hover:bg-[#3A3528] hover:text-[#E8DCC4]" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary rounded-xl font-semibold px-4" style="background-color: #C0A062; border-color: #C0A062; color: #1A1814;" onclick="saveCashTransaction()">Lưu Giao Dịch</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Ingredient Modal -->
     <div class="modal fade" id="ingredientModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
@@ -1004,7 +1108,7 @@
     </div>
 
     <!-- Quick Promo Modal -->
-    <div class="modal fade" id="quickPromoModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
+    <div class="modal fade" id="quickPromoModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-sm">
             <div class="modal-content">
                 <div class="modal-header">
