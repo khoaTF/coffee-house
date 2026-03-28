@@ -1775,7 +1775,8 @@ let revenueDailyChartInstance = null;
 let revenueCategoryChartInstance = null;
 
 function renderAnalytics() {
-    if (!document.getElementById('section-analytics').classList.contains('active')) return;
+    const analyticsSection = document.getElementById('section-analytics');
+    if (!analyticsSection || !analyticsSection.classList.contains('active')) return;
     
     const startDateInput = document.getElementById('analytics-start-date');
     const endDateInput = document.getElementById('analytics-end-date');
@@ -2777,3 +2778,337 @@ function renderAuditLogs(logs) {
         tbody.appendChild(tr);
     });
 }
+
+// =============================================================
+// PHASE 1.1 — Dashboard KPI Cards
+// =============================================================
+let shiftStartTime = null;
+
+async function renderDashboardStats() {
+    const container = document.getElementById('dashboard-kpi-cards');
+    if (!container) return;
+
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    try {
+        const { data: todayOrders } = await supabase
+            .from('orders')
+            .select('status, total_price, payment_status')
+            .gte('created_at', todayStart.toISOString());
+
+        const { data: tablesData } = await supabase
+            .from('tables')
+            .select('status');
+
+        const total = todayOrders?.length || 0;
+        const pending = todayOrders?.filter(o => o.status === 'Pending' || o.status === 'Preparing').length || 0;
+        const revenue = todayOrders?.filter(o => o.status === 'Completed').reduce((s, o) => s + (o.total_price || 0), 0) || 0;
+        const activeTables = tablesData?.filter(t => t.status === 'occupied').length || 0;
+
+        container.innerHTML = `
+            <div class="dashboard-kpi-grid">
+                <div class="kpi-card kpi-orders">
+                    <div class="kpi-icon"><i class="fa-solid fa-receipt"></i></div>
+                    <div class="kpi-body">
+                        <div class="kpi-value" id="kpi-total-orders">${total}</div>
+                        <div class="kpi-label">Đơn hàng hôm nay</div>
+                    </div>
+                </div>
+                <div class="kpi-card kpi-revenue">
+                    <div class="kpi-icon"><i class="fa-solid fa-coins"></i></div>
+                    <div class="kpi-body">
+                        <div class="kpi-value" id="kpi-revenue">${revenue.toLocaleString('vi-VN')}đ</div>
+                        <div class="kpi-label">Doanh thu hôm nay</div>
+                    </div>
+                </div>
+                <div class="kpi-card kpi-pending">
+                    <div class="kpi-icon"><i class="fa-solid fa-hourglass-half"></i></div>
+                    <div class="kpi-body">
+                        <div class="kpi-value" id="kpi-pending">${pending}</div>
+                        <div class="kpi-label">Đơn đang xử lý</div>
+                    </div>
+                </div>
+                <div class="kpi-card kpi-tables">
+                    <div class="kpi-icon"><i class="fa-solid fa-chair"></i></div>
+                    <div class="kpi-body">
+                        <div class="kpi-value" id="kpi-active-tables">${activeTables}</div>
+                        <div class="kpi-label">Bàn đang phục vụ</div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Check low stock after loading dashboard
+        checkLowStock();
+    } catch (e) {
+        console.error('Dashboard stats error:', e);
+    }
+}
+
+// =============================================================
+// PHASE 1.2 — History Date Filter
+// =============================================================
+let historyFilterRange = 'today';
+let historyFilteredData = [];
+
+function initHistoryFilter() {
+    const filterBar = document.getElementById('history-filter-bar');
+    if (!filterBar) return;
+
+    const searchInput = document.getElementById('history-search-input');
+    if (searchInput) {
+        searchInput.addEventListener('input', () => applyHistoryFilters());
+    }
+}
+
+function setHistoryFilter(range) {
+    historyFilterRange = range;
+    // Update button active state
+    document.querySelectorAll('.history-filter-btn').forEach(b => b.classList.remove('active'));
+    const btn = document.getElementById(`hf-${range}`);
+    if (btn) btn.classList.add('active');
+
+    const customDates = document.getElementById('history-custom-dates');
+    if (customDates) customDates.style.display = range === 'custom' ? 'flex' : 'none';
+
+    if (range !== 'custom') applyHistoryFilters();
+}
+
+function applyHistoryFilters() {
+    const now = new Date();
+    let startDate = null;
+
+    if (historyFilterRange === 'today') {
+        startDate = new Date(now); startDate.setHours(0,0,0,0);
+    } else if (historyFilterRange === 'yesterday') {
+        startDate = new Date(now); startDate.setDate(startDate.getDate()-1); startDate.setHours(0,0,0,0);
+        const endDate = new Date(startDate); endDate.setHours(23,59,59,999);
+        historyFilteredData = orderHistory.filter(o => {
+            const d = new Date(o.createdAt);
+            return d >= startDate && d <= endDate;
+        });
+        renderFilteredHistory();
+        return;
+    } else if (historyFilterRange === '7days') {
+        startDate = new Date(now); startDate.setDate(startDate.getDate()-7);
+    } else if (historyFilterRange === '30days') {
+        startDate = new Date(now); startDate.setDate(startDate.getDate()-30);
+    } else if (historyFilterRange === 'custom') {
+        const s = document.getElementById('hf-start-date')?.value;
+        const e = document.getElementById('hf-end-date')?.value;
+        if (!s || !e) return;
+        const sd = new Date(s + 'T00:00:00');
+        const ed = new Date(e + 'T23:59:59');
+        historyFilteredData = orderHistory.filter(o => {
+            const d = new Date(o.createdAt);
+            return d >= sd && d <= ed;
+        });
+        renderFilteredHistory();
+        return;
+    }
+
+    historyFilteredData = startDate
+        ? orderHistory.filter(o => new Date(o.createdAt) >= startDate)
+        : [...orderHistory];
+
+    renderFilteredHistory();
+}
+
+function renderFilteredHistory() {
+    // Apply search on top of date filter
+    const searchTerm = (document.getElementById('history-search-input')?.value || '').toLowerCase().trim();
+    let data = historyFilteredData;
+
+    if (searchTerm) {
+        data = data.filter(o => {
+            const idMatch = (o._id || '').toLowerCase().includes(searchTerm);
+            const tableMatch = String(o.tableNumber || '').toLowerCase().includes(searchTerm);
+            const itemsMatch = (o.items || []).some(i => i.name.toLowerCase().includes(searchTerm));
+            return idMatch || tableMatch || itemsMatch;
+        });
+    }
+
+    // Temporarily swap orderHistory for rendering
+    const original = orderHistory;
+    orderHistory = data;
+    renderHistoryTable();
+    orderHistory = original;
+}
+
+// =============================================================
+// PHASE 1.4 — Low Stock Alert
+// =============================================================
+async function checkLowStock() {
+    try {
+        const { data } = await supabase
+            .from('ingredients')
+            .select('name, stock, min_stock')
+            .gt('min_stock', 0);
+
+        if (!data) return;
+        const lowItems = data.filter(i => i.stock <= i.min_stock);
+
+        // Update sidebar badge
+        const inventoryTab = document.getElementById('tab-inventory');
+        const existingBadge = inventoryTab?.querySelector('.low-stock-badge');
+        if (existingBadge) existingBadge.remove();
+
+        if (lowItems.length > 0 && inventoryTab) {
+            const badge = document.createElement('span');
+            badge.className = 'low-stock-badge ms-auto badge rounded-pill bg-danger text-white text-xs';
+            badge.textContent = lowItems.length;
+            inventoryTab.appendChild(badge);
+
+            // Show toast only once per session
+            const lastWarn = sessionStorage.getItem('lowstock_warned');
+            if (!lastWarn) {
+                sessionStorage.setItem('lowstock_warned', '1');
+                showAdminToast(`⚠️ ${lowItems.length} nguyên liệu sắp hết: ${lowItems.map(i=>i.name).slice(0,3).join(', ')}${lowItems.length > 3 ? '...' : ''}`, 'warning', 8000);
+            }
+        }
+    } catch(e) { console.error('Low stock check error:', e); }
+}
+
+function showAdminToast(message, type = 'info', duration = 4000) {
+    let toastContainer = document.getElementById('admin-toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'admin-toast-container';
+        toastContainer.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:10px;max-width:380px;';
+        document.body.appendChild(toastContainer);
+    }
+
+    const colorMap = { success: '#22c55e', warning: '#f59e0b', error: '#ef4444', info: '#C0A062' };
+    const toast = document.createElement('div');
+    toast.style.cssText = `background:#232018;border:1px solid ${colorMap[type]||colorMap.info};border-left:4px solid ${colorMap[type]||colorMap.info};border-radius:12px;padding:14px 18px;color:#E8DCC4;font-size:14px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,0.4);animation:slideInRight 0.3s ease;`;
+    toast.textContent = message;
+
+    toastContainer.appendChild(toast);
+    setTimeout(() => { toast.style.animation = 'slideOutRight 0.3s ease'; setTimeout(() => toast.remove(), 300); }, duration);
+}
+
+// Add toast keyframes
+const toastStyle = document.createElement('style');
+toastStyle.textContent = `
+@keyframes slideInRight { from { transform: translateX(120%); opacity:0; } to { transform: translateX(0); opacity:1; } }
+@keyframes slideOutRight { from { transform: translateX(0); opacity:1; } to { transform: translateX(120%); opacity:0; } }
+`;
+document.head.appendChild(toastStyle);
+
+// =============================================================
+// PHASE 3.1 — Export CSV
+// =============================================================
+window.exportOrdersToCSV = function() {
+    const data = historyFilteredData.length > 0 ? historyFilteredData : orderHistory;
+    if (!data || data.length === 0) {
+        showAdminToast('Không có dữ liệu để xuất.', 'error');
+        return;
+    }
+
+    const BOM = '\uFEFF';
+    const headers = ['Mã đơn', 'Thời gian', 'Bàn', 'Các món', 'Tổng tiền (đ)', 'Giảm giá (đ)', 'TT thanh toán', 'Trạng thái'];
+    const rows = data.map(o => [
+        (o._id || '').substring(0, 8),
+        o.createdAt ? new Date(o.createdAt).toLocaleString('vi-VN') : '',
+        `Bàn ${o.tableNumber || '?'}`,
+        (o.items || []).map(i => `${i.quantity}x ${i.name}`).join(' | '),
+        o.totalPrice || 0,
+        o.discountAmount || 0,
+        o.paymentMethod === 'transfer' ? 'Chuyển khoản' : 'Tại quầy',
+        o.status || ''
+    ]);
+
+    const csvContent = BOM + [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `nohope_orders_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showAdminToast('✅ Đã xuất file CSV thành công!', 'success');
+    logAudit('Xuất CSV đơn hàng', `${data.length} đơn`);
+};
+
+window.exportInventoryToCSV = async function() {
+    try {
+        const { data } = await supabase.from('ingredients').select('*');
+        if (!data) return;
+        const BOM = '\uFEFF';
+        const headers = ['Tên nguyên liệu', 'Tồn kho', 'Đơn vị', 'Tồn kho tối thiểu'];
+        const rows = data.map(i => [i.name, i.stock, i.unit || '', i.min_stock || 0]);
+        const csv = BOM + [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `nohope_inventory_${new Date().toISOString().split('T')[0]}.csv` });
+        a.click();
+        showAdminToast('✅ Đã xuất kho thành công!', 'success');
+    } catch(e) { showAdminToast('Lỗi xuất kho.', 'error'); }
+};
+
+// =============================================================
+// PHASE 3.2 — Shift Summary Modal
+// =============================================================
+window.openShiftSummary = async function() {
+    if (!shiftStartTime) shiftStartTime = new Date();
+    const modal = document.getElementById('shiftSummaryModal');
+    if (!modal) return;
+
+    const shiftOrders = orderHistory.filter(o => new Date(o.createdAt) >= shiftStartTime);
+    const completed = shiftOrders.filter(o => o.status === 'Completed');
+    const totalRevenue = completed.reduce((s, o) => s + (o.totalPrice || 0), 0);
+    const cashRevenue = completed.filter(o => o.paymentMethod !== 'transfer').reduce((s, o) => s + (o.totalPrice || 0), 0);
+    const transferRevenue = completed.filter(o => o.paymentMethod === 'transfer').reduce((s, o) => s + (o.totalPrice || 0), 0);
+    const cancelled = shiftOrders.filter(o => o.status === 'Cancelled').length;
+
+    const staffName = sessionStorage.getItem('nohope_staff_name') || localStorage.getItem('nohope_staff_name') || 'Nhân viên';
+    const startStr = shiftStartTime.toLocaleString('vi-VN');
+    const endStr = new Date().toLocaleString('vi-VN');
+
+    document.getElementById('shift-summary-content').innerHTML = `
+        <div class="shift-summary-header">
+            <h4><i class="fa-solid fa-moon me-2 text-[#C0A062]"></i>Tổng kết ca làm việc</h4>
+            <div class="shift-meta">
+                <span><i class="fa-solid fa-user me-1"></i>${window.escapeHTML(staffName)}</span>
+                <span><i class="fa-solid fa-clock me-1"></i>${startStr} → ${endStr}</span>
+            </div>
+        </div>
+        <div class="shift-kpi-row">
+            <div class="shift-kpi"><div class="shift-kpi-val">${shiftOrders.length}</div><div class="shift-kpi-lbl">Tổng đơn</div></div>
+            <div class="shift-kpi"><div class="shift-kpi-val text-success">${completed.length}</div><div class="shift-kpi-lbl">Hoàn thành</div></div>
+            <div class="shift-kpi"><div class="shift-kpi-val text-danger">${cancelled}</div><div class="shift-kpi-lbl">Đã hủy</div></div>
+        </div>
+        <hr class="border-[#3A3528] my-4">
+        <div class="shift-revenue-table">
+            <div class="shift-rev-row"><span>Doanh thu tổng</span><strong class="text-[#D4AF37]">${totalRevenue.toLocaleString('vi-VN')} đ</strong></div>
+            <div class="shift-rev-row"><span><i class="fa-solid fa-money-bill-wave me-1 text-green-400"></i>Tiền mặt</span><strong>${cashRevenue.toLocaleString('vi-VN')} đ</strong></div>
+            <div class="shift-rev-row"><span><i class="fa-solid fa-qrcode me-1 text-blue-400"></i>Chuyển khoản</span><strong>${transferRevenue.toLocaleString('vi-VN')} đ</strong></div>
+        </div>
+    `;
+
+    let shiftModalInstance = bootstrap.Modal.getOrCreateInstance(modal);
+    shiftModalInstance.show();
+};
+
+window.printShiftSummary = function() {
+    const content = document.getElementById('shift-summary-content')?.innerHTML || '';
+    const w = window.open('', '', 'width=500,height=600');
+    w.document.write(`<html><head><title>Tổng kết ca</title><style>body{font-family:sans-serif;padding:20px;color:#000;}.shift-summary-header h4{font-size:18px;margin-bottom:8px;}.shift-meta{font-size:12px;color:#666;margin-bottom:20px;}.shift-kpi-row{display:flex;gap:20px;margin-bottom:20px;}.shift-kpi{text-align:center;}.shift-kpi-val{font-size:28px;font-weight:900;}.shift-kpi-lbl{font-size:12px;color:#666;}.shift-rev-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee;font-size:14px;}</style></head><body>${content}</body></html>`);
+    w.document.close();
+    w.focus();
+    w.print();
+    w.close();
+};
+
+// =============================================================
+// Boot: run dashboard stats and init filter on DOMContentLoaded
+// =============================================================
+document.addEventListener('DOMContentLoaded', () => {
+    shiftStartTime = new Date();
+    // Run dashboard stats if element exists
+    setTimeout(renderDashboardStats, 800);
+    // Init history filter
+    initHistoryFilter();
+    // Set default filter to 'all'
+    historyFilteredData = [];
+});
