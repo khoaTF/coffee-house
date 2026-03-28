@@ -1,0 +1,1 @@
+const { chromium } = require("playwright"); (async () => { const browser = await chromium.launch(); const page = await browser.newPage(); await page.goto("https://coffee-house-topaz.vercel.app/admin", {waitUntil: "networkidle"}); console.log(await page.content()); await browser.close(); })();
