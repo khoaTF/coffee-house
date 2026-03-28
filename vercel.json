@@ -8,31 +8,27 @@
     },
     {
       "source": "/",
-      "destination": "/api"
+      "destination": "/pages/index.html"
     },
     {
       "source": "/login",
-      "destination": "/api"
+      "destination": "/pages/login.html"
     },
     {
       "source": "/admin",
-      "destination": "/api"
+      "destination": "/pages/admin.html"
     },
     {
       "source": "/kitchen",
-      "destination": "/api"
+      "destination": "/pages/kitchen.html"
     },
     {
       "source": "/staff",
-      "destination": "/api"
+      "destination": "/pages/staff.html"
     },
     {
       "source": "/tv",
-      "destination": "/api"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/api"
+      "destination": "/pages/tv.html"
     }
   ]
 }
