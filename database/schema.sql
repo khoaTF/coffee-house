@@ -146,3 +146,28 @@ CREATE TABLE IF NOT EXISTS users (
 -- By default, for simplicity during initial fix, we assume public access or already configured RLS.
 -- ALTER TABLE staff_requests ENABLE ROW LEVEL SECURITY;
 -- CREATE POLICY "Public Access" ON staff_requests FOR ALL USING (true);
+
+-- Ca làm việc (Shifts)
+CREATE TABLE IF NOT EXISTS shifts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    opened_by TEXT NOT NULL,
+    opened_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    closed_by TEXT,
+    closed_at TIMESTAMP WITH TIME ZONE,
+    start_balance NUMERIC DEFAULT 0,
+    end_balance_expected NUMERIC DEFAULT 0,
+    end_balance_actual NUMERIC DEFAULT 0,
+    total_revenue NUMERIC DEFAULT 0,
+    status TEXT DEFAULT 'open' CHECK (status IN ('open', 'closed')),
+    notes TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- Nhật ký hoạt động Admin (Audit Logs)
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    admin_identifier TEXT,
+    action TEXT NOT NULL,
+    details TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
