@@ -457,44 +457,67 @@ body {
 }
 @keyframes slideUp { from { transform: translate(-50%, 120%); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
 
-/* Cart Modal */
+/* Cart Modal — cross-browser compatible */
 .cart-modal { 
     position: fixed; 
     top: 0; left: 0; right: 0; bottom: 0; 
-    width: 100%; height: 100%; 
+    width: 100%; 
+    height: 100%; 
+    height: 100dvh; /* Dynamic viewport — accounts for iOS Safari address bar */
     background: rgba(26, 26, 26, 0.9); 
     z-index: 2000; 
     display: none; 
     align-items: flex-end; 
-    justify-content: center; 
+    justify-content: center;
+    overscroll-behavior: contain; /* Prevent background scroll on iOS */
 }
 .cart-modal.active { display: flex; animation: fadeIn 0.3s; }
 .cart-modal-content { 
     background: var(--bg-color); 
     width: 100%; 
     max-width: 650px; 
-    max-height: 90vh;
+    /* Fallback for browsers without svh support */
+    max-height: 88vh;
+    /* svh = Small Viewport Height: ignores browser chrome (address bar) */
+    max-height: 88svh;
     border-radius: 28px 28px 0 0; 
     display: flex; 
     flex-direction: column; 
-    animation: slideUpModal 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
+    animation: slideUpModal 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     border-top: 1px solid var(--border);
-    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.15); /* Soft, beautiful shadow */
-    overflow: hidden;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.15);
+    /* Do NOT set overflow:hidden here — breaks scroll in children */
+    overflow: visible;
+    /* Clip children to border-radius without blocking scroll */
+    -webkit-mask-image: -webkit-radial-gradient(white, black);
+    mask-image: radial-gradient(white, black);
 }
 .cart-modal-header { 
     padding: 24px 24px 16px 24px; 
-    border-bottom: 1px solid var(--border); 
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0; /* Never compress header */
 }
 .cart-modal-header h2 {
     font-size: 1.5rem;
     font-weight: 800;
 }
-.cart-modal-body { padding: 24px; flex: 0 1 auto; overflow-y: auto; min-height: 0; }
+/* Body: flex:1 so it fills remaining space and scrolls */
+.cart-modal-body { 
+    padding: 0;
+    flex: 1 1 auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch; /* iOS momentum scroll */
+    overscroll-behavior-y: contain;
+    min-height: 0; /* Critical for flex children to scroll */
+}
 .cart-modal-footer { 
-    padding: 24px; 
+    padding: 20px 24px; 
     border-top: 1px solid var(--border); 
-    background: var(--surface-color); 
+    background: var(--surface-color);
+    flex-shrink: 0; /* Never compress footer */
+    /* iOS safe area support for devices with home indicator */
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
 }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slideUpModal { from { transform: translateY(100%); } to { transform: translateY(0); } }
@@ -1258,18 +1281,21 @@ input, select, textarea {
         margin: 0;
     }
     
-    /* Remove brutalist shadows from modals on desktop */
+    /* Desktop: show as centered dialog, not bottom sheet */
     .cart-modal {
-        align-items: flex-start;
-        padding-top: 10vh;
+        align-items: center;
+        padding-top: 0;
     }
     .cart-modal-content {
         max-width: 600px;
-        max-height: 85vh; /* Keep it nicely inside the screen */
-        margin: 0 auto; /* Override margin-top: auto from default CSS */
+        /* Fallback then modern */
+        max-height: 85vh;
+        max-height: 85svh;
+        margin: auto;
         box-shadow: 0 40px 100px rgba(30, 26, 24, 0.2) !important;
         border-radius: 28px !important;
         border: 1px solid var(--border) !important;
+        overflow: visible;
     }
 
     .desktop-hide {
