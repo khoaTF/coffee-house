@@ -219,6 +219,61 @@ h3 { color: #d4a76a; font-size: 1.1rem; margin-bottom: 15px; }
 /* ===== LOW STOCK BADGE ===== */
 .low-stock-badge { font-size: 10px; min-width: 18px; height: 18px; line-height: 18px; text-align: center; }
 
+/* ===== PRODUCT & INGREDIENT MODAL DARK THEME ===== */
+#productModal .form-control,
+#productModal .form-select,
+#ingredientModal .form-control,
+#ingredientModal .form-select,
+#createRestockModal .form-control,
+#createRestockModal .form-select {
+    background-color: #1A1814 !important;
+    border-color: #3A3528 !important;
+    color: #E8DCC4 !important;
+}
+#productModal .form-control:focus,
+#productModal .form-select:focus,
+#ingredientModal .form-control:focus,
+#ingredientModal .form-select:focus,
+#createRestockModal .form-control:focus,
+#createRestockModal .form-select:focus {
+    border-color: #C0A062 !important;
+    box-shadow: 0 0 0 2px rgba(192,160,98,0.2) !important;
+    color: #E8DCC4 !important;
+}
+#productModal .form-label,
+#ingredientModal .form-label,
+#createRestockModal .form-label {
+    color: #A89F88 !important;
+    font-weight: 600;
+}
+#productModal .form-check-label {
+    color: #E8DCC4 !important;
+}
+#productModal h6,
+#ingredientModal h6 {
+    color: #E8DCC4 !important;
+}
+#productModal .text-muted,
+#productModal small.text-muted,
+#ingredientModal .text-muted,
+#ingredientModal small.text-muted {
+    color: #8b949e !important;
+}
+#productModal hr,
+#ingredientModal hr {
+    border-color: #3A3528 !important;
+    opacity: 0.6;
+}
+#productModal .modal-title,
+#ingredientModal .modal-title {
+    color: #F2E8D5 !important;
+}
+#productModal .form-control::placeholder,
+#ingredientModal .form-control::placeholder,
+#createRestockModal .form-control::placeholder {
+    color: #6b6358 !important;
+}
+
 /* ===== PRINT STYLES ===== */
 @media print {
     body { background: white !important; padding: 0 !important; color: black !important; }
