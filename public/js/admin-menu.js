@@ -164,6 +164,12 @@ function openProductModal() {
     document.getElementById('prodPromoEnd').value = '';
     document.getElementById('options-container').replaceChildren();
     document.getElementById('recipe-container').replaceChildren();
+    document.getElementById('combo-groups-container').replaceChildren();
+    const prodIsCombo = document.getElementById('prodIsCombo');
+    if(prodIsCombo) {
+        prodIsCombo.checked = false;
+        toggleComboOptions();
+    }
     document.getElementById('productModalLabel').textContent = 'Thêm món mới';
     productModalInstance.show();
 }
@@ -181,6 +187,12 @@ function editProduct(id) {
     document.getElementById('prodBestSeller').checked = !!product.isBestSeller;
     if(document.getElementById('prodCostPrice')) {
         document.getElementById('prodCostPrice').value = product.cost_price || '';
+    }
+    
+    const prodIsCombo = document.getElementById('prodIsCombo');
+    if (prodIsCombo) {
+        prodIsCombo.checked = !!product.is_combo;
+        toggleComboOptions();
     }
 
     const promoStartMatch = product.promotional_price && product.promo_start_time ? new Date(product.promo_start_time) : null;
@@ -212,6 +224,21 @@ function editProduct(id) {
     document.getElementById('recipe-container').replaceChildren();
     if (product.recipe && product.recipe.length > 0) {
         product.recipe.forEach(r => addRecipeRow(r.ingredientId, r.quantity));
+    }
+
+    const comboGroupsContainer = document.getElementById('combo-groups-container');
+    if (comboGroupsContainer) {
+        comboGroupsContainer.replaceChildren();
+        if (product.is_combo && product.combo_items && product.combo_items.length > 0) {
+            product.combo_items.forEach(group => {
+                const block = addComboGroupBlock(group.name, group.maxSelect);
+                if (group.items) {
+                    group.items.forEach(item => {
+                        addComboItemRow(block, item.id, item.priceExtra);
+                    });
+                }
+            });
+        }
     }
 
     document.getElementById('productModalLabel').innerText = 'Chỉnh sửa món';
@@ -416,6 +443,29 @@ async function saveProduct() {
         promoStartStr = new Date().toISOString();
     }
 
+    const isCombo = document.getElementById('prodIsCombo') ? document.getElementById('prodIsCombo').checked : false;
+    const comboGroups = document.querySelectorAll('.combo-group-block');
+    const comboItems = [];
+    comboGroups.forEach(block => {
+        const groupName = block.querySelector('.combo-group-name').value.trim();
+        const maxSelect = parseInt(block.querySelector('.combo-max-select').value) || 1;
+        if (!groupName) return;
+
+        const itemRows = block.querySelectorAll('.combo-item-row');
+        const items = [];
+        itemRows.forEach(row => {
+            const itemId = row.querySelector('.combo-item-id').value;
+            const priceExtra = parseInt(row.querySelector('.combo-item-price').value) || 0;
+            if (itemId) {
+                items.push({ id: itemId, priceExtra: priceExtra });
+            }
+        });
+
+        if (items.length > 0) {
+            comboItems.push({ name: groupName, maxSelect: maxSelect, items: items });
+        }
+    });
+
     const productData = {
         name: document.getElementById('prodName').value,
         category: document.getElementById('prodCategory').value,
@@ -427,8 +477,10 @@ async function saveProduct() {
         promo_start_time: promoStartStr ? new Date(promoStartStr).toISOString() : null,
         promo_end_time: promoEndStr ? new Date(promoEndStr).toISOString() : null,
         cost_price: document.getElementById('prodCostPrice') ? (parseFloat(document.getElementById('prodCostPrice').value) || 0) : 0,
-        recipe: recipe,
-        options: options
+        recipe: isCombo ? [] : recipe,
+        options: isCombo ? [] : options,
+        is_combo: isCombo,
+        combo_items: isCombo ? comboItems : null
     };
 
     const imageUrl = document.getElementById('prodImg').value;
@@ -660,4 +712,122 @@ function saveChoiceRecipe() {
     }
 
     choiceRecipeModalInstance.hide();
+}
+
+// --- Combo Logic ---
+function toggleComboOptions() {
+    const isCombo = document.getElementById('prodIsCombo').checked;
+    const normalSection = document.getElementById('normal-options-section');
+    const comboSection = document.getElementById('combo-setup-section');
+    
+    if (isCombo) {
+        if(normalSection) normalSection.classList.add('d-none');
+        if(comboSection) comboSection.classList.remove('d-none');
+    } else {
+        if(normalSection) normalSection.classList.remove('d-none');
+        if(comboSection) comboSection.classList.add('d-none');
+    }
+}
+
+function addComboGroupBlock(groupName = '', maxSelect = 1) {
+    const block = document.createElement('div');
+    block.className = 'combo-group-block mb-3 p-3 bg-white border border-info rounded shadow-sm';
+
+    const header = document.createElement('div');
+    header.className = 'd-flex justify-content-between align-items-center mb-2';
+
+    const inputName = document.createElement('input');
+    inputName.type = 'text';
+    inputName.className = 'form-control form-control-sm combo-group-name fw-bold';
+    inputName.placeholder = 'Tên nhóm (VD: Chọn 1 Nước)';
+    inputName.value = groupName;
+    inputName.style.maxWidth = '250px';
+
+    const inputMaxWrapper = document.createElement('div');
+    inputMaxWrapper.className = 'd-flex align-items-center ms-2';
+    inputMaxWrapper.innerHTML = '<span class="small me-2 text-muted text-nowrap">Chọn tối đa:</span>';
+    
+    const inputMax = document.createElement('input');
+    inputMax.type = 'number';
+    inputMax.className = 'form-control form-control-sm combo-max-select';
+    inputMax.style.width = '70px';
+    inputMax.min = 1;
+    inputMax.value = maxSelect;
+    
+    inputMaxWrapper.appendChild(inputMax);
+
+    const delBtn = document.createElement('button');
+    delBtn.type = 'button';
+    delBtn.className = 'btn btn-sm btn-outline-danger ms-auto';
+    delBtn.textContent = 'Xóa Nhóm';
+    delBtn.onclick = () => block.remove();
+
+    header.append(inputName, inputMaxWrapper, delBtn);
+
+    const itemsContainer = document.createElement('div');
+    itemsContainer.className = 'combo-items-container mb-2';
+
+    const addBtn = document.createElement('button');
+    addBtn.type = 'button';
+    addBtn.className = 'btn btn-sm btn-outline-secondary mt-2';
+    addBtn.innerHTML = '<i class="fa-solid fa-plus"></i> Thêm món con';
+    addBtn.onclick = () => addComboItemRow(block);
+
+    block.append(header, itemsContainer, addBtn);
+    document.getElementById('combo-groups-container').appendChild(block);
+    return block;
+}
+
+function addComboItemRow(block, itemId = '', priceExtra = 0) {
+    const container = block.querySelector('.combo-items-container');
+    const row = document.createElement('div');
+    row.className = 'd-flex gap-2 mb-2 combo-item-row align-items-center';
+
+    const select = document.createElement('select');
+    select.className = 'form-select form-select-sm combo-item-id';
+    select.required = true;
+    
+    const defaultOpt = document.createElement('option');
+    defaultOpt.value = '';
+    defaultOpt.textContent = '-- Chọn món --';
+    select.appendChild(defaultOpt);
+    
+    products.forEach(p => {
+        if (!p.is_combo) { // Cannot put a combo inside a combo
+            const opt = document.createElement('option');
+            opt.value = p._id;
+            opt.textContent = `${p.name} (${p.price.toLocaleString('vi-VN')}đ)`;
+            if (p._id == itemId || String(p.id) === String(itemId)) opt.selected = true;
+            select.appendChild(opt);
+        }
+    });
+
+    const inputGroup = document.createElement('div');
+    inputGroup.className = 'input-group input-group-sm';
+    inputGroup.style.width = '180px';
+
+    const span1 = document.createElement('span');
+    span1.className = 'input-group-text';
+    span1.textContent = '+';
+
+    const inputPrice = document.createElement('input');
+    inputPrice.type = 'number';
+    inputPrice.className = 'form-control combo-item-price';
+    inputPrice.placeholder = 'Kèm giá';
+    inputPrice.value = priceExtra;
+
+    const span2 = document.createElement('span');
+    span2.className = 'input-group-text';
+    span2.textContent = 'đ';
+
+    inputGroup.append(span1, inputPrice, span2);
+
+    const delBtn = document.createElement('button');
+    delBtn.type = 'button';
+    delBtn.className = 'btn btn-sm btn-outline-danger';
+    delBtn.innerHTML = '<i class="fa-solid fa-times"></i>';
+    delBtn.onclick = () => row.remove();
+
+    row.append(select, inputGroup, delBtn);
+    container.appendChild(row);
 }

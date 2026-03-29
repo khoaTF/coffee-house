@@ -785,6 +785,11 @@
                             <input type="checkbox" class="form-check-input" id="prodBestSeller">
                             <label class="form-check-label text-warning fw-bold" for="prodBestSeller"><i class="fa-solid fa-fire"></i> Món Bán Chạy (Nổi bật trên Menu)</label>
                         </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="prodIsCombo" onchange="toggleComboOptions()">
+                            <label class="form-check-label text-info fw-bold" for="prodIsCombo"><i class="fa-solid fa-layer-group"></i> Là Set Menu / Combo</label>
+                            <div class="form-text mt-0 mb-2" style="font-size: 0.8rem;">Dùng cho các set có nhiều lựa chọn con bắt buộc.</div>
+                        </div>
                         <div class="mb-3">
                             <label class="form-label">Danh mục</label>
                             <select class="form-select" id="prodCategory" required>
@@ -828,9 +833,23 @@
                             <label class="form-label">Đường dẫn Hình ảnh (URL)</label>
                             <input type="url" class="form-control" id="prodImg" placeholder="https://example.com/image.jpg">
                         </div>
-                        <hr class="border-secondary my-4">
-                        <h6 class="mb-3">Tùy chọn & Topping (Thêm giá)</h6>
-                        <div id="options-container">
+
+                        <!-- Combo Setup Section (Hidden by default) -->
+                        <div id="combo-setup-section" class="d-none bg-info bg-opacity-10 p-3 rounded mb-4 border border-info mt-4">
+                            <h6 class="mb-3 text-info fw-bold"><i class="fa-solid fa-boxes-stacked"></i> Cấu hình Các Món trong Combo</h6>
+                            <p class="small text-muted mb-2">Tạo các nhóm lựa chọn cho khách. VD: "Chọn 1 Đồ uống", "Chọn 2 Bánh".</p>
+                            <div id="combo-groups-container">
+                                <!-- Combo blocks will be added here -->
+                            </div>
+                            <button type="button" class="btn btn-outline-info btn-sm mt-3" onclick="addComboGroupBlock()">
+                                <i class="fa-solid fa-plus"></i> Thêm Nhóm Món Combo
+                            </button>
+                        </div>
+                        
+                        <div id="normal-options-section">
+                            <hr class="border-secondary my-4">
+                            <h6 class="mb-3">Tùy chọn & Topping (Thêm giá)</h6>
+                            <div id="options-container">
                             <!-- Option blocks will be added here -->
                         </div>
                         <button type="button" class="btn btn-outline-primary btn-sm mt-2 mb-4" onclick="addOptionBlock()">
@@ -845,6 +864,7 @@
                         <button type="button" class="btn btn-outline-secondary btn-sm mt-2" onclick="addRecipeRow()">
                             <i class="fa-solid fa-plus"></i> Thêm nguyên liệu
                         </button>
+                        </div> <!-- End normal-options-section -->
                     </form>
                 </div>
                 <div class="modal-footer">

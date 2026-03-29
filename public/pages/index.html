@@ -178,6 +178,17 @@
             </div>
         </div>
 
+        <!-- Suggested Items Section -->
+        <div id="suggested-section" class="mb-8 hidden">
+            <div class="flex items-center gap-2 mb-4">
+                <i class="fa-solid fa-star text-[#FF7A00] text-xl"></i>
+                <h3 class="text-xl font-bold text-[#1B1C1C] dark:text-[#FCF9F8]">Gợi ý cho bạn</h3>
+            </div>
+            <div id="suggested-container" class="flex gap-4 overflow-x-auto hide-scrollbar pb-4 snap-x">
+                <!-- Suggested items injected via JS -->
+            </div>
+        </div>
+
         <div id="loader" class="text-center mt-8 text-on-surface-variant">
             <i class="fa-solid fa-circle-notch fa-spin text-primary text-2xl mb-2"></i><br>
             Đang tải thực đơn...
@@ -294,6 +305,7 @@
                         <button id="verify-phone-btn" onclick="verifyCustomerPhone()" class="bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white px-5 rounded-xl text-sm font-bold whitespace-nowrap active:scale-95 transition-transform"><i class="fa-solid fa-check"></i> Xác nhận</button>
                     </div>
                     <div id="loyalty-message" class="hidden text-sm mt-2 font-bold text-[#FF7A00]"></div>
+                    <button id="view-history-btn" onclick="openCustomerHistoryModal()" class="hidden mt-2 w-full text-sm font-bold border border-[#994700]/30 text-[#994700] p-2 rounded-xl bg-white/50 dark:bg-black/50 active:bg-[#994700]/10 transition-colors"><i class="fa-solid fa-clock-rotate-left"></i> Xem lịch sử mua hàng</button>
 
                     <!-- VIP Card container -->
                     <div id="vip-card-container" class="hidden mt-4">
@@ -395,6 +407,37 @@
         <div class="cart-modal-body history-modal-body" id="history-items-container">
             <!-- Order history items will be injected here via JS -->
             <div class="empty-cart text-center text-muted mt-4">Bạn chưa đặt đơn hàng nào.</div>
+        </div>
+    </div>
+</div></div>
+
+<!-- Modal: Lịch sử mua hàng qua SĐT -->
+<div class="cart-modal" id="customer-history-modal">
+    <div class="cart-modal-content">
+        <div class="cart-modal-header flex-between">
+            <h2>Lịch sử mua hàng</h2>
+            <button id="close-customer-history-modal" onclick="closeCustomerHistoryModal()" class="btn-icon"><i class="fa-solid fa-times"></i></button>
+        </div>
+        <div class="cart-modal-body history-modal-body" id="customer-history-items-container">
+            <div class="empty-cart text-center text-muted mt-4">Không tìm thấy đơn hàng.</div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Chọn món Combo -->
+<div class="cart-modal" id="combo-selection-modal">
+    <div class="cart-modal-content" style="max-height: 80vh; background: var(--surface-color);">
+        <div class="cart-modal-header flex-between">
+            <h2 id="combo-modal-title">Chọn Món Combo</h2>
+            <button onclick="closeComboModal()" class="btn-icon"><i class="fa-solid fa-times"></i></button>
+        </div>
+        <div class="cart-modal-body" id="combo-items-container" style="padding: 16px; overflow-y: auto;">
+            <!-- Combo groups injected here -->
+        </div>
+        <div class="cart-modal-footer">
+            <button id="confirm-combo-btn" class="btn btn-primary btn-block btn-lg" style="width: 100%;">
+                Thêm vào giỏ
+            </button>
         </div>
     </div>
 </div>
