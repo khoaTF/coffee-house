@@ -290,7 +290,7 @@ window.posUpdateQty = function(cartKey, delta) {
     const item = posCart.find(c => c.cartKey === cartKey || c.id === cartKey);
     if (!item) return;
     item.quantity += delta;
-    if (item.quantity <= 0) posCart = posCart.filter(c => c.cartKey !== item.cartKey && c.id !== item.id);
+    if (item.quantity <= 0) posCart = posCart.filter(c => c !== item);
     posRenderCart();
 };
 
@@ -384,6 +384,7 @@ window.posSubmitOrder = async function() {
 
     const orderPayload = {
         table_number: String(posSelectedTable),
+        session_id: 'POS_' + Date.now(), // Fixed: Missing NOT NULL column `session_id`
         items: items,
         reductions: reductions,
         total_price: totalPrice,
@@ -396,6 +397,10 @@ window.posSubmitOrder = async function() {
     try {
         const { data: newOrderId, error } = await supabase.rpc('place_order_and_deduct_inventory', { payload: orderPayload });
         if (error) throw error;
+        
+        // POS orders are immediately paid (RPC doesn't set is_paid directly):
+        const { error: updateErr } = await supabase.from('orders').update({ is_paid: true, payment_status: 'paid' }).eq('id', newOrderId);
+        if (updateErr) console.warn("Lỗi cập nhật trạng thái thanh toán POS:", updateErr);
 
         logAudit('POS Đặt hàng', `Bàn ${posSelectedTable} — ${posCart.length} món — ${totalPrice.toLocaleString('vi-VN')}đ bởi ${staffName}`);
         
