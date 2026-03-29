@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hướng Dẫn & Nguyên Lý Hoạt Động - Nohope Coffee</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Serif:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tailwind CSS (Compiled for Production) -->
+    <link rel="stylesheet" href="../css/index.css">
+    <link rel="stylesheet" href="../css/styles.css?v=1.4">
+    <link rel="icon" type="image/png" href="../images/bunny_logo.png">
+    <style>
+        .prose h1 { @apply text-3xl font-black text-primary mb-6 font-serif tracking-tight; }
+        .prose h2 { @apply text-2xl font-bold text-primary mt-10 mb-4 border-b border-outline-variant/30 pb-2; }
+        .prose h3 { @apply text-xl font-bold text-on-surface mt-6 mb-3 flex items-center gap-2; }
+        .prose p { @apply mb-4 text-on-surface-variant leading-relaxed; }
+        .prose ul, .prose ol { @apply mb-6 pl-5 space-y-2 text-on-surface-variant; }
+        .prose li { @apply relative pl-2; }
+        .prose li::marker { @apply text-secondary font-bold; }
+        .prose strong { @apply text-on-surface font-bold; }
+        .prose table { @apply w-full text-left border-collapse mb-6; }
+        .prose th, .prose td { @apply border border-outline-variant/50 p-3; }
+        .prose th { @apply bg-surface-variant text-on-surface font-bold; }
+        .prose code { @apply bg-surface-variant text-secondary px-1.5 py-0.5 rounded text-sm font-mono border border-outline-variant/30; }
+        .guide-section { @apply bg-surface rounded-3xl p-6 shadow-soft border border-outline-variant/30 mb-8 hover:shadow-float transition-all duration-300; }
+        .icon-box { @apply w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0; }
+    </style>
+</head>
+<body class="bg-surface-container min-h-screen pb-10">
+
+    <nav class="bg-surface/90 backdrop-blur-md border-b border-surface-glass-border px-5 py-4 flex justify-between items-center sticky top-0 z-50 shadow-sm">
+        <div class="text-2xl font-black text-primary flex items-center gap-3 font-serif tracking-tight cursor-pointer" onclick="window.history.back()">
+            <i class="fa-solid fa-arrow-left text-on-surface-variant hover:text-primary transition-colors text-xl"></i>
+            <i class="fa-solid fa-book-open text-secondary"></i> Kho Tri Thức
+        </div>
+        <div>
+            <button onclick="window.history.back()" class="bg-surface-variant text-on-surface-variant px-4 py-2 rounded-xl font-bold text-sm hover:bg-surface-variant/80 transition-colors hidden sm:block">
+                Tắt Hướng Dẫn
+            </button>
+        </div>
+    </nav>
+
+    <div class="max-w-[800px] mx-auto p-4 sm:p-6 mt-6 prose">
+        
+        <div class="text-center mb-10">
+            <h1 class="text-4xl sm:text-5xl font-black font-serif tracking-tight text-primary mb-4">Hướng Dẫn & Nguyên Lý Hoạt Động</h1>
+            <p class="text-lg text-on-surface-variant/80 font-medium max-w-2xl mx-auto">
+                Tài liệu này không chỉ hướng dẫn thao tác cơ bản mà còn giải thích chi tiết <strong class="text-secondary">Nguyên lý hoạt động (Under the hood)</strong>, <strong>Kiến trúc hệ thống</strong>, và <strong>Luồng dữ liệu (Data Flow)</strong> của hệ thống Urban Brew (Nohope Coffee).
+            </p>
+        </div>
+
+        <div class="guide-section">
+            <h2 class="mt-0 group"><i class="fa-solid fa-network-wired text-secondary mr-2"></i>1. TỔNG QUAN KIẾN TRÚC HỆ THỐNG</h2>
+            <p>Hệ thống được thiết kế theo mô hình <strong>Client-Server Real-time</strong> hiện đại.</p>
+            <ul class="list-disc">
+                <li><strong>Backend (Dữ liệu & Serverless API):</strong> Sử dụng <strong>Supabase</strong> (dựa trên PostgreSQL). Lưu trữ vĩnh viễn hình ảnh qua <em>Supabase Storage</em>, đảm bảo dữ liệu toàn vẹn và bảo mật cao.</li>
+                <li><strong>WebSocket & Real-time:</strong> Sử dụng Supabase Realtime Channel. Các bảng (tables) quan trọng được theo dõi liên tục. Khi một thay đổi xảy ra trên Database, nó được đẩy xuống mọi thiết bị chỉ trong milliseconds mà không cần bấm nút (refresh) tải lại trang.</li>
+                <li><strong>Phân luồng thông tin (Routing):</strong>
+                    <ul class="list-none mt-2 space-y-2">
+                        <li class="flex items-center gap-2"><code class="flex-1">/index.html?table=X</code> Dành cho App của Khách Hàng đặt tại trải nghiệm bàn.</li>
+                        <li class="flex items-center gap-2"><code class="flex-1">/kitchen.html</code> Mở khoá dành riêng cho thiết bị của bộ phận Bếp.</li>
+                        <li class="flex items-center gap-2"><code class="flex-1">/staff.html</code> Giao diện dành cho nhân viên phục vụ, sơ đồ bàn trực quan.</li>
+                        <li class="flex items-center gap-2"><code class="flex-1">/admin.html</code> Giao diện Đầy đủ quyền quản trị cơ sở dữ liệu cho chủ quán.</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <div class="guide-section">
+            <h2 class="mt-0"><i class="fa-solid fa-gears text-secondary mr-2"></i>2. NGUYÊN LÝ HOẠT ĐỘNG CÁC TÍNH NĂNG CỐT LÕI</h2>
+            
+            <h3><div class="icon-box"><i class="fa-solid fa-diagram-project"></i></div> 2.1 Máy Trạng Thái Của Một Đơn Hàng (Order State Machine)</h3>
+            <p>Mỗi đơn hàng (Order) là một thực thể trải qua vòng đời bảo mật khép kín, ngăn chặn sự mâu thuẫn hệ thống cục bộ:</p>
+            <ol class="list-decimal font-medium space-y-3">
+                <li><strong class="text-orange-500">Pending (Chờ xử lý):</strong> Khách gửi yêu cầu từ thiết bị. Đơn được ghi vào Database. Bếp nhận được "Ping" âm thanh khẩn.</li>
+                <li><strong class="text-blue-500">Preparing (Đang chuẩn bị):</strong> Bếp bấm "Bắt đầu làm". <br><span class="text-sm font-normal text-on-surface-variant block mt-1"><strong class="text-error">[QUAN TRỌNG/CỐT LÕI]:</strong> Ngay khoảnh khắc này, Trigger logic nội bộ sẽ truy vấn công thức (recipe) và tự động trừ khối lượng nguyên liệu trong kho dữ liệu tổng. Tồn kho mượt mà, không thể bị thao túng. App khách cập nhật realtime.</span></li>
+                <li><strong class="text-green-500">Ready (Sẵn sàng phục vụ):</strong> Bếp hoàn tất và bấm "Xong". Báo về trạm điều phối (Staff App) để bưng bê.</li>
+                <li><strong class="text-primary">Completed (Hoàn thành / Đã thanh toán):</strong> Thu ngân xác minh nguồn tiền. Khi bấm đóng đơn, Hệ Thống mở khoá Bàn đó về trạng thái Trống. Doanh thu của đơn được đưa vào kho dữ liệu báo cáo.</li>
+                <li><strong class="text-error">Cancelled (Đã Hủy):</strong> Thu ngân hoặc Bếp buộc huỷ lệnh. Hệ thống áp dụng <strong>Quy trình Hoàn kho (Inventory Rollback)</strong> để tự động bồi hoàn dữ liệu tồn kho cho các nguyên liệu của đơn hàng bị huỷ.</li>
+            </ol>
+
+            <h3><div class="icon-box"><i class="fa-solid fa-code-merge"></i></div> 2.2 Xử Lý Đồng Bộ & Nhóm Chỗ Ngồi</h3>
+            <p>Khi khách đang ở Bàn số 5 và muốn gọi thêm (Re-order) món, trình duyệt Web App nhận diện Cờ Bàn (Table Session) vẫn đang kích hoạt. Hệ thống cho phép thêm đơn mới trực tiếp vào bàn đó và báo bếp làm riêng nhưng gộp chung tiền vào cùng một bàn (Session), không làm xuất hiện quá nhiều đơn ảo làm phiền Thu Ngân.</p>
+
+            <h3><div class="icon-box"><i class="fa-solid fa-boxes-stacked"></i></div> 2.3 Quản Lý Sản Phẩm Phức Nguyên (Options & Toppings)</h3>
+            <p>Hệ thống hỗ trợ Cấu trúc Vây (Branching): 1 sản phẩm có vô hạn biến thể <code>options</code> (Size L + 30K, Sữa đặc + 5K). Giá bán cuối cùng = Giá Gốc (Base Price) + Giá Biến Thể. Dữ liệu này được mã hóa nguyên khối (JSON) để đảm bảo dù giá menu có thay đổi vào ngày mai thì giá lịch sử của đơn hàng vẫn giữ nguyên.</p>
+
+            <h3><div class="icon-box"><i class="fa-solid fa-warehouse"></i></div> 2.4 Bảo Toàn Kho Thực Tế (Inventory Pipeline)</h3>
+            <p>Bức tranh chuỗi cung ứng được lập mô hình dưới dạng <em>Sổ Nhật Ký Kế Toán</em>:</p>
+            <ul class="list-disc">
+                <li><strong>Nhập Hàng:</strong> Quản lý vào tab Kho để nhập dữ liệu. `stock_quantity` tăng bằng phép cộng.</li>
+                <li><strong>Xuất / Bán:</strong> Khi bếp bấm "Đang chuẩn bị" hoặc Đơn POS được chốt, hệ thống truy vấn công thức và tự trừ đi đúng định lượng nguyên liệu.</li>
+                <li><strong>Hoàn Huỷ:</strong> Hủy đơn ở bất kỳ màn hình nào, hệ thống cũng quét lại <code>recipe</code> và cẩn thận cộng ngược (Rollback) từng gram định lượng về kho.</li>
+            </ul>
+        </div>
+
+        <div class="guide-section border-t-4 border-t-primary">
+            <h2 class="mt-0"><i class="fa-solid fa-users-gear text-secondary mr-2"></i>3. HƯỚNG DẪN DÀNH CHO 3 ĐỐI TƯỢNG VẬN HÀNH</h2>
+            
+            <h3>👨‍💻 3.1 Khách Hàng (Customer Application)</h3>
+            <ul class="list-none space-y-3">
+                <li class="flex items-start gap-3"><i class="fa-solid fa-floppy-disk mt-1 text-primary"></i> <div><strong>Lưu Nhớ Hành Vi (Giỏ hàng Offline):</strong> Giỏ hàng được lưu vào <code>localStorage</code> của máy khách. Tắt app, tắt máy mai quét lại vẫn còn giỏ hàng cũ.</div></li>
+                <li class="flex items-start gap-3"><i class="fa-solid fa-qrcode mt-1 text-primary"></i> <div><strong>Mã Thanh Toán Thông Minh (VietQR):</strong> App sinh QR code tự động đúng số tài khoản, tên ngân hàng và số tiền (Store Settings). Khách quét để chuyển khoản không cần nhập tay.</div></li>
+            </ul>
+
+            <h3 class="mt-8">🍳 3.2 Bếp & Pha Chế (Kitchen Display System)</h3>
+            <ul class="list-none space-y-3">
+                <li class="flex items-start gap-3"><i class="fa-solid fa-bolt mt-1 text-orange-500"></i> <div><strong>Lắng Nghe Vĩnh Cửu:</strong> Giao diện cắm rễ bằng WebSockets. Không cần Refresh. Đơn mới nhảy sẽ kêu tiếng Ting Ting liên tục.</div></li>
+                <li class="flex items-start gap-3"><i class="fa-solid fa-box-open mt-1 text-orange-500"></i> <div><strong>Kiểm soát Trạng Thái Món:</strong> Bếp có thể tắt món nếu tạm thời hết nguyên liệu. Món đó sẽ hiện mờ đục trên menu của Khách (Sold out) và vô hiệu hóa nút đặt hàng.</div></li>
+                <li class="flex items-start gap-3"><i class="fa-solid fa-layer-group mt-1 text-orange-500"></i> <div><strong>Gộp Món (Group View):</strong> Giúp đầu bếp thấy ngay tổng số Cafe Sữa Đá cần pha cho 5 đơn khác nhau để thao tác làm hàng loạt 1 lần nhanh hơn.</div></li>
+            </ul>
+
+            <h3 class="mt-8">👔 3.3 Quản Lý Trưởng / Cashier (Admin Control)</h3>
+            <ul class="list-none space-y-3">
+                <li class="flex items-start gap-3"><i class="fa-solid fa-desktop mt-1 text-blue-500"></i> <div><strong>Bán Hàng Tại Quầy (POS):</strong> Admin ở tab Bán Mới thu ngân trực tiếp, click chọn đồ như app quét QR. Đơn gộp vào hệ thống chung một cách trơn tru.</div></li>
+                <li class="flex items-start gap-3"><i class="fa-solid fa-ticket mt-1 text-blue-500"></i> <div><strong>Khuyến Mãi Mã Động (Discount Core):</strong> Giám đốc tự tạo Mã giảm giá, cài đặt giới hạn và Hạn sử dụng. App khách sẽ check logic hợp lệ.</div></li>
+                <li class="flex items-start gap-3"><i class="fa-solid fa-chart-pie mt-1 text-blue-500"></i> <div><strong>Báo cáo Hợp Giao (Analytics):</strong> Dashboard hiển thị biểu đồ nhiệt, dòng tiền và món bán chạy thời gian thực cho ngày/tuần/tháng không cần reload!</div></li>
+                <li class="flex items-start gap-3"><i class="fa-solid fa-users mt-1 text-blue-500"></i> <div><strong>Chăm sóc Thành Viên (Loyalty):</strong> Khách nhập SĐT để thăng hạng (Đồng, Bạc, Vàng). Quản lý có thể xem toàn bộ hồ sơ khách hạng nặng.</div></li>
+            </ul>
+        </div>
+        
+        <div class="text-center text-sm font-bold text-on-surface-variant/50 mt-12 pb-8">
+            Hệ thống bán hàng Urban Brew (Nohope Coffee) v2.0 - Developed with <i class="fa-solid fa-heart text-error/60"></i> & Modern JS
+        </div>
+
+    </div>
+
+</body>
+</html>

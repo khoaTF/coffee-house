@@ -141,6 +141,20 @@
         </div>
     </div>
 
+    <!-- Move Table Modal -->
+    <div id="moveTableModal" class="staff-modal-overlay hidden">
+        <div class="bg-surface w-[90%] max-w-[400px] p-8 rounded-3xl relative shadow-float animate-slide-up border border-outline-variant/30">
+            <button onclick="closeMoveModal()" class="absolute right-5 top-5 bg-surface-container hover:bg-surface-variant text-on-surface-variant w-8 h-8 rounded-full flex items-center justify-center transition-colors"><i class="fa-solid fa-times"></i></button>
+            <h3 class="text-2xl font-black text-primary mb-2 flex items-center gap-2">Đổi Bàn Ngồi</h3>
+            <p id="move-modal-subtitle" class="text-sm font-medium text-on-surface-variant/80 mb-6">Nhập số bàn mới muốn chuyển đến</p>
+            
+            <div class="flex flex-col gap-3">
+                <input type="number" id="new-table-input" class="w-full bg-surface-container text-on-surface px-4 py-3 rounded-xl border border-outline-variant outline-none focus:border-primary transition-colors text-lg" placeholder="Nhập số bàn mới (VD: 5)">
+                <button id="btn-submit-move" class="w-full bg-primary text-on-primary font-bold py-3.5 rounded-xl shadow-soft hover:bg-secondary transition-colors mt-2" onclick="submitTableMove()"><i class="fa-solid fa-people-arrows mr-2"></i> Xác Nhận Chuyển</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <!-- Supabase Core -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -401,8 +415,25 @@
 
         async function handleTableMove() {
             if(!currentSelectedTable) return;
-            const newTable = prompt(`Khách Bàn ${currentSelectedTable} muốn chuyển sang Bàn nào? \n(Nhập số Bàn mới)`);
+            document.getElementById('move-modal-subtitle').textContent = `Khách Bàn ${currentSelectedTable} muốn chuyển sang Bàn nào?`;
+            document.getElementById('new-table-input').value = '';
+            document.getElementById('moveTableModal').style.display = 'flex';
+        }
+
+        function closeMoveModal() {
+            document.getElementById('moveTableModal').style.display = 'none';
+        }
+
+        async function submitTableMove() {
+            if(!currentSelectedTable) return;
+            const newTable = document.getElementById('new-table-input').value;
+            
             if (newTable && newTable.trim() !== '' && newTable != currentSelectedTable) {
+                const btnMove = document.getElementById('btn-submit-move');
+                const originalText = btnMove.innerHTML;
+                btnMove.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...';
+                btnMove.disabled = true;
+
                 try {
                     const orderIds = activeTableOrders[currentSelectedTable].map(o => o.id);
                     for (const oid of orderIds) {
@@ -414,11 +445,17 @@
                     }
                     
                     alert(`Đã chuyển khách cũ sang Bàn ${newTable}!`);
+                    closeMoveModal();
                     closeTableModal();
                     fetchTablesStatus();
                 } catch(e) {
                     alert("Lỗi khi chuyển bàn: " + e.message);
+                } finally {
+                    btnMove.innerHTML = originalText;
+                    btnMove.disabled = false;
                 }
+            } else {
+                alert("Vui lòng nhập số bàn hợp lệ và khác số bàn hiện tại.");
             }
         }
 
