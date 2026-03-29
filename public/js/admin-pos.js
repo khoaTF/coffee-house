@@ -196,8 +196,7 @@ window.posAddToCart = function(productId) {
     const p = posProductsList.find(x => x.id === productId);
     if (!p) return;
     
-    // Check if it has options (skip combos for POS for simplicity, or handle similarly later if needed)
-    if (p.options && p.options.length > 0) {
+    if ((p.options && p.options.length > 0) || (p.is_combo && p.combo_items && p.combo_items.length > 0)) {
         posOpenOptionsModal(p);
         return;
     }
@@ -225,29 +224,58 @@ window.posOpenOptionsModal = function(item) {
     const container = document.getElementById('pos-options-container');
     container.innerHTML = '';
     
-    item.options.forEach((opt, optIndex) => {
-        const optName = opt.name || opt.optionName;
-        const group = document.createElement('div');
-        group.className = 'mb-3';
-        group.innerHTML = `<h3 class="text-[#E8DCC4] font-bold mb-2">${window.escapeHTML(optName)}</h3>`;
-        
-        opt.choices.forEach((choice, choiceIndex) => {
-            const choiceName = choice.name || choice.choiceName;
-            const isChecked = choiceIndex === 0 ? 'checked' : '';
-            const priceExtraText = choice.priceExtra > 0 ? `+${choice.priceExtra.toLocaleString('vi-VN')}đ` : '';
+    if (item.is_combo && item.combo_items && item.combo_items.length > 0) {
+        item.combo_items.forEach((group, groupIndex) => {
+            const groupName = group.name;
+            const containerDiv = document.createElement('div');
+            containerDiv.className = 'mb-3';
+            containerDiv.innerHTML = `<h3 class="text-[#E8DCC4] font-bold mb-2">${window.escapeHTML(groupName)}</h3>`;
             
-            group.innerHTML += `
-                <label class="flex items-center justify-between p-3 border border-[#3A3528] rounded-xl mb-2 cursor-pointer hover:border-[#C0A062] transition-colors">
-                    <div class="flex items-center gap-3">
-                        <input type="radio" name="pos_opt_${optIndex}" value="${window.escapeHTML(choiceName)}" data-price="${choice.priceExtra}" ${isChecked} class="accent-[#C0A062] w-4 h-4">
-                        <span class="text-[#E8DCC4] text-sm">${window.escapeHTML(choiceName)}</span>
-                    </div>
-                    <span class="text-[#C0A062] text-sm">${priceExtraText}</span>
-                </label>
-            `;
+            group.items.forEach((cItem, itemIndex) => {
+                const p = posProductsList.find(x => x.id === cItem.id);
+                if (!p) return;
+                const choiceName = p.name;
+                const isChecked = itemIndex === 0 ? 'checked' : '';
+                const priceExtraText = cItem.priceExtra > 0 ? `+${cItem.priceExtra.toLocaleString('vi-VN')}đ` : '';
+                
+                containerDiv.innerHTML += `
+                    <label class="flex items-center justify-between p-3 border border-[#3A3528] rounded-xl mb-2 cursor-pointer hover:border-[#C0A062] transition-colors">
+                        <div class="flex items-center gap-3">
+                            <input type="radio" name="pos_combo_${groupIndex}" value="${window.escapeHTML(cItem.id)}" data-name="${window.escapeHTML(choiceName)}" data-price="${cItem.priceExtra}" ${isChecked} class="accent-[#C0A062] w-4 h-4">
+                            <span class="text-[#E8DCC4] text-sm">${window.escapeHTML(choiceName)}</span>
+                        </div>
+                        <span class="text-[#C0A062] text-sm">${priceExtraText}</span>
+                    </label>
+                `;
+            });
+            container.appendChild(containerDiv);
         });
-        container.appendChild(group);
-    });
+    } else {
+        item.options.forEach((opt, optIndex) => {
+            const optName = opt.name || opt.optionName;
+            const group = document.createElement('div');
+            group.className = 'mb-3';
+            group.innerHTML = `<h3 class="text-[#E8DCC4] font-bold mb-2">${window.escapeHTML(optName)}</h3>`;
+            
+            opt.choices.forEach((choice, choiceIndex) => {
+                const choiceName = choice.name || choice.choiceName;
+                const isChecked = choiceIndex === 0 ? 'checked' : '';
+                const priceExtraText = choice.priceExtra > 0 ? `+${choice.priceExtra.toLocaleString('vi-VN')}đ` : '';
+                const recipeData = choice.recipe ? encodeURIComponent(JSON.stringify(choice.recipe)) : '';
+                
+                group.innerHTML += `
+                    <label class="flex items-center justify-between p-3 border border-[#3A3528] rounded-xl mb-2 cursor-pointer hover:border-[#C0A062] transition-colors">
+                        <div class="flex items-center gap-3">
+                            <input type="radio" name="pos_opt_${optIndex}" value="${window.escapeHTML(choiceName)}" data-price="${choice.priceExtra}" data-recipe="${recipeData}" ${isChecked} class="accent-[#C0A062] w-4 h-4">
+                            <span class="text-[#E8DCC4] text-sm">${window.escapeHTML(choiceName)}</span>
+                        </div>
+                        <span class="text-[#C0A062] text-sm">${priceExtraText}</span>
+                    </label>
+                `;
+            });
+            container.appendChild(group);
+        });
+    }
     
     document.getElementById('pos-options-modal').classList.remove('hidden');
 };
@@ -262,17 +290,38 @@ window.posConfirmOptions = function() {
     
     const selectedOptions = [];
     const container = document.getElementById('pos-options-container');
-    posCurrentOptionsItem.options.forEach((opt, optIndex) => {
-        const optName = opt.name || opt.optionName;
-        const selectedRadio = container.querySelector(`input[name="pos_opt_${optIndex}"]:checked`);
-        if (selectedRadio) {
-            selectedOptions.push({
-                optionName: optName,
-                choiceName: selectedRadio.value,
-                priceExtra: parseInt(selectedRadio.dataset.price) || 0
-            });
-        }
-    });
+    
+    if (posCurrentOptionsItem.is_combo && posCurrentOptionsItem.combo_items) {
+        posCurrentOptionsItem.combo_items.forEach((group, groupIndex) => {
+            const selectedRadio = container.querySelector(`input[name="pos_combo_${groupIndex}"]:checked`);
+            if (selectedRadio) {
+                const p = posProductsList.find(x => x.id === selectedRadio.value);
+                selectedOptions.push({
+                    optionName: group.name,
+                    choiceName: selectedRadio.dataset.name,
+                    priceExtra: parseInt(selectedRadio.dataset.price) || 0,
+                    recipe: p ? p.recipe : []
+                });
+            }
+        });
+    } else {
+        posCurrentOptionsItem.options.forEach((opt, optIndex) => {
+            const optName = opt.name || opt.optionName;
+            const selectedRadio = container.querySelector(`input[name="pos_opt_${optIndex}"]:checked`);
+            if (selectedRadio) {
+                let recipe = [];
+                if (selectedRadio.dataset.recipe) {
+                    try { recipe = JSON.parse(decodeURIComponent(selectedRadio.dataset.recipe)); } catch(e){}
+                }
+                selectedOptions.push({
+                    optionName: optName,
+                    choiceName: selectedRadio.value,
+                    priceExtra: parseInt(selectedRadio.dataset.price) || 0,
+                    recipe: recipe
+                });
+            }
+        });
+    }
     
     const price = posCurrentOptionsItem.promotional_price && isPromoActive(posCurrentOptionsItem) ? posCurrentOptionsItem.promotional_price : posCurrentOptionsItem.price;
     const cartKey = posGenerateCartKey(posCurrentOptionsItem.id, selectedOptions);
@@ -377,8 +426,21 @@ window.posSubmitOrder = async function() {
         if (item.recipe && Array.isArray(item.recipe)) {
             item.recipe.forEach(ri => {
                 const iId = ri.ingredientId || ri.ingredient_id;
+                if (!iId) return;
                 if (!reductions[iId]) reductions[iId] = 0;
-                reductions[iId] += (ri.quantity * item.quantity);
+                reductions[iId] += ((ri.quantity || 0) * item.quantity);
+            });
+        }
+        if (item.selectedOptions && Array.isArray(item.selectedOptions)) {
+            item.selectedOptions.forEach(opt => {
+                if (opt.recipe && Array.isArray(opt.recipe)) {
+                    opt.recipe.forEach(ri => {
+                        const iId = ri.ingredientId || ri.ingredient_id;
+                        if (!iId) return;
+                        if (!reductions[iId]) reductions[iId] = 0;
+                        reductions[iId] += ((ri.quantity || 0) * item.quantity);
+                    });
+                }
             });
         }
     });
@@ -392,21 +454,54 @@ window.posSubmitOrder = async function() {
         selectedOptions: c.selectedOptions || []
     }));
 
-    const orderPayload = {
-        table_number: String(posSelectedTable),
-        session_id: 'POS_' + Date.now(), // Fixed: Missing NOT NULL column `session_id`
-        items: items,
-        reductions: reductions,
-        total_price: totalPrice,
-        order_note: note || null,
-        status: 'Completed',     // POS orders are immediately completed
-        payment_method: 'cash',  // POS orders default to cash
-        payment_status: 'paid'   // POS orders default to paid
-    };
+    // Detect if payment method is selected in POS modal or default to cash
+    let paymentMethod = 'cash';
+    const pmRadio = document.querySelector('input[name="pos_payment"]:checked');
+    if (pmRadio) {
+        paymentMethod = pmRadio.value;
+    }
 
     try {
+        // ✅ STOCK PRE-CHECK
+        const ingredientIds = Object.keys(reductions);
+        if (ingredientIds.length > 0) {
+            const { data: freshStock, error: stockErr } = await supabase.from('ingredients').select('id, name, stock').in('id', ingredientIds);
+            if (!stockErr && freshStock && freshStock.length > 0) {
+                const stockMap = {};
+                freshStock.forEach(i => stockMap[i.id] = i.stock);
+                
+                const outOfStockNames = [];
+                for (const iId of ingredientIds) {
+                    if ((stockMap[iId] || 0) < reductions[iId]) {
+                        const ingInfo = freshStock.find(i => i.id === iId);
+                        outOfStockNames.push(ingInfo ? ingInfo.name : 'Vật tư');
+                    }
+                }
+                if (outOfStockNames.length > 0) {
+                    showAdminToast(`Hết nguyên liệu: ${outOfStockNames.join(', ')}`, 'error');
+                    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Gửi đơn hàng'; }
+                    return;
+                }
+            }
+        }
+
+        const orderPayload = {
+            table_number: String(posSelectedTable),
+            session_id: 'POS_' + Date.now(), // Fixed: Missing NOT NULL column `session_id`
+            items: items,
+            reductions: reductions,
+            total_price: totalPrice,
+            order_note: note || null,
+            status: 'Completed',     // POS orders are immediately completed
+            payment_method: paymentMethod,  // POS orders default to cash
+            payment_status: 'paid'   // POS orders default to paid
+        };
+
         const { data: newOrderId, error } = await supabase.rpc('place_order_and_deduct_inventory', { payload: orderPayload });
-        if (error) throw error;
+        if (error) {
+            console.error("RPC Error Details:", error);
+            throw new Error(error.message || 'Lỗi gửi đơn (Database)');
+        }
         
         // POS orders are immediately paid (RPC doesn't set is_paid directly):
         const { error: updateErr } = await supabase.from('orders').update({ is_paid: true, payment_status: 'paid' }).eq('id', newOrderId);
@@ -423,7 +518,7 @@ window.posSubmitOrder = async function() {
         if (document.getElementById('pos-order-note')) document.getElementById('pos-order-note').value = '';
     } catch(e) {
         console.error('POS submit error:', e);
-        showAdminToast('Lỗi gửi đơn hàng!', 'error');
+        showAdminToast(e.message || 'Lỗi gửi đơn hàng!', 'error');
     } finally {
         if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Gửi đơn hàng'; }
     }
