@@ -331,7 +331,19 @@ window.updateOrderStatus = async (orderId, newStatus, btn) => {
 
                     await supabase.from('customers').update({ current_points: newPts, total_spent: newSpent, tier: newTier }).eq('id', custData.id);
                     if (earnedPts > 0) {
-                        await supabase.from('point_logs').insert([{ customer_id: custData.id, amount: earnedPts, reason: 'Tích điểm đơn hàng ' + orderId.substring(0,8) }]);
+                        await supabase.from('point_logs').insert([{ customer_id: custData.id, amount: earnedPts, reason: 'Tich diem don hang ' + orderId.substring(0,8) }]);
+                    }
+                    // D7 - Auto-generate voucher when points reach 500
+                    if (newPts >= 500) {
+                        const vCode = 'VIP-' + (order.customer_phone || '').slice(-4) + '-' + Math.random().toString(36).substr(2,5).toUpperCase();
+                        const expiry = new Date(Date.now() + 30*24*3600*1000).toISOString().slice(0,10);
+                        const { error: vcErr } = await supabase.from('discounts').insert([{
+                            code: vCode, type: 'fixed', value: 20000,
+                            min_order: 0, max_uses: 1, current_uses: 0,
+                            is_active: true, description: 'Voucher VIP - ' + order.customer_phone,
+                            expires_at: expiry
+                        }]);
+                        if (!vcErr) { await supabase.from('customers').update({ current_points: newPts - 500 }).eq('id', custData.id); }
                     }
                 } else {
                     let newTier = 'Bronze';
@@ -350,8 +362,16 @@ window.updateOrderStatus = async (orderId, newStatus, btn) => {
             }
         }
 
-        const { error } = await supabase.from('orders').update({ status: newStatus }).eq('id', orderId);
+        // D5 — Estimated wait time: ask kitchen when starting preparation
+        let updatePayload = { status: newStatus };
+        if (newStatus === 'Preparing') {
+            const mins = await promptEstimatedTime();
+            if (mins) updatePayload.estimated_minutes = mins;
+        }
+
+        const { error } = await supabase.from('orders').update(updatePayload).eq('id', orderId);
         if (error) throw error;
+
 
         // B3: Hoàn kho tự động khi hủy đơn từ bếp
         if (newStatus === 'Cancelled') {
@@ -833,3 +853,60 @@ window.printKitchenTicket = (order) => {
         printWindow.close();
     }, 200);
 };
+
+// D5 — Estimated wait time prompt (shown to kitchen when they hit "Đang làm")
+function promptEstimatedTime() {
+    return new Promise((resolve) => {
+        const el = document.createElement('div');
+        el.style.cssText = `
+            position:fixed; inset:0; z-index:99999;
+            background:rgba(0,0,0,0.7); backdrop-filter:blur(4px);
+            display:flex; align-items:center; justify-content:center;
+        `;
+        el.innerHTML = `
+            <div style="
+                background:#1a1814; border:1px solid #C0A062; border-radius:20px;
+                padding:28px 24px; width:min(340px,90vw); text-align:center;
+                animation:slideUp 0.3s ease;
+            ">
+                <div style="font-size:2rem; margin-bottom:8px;">⏱️</div>
+                <h3 style="color:#E8DCC4; font-size:1.1rem; font-weight:800; margin-bottom:4px;">Thời gian ước tính</h3>
+                <p style="color:#A89F88; font-size:0.85rem; margin-bottom:16px;">Mất khoảng bao nhiêu phút để hoàn thành?</p>
+                <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:16px;">
+                    ${[5,10,15,20,30].map(m => `
+                        <button onclick="document.getElementById('est-min-input').value='${m}'" style="
+                            background:#2d2a1e; border:1px solid #3A3528; color:#C0A062;
+                            border-radius:10px; padding:7px 14px; font-weight:700; cursor:pointer;
+                        ">${m} phút</button>
+                    `).join('')}
+                </div>
+                <input id="est-min-input" type="number" min="1" max="120" placeholder="Nhập số phút..." style="
+                    width:100%; background:#232018; border:1px solid #3A3528;
+                    color:#E8DCC4; border-radius:10px; padding:10px 14px;
+                    font-size:1rem; text-align:center; margin-bottom:16px; outline:none;
+                ">
+                <div style="display:flex; gap:10px;">
+                    <button id="est-skip-btn" style="
+                        flex:1; background:transparent; border:1px solid #3A3528;
+                        color:#A89F88; border-radius:12px; padding:10px;
+                        font-size:0.9rem; cursor:pointer;
+                    ">Bỏ qua</button>
+                    <button id="est-confirm-btn" style="
+                        flex:2; background:linear-gradient(135deg,#994700,#FF7A00);
+                        border:none; color:#fff; border-radius:12px; padding:10px;
+                        font-size:0.9rem; font-weight:700; cursor:pointer;
+                    ">✓ Xác nhận</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(el);
+
+        const cleanup = () => { el.remove(); };
+        document.getElementById('est-skip-btn').onclick = () => { cleanup(); resolve(null); };
+        document.getElementById('est-confirm-btn').onclick = () => {
+            const val = parseInt(document.getElementById('est-min-input').value);
+            cleanup();
+            resolve(val > 0 ? val : null);
+        };
+    });
+}

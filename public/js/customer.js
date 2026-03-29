@@ -1409,7 +1409,9 @@ function handleOrderStatusUpdate(updatedOrderData) {
         
         // Color coding based on status
         if (updatedOrder.status === 'Preparing') {
-            liveStatusEl.textContent = 'Đang làm';
+            // D5 — Show estimated wait time if kitchen set it
+            const estMins = updatedOrder.estimated_minutes;
+            liveStatusEl.textContent = estMins ? `Đang làm — khoảng ${estMins} phút` : 'Đang làm';
             liveStatusEl.className = 'text-warning banner-status';
             
             // Update timeline

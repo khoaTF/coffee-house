@@ -580,3 +580,39 @@ window.printShiftSummary = function() {
     w.print();
     w.close();
 };
+
+// D6 — Export filtered orders as Excel (.xlsx) using SheetJS
+window.exportOrdersExcel = function() {
+    if (typeof XLSX === 'undefined') {
+        showAdminToast('Thu vien xuat Excel chua san sang.', 'warning');
+        return;
+    }
+    const source = (typeof historyFilteredData !== 'undefined' && historyFilteredData.length > 0)
+        ? historyFilteredData : orderHistory;
+    if (!source || source.length === 0) {
+        showAdminToast('Khong co don hang nao de xuat.', 'warning');
+        return;
+    }
+    const sMap = { Pending: 'Cho xac nhan', Preparing: 'Dang lam', Ready: 'Da xong', Completed: 'Hoan thanh', Cancelled: 'Da huy' };
+    const rows = source.map(o => ({
+        'Ma don': (o._id || o.id || '').substring(0, 8).toUpperCase(),
+        'Thoi gian': new Date(o.createdAt || o.created_at).toLocaleString('vi-VN'),
+        'Ban': o.tableNumber || o.table_number || '',
+        'SDT khach': o.customer_phone || '',
+        'Mon': Array.isArray(o.items) ? o.items.map(i => i.name+'x'+i.quantity).join('; ') : '',
+        'Tong tien': o.totalPrice || o.total_price || 0,
+        'Giam gia': o.discountAmount || o.discount_amount || 0,
+        'Phuong thuc TT': o.paymentMethod || o.payment_method || '',
+        'Thanh toan': (o.paymentStatus || o.payment_status) === 'paid' ? 'Da TT' : 'Chua TT',
+        'Trang thai': sMap[o.status] || o.status || '',
+        'Ghi chu': o.orderNote || o.order_note || ''
+    }));
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Don hang');
+    ws['!cols'] = Object.keys(rows[0]).map(() => ({ wch: 18 }));
+    const today = new Date().toISOString().slice(0,10);
+    XLSX.writeFile(wb, 'donhang_' + today + '.xlsx');
+    if(typeof logAudit === 'function') logAudit('Xuat bao cao Excel', rows.length + ' don hang');
+    showAdminToast('Da xuat ' + rows.length + ' don hang ra file Excel!', 'success');
+};
