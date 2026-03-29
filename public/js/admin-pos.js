@@ -555,7 +555,7 @@ window.posSubmitOrder = async function() {
             reductions: reductions,
             total_price: totalPrice,
             order_note: note || null,
-            status: 'Completed',     // POS orders are immediately completed
+            status: 'Pending',     // POS orders are initially pending for Kitchen to prepare
             payment_method: paymentMethod,  // POS orders default to cash
             payment_status: 'paid'   // POS orders default to paid
         };
