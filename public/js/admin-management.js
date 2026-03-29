@@ -83,6 +83,7 @@ function openStaffModal(id = null) {
     document.getElementById('staff-form').reset();
     document.getElementById('staff-id').value = id || '';
     document.getElementById('staff-avatar-url').value = '';
+    window._croppedAvatarBlob = null;
 
     // Reset avatar preview
     const avatarImg = document.getElementById('staff-avatar-img');
@@ -152,10 +153,9 @@ async function saveStaff() {
 
     // Handle avatar upload
     let avatar_url = document.getElementById('staff-avatar-url').value || null;
-    const avatarFile = document.getElementById('staff-avatar-input').files[0];
-    if (avatarFile) {
+    if (window._croppedAvatarBlob) {
         try {
-            avatar_url = await uploadStaffAvatar(avatarFile, id || crypto.randomUUID());
+            avatar_url = await uploadStaffAvatar(window._croppedAvatarBlob, id || crypto.randomUUID());
         } catch (e) {
             console.error('Avatar upload error:', e);
             if (typeof showAdminToast === 'function') showAdminToast('Lỗi tải ảnh đại diện. Lưu nhân viên không có ảnh.', 'warning');
@@ -178,6 +178,7 @@ async function saveStaff() {
         if (window.staffModalInstance) {
             window.staffModalInstance.hide();
         }
+        window._croppedAvatarBlob = null;
         if (typeof showAdminToast === 'function') showAdminToast('Đã lưu thông tin nhân viên! 🎉', 'success');
         fetchStaff();
     } catch (e) {
@@ -186,33 +187,118 @@ async function saveStaff() {
     }
 }
 
-// --- Avatar Helpers ---
+// --- Avatar Crop & Upload ---
+window._avatarCropper = null;
+window._croppedAvatarBlob = null;
+
 window.previewStaffAvatar = function(input) {
     const file = input.files[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) {
-        alert('Ảnh quá lớn! Vui lòng chọn ảnh dưới 2MB.');
+    if (file.size > 5 * 1024 * 1024) {
+        alert('Ảnh quá lớn! Vui lòng chọn ảnh dưới 5MB.');
         input.value = '';
         return;
     }
     const reader = new FileReader();
     reader.onload = function(e) {
-        const img = document.getElementById('staff-avatar-img');
-        const icon = document.getElementById('staff-avatar-icon');
-        img.src = e.target.result;
-        img.classList.remove('hidden');
-        icon.classList.add('hidden');
+        openCropModal(e.target.result);
     };
     reader.readAsDataURL(file);
 };
 
-async function uploadStaffAvatar(file, staffId) {
-    const ext = file.name.split('.').pop().toLowerCase();
-    const filePath = `staff/${staffId}_${Date.now()}.${ext}`;
+function openCropModal(imageSrc) {
+    const modal = document.getElementById('avatarCropModal');
+    const cropImg = document.getElementById('avatar-crop-image');
+
+    // Destroy previous instance
+    if (window._avatarCropper) {
+        window._avatarCropper.destroy();
+        window._avatarCropper = null;
+    }
+
+    cropImg.src = imageSrc;
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+
+    // Init Cropper after image loads
+    cropImg.onload = function() {
+        window._avatarCropper = new Cropper(cropImg, {
+            aspectRatio: 1,
+            viewMode: 1,
+            dragMode: 'move',
+            autoCropArea: 0.85,
+            cropBoxResizable: true,
+            cropBoxMovable: true,
+            guides: false,
+            center: true,
+            highlight: false,
+            background: false,
+            responsive: true,
+            minCropBoxWidth: 80,
+            minCropBoxHeight: 80,
+        });
+    };
+}
+
+window.confirmAvatarCrop = function() {
+    if (!window._avatarCropper) return;
+
+    const canvas = window._avatarCropper.getCroppedCanvas({
+        width: 300,
+        height: 300,
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: 'high',
+    });
+
+    // Draw circular mask
+    const circleCanvas = document.createElement('canvas');
+    circleCanvas.width = 300;
+    circleCanvas.height = 300;
+    const ctx = circleCanvas.getContext('2d');
+    ctx.beginPath();
+    ctx.arc(150, 150, 150, 0, Math.PI * 2);
+    ctx.closePath();
+    ctx.clip();
+    ctx.drawImage(canvas, 0, 0, 300, 300);
+
+    // Show preview in staff modal
+    const previewImg = document.getElementById('staff-avatar-img');
+    const previewIcon = document.getElementById('staff-avatar-icon');
+    previewImg.src = circleCanvas.toDataURL('image/png');
+    previewImg.classList.remove('hidden');
+    previewIcon.classList.add('hidden');
+
+    // Store blob for upload
+    circleCanvas.toBlob(function(blob) {
+        window._croppedAvatarBlob = blob;
+    }, 'image/png', 0.92);
+
+    // Close crop modal
+    closeCropModal();
+};
+
+window.cancelAvatarCrop = function() {
+    const input = document.getElementById('staff-avatar-input');
+    if (input) input.value = '';
+    closeCropModal();
+};
+
+function closeCropModal() {
+    const modal = document.getElementById('avatarCropModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    if (window._avatarCropper) {
+        window._avatarCropper.destroy();
+        window._avatarCropper = null;
+    }
+}
+
+async function uploadStaffAvatar(blob, staffId) {
+    const filePath = `staff/${staffId}_${Date.now()}.png`;
 
     const { data, error } = await supabase.storage
         .from('avatars')
-        .upload(filePath, file, { upsert: true, contentType: file.type });
+        .upload(filePath, blob, { upsert: true, contentType: 'image/png' });
 
     if (error) throw error;
 
