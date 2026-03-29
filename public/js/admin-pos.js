@@ -14,12 +14,22 @@ window.initPOS = async function() {
 
     // Render layout first
     container.innerHTML = `
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
             <div>
                 <h2 class="font-noto text-2xl font-bold text-[#F2E8D5] mb-1 flex items-center gap-2">
                     <i class="fa-solid fa-cash-register text-[#C0A062]"></i> POS Bán hàng
                 </h2>
                 <p class="text-sm text-[#A89F88] mb-0">Đặt hàng nhanh thay khách từ quầy thu ngân.</p>
+            </div>
+            
+            <div class="flex items-center gap-2 bg-[#1A1814] px-4 py-2 rounded-xl border border-[#3A3528] shadow-soft">
+                <div id="pos-header-avatar" class="w-8 h-8 rounded-full border border-[#C0A062] flex items-center justify-center overflow-hidden bg-[#232018]">
+                    ${sessionStorage.getItem('nohope_staff_avatar') ? `<img src="${sessionStorage.getItem('nohope_staff_avatar')}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-user text-[#C0A062] text-xs"></i>`}
+                </div>
+                <div class="flex flex-col justify-center">
+                    <span class="text-[#E8DCC4] text-sm font-bold leading-none">${sessionStorage.getItem('nohope_staff_name') || 'Cashier'}</span>
+                    <span class="text-[#A89F88] text-[10px] leading-tight font-semibold mt-1 uppercase tracking-wider">Thu ngân v2.0</span>
+                </div>
             </div>
         </div>
 
