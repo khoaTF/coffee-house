@@ -131,7 +131,7 @@ async function fetchCashflowData() {
             combinedData.push({
                 type: 'income',
                 source: 'order',
-                amount: parseFloat(o.total_amount),
+                amount: parseFloat(o.total_price),
                 desc: `Doanh thu đơn hàng (Tự động)`,
                 refId: '#O_' + o.id.toString(),
                 createdAt: new Date(o.created_at)
