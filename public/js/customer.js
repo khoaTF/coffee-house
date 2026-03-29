@@ -990,6 +990,44 @@ async function placeOrder(method = 'cash') {
     };
 
     try {
+        // ✅ STOCK PRE-CHECK: Fetch fresh stock from DB to avoid race conditions
+        const ingredientIds = [...new Set(
+            cart.flatMap(item => (item.recipe || []).map(r => r.ingredientId || r.ingredient_id).filter(Boolean))
+        )];
+        if (ingredientIds.length > 0) {
+            const { data: freshStock } = await supabase.from('ingredients').select('id, name, stock').in('id', ingredientIds);
+            if (freshStock && freshStock.length > 0) {
+                // Update local cache
+                freshStock.forEach(i => { ingredientStock[i.id] = i.stock; });
+                // Validate each cart item
+                const outOfStockItems = [];
+                for (const item of cart) {
+                    const recipe = item.recipe || [];
+                    for (const req of recipe) {
+                        const ingrId = req.ingredientId || req.ingredient_id;
+                        const needed = (req.quantity || req.amount || 0) * item.quantity;
+                        const available = ingredientStock[ingrId] || 0;
+                        if (needed > available) {
+                            const ingrInfo = freshStock.find(i => i.id === ingrId);
+                            outOfStockItems.push(`• ${item.name} (thiếu: ${ingrInfo?.name || 'nguyên liệu'})`);
+                            break;
+                        }
+                    }
+                }
+                if (outOfStockItems.length > 0) {
+                    // Reset buttons
+                    if(checkoutCashBtn) { checkoutCashBtn.disabled = false; checkoutCashBtn.innerHTML = '<i class="fa-solid fa-money-bill-wave"></i> Thanh toán tại quầy'; }
+                    if(checkoutTransferBtn) { checkoutTransferBtn.disabled = false; checkoutTransferBtn.innerHTML = '<i class="fa-solid fa-qrcode"></i> Chuyển khoản (Duyệt TĐ)'; }
+                    const btnConfirmPayment = document.getElementById('confirm-payment-btn');
+                    if(btnConfirmPayment) { btnConfirmPayment.innerHTML = '<i class="fa-solid fa-check-circle"></i> Tôi đã chuyển khoản xong'; btnConfirmPayment.disabled = false; }
+                    // Update menu UI
+                    renderMenu(getActiveCategory());
+                    await customerAlert(`❌ Một số món đã hết nguyên liệu:\n${outOfStockItems.join('\n')}\n\nVui lòng cập nhật lại giỏ hàng.`);
+                    return;
+                }
+            }
+        }
+
         const { data: newOrderId, error } = await supabase.rpc('place_order_and_deduct_inventory', { payload: orderData });
         if (error) throw error;
         
