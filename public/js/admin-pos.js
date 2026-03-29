@@ -31,8 +31,8 @@ window.initPOS = async function() {
                         <i class="fa-solid fa-chair text-[#C0A062]"></i>
                         <label class="text-sm text-[#A89F88] font-semibold">Đơn:</label>
                         <select id="pos-table-select" class="bg-transparent text-[#E8DCC4] font-bold text-sm focus:outline-none" onchange="posSelectTable(this.value)">
-                            <option value="POS" selected>Mang đi (POS)</option>
-                            ${Array.from({length:20}, (_,i) => `<option value="${i+1}">Bàn ${i+1}</option>`).join('')}
+                            <option value="POS" class="bg-[#232018] text-[#E8DCC4]" selected>Mang đi (POS)</option>
+                            ${Array.from({length:20}, (_,i) => `<option value="${i+1}" class="bg-[#232018] text-[#E8DCC4]">Bàn ${i+1}</option>`).join('')}
                         </select>
                     </div>
                     <div class="relative flex-1">
