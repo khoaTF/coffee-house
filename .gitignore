@@ -2,11 +2,13 @@ node_modules/
 .env
 .DS_Store
 .vercel
+.agent/
 
 # Debug outputs
 *.log
 remote_*.txt
 live_content.txt
+diff.txt
 
 # IDE
 .vscode/

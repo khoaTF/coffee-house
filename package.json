@@ -4,6 +4,7 @@
   "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js",
+    "dev": "node src/server.js",
     "test": "jest",
     "build:css": "tailwindcss -i ./src/css/input.css -o ./public/css/index.css --minify",
     "build": "npm run build:css"
@@ -12,6 +13,9 @@
   "author": "",
   "license": "ISC",
   "description": "Supabase-powered static server",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
     "@supabase/supabase-js": "^2.99.2",
     "dotenv": "^17.3.1",
