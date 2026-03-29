@@ -171,3 +171,22 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     details TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
+
+-- Store Settings (Singleton row, id always = 1)
+CREATE TABLE IF NOT EXISTS store_settings (
+    id INTEGER PRIMARY KEY DEFAULT 1,
+    store_name TEXT DEFAULT 'Nohope Coffee',
+    store_address TEXT,
+    wifi_name TEXT,
+    wifi_pass TEXT,
+    bank_id TEXT DEFAULT 'mb',
+    bank_acc TEXT,
+    bank_name TEXT,
+    table_count INTEGER DEFAULT 15,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    CONSTRAINT single_row CHECK (id = 1)
+);
+
+-- Default row (run once)
+INSERT INTO store_settings (id) VALUES (1) ON CONFLICT (id) DO NOTHING;
