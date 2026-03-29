@@ -992,7 +992,8 @@ async function placeOrder(method = 'cash') {
         name: item.name,
         quantity: item.quantity,
         price: item.price,
-        selectedOptions: item.selectedOptions || []
+        selectedOptions: item.selectedOptions || [],
+        recipe: item.recipe || []
     }));
     
     // Calculate inventory reductions based on cart items and their recipes

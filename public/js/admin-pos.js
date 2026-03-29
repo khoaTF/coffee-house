@@ -234,24 +234,38 @@ window.posSubmitOrder = async function() {
     const note = (document.getElementById('pos-order-note')?.value || '').trim();
     const staffName = sessionStorage.getItem('nohope_staff_name') || localStorage.getItem('nohope_staff_name') || 'POS';
 
+    const reductions = {};
+    posCart.forEach(item => {
+        if (item.recipe && Array.isArray(item.recipe)) {
+            item.recipe.forEach(ri => {
+                const iId = ri.ingredientId || ri.ingredient_id;
+                if (!reductions[iId]) reductions[iId] = 0;
+                reductions[iId] += (ri.quantity * item.quantity);
+            });
+        }
+    });
+
     const items = posCart.map(c => ({ id: c.id, name: c.name, price: c.price, quantity: c.quantity, recipe: c.recipe }));
 
+    const orderPayload = {
+        table_number: String(posSelectedTable),
+        items: items,
+        reductions: reductions,
+        total_price: totalPrice,
+        order_note: note || null,
+        status: 'Completed',     // POS orders are immediately completed
+        payment_method: 'cash',  // POS orders default to cash
+        payment_status: 'paid'   // POS orders default to paid
+    };
+
     try {
-        const { data: newOrder, error } = await supabase.from('orders').insert([{
-            table_number: String(posSelectedTable),
-            items: items,
-            total_price: totalPrice,
-            order_note: note || null,
-            status: 'Completed',     // POS orders are immediately completed
-            payment_method: 'cash',  // POS orders default to cash
-            payment_status: 'paid',  // POS orders default to paid
-        }]).select().single();
+        const { data: newOrderId, error } = await supabase.rpc('place_order_and_deduct_inventory', { payload: orderPayload });
         if (error) throw error;
 
         logAudit('POS Đặt hàng', `Bàn ${posSelectedTable} — ${posCart.length} món — ${totalPrice.toLocaleString('vi-VN')}đ bởi ${staffName}`);
         
         // Print bill popup
-        posPrintBill(newOrder || { id: 'TAKEAWAY', table_number: posSelectedTable, items: items, total_price: totalPrice });
+        posPrintBill({ id: newOrderId, table_number: posSelectedTable, items: items, total_price: totalPrice, order_note: note });
         
         showAdminToast(`Đã gửi đơn bàn ${posSelectedTable} thành công! 🎉`, 'success');
         posCart = [];

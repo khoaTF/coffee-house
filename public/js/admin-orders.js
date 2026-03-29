@@ -194,9 +194,9 @@ async function restoreInventoryOnCancel(items) {
             if (!Array.isArray(recipe) || recipe.length === 0) continue;
             const qty = item.quantity || 1;
             for (const ingr of recipe) {
-                if (!ingr.ingredient_id && !ingr.id) continue;
-                const ingrId = ingr.ingredient_id || ingr.id;
-                const restoreAmt = (ingr.amount || 0) * qty;
+                if (!ingr.ingredient_id && !ingr.id && !ingr.ingredientId) continue;
+                const ingrId = ingr.ingredient_id || ingr.ingredientId || ingr.id;
+                const restoreAmt = (ingr.amount || ingr.quantity || 0) * qty;
                 if (restoreAmt <= 0) continue;
                 const { data: cur } = await supabase.from('ingredients').select('stock').eq('id', ingrId).maybeSingle();
                 if (cur) {
