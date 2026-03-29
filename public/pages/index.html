@@ -102,6 +102,9 @@
                     <input type="text" id="menu-search-desktop" placeholder="Tìm kiếm món uống..." class="bg-surface-container-high border-none rounded-full py-2.5 px-12 text-sm w-64 focus:ring-2 focus:ring-primary/20 transition-all text-on-surface">
                     <span class="material-symbols-outlined absolute left-4 top-2.5 text-on-surface-variant text-sm" data-icon="search">search</span>
                 </div>
+                <button onclick="document.getElementById('guide-modal').style.display='flex';" class="p-2.5 hover:bg-[#F6F3F2] dark:hover:bg-[#2A2B2B] rounded-full transition-all text-[#1B1C1C] dark:text-[#FCF9F8] hidden md:block" title="Hướng dẫn sử dụng">
+                    <span class="material-symbols-outlined" data-icon="help">help</span>
+                </button>
                 <button id="floating-cart" class="p-2.5 hover:bg-[#F6F3F2] dark:hover:bg-[#2A2B2B] rounded-full transition-all relative">
                     <span class="material-symbols-outlined text-[#994700]" data-icon="shopping_cart">shopping_cart</span>
                     <span id="cart-count" class="absolute top-1 right-1 w-4 h-4 bg-tertiary text-white rounded-full text-[10px] font-bold flex items-center justify-center hidden">0</span>
@@ -243,9 +246,9 @@
         <span class="material-symbols-outlined" data-icon="point_of_sale">point_of_sale</span>
         <span class="font-['Inter'] text-[10px] uppercase tracking-widest font-bold mt-1">Tính tiền</span>
     </button>
-    <button onclick="requestStaffService('staff'); return false;" class="flex flex-col items-center justify-center text-[#1B1C1C]/50 py-2 hover:text-[#994700] transition-colors bg-transparent border-0">
-        <span class="material-symbols-outlined" data-icon="contact_support">contact_support</span>
-        <span class="font-['Inter'] text-[10px] uppercase tracking-widest font-bold mt-1">Gọi NV</span>
+    <button onclick="document.getElementById('guide-modal').style.display='flex'; return false;" class="flex flex-col items-center justify-center text-[#1B1C1C]/50 py-2 hover:text-[#994700] transition-colors bg-transparent border-0">
+        <span class="material-symbols-outlined" data-icon="help">help</span>
+        <span class="font-['Inter'] text-[10px] uppercase tracking-widest font-bold mt-1">HDSD</span>
     </button>
 </nav>
 
@@ -512,6 +515,36 @@
         <div class="grid grid-cols-2 gap-3">
             <button class="bg-[#F0EDEC] dark:bg-[#2A2B2B] text-[#584235] dark:text-[#E0C0AF] py-2.5 rounded-full font-bold active:scale-95 transition-transform" id="confirmModalCancel" onclick="closeConfirmModal()">Không</button>
             <button class="bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white py-2.5 rounded-full font-bold active:scale-95 transition-transform shadow-lg shadow-[#FF7A00]/20" id="confirmModalOk">Đồng ý</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Guide -->
+<div class="cart-modal" id="guide-modal" style="z-index: 2050;">
+    <div class="cart-modal-content" style="max-height: 85vh; background: var(--surface-color);">
+        <div class="cart-modal-header flex-between">
+            <h2 class="text-2xl font-black text-on-surface tracking-tight" style="font-family: 'Plus Jakarta Sans', sans-serif;">Hướng Dẫn Sử Dụng</h2>
+            <button onclick="document.getElementById('guide-modal').style.display='none';" class="btn-icon"><i class="fa-solid fa-times"></i></button>
+        </div>
+        <div class="cart-modal-body" style="padding: 16px; overflow-y: auto;">
+            <div class="text-sm text-on-surface-variant space-y-6">
+                <div>
+                    <h4 class="font-bold text-lg text-[#994700] mb-2 flex items-center gap-2"><div class="w-6 h-6 rounded-full bg-[#994700] text-white flex items-center justify-center text-xs">1</div> Chọn món</h4>
+                    <p class="leading-relaxed">Lướt xem thực đơn và nhấp vào món bạn thích. Chọn các tùy chọn bắt buộc (như Kích cỡ, Đá, Đường) hoặc cấu hình nếu là Set/Combo, rồi nhấn <strong>Thêm vào giỏ hàng</strong>.</p>
+                </div>
+                <div>
+                    <h4 class="font-bold text-lg text-[#994700] mb-2 flex items-center gap-2"><div class="w-6 h-6 rounded-full bg-[#994700] text-white flex items-center justify-center text-xs">2</div> Giỏ hàng & Theo dõi đơn</h4>
+                    <p class="leading-relaxed">Bấm vào Giỏ hàng để kiểm tra các món đã chọn, thêm <strong>Mã khuyến mãi</strong> hoặc nhập SĐT để <strong>Tích điểm</strong>. Sau khi ấn Đặt hàng, theo dõi trạng thái món trực tiếp trên màn hình.</p>
+                </div>
+                <div>
+                    <h4 class="font-bold text-lg text-[#994700] mb-2 flex items-center gap-2"><div class="w-6 h-6 rounded-full bg-[#994700] text-white flex items-center justify-center text-xs">3</div> Gọi thêm món (Re-order)</h4>
+                    <p class="leading-relaxed">Sau khi đặt, nếu bạn chưa thanh toán bàn hiện tại thì hoàn toàn có thể lướt menu và tiếp tục chọn thêm món, hệ thống tự động gộp đơn vào bàn hiện tại của bạn.</p>
+                </div>
+                <div>
+                    <h4 class="font-bold text-lg text-[#994700] mb-2 flex items-center gap-2"><div class="w-6 h-6 rounded-full bg-[#994700] text-white flex items-center justify-center text-xs">4</div> Thanh toán</h4>
+                    <p class="leading-relaxed">Bấm nút <strong>Tính tiền</strong> (hoặc mở Giỏ hàng) để dứt điểm đơn. Chọn <strong>Chuyển khoản</strong> để quét mã QR tải lên biên lai, hoặc <strong>Tiền mặt</strong> để nhân viên tới quầy thu tiền.</p>
+                </div>
+            </div>
         </div>
     </div>
 </div>

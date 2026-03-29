@@ -140,6 +140,9 @@
                 <button id="toggle-shift-btn-desktop" class="nav-link bg-transparent border-0 w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 text-[#A89F88] hover:bg-[#3A3528] hover:text-[#E8DCC4]">
                     <i class="fa-solid fa-moon w-5 text-center"></i> Kết ca
                 </button>
+                <button onclick="document.getElementById('admin-guide-modal').style.display='flex';" class="nav-link bg-transparent border-0 w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 text-[#A89F88] hover:bg-[#3A3528] hover:text-[#E8DCC4]">
+                    <i class="fa-solid fa-circle-question w-5 text-center"></i> Hướng dẫn sử dụng
+                </button>
             </nav>
 
             <div class="p-4 border-t border-[#3A3528] bg-[#232018] mt-auto">
@@ -765,6 +768,49 @@
             </div> <!-- End Main Content Scrollable Area -->
         </main> <!-- End Main -->
     </div> <!-- End Flex Wrapper -->
+
+    <!-- Admin Guide Modal -->
+    <div class="fixed inset-0 bg-black/60 z-[2060] hidden items-center justify-center p-4 backdrop-blur-sm" id="admin-guide-modal">
+        <div class="bg-[#232018] w-full max-w-2xl rounded-2xl shadow-2xl border border-[#3A3528] flex flex-col max-h-[90vh]">
+            <div class="p-4 border-b border-[#3A3528] flex justify-between items-center bg-[#3A3528]/50 rounded-t-2xl">
+                <h5 class="text-xl font-bold text-[#F2E8D5] flex items-center gap-2"><i class="fa-solid fa-book-open text-[#C0A062]"></i> Hướng dẫn Admin & Quản lý</h5>
+                <button onclick="document.getElementById('admin-guide-modal').style.display='none'" class="text-[#A89F88] hover:text-[#F2E8D5] bg-transparent border-0"><i class="fa-solid fa-times text-xl"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto custom-scrollbar text-[#E8DCC4] space-y-6">
+                <!-- POS -->
+                <div>
+                    <h4 class="font-bold text-lg text-[#C0A062] mb-2"><i class="fa-solid fa-cash-register w-5 text-center"></i> 1. POS Bán hàng</h4>
+                    <p class="text-sm text-[#A89F88]">Sử dụng tab này để tạo đơn hàng trực tiếp cho khách mua mang đi hoặc tại quầy. Bạn có thể thêm món, chỉnh sửa số lượng và in hoá đơn nhanh chóng.</p>
+                </div>
+                <!-- Menu -->
+                <div>
+                    <h4 class="font-bold text-lg text-[#C0A062] mb-2"><i class="fa-solid fa-book-open w-5 text-center"></i> 2. Quản lý Thực đơn & Combo</h4>
+                    <p class="text-sm text-[#A89F88]">Thêm, sửa, xoá đồ uống/món ăn. Check vào "Món Bán Chạy" để món hiện lên top. Bật "Là Set Menu / Combo" nếu bạn muốn gộp nhiều món (VD: combo gà rán + pepsi) để khách chọn cấu hình món con.</p>
+                </div>
+                <!-- Kho -->
+                <div>
+                    <h4 class="font-bold text-lg text-[#C0A062] mb-2"><i class="fa-solid fa-boxes-stacked w-5 text-center"></i> 3. Kho & Nhập hàng</h4>
+                    <ul class="text-sm text-[#A89F88] list-disc pl-5 space-y-1">
+                        <li><strong>Tồn kho:</strong> Thêm nguyên liệu gốc (Cafe, Trà,...). Hệ thống sẽ tự trừ kho khi đơn hàng được bếp xuất kho/nhận làm.</li>
+                        <li><strong>Nhập hàng:</strong> Tạo phiếu nhập khi mua nguyên liệu để hệ thống lưu lại chi phí và tự động cộng dồn số tồn.</li>
+                    </ul>
+                </div>
+                <!-- Đơn hàng -->
+                <div>
+                    <h4 class="font-bold text-lg text-[#C0A062] mb-2"><i class="fa-solid fa-clock-rotate-left w-5 text-center"></i> 4. Xử lý Đơn hàng</h4>
+                    <p class="text-sm text-[#A89F88]">Danh sách đơn hàng của khách. Đơn từ QR sẽ báo hiệu để bạn kiểm tra và xác nhận. Nhân viên có thể Huỷ đơn hoặc Xác nhận Thanh toán tại tab này.</p>
+                </div>
+                <!-- Bàn, QR -->
+                <div>
+                    <h4 class="font-bold text-lg text-[#C0A062] mb-2"><i class="fa-solid fa-qrcode w-5 text-center"></i> 5. Bàn & Mã QR</h4>
+                    <p class="text-sm text-[#A89F88]">Bạn có thể cài đặt số lượng bàn trong phần <strong>Cài đặt</strong>. Sau đó vào tab <strong>Mã QR Bàn</strong> để tiến hành in đồng loạt các mã dán lên mặt bàn.</p>
+                </div>
+            </div>
+            <div class="p-4 border-t border-[#3A3528] bg-[#232018] rounded-b-2xl text-end">
+                <button class="bg-[#3A3528] text-[#E8DCC4] py-2 px-6 rounded-xl font-bold hover:bg-[#C0A062] hover:text-[#1A1814] transition-colors" onclick="document.getElementById('admin-guide-modal').style.display='none'">Đã hiểu</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Product Modal -->
     <div class="modal fade" id="productModal" tabindex="-1" aria-hidden="true">
