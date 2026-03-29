@@ -449,7 +449,7 @@ function renderMenu(category) {
 
         card.innerHTML = `
             <div class="img-wrap aspect-[4/3] bg-[#F0EDEC] dark:bg-slate-800 relative overflow-hidden">
-                <img src="${item.imageUrl}" alt="${window.escapeHTML(item.name)}" loading="lazy" decoding="async" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.onerror=null; this.src='/images/bunny_logo.png'; this.className='w-full h-full object-contain p-6 opacity-30 group-hover:scale-105 transition-transform duration-500';">
+                <img src="${item.imageUrl}" alt="${window.escapeHTML(item.name)}" loading="lazy" decoding="async" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.onerror=null; this.outerHTML='<div class=\\'w-full h-full flex items-center justify-center p-6 bg-[#F0EDEC] dark:bg-slate-800\\'><img src=\\'/images/bunny_logo.png\\' alt=\\'\\' class=\\'w-full h-full object-contain opacity-30 group-hover:scale-105 transition-transform duration-500\\'></div>';">
                 ${isOutOfStock ? '<div class="oos-overlay absolute inset-0 bg-black/40 flex items-center justify-center z-10"><span class="bg-[#ba1a1a] text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">Hết hàng</span></div>' : ''}
                 ${isBestSeller && !isOutOfStock ? `
                 <div class="absolute top-3 left-3 bg-white/90 dark:bg-[#1B1C1B]/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs font-bold text-[#FF7A00] shadow-sm flex items-center gap-1 z-10">
