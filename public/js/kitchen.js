@@ -137,6 +137,7 @@ function renderOrders() {
                             <div>
                                 <span>Bàn ${window.escapeHTML(order.tableNumber || '?')}</span>
                                 ${order.customer_phone ? `<div class="text-xs font-normal mt-0.5 flex items-center gap-1.5"><span class="text-amber-500 font-bold"><i class="fa-solid fa-crown"></i> VIP</span><span class="text-gray-500 dark:text-gray-400">${window.escapeHTML(order.customer_phone)}</span></div>` : ''}
+                                <span class="text-stone-500 dark:text-stone-400 ml-2 font-medium text-sm">(Đơn #${window.escapeHTML(String(order.orderId))})</span>
                             </div>
                         </div>
                         <div class="flex flex-col items-end">
@@ -149,7 +150,7 @@ function renderOrders() {
                     <ul class="mb-4 list-none pl-0">
                         ${itemsHtml}
                     </ul>
-                    ${order.orderNote ? `<div class="p-3 bg-orange-50 dark:bg-orange-900/20 text-[#994700] dark:text-orange-300 text-sm rounded-xl mb-4 font-medium flex gap-2 items-start border border-orange-100 dark:border-orange-800/50"><i class="fa-solid fa-note-sticky mt-0.5"></i> <span>Ghi chú: ${window.escapeHTML(order.orderNote)}</span></div>` : ''}
+                    ${order.orderNote ? `<div class="p-3 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm rounded-xl mb-4 font-bold flex gap-2 items-start border border-red-200 dark:border-red-800/50"><i class="fa-solid fa-triangle-exclamation mt-0.5"></i> <span>Ghi chú: ${window.escapeHTML(order.orderNote)}</span></div>` : ''}
                     
                     <!-- Status / Payment tags -->
                     <div class="flex flex-wrap gap-2 mb-4">
@@ -755,7 +756,7 @@ async function fetchKitchenHistory() {
                         <ul class="mb-4 list-none pl-0">
                             ${itemsHtml}
                         </ul>
-                        ${order.orderNote ? `<div class="p-3 bg-orange-50 dark:bg-orange-900/20 text-[#994700] dark:text-orange-300 text-sm rounded-xl mb-4 font-medium flex gap-2 items-start border border-orange-100 dark:border-orange-800/50"><i class="fa-solid fa-note-sticky mt-0.5"></i> <span>Ghi chú: ${window.escapeHTML(order.orderNote)}</span></div>` : ''}
+                        ${order.orderNote ? `<div class="p-3 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm rounded-xl mb-4 font-bold flex gap-2 items-start border border-red-200 dark:border-red-800/50"><i class="fa-solid fa-triangle-exclamation mt-0.5"></i> <span>Ghi chú: ${window.escapeHTML(order.orderNote)}</span></div>` : ''}
                     </div>
                     
                     <div class="mt-auto pt-4 border-t border-gray-200 dark:border-gray-700">
