@@ -23,11 +23,11 @@ async function saveCashTransaction() {
     const type = document.querySelector('input[name="cfType"]:checked').value;
 
     if (!amountInput || amountInput <= 0) {
-        alert('Vui lòng nhập số tiền hợp lệ lớn hơn 0.');
+        showAdminToast('Vui lòng nhập số tiền hợp lệ lớn hơn 0.', 'warning');
         return;
     }
     if (!descInput.trim()) {
-        alert('Vui lòng nhập diễn giải.');
+        showAdminToast('Vui lòng nhập diễn giải.', 'warning');
         return;
     }
 
@@ -46,14 +46,10 @@ async function saveCashTransaction() {
         cashflowModalInstance.hide();
         fetchCashflowData();
 
-        if (typeof showNotification === 'function') {
-            showNotification('Tạo phiếu thành công!', 'success');
-        } else {
-            alert('Tạo phiếu thành công!');
-        }
+        showAdminToast('Tạo phiếu thành công!', 'success');
     } catch (e) {
         console.error(e);
-        alert('Lỗi khi lưu giao dịch sổ quỹ: ' + e.message);
+        showAdminToast('Lỗi khi lưu giao dịch sổ quỹ: ' + e.message, 'error');
     }
 }
 

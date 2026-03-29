@@ -216,7 +216,7 @@ window.clearStaffRequest = async (id, btn) => {
     } catch(e) {
         console.error(e);
         btn.disabled = false;
-        alert("Lỗi khi hoàn thành yêu cầu");
+        showAdminToast("Lỗi khi hoàn thành yêu cầu", 'error');
     }
 };
 

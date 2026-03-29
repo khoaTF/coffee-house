@@ -136,11 +136,11 @@ async function saveStaff() {
     const role = document.getElementById('staff-role').value;
 
     if (!name || !pin) {
-        alert("Vui lòng điền đầy đủ Tên và Mã PIN.");
+        showAdminToast("Vui lòng điền đầy đủ Tên và Mã PIN.", 'warning');
         return;
     }
     if (!/^[0-9]{4,6}$/.test(pin)) {
-        alert("Mã PIN phải từ 4 đến 6 chữ số.");
+        showAdminToast("Mã PIN phải từ 4 đến 6 chữ số.", 'warning');
         return;
     }
 
@@ -196,7 +196,7 @@ async function saveStaff() {
         fetchStaff();
     } catch (e) {
         console.error("Save staff error:", e);
-        alert("Lỗi khi lưu thông tin nhân viên: " + (e.message || JSON.stringify(e)));
+        showAdminToast("Lỗi khi lưu thông tin nhân viên: " + (e.message || JSON.stringify(e)), 'error');
     }
 }
 
@@ -208,7 +208,7 @@ window.previewStaffAvatar = function(input) {
     const file = input.files[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) {
-        alert('Ảnh quá lớn! Vui lòng chọn ảnh dưới 5MB.');
+        showAdminToast('Ảnh quá lớn! Vui lòng chọn ảnh dưới 5MB.', 'warning');
         input.value = '';
         return;
     }
@@ -337,7 +337,7 @@ async function deleteStaff(id) {
         fetchStaff();
     } catch (e) {
         console.error("Delete staff error:", e);
-        alert("Lỗi khi xóa nhân viên.");
+        showAdminToast("Lỗi khi xóa nhân viên.", 'error');
     }
 }
 
@@ -416,7 +416,7 @@ async function saveCustomer() {
         fetchCustomers();
     } catch (e) {
         console.error(e);
-        alert('Lỗi cập nhật điểm khách hàng.');
+        showAdminToast('Lỗi cập nhật điểm khách hàng.', 'error');
     }
 }
 
@@ -494,7 +494,7 @@ async function savePromo() {
     };
 
     if (!data.code || data.value <= 0) {
-        alert("Vui lòng nhập mã và mức giảm hợp lệ.");
+        showAdminToast("Vui lòng nhập mã và mức giảm hợp lệ.", 'warning');
         return;
     }
 
@@ -512,7 +512,7 @@ async function savePromo() {
         fetchDiscounts();
     } catch (e) {
         console.error(e);
-        alert("Lỗi khi lưu mã khuyến mãi.");
+        showAdminToast("Lỗi khi lưu mã khuyến mãi.", 'error');
     }
 }
 
@@ -526,7 +526,7 @@ async function togglePromoStatus(id, currentlyActive) {
         fetchDiscounts();
     } catch(e) {
         console.error(e);
-        alert("Lỗi hệ thống.");
+        showAdminToast("Lỗi hệ thống.", 'error');
     }
 }
 
@@ -574,7 +574,7 @@ window.generateQRCodes = function() {
     const count = parseInt(countInput.value);
     if (!count || isNaN(count) || count <= 0) {
         if(typeof showAdminToast === 'function') showAdminToast('Vui lòng nhập số lượng bàn hợp lệ.', 'error');
-        else alert('Vui lòng nhập số lượng bàn hợp lệ.');
+        else showAdminToast('Vui lòng nhập số lượng bàn hợp lệ.', 'warning');
         return;
     }
 
@@ -661,8 +661,7 @@ window.saveStoreSettings = async function(type) {
     localStorage.setItem('store_settings', JSON.stringify(newSettings));
 
     if(typeof logAudit === 'function') logAudit('Cập nhật cài đặt', `Loại: ${type}`);
-    if(typeof showAdminToast === 'function') showAdminToast(`Đã lưu thiết lập ${type === 'general' ? 'thông tin' : 'thanh toán'} thành công!`, 'success');
-    else alert('Đã lưu cài đặt!');
+    showAdminToast(`Đã lưu thiết lập ${type === 'general' ? 'thông tin' : 'thanh toán'} thành công!`, 'success');
 };
 
 window.loadStoreSettings = async function() {

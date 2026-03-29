@@ -181,7 +181,7 @@ async function saveIngredient() {
     const supplierName = document.getElementById('ingSupplierName') ? document.getElementById('ingSupplierName').value.trim() : null;
 
     if (!name || !unit) {
-        alert("Vui lòng nhập tên và đơn vị!");
+        showAdminToast("Vui lòng nhập tên và đơn vị!", 'warning');
         return;
     }
 
@@ -231,7 +231,7 @@ async function saveIngredient() {
         fetchIngredients();
     } catch (e) {
         console.error(e);
-        alert("Lưu thất bại.");
+        showAdminToast("Lưu thất bại.", 'error');
     }
 }
 
@@ -248,7 +248,7 @@ async function deleteIngredient(id, stock) {
         fetchIngredients();
     } catch (e) {
         console.error(e);
-        alert("Lỗi kết nối.");
+        showAdminToast("Lỗi kết nối.", 'error');
     }
 }
 
@@ -408,7 +408,7 @@ async function submitRestockTicket() {
     const rows = document.querySelectorAll('.restock-item-row');
 
     if (rows.length === 0) {
-        alert("Giỏ nhập kho đang trống! Vui lòng thêm ít nhất một nguyên liệu.");
+        showAdminToast("Giỏ nhập kho đang trống! Vui lòng thêm ít nhất một nguyên liệu.", 'warning');
         return;
     }
 
@@ -437,7 +437,7 @@ async function submitRestockTicket() {
     });
 
     if (hasError) {
-        alert("Vui lòng kiểm tra lại thông tin nguyên liệu và số lượng nhập.");
+        showAdminToast("Vui lòng kiểm tra lại thông tin nguyên liệu và số lượng nhập.", 'warning');
         return;
     }
 
@@ -490,7 +490,7 @@ async function submitRestockTicket() {
         }, 500);
     } catch (e) {
         console.error(e);
-        alert("Có lỗi xảy ra khi nhập kho: " + e.message);
+        showAdminToast("Có lỗi xảy ra khi nhập kho: " + e.message, 'error');
         const btn = document.getElementById('saveRestockBtn');
         btn.disabled = false;
         btn.innerHTML = 'Hoàn thành Phiếu Nhập';
@@ -500,7 +500,7 @@ async function submitRestockTicket() {
 // --- Export Inventory CSV ---
 window.exportInventoryToCSV = async function() {
     const { data } = await supabase.from('ingredients').select('*').order('name');
-    if (!data || data.length === 0) return alert('Không có dữ liệu kho!');
+    if (!data || data.length === 0) return showAdminToast('Không có dữ liệu kho!', 'warning');
 
     const columns = [
         { key: 'name', label: 'Tên Nguyên Liệu' },
@@ -556,7 +556,7 @@ async function exportInventoryLogsToCSV() {
             .order('created_at', { ascending: false });
 
         if (error) throw error;
-        if (!logs || logs.length === 0) { alert('Không có dữ liệu log kho nào!'); return; }
+        if (!logs || logs.length === 0) { showAdminToast('Không có dữ liệu log kho nào!', 'warning'); return; }
 
         let csv = 'Thời gian,Tên nguyên liệu,Loại,Khối lượng thay đổi,Tồn cũ,Tồn mới,Chi tiết\n';
         logs.forEach(l => {
@@ -576,6 +576,6 @@ async function exportInventoryLogsToCSV() {
         link.click();
     } catch (e) {
         console.error(e);
-        alert('Lỗi xuất dữ liệu kho!');
+        showAdminToast('Lỗi xuất dữ liệu kho!', 'error');
     }
 }

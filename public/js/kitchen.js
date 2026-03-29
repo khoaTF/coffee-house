@@ -398,7 +398,7 @@ window.updateOrderStatus = async (orderId, newStatus, btn) => {
 
     } catch (error) {
         console.error("Lỗi cập nhật trạng thái:", error);
-        alert("Lỗi khi cập nhật trạng thái đơn hàng");
+        showRetryToast("Lỗi khi cập nhật trạng thái đơn hàng", 'error');
         if(btn) {
             btn.innerHTML = originalHtml;
             btn.disabled = false;
@@ -597,7 +597,7 @@ window.clearRequest = async (id, btn) => {
     } catch (e) {
         console.error(e);
         btn.disabled = false;
-        alert("Lỗi khi đánh dấu hoàn thành!");
+        showRetryToast("Lỗi khi đánh dấu hoàn thành!", 'error');
     }
 };
 

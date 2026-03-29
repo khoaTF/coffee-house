@@ -142,7 +142,7 @@ window.showTableActions = async (tableNum, tableOrders) => {
             tableActionsModalInstance.hide();
             fetchTablesStatus();
         } catch(e) {
-            alert('Lỗi khi chuyển bàn: ' + e.message);
+            showAdminToast('Lỗi khi chuyển bàn: ' + e.message, 'error');
             newConfirmBtn.disabled = false;
             newConfirmBtn.textContent = 'Chuyển';
         }
@@ -168,7 +168,7 @@ window.showTableActions = async (tableNum, tableOrders) => {
             logAudit('Thanh toán bàn', `Bàn ${tableNum}, ${unpaidOrders.length} đơn`);
             fetchTablesStatus();
         } catch(e) {
-            alert('Lỗi thanh toán: ' + e.message);
+            showAdminToast('Lỗi thanh toán: ' + e.message, 'error');
         }
     });
 
