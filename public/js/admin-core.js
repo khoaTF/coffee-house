@@ -301,6 +301,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (desktopNameEl) desktopNameEl.textContent = staffName;
     if (mobileNameEl) mobileNameEl.textContent = staffName;
 
+    // Display avatar in sidebar
+    const avatarUrl = sessionStorage.getItem('nohope_staff_avatar') || '';
+    const desktopAvatarEl = document.getElementById('desktop-staff-avatar');
+    if (avatarUrl && desktopAvatarEl) {
+        desktopAvatarEl.innerHTML = `<img src="${avatarUrl}" alt="" class="w-full h-full object-cover" onerror="this.onerror=null;this.parentElement.innerHTML='<i class=\\'fa-solid fa-user text-[#C0A062] text-xs\\'></i>';">`;
+    }
+
     const allTabsId = ['orders', 'pos', 'history', 'tables', 'menu', 'inventory', 'restock', 'promo', 'customers', 'staff', 'analytics', 'audit', 'cashflow'];
     let defaultTab = '';
     

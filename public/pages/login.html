@@ -162,6 +162,7 @@
                     sessionStorage.setItem('nohope_staff_auth', 'true');
                     sessionStorage.setItem('nohope_staff_name', data.name || user);
                     sessionStorage.setItem('nohope_permissions', JSON.stringify(data.permissions || []));
+                    sessionStorage.setItem('nohope_staff_avatar', data.avatar_url || '');
                     
                     localStorage.removeItem('cafe_token');
                     localStorage.removeItem('cafe_role');
@@ -216,6 +217,7 @@
                     sessionStorage.setItem('nohope_staff_auth', 'true');
                     sessionStorage.setItem('nohope_staff_name', data.name || 'Nhân viên');
                     sessionStorage.setItem('nohope_permissions', JSON.stringify(data.permissions || []));
+                    sessionStorage.setItem('nohope_staff_avatar', data.avatar_url || '');
                     
                     localStorage.removeItem('cafe_role');
                     localStorage.removeItem('nohope_staff_auth');
