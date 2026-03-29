@@ -31,7 +31,7 @@
         </div>
         <div class="flex gap-4 items-center">
             <div class="hidden sm:flex items-center gap-2 mr-2">
-                <div class="w-8 h-8 rounded-full bg-surface-variant flex items-center justify-center border border-outline-variant">
+                <div id="staff-page-avatar" class="w-8 h-8 rounded-full bg-surface-variant flex items-center justify-center border border-outline-variant overflow-hidden flex-shrink-0">
                     <i class="fa-solid fa-user text-on-surface-variant text-sm"></i>
                 </div>
                 <div class="flex flex-col">
@@ -170,6 +170,12 @@
         const staffName = sessionStorage.getItem('nohope_staff_name') || localStorage.getItem('nohope_staff_name') || 'Nhân viên';
         const staffNameEl = document.getElementById('staff-name-display');
         if (staffNameEl) staffNameEl.textContent = staffName;
+
+        const staffAvatar = sessionStorage.getItem('nohope_staff_avatar') || '';
+        const staffAvatarEl = document.getElementById('staff-page-avatar');
+        if (staffAvatar && staffAvatarEl) {
+            staffAvatarEl.innerHTML = `<img src="${staffAvatar}" alt="" class="w-full h-full object-cover" onerror="this.onerror=null;this.parentElement.innerHTML='<i class=\\'fa-solid fa-user text-on-surface-variant text-sm\\'></i>';">`;
+        }
         
         // STRICT Auth Check via Supabase
         supabase.auth.getSession().then(({ data: { session } }) => {
