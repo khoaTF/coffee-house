@@ -6,6 +6,7 @@
 let posCart = [];
 let posSelectedTable = 'POS';
 let posProductsList = [];
+let posCurrentOptionsItem = null;
 
 window.initPOS = async function() {
     const container = document.getElementById('pos-content');
@@ -79,6 +80,27 @@ window.initPOS = async function() {
                             <i class="fa-solid fa-paper-plane"></i> Gửi đơn hàng
                         </button>
                     </div>
+                </div>
+            </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- POS Options Modal -->
+        <div id="pos-options-modal" class="hidden fixed inset-0 bg-black/80 z-[60] flex items-center justify-center p-4">
+            <div class="bg-[#232018] border border-[#3A3528] rounded-2xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
+                <div class="px-5 py-4 border-b border-[#3A3528] flex justify-between items-center">
+                    <h3 id="pos-options-modal-title" class="font-bold text-[#E8DCC4] text-lg">Tùy chọn</h3>
+                    <button class="text-[#A89F88] hover:text-[#E8DCC4] bg-transparent border-none" onclick="posCloseOptionsModal()">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
+                <div id="pos-options-container" class="p-5 overflow-y-auto custom-scrollbar flex-1 space-y-4">
+                </div>
+                <div class="px-5 py-4 border-t border-[#3A3528] bg-[#1A1814]">
+                    <button class="w-full py-3 rounded-xl font-bold flex justify-center items-center gap-2 hover:opacity-90 transition-opacity text-[#1A1814]" style="background:#C0A062;" onclick="posConfirmOptions()">
+                        <i class="fa-solid fa-check"></i> Xác nhận
+                    </button>
                 </div>
             </div>
         </div>
@@ -163,21 +185,112 @@ window.posSelectTable = function(val) {
 window.posAddToCart = function(productId) {
     const p = posProductsList.find(x => x.id === productId);
     if (!p) return;
+    
+    // Check if it has options (skip combos for POS for simplicity, or handle similarly later if needed)
+    if (p.options && p.options.length > 0) {
+        posOpenOptionsModal(p);
+        return;
+    }
+
     const price = p.promotional_price && isPromoActive(p) ? p.promotional_price : p.price;
-    const existing = posCart.find(c => c.id === productId);
+    const cartKey = productId;
+    const existing = posCart.find(c => c.cartKey === cartKey || c.id === cartKey);
     if (existing) {
         existing.quantity += 1;
     } else {
-        posCart.push({ id: p.id, name: p.name, price, quantity: 1, recipe: p.recipe || [] });
+        posCart.push({ id: p.id, cartKey, name: p.name, price, quantity: 1, recipe: p.recipe || [], selectedOptions: [] });
     }
     posRenderCart();
 };
 
-window.posUpdateQty = function(id, delta) {
-    const item = posCart.find(c => c.id === id);
+window.posGenerateCartKey = function(id, options) {
+    if (!options || options.length === 0) return id;
+    const sorted = options.slice().sort((a,b) => a.optionName.localeCompare(b.optionName));
+    return id + '|' + sorted.map(o => o.choiceName).join('|');
+};
+
+window.posOpenOptionsModal = function(item) {
+    posCurrentOptionsItem = item;
+    document.getElementById('pos-options-modal-title').textContent = item.name;
+    const container = document.getElementById('pos-options-container');
+    container.innerHTML = '';
+    
+    item.options.forEach((opt, optIndex) => {
+        const optName = opt.name || opt.optionName;
+        const group = document.createElement('div');
+        group.className = 'mb-3';
+        group.innerHTML = `<h3 class="text-[#E8DCC4] font-bold mb-2">${window.escapeHTML(optName)}</h3>`;
+        
+        opt.choices.forEach((choice, choiceIndex) => {
+            const choiceName = choice.name || choice.choiceName;
+            const isChecked = choiceIndex === 0 ? 'checked' : '';
+            const priceExtraText = choice.priceExtra > 0 ? `+${choice.priceExtra.toLocaleString('vi-VN')}đ` : '';
+            
+            group.innerHTML += `
+                <label class="flex items-center justify-between p-3 border border-[#3A3528] rounded-xl mb-2 cursor-pointer hover:border-[#C0A062] transition-colors">
+                    <div class="flex items-center gap-3">
+                        <input type="radio" name="pos_opt_${optIndex}" value="${window.escapeHTML(choiceName)}" data-price="${choice.priceExtra}" ${isChecked} class="accent-[#C0A062] w-4 h-4">
+                        <span class="text-[#E8DCC4] text-sm">${window.escapeHTML(choiceName)}</span>
+                    </div>
+                    <span class="text-[#C0A062] text-sm">${priceExtraText}</span>
+                </label>
+            `;
+        });
+        container.appendChild(group);
+    });
+    
+    document.getElementById('pos-options-modal').classList.remove('hidden');
+};
+
+window.posCloseOptionsModal = function() {
+    document.getElementById('pos-options-modal').classList.add('hidden');
+    posCurrentOptionsItem = null;
+};
+
+window.posConfirmOptions = function() {
+    if (!posCurrentOptionsItem) return;
+    
+    const selectedOptions = [];
+    const container = document.getElementById('pos-options-container');
+    posCurrentOptionsItem.options.forEach((opt, optIndex) => {
+        const optName = opt.name || opt.optionName;
+        const selectedRadio = container.querySelector(`input[name="pos_opt_${optIndex}"]:checked`);
+        if (selectedRadio) {
+            selectedOptions.push({
+                optionName: optName,
+                choiceName: selectedRadio.value,
+                priceExtra: parseInt(selectedRadio.dataset.price) || 0
+            });
+        }
+    });
+    
+    const price = posCurrentOptionsItem.promotional_price && isPromoActive(posCurrentOptionsItem) ? posCurrentOptionsItem.promotional_price : posCurrentOptionsItem.price;
+    const cartKey = posGenerateCartKey(posCurrentOptionsItem.id, selectedOptions);
+    
+    const existing = posCart.find(c => c.cartKey === cartKey);
+    if (existing) {
+        existing.quantity += 1;
+    } else {
+        posCart.push({ 
+            id: posCurrentOptionsItem.id, 
+            cartKey, 
+            name: posCurrentOptionsItem.name, 
+            price, 
+            quantity: 1, 
+            recipe: posCurrentOptionsItem.recipe || [],
+            selectedOptions
+        });
+    }
+    
+    posRenderCart();
+    posCloseOptionsModal();
+};
+
+window.posUpdateQty = function(cartKey, delta) {
+    const item = posCart.find(c => c.cartKey === cartKey || c.id === cartKey);
     if (!item) return;
     item.quantity += delta;
-    if (item.quantity <= 0) posCart = posCart.filter(c => c.id !== id);
+    if (item.quantity <= 0) posCart = posCart.filter(c => c.cartKey !== item.cartKey && c.id !== item.id);
     posRenderCart();
 };
 
@@ -193,7 +306,10 @@ function posRenderCart() {
     if (!el) return;
 
     const totalQty = posCart.reduce((s, c) => s + c.quantity, 0);
-    const totalPrice = posCart.reduce((s, c) => s + c.price * c.quantity, 0);
+    const totalPrice = posCart.reduce((s, c) => {
+        const optionsPrice = (c.selectedOptions || []).reduce((sum, o) => sum + o.priceExtra, 0);
+        return s + (c.price + optionsPrice) * c.quantity;
+    }, 0);
 
     if (countEl) countEl.textContent = totalQty;
     if (totalEl) totalEl.textContent = totalPrice.toLocaleString('vi-VN') + ' đ';
@@ -203,19 +319,28 @@ function posRenderCart() {
         return;
     }
 
-    el.innerHTML = posCart.map(c => `
+    el.innerHTML = posCart.map(c => {
+        const optionsPrice = (c.selectedOptions || []).reduce((sum, o) => sum + o.priceExtra, 0);
+        const itemTotal = (c.price + optionsPrice) * c.quantity;
+        const optionsHtml = (c.selectedOptions && c.selectedOptions.length > 0) 
+            ? `<div class="text-xs text-[#A89F88] mt-1">+ ${c.selectedOptions.map(o => window.escapeHTML(o.choiceName)).join(', ')}</div>` 
+            : '';
+            
+        return `
         <div class="flex items-center justify-between gap-2 py-2 border-b border-[#3A3528] last:border-0">
             <div class="flex-1 min-w-0">
                 <div class="text-sm font-semibold text-[#E8DCC4] truncate">${window.escapeHTML(c.name)}</div>
-                <div class="text-xs text-[#C0A062]">${(c.price * c.quantity).toLocaleString('vi-VN')} đ</div>
+                ${optionsHtml}
+                <div class="text-xs text-[#C0A062] mt-1">${itemTotal.toLocaleString('vi-VN')} đ</div>
             </div>
             <div class="flex items-center gap-1 flex-shrink-0">
-                <button class="w-6 h-6 rounded-lg bg-[#3A3528] text-[#E8DCC4] text-xs hover:bg-red-900/40 transition-colors flex items-center justify-center" onclick="posUpdateQty('${c.id}', -1)">−</button>
+                <button class="w-6 h-6 rounded-lg bg-[#3A3528] text-[#E8DCC4] text-xs hover:bg-red-900/40 transition-colors flex items-center justify-center" onclick="posUpdateQty('${c.cartKey || c.id}', -1)">−</button>
                 <span class="w-6 text-center text-sm font-bold text-[#E8DCC4]">${c.quantity}</span>
-                <button class="w-6 h-6 rounded-lg bg-[#3A3528] text-[#E8DCC4] text-xs hover:bg-green-900/40 transition-colors flex items-center justify-center" onclick="posUpdateQty('${c.id}', 1)">+</button>
+                <button class="w-6 h-6 rounded-lg bg-[#3A3528] text-[#E8DCC4] text-xs hover:bg-green-900/40 transition-colors flex items-center justify-center" onclick="posUpdateQty('${c.cartKey || c.id}', 1)">+</button>
             </div>
         </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 window.posSubmitOrder = async function() {
@@ -230,7 +355,10 @@ window.posSubmitOrder = async function() {
     const btn = document.getElementById('pos-submit-btn');
     if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Đang gửi...'; }
 
-    const totalPrice = posCart.reduce((s, c) => s + c.price * c.quantity, 0);
+    const totalPrice = posCart.reduce((s, c) => {
+        const optionsPrice = (c.selectedOptions || []).reduce((sum, o) => sum + o.priceExtra, 0);
+        return s + (c.price + optionsPrice) * c.quantity;
+    }, 0);
     const note = (document.getElementById('pos-order-note')?.value || '').trim();
     const staffName = sessionStorage.getItem('nohope_staff_name') || localStorage.getItem('nohope_staff_name') || 'POS';
 
@@ -245,7 +373,14 @@ window.posSubmitOrder = async function() {
         }
     });
 
-    const items = posCart.map(c => ({ id: c.id, name: c.name, price: c.price, quantity: c.quantity, recipe: c.recipe }));
+    const items = posCart.map(c => ({ 
+        id: c.id, 
+        name: c.name, 
+        price: c.price, 
+        quantity: c.quantity, 
+        recipe: c.recipe,
+        selectedOptions: c.selectedOptions || []
+    }));
 
     const orderPayload = {
         table_number: String(posSelectedTable),
@@ -314,13 +449,20 @@ window.posPrintBill = function(order) {
             <table>
                 <thead><tr><th>Tên món</th><th style="width:50px; text-align:center;">SL</th><th class="text-right">T.Tiền</th></tr></thead>
                 <tbody>
-                    ${order.items.map(item => `
+                    ${order.items.map(item => {
+                        const optionsStr = (item.selectedOptions && item.selectedOptions.length > 0) 
+                            ? `<br><span style="font-size:11px; color:#555;">+ ${item.selectedOptions.map(o => window.escapeHTML(o.choiceName)).join(', ')}</span>` 
+                            : '';
+                        const optionsPrice = (item.selectedOptions || []).reduce((sum, o) => sum + o.priceExtra, 0);
+                        const itemTotal = (item.price + optionsPrice) * item.quantity;
+                        return `
                         <tr>
-                            <td>${window.escapeHTML(item.name)}</td>
+                            <td>${window.escapeHTML(item.name)}${optionsStr}</td>
                             <td style="text-align:center;">${item.quantity}</td>
-                            <td class="text-right">${(item.price * item.quantity).toLocaleString('vi-VN')}đ</td>
+                            <td class="text-right">${itemTotal.toLocaleString('vi-VN')}đ</td>
                         </tr>
-                    `).join('')}
+                        `;
+                    }).join('')}
                 </tbody>
             </table>
             <div class="divider"></div>
