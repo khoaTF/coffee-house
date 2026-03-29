@@ -57,8 +57,7 @@ function renderProductsTable() {
         img.alt = p.name;
         img.onerror = function() {
             this.onerror = null;
-            this.src = '/images/bunny_logo.png';
-            this.className = 'table-avatar object-contain p-1 opacity-50 bg-[#3A3528]';
+            this.outerHTML = '<div class="table-avatar bg-[#3A3528] flex items-center justify-center p-1"><img src="/images/bunny_logo.png" alt="" class="w-full h-full object-contain opacity-50"></div>';
         };
         tdImg.appendChild(img);
 
