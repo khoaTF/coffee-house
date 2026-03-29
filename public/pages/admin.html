@@ -50,6 +50,8 @@
     <!-- PWA Favicons -->
     <link rel="icon" type="image/png" href="/images/bunny_logo.png">
     <link rel="apple-touch-icon" href="/images/bunny_logo.png">
+    <!-- D6: SheetJS for Excel export -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body class="bg-[#1A1814] text-[#E8DCC4] min-h-[100dvh] font-manrope selection:bg-[#C0A062] selection:text-[#1A1814]">
 
@@ -549,6 +551,11 @@
                         <div class="relative">
                             <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-[#A89F88] text-sm"></i>
                             <input type="text" id="history-search-input" placeholder="Tìm kiếm theo bàn, món, mã đơn..." class="form-control bg-[#1A1814] border-[#3A3528] text-[#E8DCC4] rounded-xl ps-9 placeholder-[#A89F88]">
+                        </div>
+                        <div class="flex gap-2 mt-3">
+                            <button class="btn btn-sm rounded-xl font-semibold ms-auto" style="background:#27ae60;color:#fff;" onclick="exportOrdersExcel()">
+                                <i class="fa-solid fa-file-excel me-1"></i>Xuất Excel
+                            </button>
                         </div>
                     </div>
 
