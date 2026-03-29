@@ -5,6 +5,13 @@
 
 async function fetchTablesStatus() {
     try {
+        // C2: Fetch table_count from store_settings dynamically
+        let maxTable = 15;
+        try {
+            const { data: settings } = await supabase.from('store_settings').select('table_count').eq('id', 1).maybeSingle();
+            if (settings && settings.table_count > 0) maxTable = settings.table_count;
+        } catch(_) {}
+
         const { data, error } = await supabase
             .from('orders')
             .select('*')
@@ -20,8 +27,6 @@ async function fetchTablesStatus() {
 
         const grid = document.getElementById('tables-grid');
         grid.innerHTML = '';
-
-        const maxTable = 15;
 
         for (let i = 1; i <= maxTable; i++) {
             const tableOrders = activeOrders.filter(o => o.tableNumber == i);
@@ -87,6 +92,7 @@ async function fetchTablesStatus() {
         console.error('Error fetching table status:', e);
     }
 }
+
 
 window.showTableActions = async (tableNum, tableOrders) => {
     const hasUnpaid = tableOrders.some(o => !o.is_paid);
