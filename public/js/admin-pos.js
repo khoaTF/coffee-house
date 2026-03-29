@@ -4,7 +4,7 @@
 // Dependencies: admin-core.js (products, supabase, showAdminToast, logAudit)
 
 let posCart = [];
-let posSelectedTable = null;
+let posSelectedTable = 'POS';
 let posProductsList = [];
 
 window.initPOS = async function() {
@@ -29,9 +29,9 @@ window.initPOS = async function() {
                 <div class="flex gap-3 mb-4">
                     <div class="flex items-center gap-2 bg-[#232018] border border-[#3A3528] rounded-xl px-4 py-2 flex-shrink-0">
                         <i class="fa-solid fa-chair text-[#C0A062]"></i>
-                        <label class="text-sm text-[#A89F88] font-semibold">Bàn:</label>
+                        <label class="text-sm text-[#A89F88] font-semibold">Đơn:</label>
                         <select id="pos-table-select" class="bg-transparent text-[#E8DCC4] font-bold text-sm focus:outline-none" onchange="posSelectTable(this.value)">
-                            <option value="">-- Chọn bàn --</option>
+                            <option value="POS" selected>Mang đi (POS)</option>
                             ${Array.from({length:20}, (_,i) => `<option value="${i+1}">Bàn ${i+1}</option>`).join('')}
                         </select>
                     </div>
@@ -56,9 +56,9 @@ window.initPOS = async function() {
                     <div class="p-4 border-b border-[#3A3528] flex justify-between items-center">
                         <h5 class="font-bold text-[#F2E8D5] mb-0 flex items-center gap-2">
                             <i class="fa-solid fa-cart-shopping text-[#C0A062]"></i> Giỏ hàng
-                            <span id="pos-cart-count" class="text-xs font-bold bg-[#C0A062] text-[#1A1814] rounded-full px-2 py-0.5">0</span>
+                            <span id="pos-cart-count" class="text-xs font-bold bg-[#1A1814] bg-[#C0A062] rounded-full px-2 py-0.5" style="background-color: #C0A062;">0</span>
                         </h5>
-                        <button class="text-xs text-[#A89F88] hover:text-red-400 transition-colors" onclick="posClearCart()">
+                        <button class="text-xs text-[#A89F88] hover:text-red-400 transition-colors border-0 bg-transparent" onclick="posClearCart()">
                             <i class="fa-solid fa-trash"></i> Xóa
                         </button>
                     </div>
@@ -237,18 +237,22 @@ window.posSubmitOrder = async function() {
     const items = posCart.map(c => ({ id: c.id, name: c.name, price: c.price, quantity: c.quantity, recipe: c.recipe }));
 
     try {
-        const { error } = await supabase.from('orders').insert([{
+        const { data: newOrder, error } = await supabase.from('orders').insert([{
             table_number: String(posSelectedTable),
             items: items,
             total_price: totalPrice,
             order_note: note || null,
-            status: 'Pending',
-            payment_method: 'cash',
-            payment_status: 'unpaid',
-        }]);
+            status: 'Completed',     // POS orders are immediately completed
+            payment_method: 'cash',  // POS orders default to cash
+            payment_status: 'paid',  // POS orders default to paid
+        }]).select().single();
         if (error) throw error;
 
         logAudit('POS Đặt hàng', `Bàn ${posSelectedTable} — ${posCart.length} món — ${totalPrice.toLocaleString('vi-VN')}đ bởi ${staffName}`);
+        
+        // Print bill popup
+        posPrintBill(newOrder || { id: 'TAKEAWAY', table_number: posSelectedTable, items: items, total_price: totalPrice });
+        
         showAdminToast(`Đã gửi đơn bàn ${posSelectedTable} thành công! 🎉`, 'success');
         posCart = [];
         posRenderCart();
@@ -259,4 +263,64 @@ window.posSubmitOrder = async function() {
     } finally {
         if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Gửi đơn hàng'; }
     }
+};
+
+window.posPrintBill = function(order) {
+    const printWindow = window.open('', '_blank', 'width=400,height=600');
+    if (!printWindow) {
+        showAdminToast('Vui lòng cho phép popup để in bill!', 'warning');
+        return;
+    }
+    const d = new Date();
+    const html = `
+        <html>
+        <head>
+            <title>In Bill</title>
+            <style>
+                body { font-family: monospace; padding: 20px; text-align: center; }
+                h2 { margin: 0 0 10px; font-size: 20px; }
+                p { margin: 5px 0; font-size: 14px; }
+                .divider { border-bottom: 1px dashed #000; margin: 15px 0; }
+                table { width: 100%; border-collapse: collapse; text-align: left; }
+                th { border-bottom: 1px dashed #000; padding: 5px 0; font-size: 12px;}
+                td { padding: 5px 0; font-size: 14px; }
+                .text-right { text-align: right; }
+                .total { font-weight: bold; font-size: 16px; margin-top: 15px; text-align: right; }
+            </style>
+        </head>
+        <body>
+            <h2>Nohope Coffee</h2>
+            <p>123 Đường ABC, Quận X, TP.HCM</p>
+            <p>SĐT: 0123 456 789</p>
+            <div class="divider"></div>
+            <p><strong>Ngày:</strong> ${d.toLocaleDateString('vi-VN')} ${d.toLocaleTimeString('vi-VN')}</p>
+            <p><strong>Số/Bàn:</strong> ${window.escapeHTML(order.table_number || 'POS')}</p>
+            <p><strong>Mã đơn:</strong> ${order.id}</p>
+            <div class="divider"></div>
+            <table>
+                <thead><tr><th>Tên món</th><th style="width:50px; text-align:center;">SL</th><th class="text-right">T.Tiền</th></tr></thead>
+                <tbody>
+                    ${order.items.map(item => `
+                        <tr>
+                            <td>${window.escapeHTML(item.name)}</td>
+                            <td style="text-align:center;">${item.quantity}</td>
+                            <td class="text-right">${(item.price * item.quantity).toLocaleString('vi-VN')}đ</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+            <div class="divider"></div>
+            <div class="total">Tổng cộng: ${(order.total_price || 0).toLocaleString('vi-VN')}đ</div>
+            <div class="divider"></div>
+            <p style="font-size:12px;">Cảm ơn quý khách và hẹn gặp lại!</p>
+            <p style="font-size:12px;">Mật khẩu Wifi: <i>nohopecoffee</i></p>
+            <script>
+                window.onload = function() { window.print(); window.setTimeout(window.close, 500); };
+            </script>
+        </body>
+        </html>
+    `;
+    printWindow.document.open();
+    printWindow.document.write(html);
+    printWindow.document.close();
 };

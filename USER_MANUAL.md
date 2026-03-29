@@ -1,76 +1,63 @@
-# Hướng Dẫn Sử Dụng Hệ Thống Urban Brew (Nohope Coffee)
+# Hướng Dẫn & Nguyên Lý Hoạt Động (User Manual & Architecture)
 
-Hệ thống quản lý quán cà phê **Urban Brew** (Coffee House) được chia thành 3 phần chính phục vụ cho 3 đối tượng khác nhau: **Khách hàng (Customer)**, **Quản lý / Thu ngân (Admin / POS)**, và **Bếp / Pha chế (Kitchen)**. Giải pháp tập trung vào mô hình phục vụ tại bàn qua mã QR (Dine-in QR Ordering).
-
----
-
-## 1. Dành cho Khách Hàng (Customer)
-**Giao diện Web App tương thích mọi thiết bị di động. Khách hàng sử dụng bằng cách dùng camera điện thoại quét mã QR được dán tại bàn.**
-
-### 1.1 Quét mã QR & Chọn món
-- **Quét mã:** Khi quét mã QR tại bàn, hệ thống tự động nhận diện số bàn.
-- **Xem Menu:** Khách lướt xem danh sách đồ uống, bánh ngọt được phân chia theo danh mục dễ nhìn. Các món **Best Seller** hoặc **Khuyến mãi** sẽ được làm nổi bật.
-- **Thêm vào giỏ hàng:**
-  - Nhấp vào món để chọn các tuỳ chọn bắt buộc (VD: Size, Lượng đá, Lượng đường).
-  - Nếu món là **Combo/Set Menu**, giao diện sẽ yêu cầu khách chọn đủ thành phần (VD: chọn 1 đồ uống, chọn 1 bánh).
-  - Thêm số lượng và ghi chú riêng (Ví dụ: "Không lấy ống hút").
-
-### 1.2 Đặt hàng & Theo dõi
-- Sau khi chọn xong, vào **Giỏ hàng** kiểm tra lại và bấm **Đặt hàng**.
-- Màn hình sẽ chuyển sang trạng thái theo dõi đơn. Tại đây khách xem được:
-  - Tình trạng: **Đang chờ** ➡️ **Đang chuẩn bị** (Bếp đã nhận) ➡️ **Sẵn sàng** (Nhân viên mang ra).
-- **Gọi thêm món:** Nếu khách muốn gọi thêm, chỉ cần quay lại menu đặt món, hệ thống sẽ gộp đơn mới vào bàn hiện tại.
-
-### 1.3 Thanh toán (Tự phục vụ)
-- Khách nhấn **Thanh toán** trên điện thoại.
-- Lựa chọn phương thức:
-  - **Quét mã QR Chuyển khoản (Ví dụ MoMo/VietQR):** Hệ thống tạo mã QR tự động số tiền. Khách quét mã, sau đó có thể chụp và tải ảnh biên lai giao dịch lên để thu ngân duyệt.
-  - **Tiền mặt / Tại quầy:** Thu ngân sẽ đến tận bàn để thu tiền.
+Tài liệu này không chỉ hướng dẫn thao tác cơ bản mà còn giải thích chi tiết **Nguyên lý hoạt động (Under the hood)**, **Kiến trúc hệ thống**, và **Luồng dữ liệu (Data Flow)** của toàn bộ hệ thống bán hàng đa nền tảng Urban Brew (Nohope Coffee). Phù hợp cho cả Người dùng cuối (Khách hàng), Nhân sự (Bếp, Thu Ngân), và Quản lý cấp cao.
 
 ---
 
-## 2. Dành cho Bếp / Pha Chế (Kitchen)
-**Giao diện được hiển thị trên máy tính bảng hoặc màn hình đặt tại quầy pha chế, tối ưu hoá cho theo dõi luồng công việc thời gian thực.**
+## 1. TỔNG QUAN KIẾN TRÚC HỆ THỐNG (SYSTEM ARCHITECTURE)
 
-### 2.1 Nhận đơn & Chuẩn bị
-- Đơn hàng mới do khách đặt (hoặc thu ngân lên đơn) sẽ ngay lập tức hiện lên màn hình **Bếp**. Âm thanh thông báo (*tít tít*) phát ra để gây sự chú ý.
-- Bếp click vào **"Bắt đầu làm"** (Start) để chuyển đơn sang trạng thái Đang chuẩn bị (Khách cũng sẽ thấy điều này trên điện thoại).
+Hệ thống được thiết kế theo mô hình **Client-Server Real-time**.
+- **Backend (Dữ liệu & Serverless API):** Sử dụng **Supabase** (dựa trên PostgreSQL). Lưu trữ vĩnh viễn hình ảnh qua *Supabase Storage*, đảm bảo dữ liệu toàn vẹn và bảo mật cao.
+- **WebSocket & Real-time:** Sử dụng Supabase Realtime Channel. Các bảng (tables) quan trọng như `orders` (đơn hàng), `inventory_transactions` (giao dịch tồn kho) được theo dõi liên tục. Khi một thay đổi xảy ra trên Database, nó được đẩy xuống mọi thiết bị theo milliseconds mà không cần bấm nút (refresh) tải lại trang.
+- **Phân luồng thông tin (Routing):**
+  - `<domain>/?table=X` dành cho App của Khách Hàng đặt tại trải nghiệm bàn.
+  - `<domain>/admin.html?tab=kitchen` mở khoá dành riêng cho iPad của bộ phận Bếp.
+  - `<domain>/admin.html` giao diện Đầy đủ quyền quản trị cơ sở dữ liệu.
 
-### 2.2 Hoàn thành món
-- Khi pha chế xong, nhân viên bếp click **"Xong"** (Done). Đơn hàng sẽ báo hiệu cho nhân viên phục vụ bê ra bàn.
-- *Lưu ý:* Bếp có quyền đánh dấu "Hủy" một số món trong đơn nếu đột xuất hết nguyên liệu, lệnh hủy sẽ báo về thu ngân.
+---
+
+## 2. NGUYÊN LÝ HOẠT ĐỘNG CÁC TÍNH NĂNG CỐT LÕI
+
+### 2.1 Máy Trạng Thái Của Một Đơn Hàng (Order State Machine)
+Mỗi đơn hàng (Order) là một Entity trải qua vòng đời bảo mật khép kín, ngăn chặn sự mâu thuẫn hệ thống cục bộ:
+
+1. **`pending` (Chờ xử lý):** Khách gửi yêu cầu từ thiết bị. Đơn được ghi (`INSERT`) vào Database. Bếp nhận được "Ping" âm thanh khẩn.
+2. **`preparing` (Đang chuẩn bị):** Bếp bấm "Bắt đầu làm". 
+   - **[QUAN TRỌNG/CỐT LÕI]**: Ngay khoảnh khắc này, Trigger logic nội bộ sẽ truy vấn bảng `recipes` (Công thức thành phần). Hệ thống chạy quy trình trừ tự động khối lượng bột cafe, sữa, ly nắp (`inventory deduction`) trong cơ sở dữ liệu tổng với Timestamp chính xác. Khoản hụt này không thể bị thao túng bởi người dùng trực tiếp. Điện thoại khách chuyển trạng thái "Đang pha chế".
+3. **`ready` (Sẵn sàng phục vụ):** Bếp hoàn tất và bấm "Xong". Báo về trạm bưng bê của nhân viên rảnh rỗi.
+4. **`completed` (Hoàn thành / Tính cước):** Thu ngân xác minh nguồn tiền. Khi bấm đóng đơn, Hệ Thống mở khoá (`Clear`) Bàn đó về trạng thái Free to book. Doanh thu của đơn sẽ được ném vào kho dữ liệu Doanh thu báo cáo.
+5. **`cancelled` (Đã Hủy):** Thu ngân hoặc Bếp buộc huỷ lệnh. Hệ thống áp dụng **Quy trình Hoàn kho (Inventory Rollback)** để phục hồi dữ liệu ban đầu cho các nguyên liệu của đơn hàng bị huỷ.
+
+### 2.2 Xử Lý Đồng Bộ & Nhóm Chỗ Ngồi (Re-Order & Merging Logic)
+- **Tình huống:** Khách đang ở Bàn số 5, mã hoá đơn `order_id` tạm thời là `123`. Khách muốn gọi thêm (Re-order) 1 chiếc bánh ngọt vào lúc sau.
+- **Nguyên lý Xử lý DB:** Khách thực hiện quét tiếp hay click menu. Lúc này, trình duyệt Web App nhận diện Cờ Bàn (Table Flag) vẫn đang kích hoạt. Hệ thống truy vấn chớp nhoáng Bàn 5 có đơn hàng mở không. Ghi nhận là CÓ. Chiếc bánh được `push()` thẳng vào mã đơn `123` mà không làm xuất hiện thêm đơn ảo làm phiền Thu Ngân. Tổng tiền được kích hoạt lệnh Cập Nhật Cộng Dồn Bất Ngờ (Accumulation Script).
+
+### 2.3 Quản Lý Sản Phẩm Phức Nguyên (Options & Combo Topology)
+- Hệ thống hỗ trợ Cấu trúc Vây (Branching): 1 sản phẩm có vô hạn biến thể `options` (Size L + 30K, Sữa đặc + 5K). Giá bán = Current(Base) + Thặng Dư Biến Thể.
+- **Kiểm Soát Nhóm Set Menu (Combo Constraint):** 
+  Khả năng thiết kế Set đồ ăn cấu thành từ Món Phụ (VD: Combo Phở). Admin cài lệnh Tối Thiểu (min=1), Tối Đa (max=3). Kịch bản JavaScript Client-side khoá Cứng (Hard Lock) nút Thêm Vào Giỏ cho đến khi toàn bộ logic do Admin định hình được thoả mãn.
+
+### 2.4 Bảo Toàn Kho Thực Tế (Inventory & Logistics Pipeline)
+Bức tranh chuỗi cung ứng được lập mô hình dưới dạng *Sổ Nợ Kế Toán*:
+- **Nhập Hàng:** Một giao dịch `IN` (Nhập vào) được tạo ở `inventory_transactions`. Cột tồn trữ `stock_quantity` tăng bằng phép `+`.
+- **Xuất / Bán:** Hệ thống sinh giao dịch `OUT` dựa theo liên kết Món-NguyênLiệu. Cột `stock_quantity` giảm (`-`).
+- Việc theo dõi log giao dịch giúp Giám Đốc đối chiếu 100% khi nhân viên kiểm đếm cuối ngày. Hoàn toàn miễn nhiễm sự can thiệp từ thao tác sửa lụi.
 
 ---
 
-## 3. Dành cho Thu Ngân & Quản Lý (Admin)
-**Gắn tại máy chủ POS và trang quản lý hệ thống. Đây là nơi kiểm soát toàn bộ cơ sở dữ liệu và vận hành.**
+## 3. HƯỚNG DẪN ỨNG DỤNG CHO 3 ĐỐI TƯỢNG VẬN HÀNH
 
-### 3.1 Quản lý Đơn hàng (Orders)
-- Xem luồng đơn trực tiếp. Thu ngân thấy các đơn đang từ bếp báo ra.
-- **Thanh toán:** Chốt đơn. Nếu khách chọn trả tiền mặt hoặc chuyển khoản tải biên lai, thu ngân xác nhận đã nhận tiền và đóng đơn. Bàn sẽ được làm trống để đón khách mới.
-- **Gộp bàn/Chuyển bàn:** Thu ngân có thể chuyển đơn từ bàn này sang bàn khác.
-- Có chức năng **Hủy đơn** khi cần thiết. Hủy đơn sẽ tự động đối soát và trả lại kho.
+### 3.1 Giao diện Khách Hàng Mua Sắm (Customer Application)
+1. **Lưu Nhớ Hành Vi (Persistence):** Toàn bộ giỏ hàng `[ {id, name, qtt...} ]` lưu vào `localStorage` của trình duyệt Safari/Chrome. Bạn thoát app, tắt máy điện thoại, ngày mai quét lại QR Code mở bàn cũ (nếu chưa tính tiền) hệ thống sẽ Load lại Giỏ Hàng đã chọn dở.
+2. **Tuỳ Chỉnh Sâu (Deep Config):** Khách chọn ly nước ➡️ Tích dấu cho ít đường ➡️ Bấm xác nhận.
+3. **Mã Thanh Toán Thông Minh (ViệtQR AI):** App liên kết qua hàm Sinh số Tiền, tích hợp `bankID`, tự xuất mã QR chuẩn form Ngân hàng. Khách chuyển xong chụp uỷ nhiệm chi găm (Attach hình ảnh Base64) quăng thẳng lên máy POS giám sát cho nhanh nhất lúc giờ cao điểm.
 
-### 3.2 Quản lý Menu & Combo
-- **Sản phẩm mới:** Khai báo Tên món, Hình ảnh, Giá gốc, Giá bán, Danh mục.
-- **Khuyến mãi tự động:** Đặt Giá Khuyến mãi kèm Khung giờ (Bắt đầu / Kết thúc). Hết giờ tự động về giá cũ.
-- **Tuỳ chọn:** Thêm các thuộc tính (Size M/L, Topping) vào từng sản phẩm.
-- **Set Menu / Combo:** Gắn cờ *Là Set Menu*, sau đó tạo các nhóm lựa chọn và nhúng các món ăn con vào trong Combo.
-- **Công thức (Recipe):** Liên kết món ăn với các nguyên liệu kho để hệ thống trừ kho tự động khi bán.
+### 3.2 Hệ Thống Màn Hình Quầy Bếp (KDS - Kitchen Display System)
+1. **Lắng Nghe Vĩnh Cửu:** Trình duyệt cắm rễ bằng giao thức WebSockets. Không yêu cầu Refresh. Đơn nhảy sẽ ép CPU tạo tiếng *“Ting ting”* dồn dập.
+2. **Hành Động Khối (Batch Action):** Bếp ấn nút "Bắt đầu". Lệnh SQL bay về Data Base thay đổi cờ Status, trong 0.2s đập về máy Khách Hàng chữ *“Bếp Nhận Yêu Cầu”*. 
+3. **Trạm Báo Hết Tạm Thời:** Nếu hết Sữa Tươi, Bếp báo *Sold Out*. API cập nhật Item Status từ `available` -> `sold_out`. App Khách rớt vào màu Xám (Disabled state) không cho phép nhấn.
 
-### 3.3 Quản lý Kho (Inventory)
-- Thêm Nguyên liệu (VD: Cà phê hạt, Sữa tươi) và định lượng (Gram, ml).
-- Hệ thống tự cộng dồn mỗi khi **Nhập kho**.
-- Tự động trừ thẳng vào tồn kho ngay khi đơn hàng được bếp **Xác nhận làm**. Nếu đơn hàng bị Huỷ, hệ thống tự động hoàn lại số nguyên liệu đó.
-- Cảnh báo khi nguyên liệu ở mức thấp.
-
-### 3.4 Quản lý Không gian quán (Tables)
-- Tự do thiết lập danh sách điểm phục vụ (Bàn 1, Bàn 2, Tầng 2, Đang mang đi...).
-- Mỗi bàn đi kèm chức năng **Tạo và in mã QR**. Mã QR quét vào sẽ trỏ thẳng link Menu kèm parameter mã bàn.
-
-### 3.5 Báo cáo & Thống kê (Dashboard)
-- Giao diện Admin trang chủ hiển thị **Doanh thu trong ngày**, **Doanh thu trong tháng**, Tổng số đơn.
-- Các món **Bán chạy nhất** được liệt kê để có chiến lược nhập hàng phù hợp.
-
----
-*Ghi chú thêm: Tài liệu này liên tục được cập nhật. Nếu bạn gặp các lỗi kĩ thuật có thể kiểm tra tab Network hoặc Database trên Supabase hoặc làm mới trình duyệt.*
+### 3.3 Hệ Thống Giao Thức Quản Trị Trưởng (Admin C-Level / Pos Controller)
+1. **Bán Hàng Tại Quầy (POS):** Bypass quy trình QR. Nhân viên đứng POS dùng Tablet ấn Món ném sang Màn Bán Hàng nhỏ, tính tiền ấn chốt bằng tay. Cơ sở dữ liệu chích y chang quy trình Mạng QR kia để thống nhất Tồn kho.
+2. **Khuyến Mãi Mã Động (Discount Core):** Cài hàm "FLASH_SALE_20K". Hệ thống so số tiền Total với mức Sàn do Trưởng cửa hàng đề ra, đúng thuật toán mới cắt giá, giữ nguyên vẹn dữ liệu gốc bằng Cột ảo `final_price`.
+3. **Báo cáo Hợp Giao (OLAP Dashboard):** Dùng lệnh tính toán SQL Views qua hệ lưới PostgREST API lôi toàn bộ lịch sử 1 vòng tháng qua, SUM số tiền ➡️ đổ về DataViz Canvas ngay trên điện thoại Giám Đốc ở giao diện Home Dashboard thời gian thực hiện thời, ko sai 1 đồng nẻ.
