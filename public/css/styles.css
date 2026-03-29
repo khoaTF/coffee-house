@@ -801,7 +801,7 @@ tbody tr:nth-child(n+7) { animation-delay: 350ms; }
 
 /* Base Inputs & Bootstrap Overrides */
 input, select, textarea {
-    color: var(--text-main) !important;
+    color: var(--text-main);
 }
 .modal-content {
     background-color: var(--surface-color) !important;
@@ -817,22 +817,22 @@ input, select, textarea {
     filter: invert(1) grayscale(100%) brightness(200%);
 }
 .form-control, .form-select {
-    background-color: var(--surface-color) !important;
-    color: var(--text-main) !important;
-    border: 1px solid var(--border) !important;
+    background-color: var(--surface-color);
+    color: var(--text-main);
+    border: 1px solid var(--border);
 }
 .form-control:focus, .form-select:focus {
-    background-color: var(--surface-color) !important;
-    color: var(--text-main) !important;
-    border-color: var(--primary) !important;
-    box-shadow: 0 0 0 0.25rem var(--primary-glow) !important;
+    background-color: var(--surface-color);
+    color: var(--text-main);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0.25rem var(--primary-glow);
 }
 .form-label {
-    color: var(--text-main) !important;
+    color: var(--text-main);
 }
 ::placeholder {
-    color: var(--text-muted) !important;
-    opacity: 1 !important;
+    color: var(--text-muted);
+    opacity: 1;
 }
 
 /* ===== DYNAMIC ANIMATIONS & EFFECTS ===== */
