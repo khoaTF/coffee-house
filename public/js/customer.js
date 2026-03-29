@@ -7,6 +7,10 @@ let activeOrderId = null; // Locks the menu
 let trackedOrderId = null; // Updates the banner
 let ingredientStock = {};
 let sessionOrders = [];
+let customerHistoryOrders = [];
+let suggestedItems = [];
+let currentComboItem = null;
+let currentComboSelections = {};
 let currentFeedbackOrderId = null;
 let currentOptionsItem = null; // Tracks item being configured in options modal
 
@@ -20,7 +24,7 @@ let sessionId = sessionStorage.getItem(sessionKey);
 let appliedPromo = null;
 let currentDiscountAmount = 0;
 
-window.currentCustomerPhone = null;
+window.currentCustomerPhone = localStorage.getItem('customerPhone') || null;
 window.currentCustomerPoints = 0;
 window.loyaltyDiscountApplied = false;
 window.upsellShown = false;
@@ -77,6 +81,11 @@ function init() {
     document.getElementById('table-number-display').textContent = TABLE_NUMBER;
     applyAutoDarkMode();
     acquireTableLock();
+    // Re-verify stored phone for loyalty points and trigger history fetch
+    if (window.currentCustomerPhone) {
+        document.getElementById('customer-phone-input').value = window.currentCustomerPhone;
+        verifyCustomerPhone(false);
+    }
 }
 
 // D3 — Auto dark/light mode theo giờ hệ thống
@@ -753,9 +762,19 @@ function closeHistoryModal() {
     if (fab) fab.style.display = 'flex';
 }
 
+function isComboItem(item) {
+    return item.is_combo === true && Array.isArray(item.combo_items) && item.combo_items.length > 0;
+}
+
 function openOptionsModal(itemOrId) {
-    const item = typeof itemOrId === 'string' ? menuItems.find(i => i._id === itemOrId) : itemOrId;
+    const item = typeof itemOrId === 'string' ? menuItems.find(i => i._id === itemOrId || i.id === itemOrId) : itemOrId;
     if (!item) return;
+
+    if (isComboItem(item)) {
+        openComboModal(item);
+        return;
+    }
+
     currentOptionsItem = item;
     document.getElementById('options-modal-title').textContent = item.name;
     const container = document.getElementById('options-container');
@@ -1672,12 +1691,20 @@ async function verifyCustomerPhone() {
             } else {
                 discountBtn.style.display = 'none';
             }
+            
+            // Show history button
+            document.getElementById('view-history-btn').classList.remove('hidden');
+            fetchCustomerHistory(phoneInput);
         } else {
             window.currentCustomerPoints = 0;
             document.getElementById('vip-card-container').style.display = 'none';
             msg.innerHTML = `<i class="fa-solid fa-star"></i> SĐT mới! Bạn sẽ đổi hạng thành viên sau khi thanh toán đơn này.`;
             msg.style.display = 'block';
             discountBtn.style.display = 'none';
+            
+            // Show history button
+            document.getElementById('view-history-btn').classList.remove('hidden');
+            fetchCustomerHistory(phoneInput);
         }
     } catch (e) {
         msg.textContent = 'Lỗi hệ thống: ' + e.message;
