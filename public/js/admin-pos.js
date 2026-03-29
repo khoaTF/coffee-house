@@ -7,6 +7,7 @@ let posCart = [];
 let posSelectedTable = 'POS';
 let posProductsList = [];
 let posCurrentOptionsItem = null;
+let posIngredientStock = {};
 
 window.initPOS = async function() {
     const container = document.getElementById('pos-content');
@@ -121,9 +122,19 @@ window.initPOS = async function() {
 
 async function posLoadProducts() {
     try {
-        const { data, error } = await supabase.from('products').select('*').eq('is_available', true).order('category');
-        if (error) throw error;
-        posProductsList = data || [];
+        const [prodRes, stockRes] = await Promise.all([
+            supabase.from('products').select('*').eq('is_available', true).order('category'),
+            supabase.from('ingredients').select('id, stock')
+        ]);
+        if (prodRes.error) throw prodRes.error;
+        if (stockRes.error) console.error('POS load stock error:', stockRes.error);
+        
+        posProductsList = prodRes.data || [];
+        posIngredientStock = {};
+        if (stockRes.data) {
+            stockRes.data.forEach(i => posIngredientStock[i.id] = i.stock);
+        }
+
         posRenderCategories();
         posRenderProducts(posProductsList);
     } catch(e) {
@@ -168,9 +179,15 @@ function posRenderProducts(list) {
     }
     grid.innerHTML = list.map(p => {
         const price = p.promotional_price && isPromoActive(p) ? p.promotional_price : p.price;
+        const canAddMore = posGetAvailableToAdd(p) > 0;
+        const isOutOfStock = !canAddMore;
+
         return `
-            <div class="card bg-[#232018] border border-[#3A3528] rounded-2xl overflow-hidden cursor-pointer hover:border-[#C0A062] transition-all active:scale-95 group" onclick="posAddToCart('${p.id}')">
-                ${p.image_url ? `<img src="${window.escapeHTML(p.image_url)}" alt="" class="w-full h-24 object-cover" onerror="this.onerror=null; this.outerHTML='<div class=\\'w-full h-24 bg-[#3A3528] flex items-center justify-center p-4\\'><img src=\\'/images/bunny_logo.png\\' alt=\\'\\' class=\\'w-full h-full object-contain opacity-30\\'></div>';">` : '<div class="w-full h-24 bg-[#3A3528] flex items-center justify-center"><i class="fa-solid fa-mug-hot text-[#A89F88] text-2xl"></i></div>'}
+            <div class="card bg-[#232018] border border-[#3A3528] rounded-2xl overflow-hidden cursor-pointer hover:border-[#C0A062] transition-all active:scale-95 group ${isOutOfStock ? 'opacity-50 saturate-50' : ''}" onclick="posAddToCart('${p.id}')">
+                <div class="relative w-full h-24 bg-[#3A3528] flex items-center justify-center">
+                    ${p.image_url ? `<img src="${window.escapeHTML(p.image_url)}" alt="" class="w-full h-full object-cover" onerror="this.onerror=null; this.outerHTML='<i class=\\'fa-solid fa-mug-hot text-[#A89F88] text-2xl\\'></i>';">` : '<i class="fa-solid fa-mug-hot text-[#A89F88] text-2xl"></i>'}
+                    ${isOutOfStock ? '<div class="absolute inset-0 bg-black/50 flex items-center justify-center z-10"><span class="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">Hết hàng</span></div>' : ''}
+                </div>
                 <div class="p-3">
                     <div class="text-sm font-bold text-[#E8DCC4] line-clamp-1 group-hover:text-[#C0A062] transition-colors">${window.escapeHTML(p.name)}</div>
                     <div class="text-sm font-bold text-[#C0A062] mt-1">${price.toLocaleString('vi-VN')} đ</div>
@@ -192,9 +209,53 @@ window.posSelectTable = function(val) {
     posSelectedTable = val || null;
 };
 
+function posGetAvailableToAdd(product) {
+    if (!product.recipe || product.recipe.length === 0) return 999;
+    
+    let usedIngredients = {};
+    posCart.forEach(cartItem => {
+        if (cartItem.recipe) {
+            cartItem.recipe.forEach(req => {
+                const iId = req.ingredientId || req.ingredient_id;
+                usedIngredients[iId] = (usedIngredients[iId] || 0) + (req.quantity * cartItem.quantity);
+            });
+        }
+        if (cartItem.selectedOptions && Array.isArray(cartItem.selectedOptions)) {
+            cartItem.selectedOptions.forEach(opt => {
+                if (opt.recipe && Array.isArray(opt.recipe)) {
+                    opt.recipe.forEach(req => {
+                        const iId = req.ingredientId || req.ingredient_id;
+                        usedIngredients[iId] = (usedIngredients[iId] || 0) + (req.quantity * cartItem.quantity);
+                    });
+                }
+            });
+        }
+    });
+
+    let additionalAllowed = Infinity;
+    product.recipe.forEach(req => {
+        const iId = req.ingredientId || req.ingredient_id;
+        let totalStock = posIngredientStock[iId] || 0;
+        let used = usedIngredients[iId] || 0;
+        let remaining = Math.max(0, totalStock - used);
+        
+        let possible = Math.floor(remaining / req.quantity);
+        if (possible < additionalAllowed) {
+            additionalAllowed = possible;
+        }
+    });
+
+    return additionalAllowed === Infinity ? 999 : additionalAllowed;
+}
+
 window.posAddToCart = function(productId) {
     const p = posProductsList.find(x => x.id === productId);
     if (!p) return;
+    
+    if (posGetAvailableToAdd(p) <= 0) {
+        showAdminToast('Món này đã hết nguyên liệu!', 'warning');
+        return;
+    }
     
     if ((p.options && p.options.length > 0) || (p.is_combo && p.combo_items && p.combo_items.length > 0)) {
         posOpenOptionsModal(p);
@@ -372,6 +433,8 @@ function posRenderCart() {
 
     if (countEl) countEl.textContent = totalQty;
     if (totalEl) totalEl.textContent = totalPrice.toLocaleString('vi-VN') + ' đ';
+
+    posRenderProducts(posProductsList.filter(p => document.getElementById('pos-search')?.value ? p.name.toLowerCase().includes(document.getElementById('pos-search').value.toLowerCase()) : true));
 
     if (posCart.length === 0) {
         el.innerHTML = '<div class="text-center py-8 text-[#A89F88] text-sm">Chưa có món nào</div>';

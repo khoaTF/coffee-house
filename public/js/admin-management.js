@@ -171,6 +171,19 @@ async function saveStaff() {
             if (!data || data.length === 0) {
                 throw new Error("Không thể cập nhật dữ liệu. Có thể do lỗi phân quyền (RLS) hoặc nhân viên không tồn tại.");
             }
+            // Sync avatar if user updates themselves
+            const currentStaffName = sessionStorage.getItem('nohope_staff_name') || localStorage.getItem('nohope_staff_name');
+            if (data[0].name === currentStaffName && data[0].avatar_url) {
+                sessionStorage.setItem('nohope_staff_avatar', data[0].avatar_url);
+                const desktopAvatarEl = document.getElementById('desktop-staff-avatar');
+                if (desktopAvatarEl) {
+                    desktopAvatarEl.innerHTML = `<img src="${data[0].avatar_url}" alt="" class="w-full h-full object-cover" onerror="this.onerror=null;this.parentElement.innerHTML='<i class=\\'fa-solid fa-user text-[#C0A062] text-xs\\'></i>';">`;
+                }
+                const posAvatarEl = document.getElementById('pos-header-avatar');
+                if (posAvatarEl) {
+                    posAvatarEl.innerHTML = `<img src="${data[0].avatar_url}" alt="" class="w-full h-full object-cover" onerror="this.onerror=null;this.parentElement.innerHTML='<i class=\\'fa-solid fa-user text-[#C0A062] text-xs\\'></i>';">`;
+                }
+            }
         } else {
             const { error } = await supabase.from('users').insert([payload]);
             if (error) throw error;
