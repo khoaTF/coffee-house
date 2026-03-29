@@ -35,7 +35,7 @@ function renderStaff(data) {
     tbody.innerHTML = '';
 
     if (data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-muted text-center py-4">Chưa có nhân viên nào.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="text-muted text-center py-4">Chưa có nhân viên nào.</td></tr>';
         return;
     }
 
@@ -50,9 +50,14 @@ function renderStaff(data) {
         const tr = document.createElement('tr');
         const roleLabel = roleMap[s.role] || s.role;
         const badgeClass = s.role === 'admin' ? 'bg-danger' : (s.role === 'manager' ? 'bg-warning' : 'bg-info');
+        const initials = (s.name || '?').charAt(0).toUpperCase();
+        const avatarHtml = s.avatar_url
+            ? `<img src="${window.escapeHTML(s.avatar_url)}" alt="" class="w-9 h-9 rounded-full object-cover border border-[#C0A062]/50" onerror="this.onerror=null;this.outerHTML='<div class=\\'w-9 h-9 rounded-full bg-[#3A3528] border border-[#C0A062]/50 flex items-center justify-center text-[#C0A062] font-bold text-sm\\'>${initials}</div>';">`
+            : `<div class="w-9 h-9 rounded-full bg-[#3A3528] border border-[#C0A062]/50 flex items-center justify-center text-[#C0A062] font-bold text-sm">${initials}</div>`;
 
         tr.innerHTML = `
-            <td class="font-bold text-light"><i class="fa-solid fa-user me-2 text-muted"></i>${s.name}</td>
+            <td class="px-4">${avatarHtml}</td>
+            <td class="font-bold text-light">${window.escapeHTML(s.name)}</td>
             <td><span class="badge ${badgeClass} text-dark rounded-xl px-2 py-1">${roleLabel}</span></td>
             <td class="font-mono text-warning font-bold tracking-widest">${s.pin || '---'}</td>
             <td class="text-end">
@@ -77,6 +82,16 @@ function togglePermissionsBlock() {
 function openStaffModal(id = null) {
     document.getElementById('staff-form').reset();
     document.getElementById('staff-id').value = id || '';
+    document.getElementById('staff-avatar-url').value = '';
+
+    // Reset avatar preview
+    const avatarImg = document.getElementById('staff-avatar-img');
+    const avatarIcon = document.getElementById('staff-avatar-icon');
+    const avatarInput = document.getElementById('staff-avatar-input');
+    avatarImg.classList.add('hidden');
+    avatarImg.src = '';
+    avatarIcon.classList.remove('hidden');
+    if (avatarInput) avatarInput.value = '';
 
     document.querySelectorAll('.perm-cb').forEach(cb => cb.checked = false);
 
@@ -87,6 +102,14 @@ function openStaffModal(id = null) {
             document.getElementById('staff-pin').value = s.pin || '';
             document.getElementById('staff-role').value = s.role || 'staff';
             document.getElementById('staffModalTitle').innerText = 'Sửa thông tin nhân viên';
+            document.getElementById('staff-avatar-url').value = s.avatar_url || '';
+
+            // Show existing avatar
+            if (s.avatar_url) {
+                avatarImg.src = s.avatar_url;
+                avatarImg.classList.remove('hidden');
+                avatarIcon.classList.add('hidden');
+            }
 
             if (s.permissions && Array.isArray(s.permissions)) {
                 s.permissions.forEach(p => {
@@ -127,7 +150,19 @@ async function saveStaff() {
         });
     }
 
-    const payload = { name, pin, role, permissions };
+    // Handle avatar upload
+    let avatar_url = document.getElementById('staff-avatar-url').value || null;
+    const avatarFile = document.getElementById('staff-avatar-input').files[0];
+    if (avatarFile) {
+        try {
+            avatar_url = await uploadStaffAvatar(avatarFile, id || crypto.randomUUID());
+        } catch (e) {
+            console.error('Avatar upload error:', e);
+            if (typeof showAdminToast === 'function') showAdminToast('Lỗi tải ảnh đại diện. Lưu nhân viên không có ảnh.', 'warning');
+        }
+    }
+
+    const payload = { name, pin, role, permissions, avatar_url };
 
     try {
         if (id) {
@@ -143,11 +178,49 @@ async function saveStaff() {
         if (window.staffModalInstance) {
             window.staffModalInstance.hide();
         }
+        if (typeof showAdminToast === 'function') showAdminToast('Đã lưu thông tin nhân viên! 🎉', 'success');
         fetchStaff();
     } catch (e) {
         console.error("Save staff error:", e);
         alert("Lỗi khi lưu thông tin nhân viên: " + (e.message || JSON.stringify(e)));
     }
+}
+
+// --- Avatar Helpers ---
+window.previewStaffAvatar = function(input) {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+        alert('Ảnh quá lớn! Vui lòng chọn ảnh dưới 2MB.');
+        input.value = '';
+        return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const img = document.getElementById('staff-avatar-img');
+        const icon = document.getElementById('staff-avatar-icon');
+        img.src = e.target.result;
+        img.classList.remove('hidden');
+        icon.classList.add('hidden');
+    };
+    reader.readAsDataURL(file);
+};
+
+async function uploadStaffAvatar(file, staffId) {
+    const ext = file.name.split('.').pop().toLowerCase();
+    const filePath = `staff/${staffId}_${Date.now()}.${ext}`;
+
+    const { data, error } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true, contentType: file.type });
+
+    if (error) throw error;
+
+    const { data: urlData } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+    return urlData.publicUrl;
 }
 
 async function deleteStaff(id) {
