@@ -1228,19 +1228,47 @@ function customerAlert(message) {
     });
 }
 
-// Cancel Order
+// Cancel Order (Khách hủy — chỉ cho phép khi Pending)
 window.cancelOrder = async (orderId) => {
-    const confirmed = await customerConfirm('Bạn có chắc chắn muốn hủy đơn hàng này?');
-    if (confirmed) {
-        try {
-            const { error } = await supabase.from('orders').update({ status: 'Cancelled' }).eq('id', orderId);
-            if (error) throw error;
-        } catch (e) {
-             console.error("Cancel order error", e);
-             await customerAlert("Lỗi khi hủy đơn hàng.");
+    const confirmed = await customerConfirm('Hủy đơn hàng này?\nNguyên liệu sẽ được hoàn lại kho tự động.');
+    if (!confirmed) return;
+    try {
+        // Fetch order items + recipe to restore inventory
+        const { data: orderRow } = await supabase.from('orders').select('items, status').eq('id', orderId).maybeSingle();
+        if (!orderRow || orderRow.status !== 'Pending') {
+            await customerAlert('Đơn hàng đang được xử lý, không thể hủy.');
+            return;
         }
+        const { error } = await supabase.from('orders').update({ status: 'Cancelled' }).eq('id', orderId);
+        if (error) throw error;
+
+        // Restore inventory
+        const items = orderRow.items || [];
+        for (const item of items) {
+            const recipe = item.recipe || [];
+            if (!Array.isArray(recipe) || recipe.length === 0) continue;
+            const qty = item.quantity || 1;
+            for (const ingr of recipe) {
+                const ingrId = ingr.ingredient_id || ingr.id;
+                if (!ingrId) continue;
+                const restoreAmt = (ingr.amount || ingr.quantity || 0) * qty;
+                if (restoreAmt <= 0) continue;
+                const { data: cur } = await supabase.from('ingredients').select('stock').eq('id', ingrId).maybeSingle();
+                if (cur) await supabase.from('ingredients').update({ stock: (cur.stock || 0) + restoreAmt }).eq('id', ingrId);
+            }
+        }
+
+        // Update local session
+        const idx = sessionOrders.findIndex(o => o._id === orderId || o.id === orderId);
+        if (idx > -1) { sessionOrders[idx].status = 'Cancelled'; }
+        renderHistoryModal();
+        await customerAlert('Đã hủy đơn hàng thành công.');
+    } catch (e) {
+        console.error('Cancel order error', e);
+        await customerAlert('Lỗi khi hủy đơn hàng. Vui lòng thử lại.');
     }
 };
+
 
 // Handle real-time updates from Supabase
 function handleOrderStatusUpdate(updatedOrderData) {

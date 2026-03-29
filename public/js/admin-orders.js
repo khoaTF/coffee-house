@@ -247,7 +247,7 @@ window.printInvoice = async (orderId) => {
     const order = orderHistory.find(o => String(o._id) === String(orderId));
     if (!order) return;
 
-    // Load from store_settings (with localStorage fallback)
+    // Load store_settings
     let storeSettings = {};
     try {
         const { data } = await supabase.from('store_settings').select('*').eq('id', 1).maybeSingle();
@@ -256,62 +256,97 @@ window.printInvoice = async (orderId) => {
         storeSettings = JSON.parse(localStorage.getItem('store_settings') || '{}');
     }
     const storeName = storeSettings.store_name || 'Nohope Coffee';
-    const storeAddress = storeSettings.store_address ? `Đ/C: ${storeSettings.store_address}` : '';
-    const wifiInfo = storeSettings.wifi_name ? `Wifi: ${storeSettings.wifi_name} / Pass: ${storeSettings.wifi_pass || ''}` : '';
+    const storeAddress = storeSettings.store_address || '';
+    const wifiName = storeSettings.wifi_name || '';
+    const wifiPass = storeSettings.wifi_pass || '';
+    const bankAccNo = storeSettings.bank_acc || '';
+    const bankId = storeSettings.bank_id || 'mb';
 
-    const itemsHtml = order.items.map(i => {
-        const optionNames = i.selectedOptions && i.selectedOptions.length > 0 ? ` (+ ${i.selectedOptions.map(o => o.choiceName).join(', ')})` : '';
-        return `<div>${i.quantity}x ${i.name}${optionNames} - ${(i.price * i.quantity).toLocaleString('vi-VN')}đ</div>`;
+    const subtotal = order.totalPrice || 0;
+    const discount = order.discountAmount || 0;
+    const finalTotal = subtotal;
+    const timeStr = order.createdAt ? new Date(order.createdAt).toLocaleString('vi-VN') : new Date().toLocaleString('vi-VN');
+    const orderIdShort = (order._id || '').substring(0,8).toUpperCase();
+    const payMethodMap = { cash: '💵 Tiền mặt', transfer: '📲 Chuyển khoản' };
+    const payMethod = payMethodMap[order.paymentMethod] || order.paymentMethod || '';
+    const payStatusBg = order.paymentStatus === 'paid' ? '#16a34a' : '#dc2626';
+    const payStatusText = order.paymentStatus === 'paid' ? '✅ Đã Thanh Toán' : '⏳ Chưa Thanh Toán';
+
+    const itemsHtml = (order.items || []).map(i => {
+        const opts = i.selectedOptions && i.selectedOptions.length > 0
+            ? `<div style="font-size:11px;color:#666;padding-left:12px;">↳ ${i.selectedOptions.map(o => o.choiceName).join(', ')}</div>` : '';
+        return `
+            <tr>
+                <td style="padding:5px 4px;border-bottom:1px dashed #e2e8f0;vertical-align:top;">
+                    <div style="font-weight:600;">${i.quantity}× ${window.escapeHTML ? window.escapeHTML(i.name) : i.name}</div>
+                    ${opts}
+                </td>
+                <td style="padding:5px 4px;border-bottom:1px dashed #e2e8f0;text-align:right;white-space:nowrap;vertical-align:top;">${((i.price || 0) * (i.quantity || 1)).toLocaleString('vi-VN')} đ</td>
+            </tr>`;
     }).join('');
 
-    const subtotal = order.totalPrice ? order.totalPrice : 0;
-    const discount = order.discountAmount ? order.discountAmount : 0;
-    const finalTotal = subtotal - discount;
+    const qrUrl = bankAccNo
+        ? `https://img.vietqr.io/image/${bankId}-${bankAccNo}-compact2.jpg?amount=${finalTotal}&addInfo=${encodeURIComponent(orderIdShort)}&accountName=${encodeURIComponent(storeName)}`
+        : '';
 
-    const timeStr = order.createdAt ? new Date(order.createdAt).toLocaleString('vi-VN') : new Date().toLocaleString('vi-VN');
-    const noteHtml = order.orderNote ? `<div style="margin-top: 10px; font-style: italic;">Ghi chú: ${order.orderNote}</div>` : '';
-
-    const printWindow = window.open('', '', 'width=400,height=600');
-    printWindow.document.write(`
-        <html>
-            <head>
-                <title>Hóa Đơn - Bàn ${order.tableNumber}</title>
-                <style>
-                    body { font-family: 'Courier New', Courier, monospace; padding: 20px; font-size: 14px; color: #000; margin: 0; }
-                    .header { text-align: center; border-bottom: 2px dashed #000; padding-bottom: 10px; margin-bottom: 15px; }
-                    .items { margin-bottom: 15px; border-bottom: 2px dashed #000; padding-bottom: 10px; }
-                    .summary { text-align: right; font-size: 14px; margin-bottom: 5px; }
-                    .total { text-align: right; font-weight: bold; font-size: 18px; margin-bottom: 20px; margin-top: 10px; }
-                    .footer { text-align: center; font-size: 12px; }
-                    @media print { @page { margin: 0; } body { width: 80mm; padding: 5mm; } }
-                </style>
-            </head>
-            <body>
-                <div class="header">
-                    <h2 style="margin: 0 0 5px 0;">${storeName}</h2>
-                    <div>${storeAddress}</div>
-                    <div>Hóa đơn thanh toán</div>
-                    <div style="margin-top: 10px;">Bàn số: <strong>${order.tableNumber}</strong></div>
-                    <div>Thời gian: ${timeStr}</div>
-                    <div>Mã đơn: ${(order._id || '').substring(0, 8)}</div>
-                </div>
-                <div class="items">
-                    ${itemsHtml}
-                    ${noteHtml}
-                </div>
-                ${discount > 0 ? `<div class="summary">Giảm giá: -${discount.toLocaleString('vi-VN')} đ</div>` : ''}
-                <div class="total">Tổng cộng: ${finalTotal.toLocaleString('vi-VN')} đ</div>
-                <div class="footer">
-                    <div>${wifiInfo}</div>
-                    <div style="margin-top: 5px;">Cảm ơn quý khách! Hẹn gặp lại.</div>
-                </div>
-            </body>
-        </html>
-    `);
+    const printWindow = window.open('', '_blank', 'width=420,height=720');
+    printWindow.document.write(`<!DOCTYPE html><html lang="vi"><head>
+        <meta charset="UTF-8">
+        <title>Hóa Đơn ${orderIdShort} — ${storeName}</title>
+        <style>
+            * { box-sizing: border-box; margin: 0; padding: 0; }
+            body { font-family: 'Courier New', monospace; font-size: 13px; color: #111; background: #fff; width: 80mm; padding: 8px 6px; }
+            .logo-row { text-align: center; margin-bottom: 6px; }
+            .store-name { font-size: 18px; font-weight: 900; letter-spacing: 1px; }
+            .store-sub { font-size: 11px; color: #555; margin-top: 2px; }
+            .divider-solid { border: none; border-top: 2px solid #111; margin: 8px 0; }
+            .divider-dash { border: none; border-top: 1px dashed #aaa; margin: 6px 0; }
+            .meta-row { display: flex; justify-content: space-between; font-size: 11px; margin: 2px 0; }
+            .items-table { width: 100%; border-collapse: collapse; margin: 6px 0; }
+            .total-section { margin-top: 8px; }
+            .total-row { display: flex; justify-content: space-between; font-size: 12px; margin: 3px 0; }
+            .grand-total { font-size: 17px; font-weight: 900; margin-top: 6px; padding-top: 6px; border-top: 2px solid #111; display:flex; justify-content:space-between; }
+            .pay-status { text-align:center; margin: 8px 0; padding: 5px 10px; border-radius: 6px; font-weight: 700; font-size: 13px; color: #fff; background: ${payStatusBg}; }
+            .footer { text-align: center; font-size: 11px; color: #555; margin-top: 10px; }
+            .qr-img { display: block; margin: 8px auto; width: 90px; height: 90px; }
+            @media print { @page { margin: 0; size: 80mm auto; } body { width: 80mm !important; } }
+        </style>
+    </head><body>
+        <div class="logo-row">
+            <div class="store-name">${storeName}</div>
+            ${storeAddress ? `<div class="store-sub">${storeAddress}</div>` : ''}
+            <div class="store-sub">HÓA ĐƠN BÁN HÀNG</div>
+        </div>
+        <hr class="divider-solid">
+        <div class="meta-row"><span>Mã đơn:</span><span><b>#${orderIdShort}</b></span></div>
+        <div class="meta-row"><span>Bàn số:</span><span><b>Bàn ${order.tableNumber}</b></span></div>
+        <div class="meta-row"><span>Thời gian:</span><span>${timeStr}</span></div>
+        ${payMethod ? `<div class="meta-row"><span>Thanh toán:</span><span>${payMethod}</span></div>` : ''}
+        <hr class="divider-dash">
+        <table class="items-table">${itemsHtml}</table>
+        <hr class="divider-dash">
+        <div class="total-section">
+            ${discount > 0 ? `
+                <div class="total-row"><span>Tạm tính:</span><span>${(subtotal + discount).toLocaleString('vi-VN')} đ</span></div>
+                <div class="total-row" style="color:#dc2626;"><span>Giảm giá:</span><span>-${discount.toLocaleString('vi-VN')} đ</span></div>
+            ` : ''}
+            ${order.orderNote ? `<div class="total-row" style="color:#666;font-style:italic;"><span>Ghi chú:</span><span style="text-align:right;max-width:55%;">${order.orderNote}</span></div>` : ''}
+            <div class="grand-total"><span>TỔNG CỘNG</span><span>${finalTotal.toLocaleString('vi-VN')} đ</span></div>
+        </div>
+        <div class="pay-status">${payStatusText}</div>
+        ${qrUrl ? `<img src="${qrUrl}" class="qr-img" alt="QR Thanh toán">` : ''}
+        <hr class="divider-solid">
+        <div class="footer">
+            ${wifiName ? `<div>📶 WiFi: <b>${wifiName}</b>${wifiPass ? ` / ${wifiPass}` : ''}</div>` : ''}
+            <div style="margin-top:6px;font-size:12px;font-weight:700;">Cảm ơn quý khách!</div>
+            <div>Hẹn gặp lại lần sau 🙏</div>
+        </div>
+    </body></html>`);
     printWindow.document.close();
     printWindow.focus();
-    setTimeout(() => { printWindow.print(); printWindow.close(); }, 200);
+    setTimeout(() => { printWindow.print(); }, 400);
 };
+
 
 // --- History Date Filter ---
 let historyFilterRange = 'today';

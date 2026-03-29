@@ -453,7 +453,8 @@ window.saveStoreSettings = async function(type) {
             store_name: document.getElementById('setting-store-name').value,
             store_address: document.getElementById('setting-store-address').value,
             wifi_name: document.getElementById('setting-wifi-name').value,
-            wifi_pass: document.getElementById('setting-wifi-pass').value
+            wifi_pass: document.getElementById('setting-wifi-pass').value,
+            table_count: parseInt(document.getElementById('setting-table-count')?.value || '15') || 15
         };
     } else if (type === 'bank') {
         updates = {
@@ -501,4 +502,5 @@ window.loadStoreSettings = async function() {
     if (document.getElementById('setting-bank-id')) document.getElementById('setting-bank-id').value = settings.bank_id || '';
     if (document.getElementById('setting-bank-acc')) document.getElementById('setting-bank-acc').value = settings.bank_acc || '';
     if (document.getElementById('setting-bank-name')) document.getElementById('setting-bank-name').value = settings.bank_name || '';
+    if (document.getElementById('setting-table-count')) document.getElementById('setting-table-count').value = settings.table_count || 15;
 };
