@@ -352,6 +352,29 @@ window.updateOrderStatus = async (orderId, newStatus, btn) => {
 
         const { error } = await supabase.from('orders').update({ status: newStatus }).eq('id', orderId);
         if (error) throw error;
+
+        // B3: Hoàn kho tự động khi hủy đơn từ bếp
+        if (newStatus === 'Cancelled') {
+            const order = orders.find(o => o._id === orderId);
+            if (order && order.items) {
+                try {
+                    for (const item of order.items) {
+                        const recipe = item.recipe || [];
+                        if (!Array.isArray(recipe) || recipe.length === 0) continue;
+                        const qty = item.quantity || 1;
+                        for (const ingr of recipe) {
+                            const ingrId = ingr.ingredient_id || ingr.id;
+                            if (!ingrId) continue;
+                            const restoreAmt = (ingr.amount || 0) * qty;
+                            if (restoreAmt <= 0) continue;
+                            const { data: cur } = await supabase.from('ingredients').select('stock').eq('id', ingrId).maybeSingle();
+                            if (cur) await supabase.from('ingredients').update({ stock: (cur.stock || 0) + restoreAmt }).eq('id', ingrId);
+                        }
+                    }
+                } catch(re) { console.warn('Restore inventory warning:', re); }
+            }
+        }
+
     } catch (error) {
         console.error("Lỗi cập nhật trạng thái:", error);
         alert("Lỗi khi cập nhật trạng thái đơn hàng");

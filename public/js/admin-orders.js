@@ -185,21 +185,52 @@ function renderHistoryTable() {
     totalRevenueEl.append(strongGross, spanGross, strongNet, spanNet, strongProfit, spanProfit);
 }
 
+// B3: Hoàn kho nguyên liệu khi hủy đơn
+async function restoreInventoryOnCancel(items) {
+    if (!items || items.length === 0) return;
+    try {
+        for (const item of items) {
+            const recipe = item.recipe || [];
+            if (!Array.isArray(recipe) || recipe.length === 0) continue;
+            const qty = item.quantity || 1;
+            for (const ingr of recipe) {
+                if (!ingr.ingredient_id && !ingr.id) continue;
+                const ingrId = ingr.ingredient_id || ingr.id;
+                const restoreAmt = (ingr.amount || 0) * qty;
+                if (restoreAmt <= 0) continue;
+                const { data: cur } = await supabase.from('ingredients').select('stock').eq('id', ingrId).maybeSingle();
+                if (cur) {
+                    await supabase.from('ingredients').update({ stock: (cur.stock || 0) + restoreAmt }).eq('id', ingrId);
+                }
+            }
+        }
+    } catch(e) {
+        console.warn('Restore inventory warning:', e);
+    }
+}
+
 window.cancelOrder = async (orderId) => {
     const confirmed = await customConfirm(
-        'Bạn có chắc chắn muốn hủy đơn hàng này? (Lưu ý: Bạn cần kiểm tra lại kho thủ công nếu đã trừ nguyên liệu)',
+        'Hủy đơn hàng này? Nguyên liệu đã dùng sẽ được hoàn lại kho tự động.',
         'Hủy Đơn Hàng'
     );
     if (!confirmed) return;
     try {
+        const order = orderHistory.find(o => String(o._id) === String(orderId));
         const { error } = await supabase.from('orders').update({ status: 'Cancelled' }).eq('id', orderId);
         if (error) throw error;
+        // Hoàn kho tự động
+        if (order && order.items) await restoreInventoryOnCancel(order.items);
+        logAudit('Hủy đơn hàng', `Đơn #${orderId.substring(0,8)}`);
+        showAdminToast('Đã hủy đơn và hoàn kho thành công.', 'success');
         fetchHistory();
     } catch (error) {
         console.error(error);
-        alert('Lỗi kết nối máy chủ.');
+        showAdminToast('Lỗi khi hủy đơn hàng.', 'error');
     }
 };
+
+
 
 window.markOrderPaid = async (orderId) => {
     try {

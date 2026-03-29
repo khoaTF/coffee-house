@@ -75,8 +75,15 @@
             </div>
             
             <nav class="p-4 flex-1 overflow-y-auto space-y-2 custom-scrollbar" id="admin-main-nav">
-                <p class="px-4 text-[11px] font-bold text-[#A89F88] uppercase tracking-wider mb-2 mt-2">Quản lý</p>
-                <button class="nav-link bg-transparent border-0 w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 text-[#A89F88] hover:bg-[#3A3528] hover:text-[#E8DCC4] active" onclick="switchTab('menu'); closeSidebarMobile()" id="tab-menu">
+                <p class="px-4 text-[11px] font-bold text-[#A89F88] uppercase tracking-wider mb-2 mt-2">Tổng quan</p>
+                <button class="nav-link bg-transparent border-0 w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 text-[#A89F88] hover:bg-[#3A3528] hover:text-[#E8DCC4] active" onclick="switchTab('dashboard'); closeSidebarMobile()" id="tab-dashboard">
+                    <i class="fa-solid fa-gauge-high w-5 text-center"></i> Dashboard
+                </button>
+                <button class="nav-link bg-transparent border-0 w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 text-[#A89F88] hover:bg-[#3A3528] hover:text-[#E8DCC4]" onclick="switchTab('pos'); closeSidebarMobile()" id="tab-pos">
+                    <i class="fa-solid fa-cash-register w-5 text-center"></i> POS Bán hàng
+                </button>
+                <p class="px-4 text-[11px] font-bold text-[#A89F88] uppercase tracking-wider mb-2 mt-4">Quản lý</p>
+                <button class="nav-link bg-transparent border-0 w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 text-[#A89F88] hover:bg-[#3A3528] hover:text-[#E8DCC4]" onclick="switchTab('menu'); closeSidebarMobile()" id="tab-menu">
                     <i class="fa-solid fa-book-open w-5 text-center"></i> Thực đơn
                 </button>
                 <button class="nav-link bg-transparent border-0 w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 text-[#A89F88] hover:bg-[#3A3528] hover:text-[#E8DCC4]" onclick="switchTab('inventory'); closeSidebarMobile()" id="tab-inventory">
@@ -88,8 +95,9 @@
                 <button class="nav-link bg-transparent border-0 w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 text-[#A89F88] hover:bg-[#3A3528] hover:text-[#E8DCC4]" onclick="switchTab('promo'); closeSidebarMobile()" id="tab-promo">
                     <i class="fa-solid fa-ticket w-5 text-center"></i> Khuyến mãi
                 </button>
-                <button class="nav-link bg-transparent border-0 w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 text-[#A89F88] hover:bg-[#3A3528] hover:text-[#E8DCC4]" onclick="switchTab('history'); closeSidebarMobile()" id="tab-history">
-                    <i class="fa-solid fa-clock-rotate-left w-5 text-center"></i> Đơn hàng
+                <button class="nav-link bg-transparent border-0 w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 text-[#A89F88] hover:bg-[#3A3528] hover:text-[#E8DCC4]" onclick="switchTab('history'); closeSidebarMobile()" id="tab-history">
+                    <span class="flex items-center gap-3"><i class="fa-solid fa-clock-rotate-left w-5 text-center"></i> Đơn hàng</span>
+                    <span id="orders-pending-badge" class="hidden text-xs font-bold bg-red-500 text-white rounded-full px-2 py-0.5 min-w-[20px] text-center">0</span>
                 </button>
                 <button class="nav-link bg-transparent border-0 w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 text-[#A89F88] hover:bg-[#3A3528] hover:text-[#E8DCC4]" onclick="switchTab('shifts'); closeSidebarMobile()" id="tab-shifts">
                     <i class="fa-solid fa-business-time w-5 text-center"></i> Ca làm việc
@@ -184,8 +192,24 @@
                 <!-- KPI Dashboard Cards -->
                 <div id="dashboard-kpi-cards" class="mb-6"></div>
 
+                <!-- Dashboard Section -->
+                <section id="section-dashboard" class="content-section active">
+                    <div id="dashboard-content">
+                        <!-- Populated by loadDashboard() in admin-analytics.js -->
+                        <div class="text-center py-16 text-[#A89F88]"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tải Dashboard...</div>
+                    </div>
+                </section>
+
+                <!-- POS Section -->
+                <section id="section-pos" class="content-section">
+                    <div id="pos-content">
+                        <!-- Populated by initPOS() in admin-pos.js -->
+                        <div class="text-center py-16 text-[#A89F88]"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tải POS...</div>
+                    </div>
+                </section>
+
                 <!-- Menu Management Section -->
-                <section id="section-menu" class="content-section active">
+                <section id="section-menu" class="content-section">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                         <div>
                             <h2 class="font-noto text-2xl font-bold text-[#F2E8D5] mb-1">Thực đơn</h2>
@@ -1357,6 +1381,7 @@
     <script src="/js/admin-management.js?v=3.0"></script>
     <script src="/js/admin-cashflow.js?v=3.0"></script>
     <script src="/js/admin-shifts.js?v=1.0"></script>
+    <script src="/js/admin-pos.js?v=1.0"></script>
 
     <!-- Shift Action Modal -->
     <div class="modal fade" id="shiftActionModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">

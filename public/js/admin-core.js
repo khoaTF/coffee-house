@@ -115,7 +115,11 @@ function switchTab(tabId) {
     });
     document.getElementById(`section-${tabId}`).classList.add('active');
 
-    if (tabId === 'history' || tabId === 'analytics') {
+    if (tabId === 'dashboard') {
+        if (typeof loadDashboard === 'function') loadDashboard();
+    } else if (tabId === 'pos') {
+        if (typeof initPOS === 'function') initPOS();
+    } else if (tabId === 'history' || tabId === 'analytics') {
         fetchHistory();
         if (tabId === 'analytics') fetchFeedbackStats();
     } else if (tabId === 'tables') {
@@ -328,7 +332,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const el = document.getElementById(`tab-${tab}`);
             if (el) el.style.display = '';
         });
-        switchTab('menu');
+        switchTab('dashboard');
     }
 
     // Quick Promo Modal event listeners
@@ -358,6 +362,28 @@ document.addEventListener('DOMContentLoaded', () => {
     // Staff modal init
     const staffEl = document.getElementById('staffModal');
     if (staffEl) staffModalInstance = new bootstrap.Modal(staffEl);
+
+    // B4: Realtime badge for pending orders
+    function subscribeOrdersBadge() {
+        const updateBadge = async () => {
+            try {
+                const { count } = await supabase.from('orders').select('id', { count: 'exact', head: true }).in('status', ['Pending', 'Preparing']);
+                const badge = document.getElementById('orders-pending-badge');
+                if (!badge) return;
+                if (count > 0) {
+                    badge.textContent = count > 99 ? '99+' : count;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+            } catch(e) { console.warn('Badge error:', e); }
+        };
+        updateBadge();
+        supabase.channel('orders-badge-channel')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, updateBadge)
+            .subscribe();
+    }
+    subscribeOrdersBadge();
 
     // Dashboard stats + History filter
     shiftStartTime = new Date();
