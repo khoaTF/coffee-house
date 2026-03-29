@@ -240,7 +240,7 @@ window.markOrderPaid = async (orderId) => {
         fetchHistory();
     } catch (e) {
         console.error(e);
-        alert('Lỗi xác nhận thanh toán.');
+        showAdminToast('Lỗi xác nhận thanh toán.', 'error');
     }
 };
 
@@ -437,7 +437,7 @@ function renderFilteredHistory() {
 // --- Export CSV Utilities ---
 function exportToCSV(rows, columns, filename) {
     if (!rows || rows.length === 0) {
-        alert('Không có dữ liệu để xuất!');
+        showAdminToast('Không có dữ liệu để xuất!', 'warning');
         return;
     }
     const BOM = '\uFEFF';
@@ -464,36 +464,6 @@ function exportToCSV(rows, columns, filename) {
 }
 
 window.exportOrdersToCSV = function() {
-    const data = historyFilteredData.length > 0 ? historyFilteredData : orderHistory;
-    if (!data || data.length === 0) {
-        showAdminToast('Không có dữ liệu để xuất.', 'error');
-        return;
-    }
-    const BOM = '\uFEFF';
-    const headers = ['Mã đơn', 'Thời gian', 'Bàn', 'Các món', 'Tổng tiền (đ)', 'Giảm giá (đ)', 'TT thanh toán', 'Trạng thái'];
-    const rows = data.map(o => [
-        (o._id || '').substring(0, 8),
-        o.createdAt ? new Date(o.createdAt).toLocaleString('vi-VN') : '',
-        `Bàn ${o.tableNumber || '?'}`,
-        (o.items || []).map(i => `${i.quantity}x ${i.name}`).join(' | '),
-        o.totalPrice || 0,
-        o.discountAmount || 0,
-        o.paymentMethod === 'transfer' ? 'Chuyển khoản' : 'Tại quầy',
-        o.status || ''
-    ]);
-    const csvContent = BOM + [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `nohope_orders_${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-    showAdminToast('✅ Đã xuất file CSV thành công!', 'success');
-    logAudit('Xuất CSV đơn hàng', `${data.length} đơn`);
-};
-
-window.exportOrderHistory = function() {
     const columns = [
         { key: 'id_short', label: 'Mã Đơn' },
         { key: 'table_number', label: 'Bàn' },
@@ -523,9 +493,6 @@ window.exportOrderHistory = function() {
     const dateStr = new Date().toISOString().split('T')[0];
     exportToCSV(rows, columns, `don_hang_${dateStr}.csv`);
 };
-
-// Alias
-window.exportOrdersToCSV = window.exportOrderHistory;
 
 // --- Shift Summary ---
 let shiftStartTime = null;

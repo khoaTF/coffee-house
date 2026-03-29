@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "src/app.js",
   "scripts": {
-    "start": "node src/app.js",
+    "start": "node src/server.js",
     "dev": "node src/server.js",
     "test": "jest",
     "build:css": "tailwindcss -i ./src/css/input.css -o ./public/css/index.css --minify",

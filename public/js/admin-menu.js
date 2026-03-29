@@ -489,12 +489,12 @@ async function saveProduct() {
 
     const imageUrl = document.getElementById('prodImg').value;
     if (imageUrl && imageUrl.startsWith('data:')) {
-        alert('Vui lòng nhập URL hình ảnh (bắt đầu bằng https://...) thay vì tải ảnh trực tiếp.\n\nBạn có thể dùng ảnh từ Unsplash, Imgur, hoặc các dịch vụ lưu ảnh miễn phí khác.');
+        showAdminToast('Vui lòng nhập URL hình ảnh (bắt đầu bằng https://...) thay vì tải ảnh trực tiếp.\nBạn có thể dùng ảnh từ Unsplash, Imgur.', 'warning');
         return;
     }
 
     if (!productData.name || isNaN(productData.price)) {
-        alert("Vui lòng điền đầy đủ các thông tin bắt buộc.");
+        showAdminToast("Vui lòng điền đầy đủ các thông tin bắt buộc.", 'warning');
         return;
     }
 
@@ -513,7 +513,7 @@ async function saveProduct() {
         fetchProducts();
     } catch (error) {
         console.error(error);
-        alert("Lưu sản phẩm thất bại.");
+        showAdminToast("Lưu sản phẩm thất bại.", 'error');
     }
 }
 
@@ -576,7 +576,7 @@ async function saveQuickPromo() {
         fetchProducts();
     } catch (e) {
         console.error(e);
-        alert('Cập nhật khuyến mãi thất bại');
+        showAdminToast('Cập nhật khuyến mãi thất bại', 'error');
     }
 }
 
@@ -590,7 +590,7 @@ async function deleteProduct(id) {
         fetchProducts();
     } catch (e) {
         console.error(e);
-        alert("Lỗi kết nối máy chủ.");
+        showAdminToast("Lỗi kết nối máy chủ.", 'error');
     }
 }
 
@@ -604,7 +604,7 @@ async function restoreProduct(id) {
         fetchProducts();
     } catch (e) {
         console.error(e);
-        alert("Lỗi kết nối máy chủ.");
+        showAdminToast("Lỗi kết nối máy chủ.", 'error');
     }
 }
 

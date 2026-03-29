@@ -1132,7 +1132,7 @@ async function placeOrder(method = 'cash') {
 
         // Hiển thị lỗi chi tiết để debug
         const errDetail = error.message || JSON.stringify(error) || 'Lỗi không xác định';
-        alert('Xin lỗi, không thể tạo đơn hàng! Mã lỗi: ' + errDetail);
+        showRetryToast('Xin lỗi, không thể tạo đơn hàng! Mã lỗi: ' + errDetail, 'error');
         
         fetchMenu();
     }
