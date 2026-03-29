@@ -777,33 +777,65 @@
                 <button onclick="document.getElementById('admin-guide-modal').style.display='none'" class="text-[#A89F88] hover:text-[#F2E8D5] bg-transparent border-0"><i class="fa-solid fa-times text-xl"></i></button>
             </div>
             <div class="p-6 overflow-y-auto custom-scrollbar text-[#E8DCC4] space-y-6">
-                <!-- POS -->
-                <div>
-                    <h4 class="font-bold text-lg text-[#C0A062] mb-2"><i class="fa-solid fa-cash-register w-5 text-center"></i> 1. POS Bán hàng</h4>
-                    <p class="text-sm text-[#A89F88]">Sử dụng tab này để tạo đơn hàng trực tiếp cho khách mua mang đi hoặc tại quầy. Bạn có thể thêm món, chỉnh sửa số lượng và in hoá đơn nhanh chóng.</p>
-                </div>
-                <!-- Menu -->
-                <div>
-                    <h4 class="font-bold text-lg text-[#C0A062] mb-2"><i class="fa-solid fa-book-open w-5 text-center"></i> 2. Quản lý Thực đơn & Combo</h4>
-                    <p class="text-sm text-[#A89F88]">Thêm, sửa, xoá đồ uống/món ăn. Check vào "Món Bán Chạy" để món hiện lên top. Bật "Là Set Menu / Combo" nếu bạn muốn gộp nhiều món (VD: combo gà rán + pepsi) để khách chọn cấu hình món con.</p>
-                </div>
-                <!-- Kho -->
-                <div>
-                    <h4 class="font-bold text-lg text-[#C0A062] mb-2"><i class="fa-solid fa-boxes-stacked w-5 text-center"></i> 3. Kho & Nhập hàng</h4>
-                    <ul class="text-sm text-[#A89F88] list-disc pl-5 space-y-1">
-                        <li><strong>Tồn kho:</strong> Thêm nguyên liệu gốc (Cafe, Trà,...). Hệ thống sẽ tự trừ kho khi đơn hàng được bếp xuất kho/nhận làm.</li>
-                        <li><strong>Nhập hàng:</strong> Tạo phiếu nhập khi mua nguyên liệu để hệ thống lưu lại chi phí và tự động cộng dồn số tồn.</li>
+                <!-- Nguyên Lý Hệ Thống -->
+                <div class="bg-[#1A1814] p-4 rounded-xl border border-[#3A3528]">
+                    <h4 class="font-bold text-[13px] uppercase tracking-wider text-[#FF7A00] mb-2"><i class="fa-solid fa-microchip w-5 text-center"></i> Nguyên lý vận hành Cốt Lõi</h4>
+                    <p class="text-sm text-[#A89F88] mb-2">Hệ thống hoạt động trên kiến trúc <strong>Serverless Real-time (Supabase)</strong>. Mọi thao tác từ khách hàng, bếp, hay admin đều được đồng bộ tức thì trên tất cả các thiết bị mà không cần tải lại trang (F5).</p>
+                    <ul class="text-sm text-[#A89F88] list-disc pl-4 space-y-1">
+                        <li><strong>Trừ và Hoàn Kho Tự Động:</strong> Thuật toán kho lắng nghe sát tiến độ đơn hàng. Khi Bếp bấm "Làm", hệ thống soi chiếu Công Thức (Recipes) và tự trừ kho. Nếu đơn bị huỷ (Khách huỷ hoặc Quán huỷ), lệnh <em>Hoàn Trả Kho (Refund)</em> tự động được kích hoạt, đưa lượng nguyên liệu vấp trả lại kho tổng.</li>
+                        <li><strong>Logic nối đơn (Gọi thêm món):</strong> Hệ thống tự gom nhóm các đơn lẻ phát sinh từ cùng 1 mã Bàn (chưa thanh toán). Phục vụ có thể gộp in bill và chốt tổng doanh thu chỉ bằng một cú nhấp chuột.</li>
                     </ul>
                 </div>
-                <!-- Đơn hàng -->
-                <div>
-                    <h4 class="font-bold text-lg text-[#C0A062] mb-2"><i class="fa-solid fa-clock-rotate-left w-5 text-center"></i> 4. Xử lý Đơn hàng</h4>
-                    <p class="text-sm text-[#A89F88]">Danh sách đơn hàng của khách. Đơn từ QR sẽ báo hiệu để bạn kiểm tra và xác nhận. Nhân viên có thể Huỷ đơn hoặc Xác nhận Thanh toán tại tab này.</p>
+                
+                <!-- POS -->
+                <div class="mt-4">
+                    <h4 class="font-bold text-lg text-[#C0A062] mb-1"><i class="fa-solid fa-cash-register w-5 text-center"></i> 1. Trạm POS Bán Hàng (Điểm bán trực tiếp)</h4>
+                    <p class="text-sm text-[#E8DCC4] mb-1"><strong>Chức năng:</strong> Hỗ trợ nhân viên thu ngân tạo đơn thủ công cho khách vãng lai, mua mang đi (Takeaway), không sử dụng luồng QR Code.</p>
+                    <ul class="text-sm text-[#A89F88] list-disc pl-4 space-y-1">
+                        <li><strong>Cách hoạt động:</strong> Chọn món từ lưới menu bên trái, thêm tùy chọn (Ice, Sugar, Topping), thanh toán và hệ thống tự động sinh ID bàn là "POS". Đơn được nhận diện là hoàn tất ngay lập tức (Completed & Paid cash).</li>
+                        <li><strong>Tiện ích:</strong> Sau khi hoàn tất, trình duyệt sẽ tự nhảy Popup in Bill để bàn giao tức thời cho khách.</li>
+                    </ul>
                 </div>
-                <!-- Bàn, QR -->
-                <div>
-                    <h4 class="font-bold text-lg text-[#C0A062] mb-2"><i class="fa-solid fa-qrcode w-5 text-center"></i> 5. Bàn & Mã QR</h4>
-                    <p class="text-sm text-[#A89F88]">Bạn có thể cài đặt số lượng bàn trong phần <strong>Cài đặt</strong>. Sau đó vào tab <strong>Mã QR Bàn</strong> để tiến hành in đồng loạt các mã dán lên mặt bàn.</p>
+
+                <!-- Menu -->
+                <div class="mt-4">
+                    <h4 class="font-bold text-lg text-[#C0A062] mb-1"><i class="fa-solid fa-sitemap w-5 text-center"></i> 2. Quản Trị Thực Đơn (Combo & Lựa chọn)</h4>
+                    <p class="text-sm text-[#E8DCC4] mb-1"><strong>Chức năng:</strong> Kiểm soát giá bán, hình ảnh và đặc biệt là <em>Cấu trúc Combo cực linh hoạt</em>.</p>
+                    <ul class="text-sm text-[#A89F88] list-disc pl-4 space-y-1">
+                        <li><strong>Tuỳ chọn con (Options/Topping):</strong> Có thể tạo ra các nhóm Tùy chọn (VD: Size, Loại hạt) bắt buộc chọn hoặc tuỳ ý. Tính giá chênh lệch.</li>
+                        <li><strong>Ghi đè tuyệt đối:</strong> Đối với Size ly Lớn, bạn có thể thiết lập Công Thức Riêng ghi đè lên công thức nguyên liệu gốc (VD Size gốc dùng 30ml cafe, Size L là 50ml, nhấn bật cờ Ghi Đè Tuyệt Đối để trừ kho chính xác mức 50ml).</li>
+                        <li><strong>Tạo Combo:</strong> Bật cờ "Là Set Menu / Combo", chia thành nhiều nhóm (Nhóm 1: Món chính, Nhóm 2: Nước). Thiết lập Min/Max lựa chọn trong từng nhóm để bắt buộc khách hành xử đúng kịch bản.</li>
+                    </ul>
+                </div>
+
+                <!-- Kho -->
+                <div class="mt-4">
+                    <h4 class="font-bold text-lg text-[#C0A062] mb-1"><i class="fa-solid fa-cubes-stacked w-5 text-center"></i> 3. Quản Trị Kho & Nhập Hàng (Inventory)</h4>
+                    <p class="text-sm text-[#E8DCC4] mb-1"><strong>Chức năng:</strong> Quản lý hao hụt và theo dõi dòng nguyên liệu (Nhập - Xuất - Hoàn).</p>
+                    <ul class="text-sm text-[#A89F88] list-disc pl-4 space-y-1">
+                        <li><strong>Quy tắc bất biến:</strong> Hệ thống không cho phép sửa thông số tồn kho một cách tuỳ tiện. Mọi gia tăng tại cột Tồn phải thông qua chứng từ là <strong>Phiếu Nhập Hàng (Restock)</strong>. Điều này chống nhân viên khai khống kho.</li>
+                        <li><strong>Theo dõi Cost (Giá vốn):</strong> Hệ thống cho phép gán Giá nhập vốn vào Phiếu Nhập giúp bạn đối soát dòng chi. Mọi lệnh bán món từ POS/Bếp tự động làm sụt giảm cột Tồn. Tính chuẩn theo Đơn vị quy chuẩn (mg, ml, gram, pcs).</li>
+                    </ul>
+                </div>
+
+                <!-- Đơn hàng -->
+                <div class="mt-4">
+                    <h4 class="font-bold text-lg text-[#C0A062] mb-1"><i class="fa-solid fa-clock-rotate-left w-5 text-center"></i> 4. Quản trị Chuỗi Trạng Thái (Bàn / Đơn hàng)</h4>
+                    <p class="text-sm text-[#E8DCC4] mb-1"><strong>Chức năng:</strong> Giám sát tiến độ đơn theo thời gian thực vòng đời của món (Life-cycle).</p>
+                    <ul class="text-sm text-[#A89F88] list-disc pl-4 space-y-1">
+                        <li><strong>Vòng đời Bếp:</strong> Chờ Nhận -> Đang Làm -> Xong. Đơn hoàn tất của Bếp sẽ đánh dấu Bàn ở trạng thái Chờ Thanh Toán vòng ngoài của Quản lý.</li>
+                        <li><strong>Nút Chốt Bàn:</strong> Khi khách ra về và đưa thẻ thanh toán, Admin bấm "In/Thanh toán", toàn bộ liên kết Bàn được thả về trạng thái Rỗng, dòng tiền đẩy vào Sổ quỹ để lập Báo cáo.</li>
+                    </ul>
+                </div>
+                
+                <!-- Báo Cáo Sổ Quỹ -->
+                <div class="mt-4">
+                    <h4 class="font-bold text-lg text-[#C0A062] mb-1"><i class="fa-solid fa-chart-line w-5 text-center"></i> 5. Báo cáo Tự động & Sổ Quỹ</h4>
+                    <p class="text-sm text-[#E8DCC4] mb-1"><strong>Chức năng:</strong> Nắm bắt sức khoẻ kinh doanh (OLAP Reports).</p>
+                    <ul class="text-sm text-[#A89F88] list-disc pl-4 space-y-1">
+                        <li><strong>Sổ quỹ linh hoạt:</strong> Được thiết kế cho luồng thu-chi phi truyền thống. Bạn có thể tự tạo Phiếu Thu (VD: Thanh lý phế liệu) hoặc Phiếu Chi (VD: Trả tiền điện, tiền sửa chữa). Sổ quỹ cộng trừ cùng tổng tiền chốt món để ra Doanh Ước tính.</li>
+                        <li><strong>Dashboard (Biểu đồ):</strong> Dữ liệu từ mọi ngóc ngách hội tụ về trang Dashboard. Báo cáo tỷ trọng dòng thu, món bán chạy theo tần suất. Có chức năng xuất (Export EXCEL/CSV) cho Kế toán ngay tại chỗ.</li>
+                    </ul>
                 </div>
             </div>
             <div class="p-4 border-t border-[#3A3528] bg-[#232018] rounded-b-2xl text-end">
