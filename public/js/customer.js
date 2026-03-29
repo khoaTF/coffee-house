@@ -75,8 +75,22 @@ const myOrdersBtn = document.getElementById('my-orders-btn');
 
 function init() {
     document.getElementById('table-number-display').textContent = TABLE_NUMBER;
+    applyAutoDarkMode();
     acquireTableLock();
 }
+
+// D3 — Auto dark/light mode theo giờ hệ thống
+function applyAutoDarkMode() {
+    // Only auto-apply if user hasn't manually set a preference
+    if (localStorage.getItem('theme_manual')) return;
+    const hour = new Date().getHours();
+    const isDark = hour >= 18 || hour < 6;
+    document.documentElement.classList.toggle('dark', isDark);
+}
+// Recheck every 30 minutes
+setInterval(() => {
+    if (!localStorage.getItem('theme_manual')) applyAutoDarkMode();
+}, 30 * 60 * 1000);
 
 function getActiveCategory() {
     const activeDesktopNode = document.querySelector('.category-pill.bg-white');
@@ -251,15 +265,20 @@ function showTableLockedOverlay() {
 // Fetch Menu from Backend
 async function fetchMenu() {
     try {
-        const [prodRes, stockRes, ordersRes] = await Promise.all([
+        const [prodRes, stockRes, ordersRes, settingsRes] = await Promise.all([
             supabase.from('products').select('*').eq('is_available', true),
             supabase.from('ingredients').select('id, stock'),
-            supabase.from('orders').select('*').eq('session_id', sessionId).order('created_at', { ascending: false }).limit(10)
+            supabase.from('orders').select('*').eq('session_id', sessionId).order('created_at', { ascending: false }).limit(10),
+            supabase.from('store_settings').select('open_time, close_time, is_open_override, store_name').eq('id', 1).maybeSingle()
         ]);
 
         if (prodRes.error) throw prodRes.error;
         if (stockRes.error) throw stockRes.error;
         if (ordersRes.error) throw ordersRes.error;
+
+        // D2 — Kiểm tra giờ mở/đóng cửa
+        const storeSettings = settingsRes.data || {};
+        checkStoreHours(storeSettings);
 
         // Map menu items properly id to _id for backward compatibility with existing UI code
         const now = new Date();
@@ -1919,19 +1938,64 @@ window.submitFeedback = async () => {
     }
 }
 
-// Auto-show feedback on completed
+// D4 — Auto-show feedback on completed with "Thank You" celebration
 function checkAndShowFeedback(updatedOrder) {
-    if (updatedOrder.status === 'Completed') {
-        // Check local sessionOrders array instead of sessionStorage
-        if (sessionOrders.some(o => o._id === updatedOrder._id)) {
-            setTimeout(() => {
-                const modal = document.getElementById('feedbackModal');
-                if(modal && modal.classList.contains('hidden')) {
-                    showFeedbackModal();
-                }
-            }, 3000);
-        }
-    }
+    if (updatedOrder.status !== 'Completed') return;
+    if (!sessionOrders.some(o => o._id === updatedOrder._id)) return;
+
+    // Show a "Thank You" toast first, then open feedback modal
+    setTimeout(() => {
+        showThankYouCelebration(() => {
+            currentFeedbackOrderId = updatedOrder._id;
+            showFeedbackModal();
+        });
+    }, 1500);
+}
+
+function showThankYouCelebration(callback) {
+    // Create floating thank you overlay
+    const el = document.createElement('div');
+    el.id = 'thank-you-overlay';
+    el.style.cssText = `
+        position:fixed; inset:0; z-index:10000;
+        background:rgba(0,0,0,0.7); backdrop-filter:blur(4px);
+        display:flex; align-items:center; justify-content:center;
+        animation:fadeIn 0.4s ease;
+    `;
+    el.innerHTML = `
+        <div style="
+            background:linear-gradient(135deg,#232018,#2d2a1e);
+            border:1px solid #C0A062; border-radius:24px;
+            padding:40px 32px; text-align:center; max-width:340px; width:90%;
+            animation:slideUp 0.4s ease;
+        ">
+            <div style="font-size:3.5rem; margin-bottom:12px; animation:bounce 0.6s ease;">☕</div>
+            <h2 style="color:#E8DCC4; font-size:1.6rem; font-weight:800; margin-bottom:8px;">Cảm ơn bạn!</h2>
+            <p style="color:#C0A062; font-weight:700; font-size:1.05rem; margin-bottom:6px;">Đơn hàng đã hoàn thành</p>
+            <p style="color:#A89F88; font-size:0.9rem; margin-bottom:24px;">Chúc bạn thưởng thức ngon miệng 🙏</p>
+            <div style="display:flex; gap:10px; justify-content:center;">
+                <button id="ty-skip-btn" style="
+                    background:transparent; border:1px solid #3A3528;
+                    color:#A89F88; border-radius:12px; padding:10px 20px;
+                    font-size:0.9rem; cursor:pointer;
+                ">Bỏ qua</button>
+                <button id="ty-rate-btn" style="
+                    background:linear-gradient(135deg,#994700,#FF7A00);
+                    border:none; color:#fff; border-radius:12px; padding:10px 24px;
+                    font-size:0.9rem; font-weight:700; cursor:pointer;
+                ">⭐ Đánh giá ngay</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(el);
+
+    const closeEl = () => { el.style.animation = 'fadeOut 0.3s ease forwards'; setTimeout(() => el.remove(), 300); };
+
+    document.getElementById('ty-skip-btn').onclick = closeEl;
+    document.getElementById('ty-rate-btn').onclick = () => { closeEl(); setTimeout(callback, 400); };
+
+    // Auto-close after 8 seconds and open feedback
+    setTimeout(() => { if (document.getElementById('thank-you-overlay')) { closeEl(); setTimeout(callback, 400); } }, 8000);
 }
 
 // --- Language Support ---
@@ -2164,10 +2228,74 @@ window.closeFeedbackPopup = function() {
 const feedbackStyles = document.createElement('style');
 feedbackStyles.textContent = `
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
     @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+    @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
 `;
 document.head.appendChild(feedbackStyles);
+
+// D2 — Kiểm tra giờ mở/đóng cửa quán
+function checkStoreHours(settings) {
+    // is_open_override: true = force open, false = force closed, null = auto
+    if (settings.is_open_override === true) { removeClosedOverlay(); return; }
+    if (settings.is_open_override === false) { showClosedOverlay(settings.store_name || 'Quán'); return; }
+
+    const openTime = settings.open_time || '07:00';
+    const closeTime = settings.close_time || '22:00';
+
+    const now = new Date();
+    const [openH, openM] = openTime.split(':').map(Number);
+    const [closeH, closeM] = closeTime.split(':').map(Number);
+
+    const openMinutes = openH * 60 + openM;
+    const closeMinutes = closeH * 60 + closeM;
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+
+    const isOpen = nowMinutes >= openMinutes && nowMinutes < closeMinutes;
+    if (!isOpen) showClosedOverlay(settings.store_name || 'Quán', openTime, closeTime);
+    else removeClosedOverlay();
+}
+
+function showClosedOverlay(storeName, openTime, closeTime) {
+    let el = document.getElementById('store-closed-overlay');
+    if (!el) {
+        el = document.createElement('div');
+        el.id = 'store-closed-overlay';
+        el.style.cssText = `
+            position:fixed; inset:0; z-index:9999; 
+            background:rgba(0,0,0,0.85); backdrop-filter:blur(6px);
+            display:flex; align-items:center; justify-content:center; flex-direction:column;
+            text-align:center; padding:32px; animation:fadeIn 0.5s ease;
+        `;
+        el.innerHTML = `
+            <div style="max-width:360px;">
+                <div style="font-size:4rem; margin-bottom:16px;">🌙</div>
+                <h2 style="color:#fff;font-size:1.6rem;font-weight:800;margin-bottom:8px;">${storeName}</h2>
+                <p style="color:#aaa;font-size:1rem;margin-bottom:4px;">Quán hiện đang đóng cửa</p>
+                ${openTime ? `<p style="color:#C0A062;font-weight:700;font-size:1.1rem;margin-top:12px;">⏰ Mở cửa lúc ${openTime} – ${closeTime || '?'}</p>` : ''}
+                <p style="color:#666;font-size:0.85rem;margin-top:16px;">Vui lòng quay lại trong giờ phục vụ</p>
+            </div>
+        `;
+        document.body.appendChild(el);
+    }
+}
+
+function removeClosedOverlay() {
+    const el = document.getElementById('store-closed-overlay');
+    if (el) el.remove();
+}
+
+// D3 — Patch nút toggle dark mode thủ công để lưu preference
+document.addEventListener('DOMContentLoaded', () => {
+    const toggleBtns = document.querySelectorAll('[onclick*="dark"]');
+    toggleBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const isDark = document.documentElement.classList.contains('dark');
+            localStorage.setItem('theme_manual', isDark ? 'light' : 'dark');
+        });
+    });
+});
 
 // Start the app
 init();

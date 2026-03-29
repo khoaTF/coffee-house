@@ -702,6 +702,25 @@
                                         <input type="number" id="setting-table-count" min="1" max="100" class="form-control bg-[#1A1814] border-[#3A3528] text-[#E8DCC4] rounded-xl" placeholder="15">
                                         <small class="text-[#A89F88] mt-1 d-block" style="font-size:11px;">Số bàn sẽ hiển thị trong tab Bàn và trang tạo mã QR.</small>
                                     </div>
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-6">
+                                            <label class="form-label text-[#A89F88] font-bold text-xs uppercase"><i class="fa-solid fa-clock me-1"></i> Giờ mở cửa</label>
+                                            <input type="time" id="setting-open-time" class="form-control bg-[#1A1814] border-[#3A3528] text-[#E8DCC4] rounded-xl" value="07:00">
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label text-[#A89F88] font-bold text-xs uppercase"><i class="fa-solid fa-moon me-1"></i> Giờ đóng cửa</label>
+                                            <input type="time" id="setting-close-time" class="form-control bg-[#1A1814] border-[#3A3528] text-[#E8DCC4] rounded-xl" value="22:00">
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label text-[#A89F88] font-bold text-xs uppercase"><i class="fa-solid fa-toggle-on me-1"></i> Trạng thái quán (ghi đè)</label>
+                                        <select id="setting-open-override" class="form-select bg-[#1A1814] border-[#3A3528] text-[#E8DCC4] rounded-xl">
+                                            <option value="auto">🕐 Tự động (theo giờ)</option>
+                                            <option value="open">✅ Mở cửa (ghi đè)</option>
+                                            <option value="closed">🔴 Đóng cửa (ghi đè)</option>
+                                        </select>
+                                        <small class="text-[#A89F88] mt-1 d-block" style="font-size:11px;">Dùng "ghi đè" để mở/đóng cửa thủ công, bỏ qua giờ tự động.</small>
+                                    </div>
                                     <button type="button" class="btn font-bold rounded-xl mt-2 w-100" style="background-color: #3A3528; color: #E8DCC4; border: 1px solid #C0A062;" onclick="saveStoreSettings('general')">Lưu Thông Tin</button>
                                 </form>
 

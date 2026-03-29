@@ -236,6 +236,7 @@ window.markOrderPaid = async (orderId) => {
     try {
         const { error } = await supabase.from('orders').update({ payment_status: 'paid' }).eq('id', orderId);
         if (error) throw error;
+        logAudit('Xác nhận thanh toán', `Đơn #${String(orderId).substring(0,8)}`);
         fetchHistory();
     } catch (e) {
         console.error(e);
