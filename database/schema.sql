@@ -135,6 +135,7 @@ CREATE TABLE IF NOT EXISTS users (
     name TEXT NOT NULL,
     pin TEXT UNIQUE NOT NULL,
     role TEXT DEFAULT 'staff' CHECK (role IN ('staff', 'admin', 'kitchen', 'manager')),
+    avatar_url TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
