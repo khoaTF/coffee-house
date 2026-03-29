@@ -383,9 +383,9 @@ window.updateOrderStatus = async (orderId, newStatus, btn) => {
                         if (!Array.isArray(recipe) || recipe.length === 0) continue;
                         const qty = item.quantity || 1;
                         for (const ingr of recipe) {
-                            const ingrId = ingr.ingredient_id || ingr.id;
+                            const ingrId = ingr.ingredient_id || ingr.ingredientId || ingr.id;
                             if (!ingrId) continue;
-                            const restoreAmt = (ingr.amount || 0) * qty;
+                            const restoreAmt = (ingr.amount || ingr.quantity || 0) * qty;
                             if (restoreAmt <= 0) continue;
                             const { data: cur } = await supabase.from('ingredients').select('stock').eq('id', ingrId).maybeSingle();
                             if (cur) await supabase.from('ingredients').update({ stock: (cur.stock || 0) + restoreAmt }).eq('id', ingrId);
