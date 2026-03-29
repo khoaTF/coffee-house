@@ -20,13 +20,13 @@ body { padding-bottom: 50px; background-color: #0d1117 !important; color: #c9d1d
 @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
 /* Dashboard Dark Theme */
-.card { background-color: #232018 !important; border: 1px solid rgba(255,255,255,0.08) !important; border-radius: 12px !important; }
-.table { --bs-table-bg: transparent; --bs-table-color: #e6edf3; color: #E8DCC4; }
-.table-light { --bs-table-bg: #3A3528; --bs-table-color: #D4AF37; background-color: #3A3528 !important; color: #D4AF37 !important; }
-.table-hover > tbody > tr:hover > * { --bs-table-bg-state: rgba(212,167,106,0.04); color: #e6edf3; }
-.table-hover tbody tr:hover { background-color: rgba(255,255,255,0.05); color: #E8DCC4; }
-td, th { border-bottom-color: rgba(255,255,255,0.06) !important; border-color: #3A3528 !important; font-size: 0.92rem; }
-th { font-weight: 600; text-transform: uppercase; font-size: 0.78rem; letter-spacing: 0.5px; color: #8b949e !important; }
+.card { background-color: #1e1b14 !important; border: 1px solid rgba(255,255,255,0.05) !important; border-radius: 12px !important; }
+.table { --bs-table-bg: transparent; --bs-table-color: #d1c7b0; color: #d1c7b0; }
+.table-light { --bs-table-bg: #2d2921; --bs-table-color: #C0A062; background-color: #2d2921 !important; color: #C0A062 !important; }
+.table-hover > tbody > tr:hover > * { --bs-table-bg-state: rgba(192,160,98,0.04); color: #e6edf3; }
+.table-hover tbody tr:hover { background-color: rgba(255,255,255,0.04); color: #D1C7B0; }
+td, th { border-bottom-color: rgba(255,255,255,0.05) !important; border-color: #2d2921 !important; font-size: 0.92rem; }
+th { font-weight: 600; text-transform: uppercase; font-size: 0.78rem; letter-spacing: 0.5px; color: #A89F88 !important; }
 
 /* Button polish */
 .admin-header .btn { border-radius: 8px; font-size: 0.85rem; font-weight: 500; border-color: rgba(255,255,255,0.15); color: #c9d1d9; }
@@ -58,8 +58,8 @@ h3 { color: #d4a76a; font-size: 1.1rem; margin-bottom: 15px; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background: #3A3528; border-radius: 10px; }
 
 /* Fix Contrasts for Admin Dark Theme */
-.text-dark-id { color: #8b949e !important; font-family: monospace; }
-.text-muted { color: #8b949e !important; }
+.text-dark-id { color: #A89F88 !important; font-family: monospace; }
+.text-muted { color: #A89F88 !important; }
 
 /* Responsive Header Fix */
 @media (max-width: 992px) {

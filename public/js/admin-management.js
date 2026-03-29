@@ -207,8 +207,7 @@ window.previewStaffAvatar = function(input) {
 };
 
 function openCropModal(imageSrc) {
-    const modal = document.getElementById('avatarCropModal');
-    const cropImg = document.getElementById('avatar-crop-image');
+    const cropImg = document.getElementById('staff-cropper-image');
 
     // Destroy previous instance
     if (window._avatarCropper) {
@@ -217,11 +216,16 @@ function openCropModal(imageSrc) {
     }
 
     cropImg.src = imageSrc;
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
+    
+    // Use Bootstrap modal
+    const modalEl = document.getElementById('staffAvatarCropModal');
+    if (!window.staffAvatarCropModalInstance) {
+        window.staffAvatarCropModalInstance = new bootstrap.Modal(modalEl);
+    }
+    window.staffAvatarCropModalInstance.show();
 
-    // Init Cropper after image loads
-    cropImg.onload = function() {
+    // Init Cropper after image loads, delay slightly for modal open animation
+    setTimeout(() => {
         window._avatarCropper = new Cropper(cropImg, {
             aspectRatio: 1,
             viewMode: 1,
@@ -237,10 +241,10 @@ function openCropModal(imageSrc) {
             minCropBoxWidth: 80,
             minCropBoxHeight: 80,
         });
-    };
+    }, 200);
 }
 
-window.confirmAvatarCrop = function() {
+window.applyStaffAvatarCrop = function() {
     if (!window._avatarCropper) return;
 
     const canvas = window._avatarCropper.getCroppedCanvas({
@@ -284,9 +288,9 @@ window.cancelAvatarCrop = function() {
 };
 
 function closeCropModal() {
-    const modal = document.getElementById('avatarCropModal');
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
+    if (window.staffAvatarCropModalInstance) {
+        window.staffAvatarCropModalInstance.hide();
+    }
     if (window._avatarCropper) {
         window._avatarCropper.destroy();
         window._avatarCropper = null;

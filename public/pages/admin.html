@@ -1149,7 +1149,28 @@
                 </div>
                 <div class="modal-footer border-t border-[#3A3528] px-6 py-4">
                     <button type="button" class="btn bg-transparent border border-[#3A3528] text-[#A89F88] hover:bg-[#3A3528] hover:text-[#E8DCC4] rounded-xl font-semibold" data-bs-dismiss="modal">Hủy</button>
-                    <button type="button" class="btn btn-primary rounded-xl font-semibold" style="background-color: #C0A062; border-color: #C0A062; color: #1A1814;" onclick="saveStaff()">Lưu nhân viên</button>
+                    <button type="button" class="btn btn-primary rounded-xl font-semibold bg-[#C0A062] border-[#C0A062] text-[#1A1814] hover:bg-[#D4AF37] hover:border-[#D4AF37]" onclick="saveStaff()">Lưu nhân viên</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Staff Avatar Crop Modal -->
+    <div class="modal fade" id="staffAvatarCropModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-[#1A1814] border border-[#3A3528] rounded-2xl shadow-xl">
+                <div class="modal-header border-b border-[#3A3528] px-6 py-4">
+                    <h5 class="modal-title font-noto font-bold text-[#F2E8D5]">Chỉnh sửa ảnh đại diện</h5>
+                    <button type="button" class="btn-close btn-close-white opacity-50 hover:opacity-100" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0 bg-[#232018]">
+                    <div style="max-height: 400px; display: flex; justify-content: center; background: #000;">
+                        <img id="staff-cropper-image" src="" style="max-width: 100%; max-height: 400px;">
+                    </div>
+                </div>
+                <div class="modal-footer border-t border-[#3A3528] px-6 py-4">
+                    <button type="button" class="btn bg-transparent border border-[#3A3528] text-[#A89F88] hover:bg-[#3A3528] hover:text-[#E8DCC4] rounded-xl font-semibold" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary rounded-xl font-semibold bg-[#C0A062] border-[#C0A062] text-[#1A1814] hover:bg-[#D4AF37] hover:border-[#D4AF37]" onclick="applyStaffAvatarCrop()">Cắt ảnh</button>
                 </div>
             </div>
         </div>

@@ -302,10 +302,26 @@ document.addEventListener('DOMContentLoaded', () => {
     if (mobileNameEl) mobileNameEl.textContent = staffName;
 
     // Display avatar in sidebar
-    const avatarUrl = sessionStorage.getItem('nohope_staff_avatar') || '';
     const desktopAvatarEl = document.getElementById('desktop-staff-avatar');
-    if (avatarUrl && desktopAvatarEl) {
-        desktopAvatarEl.innerHTML = `<img src="${avatarUrl}" alt="" class="w-full h-full object-cover" onerror="this.onerror=null;this.parentElement.innerHTML='<i class=\\'fa-solid fa-user text-[#C0A062] text-xs\\'></i>';">`;
+    const initAvatarUrl = sessionStorage.getItem('nohope_staff_avatar') || '';
+    if (initAvatarUrl && desktopAvatarEl) {
+        desktopAvatarEl.innerHTML = `<img src="${initAvatarUrl}" alt="" class="w-full h-full object-cover" onerror="this.onerror=null;this.parentElement.innerHTML='<i class=\\'fa-solid fa-user text-[#C0A062] text-xs\\'></i>';">`;
+    }
+
+    // Refresh avatar from DB seamlessly
+    if (staffName && staffName !== 'Administrator' && staffName !== 'Nhân viên') {
+        supabase.from('users').select('avatar_url').eq('name', staffName).maybeSingle().then(({data}) => {
+            if (data && data.avatar_url) {
+                sessionStorage.setItem('nohope_staff_avatar', data.avatar_url);
+                if (desktopAvatarEl) {
+                    desktopAvatarEl.innerHTML = `<img src="${data.avatar_url}" alt="" class="w-full h-full object-cover" onerror="this.onerror=null;this.parentElement.innerHTML='<i class=\\'fa-solid fa-user text-[#C0A062] text-xs\\'></i>';">`;
+                }
+                const posAvatarEl = document.getElementById('pos-header-avatar');
+                if (posAvatarEl) {
+                    posAvatarEl.innerHTML = `<img src="${data.avatar_url}" alt="" class="w-full h-full object-cover" onerror="this.onerror=null;this.parentElement.innerHTML='<i class=\\'fa-solid fa-user text-[#C0A062] text-xs\\'></i>';">`;
+                }
+            }
+        });
     }
 
     const allTabsId = ['orders', 'pos', 'history', 'tables', 'menu', 'inventory', 'restock', 'promo', 'customers', 'staff', 'analytics', 'audit', 'cashflow'];
