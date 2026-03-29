@@ -138,7 +138,7 @@ function posRenderProducts(list) {
         const price = p.promotional_price && isPromoActive(p) ? p.promotional_price : p.price;
         return `
             <div class="card bg-[#232018] border border-[#3A3528] rounded-2xl overflow-hidden cursor-pointer hover:border-[#C0A062] transition-all active:scale-95 group" onclick="posAddToCart('${p.id}')">
-                ${p.image_url ? `<img src="${window.escapeHTML(p.image_url)}" alt="" class="w-full h-24 object-cover">` : '<div class="w-full h-24 bg-[#3A3528] flex items-center justify-center"><i class="fa-solid fa-mug-hot text-[#A89F88] text-2xl"></i></div>'}
+                ${p.image_url ? `<img src="${window.escapeHTML(p.image_url)}" alt="" class="w-full h-24 object-cover" onerror="this.onerror=null; this.src='/images/bunny_logo.png'; this.className='w-full h-24 object-contain p-4 opacity-30 bg-[#3A3528]';">` : '<div class="w-full h-24 bg-[#3A3528] flex items-center justify-center"><i class="fa-solid fa-mug-hot text-[#A89F88] text-2xl"></i></div>'}
                 <div class="p-3">
                     <div class="text-sm font-bold text-[#E8DCC4] line-clamp-1 group-hover:text-[#C0A062] transition-colors">${window.escapeHTML(p.name)}</div>
                     <div class="text-sm font-bold text-[#C0A062] mt-1">${price.toLocaleString('vi-VN')} đ</div>

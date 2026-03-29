@@ -55,6 +55,11 @@ function renderProductsTable() {
         img.src = imgUrl;
         img.className = 'table-avatar';
         img.alt = p.name;
+        img.onerror = function() {
+            this.onerror = null;
+            this.src = '/images/bunny_logo.png';
+            this.className = 'table-avatar object-contain p-1 opacity-50 bg-[#3A3528]';
+        };
         tdImg.appendChild(img);
 
         // Info Cell
