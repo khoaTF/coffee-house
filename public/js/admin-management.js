@@ -454,8 +454,15 @@ window.saveStoreSettings = async function(type) {
             store_address: document.getElementById('setting-store-address').value,
             wifi_name: document.getElementById('setting-wifi-name').value,
             wifi_pass: document.getElementById('setting-wifi-pass').value,
-            table_count: parseInt(document.getElementById('setting-table-count')?.value || '15') || 15
+            table_count: parseInt(document.getElementById('setting-table-count')?.value || '15') || 15,
+            open_time: document.getElementById('setting-open-time')?.value || '07:00',
+            close_time: document.getElementById('setting-close-time')?.value || '22:00'
         };
+        const overrideEl = document.getElementById('setting-open-override');
+        if (overrideEl) {
+            const val = overrideEl.value;
+            updates.is_open_override = val === 'open' ? true : val === 'closed' ? false : null;
+        }
     } else if (type === 'bank') {
         updates = {
             bank_id: document.getElementById('setting-bank-id').value,
@@ -477,6 +484,7 @@ window.saveStoreSettings = async function(type) {
     const newSettings = { ...existing, ...updates };
     localStorage.setItem('store_settings', JSON.stringify(newSettings));
 
+    if(typeof logAudit === 'function') logAudit('Cập nhật cài đặt', `Loại: ${type}`);
     if(typeof showAdminToast === 'function') showAdminToast(`Đã lưu thiết lập ${type === 'general' ? 'thông tin' : 'thanh toán'} thành công!`, 'success');
     else alert('Đã lưu cài đặt!');
 };
@@ -503,4 +511,10 @@ window.loadStoreSettings = async function() {
     if (document.getElementById('setting-bank-acc')) document.getElementById('setting-bank-acc').value = settings.bank_acc || '';
     if (document.getElementById('setting-bank-name')) document.getElementById('setting-bank-name').value = settings.bank_name || '';
     if (document.getElementById('setting-table-count')) document.getElementById('setting-table-count').value = settings.table_count || 15;
+    if (document.getElementById('setting-open-time')) document.getElementById('setting-open-time').value = settings.open_time || '07:00';
+    if (document.getElementById('setting-close-time')) document.getElementById('setting-close-time').value = settings.close_time || '22:00';
+    if (document.getElementById('setting-open-override')) {
+        const ov = settings.is_open_override;
+        document.getElementById('setting-open-override').value = ov === true ? 'open' : ov === false ? 'closed' : 'auto';
+    }
 };
