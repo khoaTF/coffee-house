@@ -132,7 +132,8 @@ function renderHistoryTable() {
         tdStatus.appendChild(paymentBadge);
 
         const tdAction = document.createElement('td');
-        tdAction.className = 'text-end action-cell';
+        tdAction.className = 'action-cell';
+        tdAction.style.cssText = 'white-space:nowrap; text-align:right; vertical-align:middle;';
 
         if (['Pending', 'Preparing', 'Ready'].includes(order.status)) {
             const btn = document.createElement('button');
@@ -140,16 +141,18 @@ function renderHistoryTable() {
             btn.textContent = 'Hủy';
             btn.onclick = () => cancelOrder(order._id);
             tdAction.appendChild(btn);
+        }
 
-            if (order.paymentStatus !== 'paid') {
-                const btnPaid = document.createElement('button');
-                btnPaid.className = 'btn btn-sm btn-success ms-1';
-                btnPaid.innerHTML = '<i class="fa-solid fa-check"></i> Thu tiền';
-                btnPaid.title = "Xác nhận đã nhận tiền (Tiền mặt/Chuyển khoản)";
-                btnPaid.onclick = () => markOrderPaid(order._id);
-                tdAction.appendChild(btnPaid);
-            }
-        } else if (order.status === 'Completed') {
+        if (order.status !== 'Cancelled' && order.paymentStatus !== 'paid') {
+            const btnPaid = document.createElement('button');
+            btnPaid.className = 'btn btn-sm btn-success ms-1';
+            btnPaid.innerHTML = '<i class="fa-solid fa-check"></i> Thu tiền';
+            btnPaid.title = "Xác nhận đã nhận tiền (Tiền mặt/Chuyển khoản)";
+            btnPaid.onclick = () => markOrderPaid(order._id);
+            tdAction.appendChild(btnPaid);
+        }
+
+        if (order.status === 'Completed') {
             const btnPrint = document.createElement('button');
             btnPrint.className = 'btn btn-sm btn-outline-secondary ms-1';
             btnPrint.innerHTML = '<i class="fa-solid fa-print"></i> In Bill';
@@ -234,13 +237,40 @@ window.cancelOrder = async (orderId) => {
 
 window.markOrderPaid = async (orderId) => {
     try {
-        const { error } = await supabase.from('orders').update({ payment_status: 'paid' }).eq('id', orderId);
-        if (error) throw error;
-        logAudit('Xác nhận thanh toán', `Đơn #${String(orderId).substring(0,8)}`);
+        // 1. Lấy thông tin đơn hàng
+        const order = orderHistory.find(o => o._id === orderId || o.id === orderId);
+        if (!order) throw new Error('Không tìm thấy đơn hàng');
+
+        // 2. Cập nhật payment_status = 'paid' trên orders table
+        const { error: updateErr } = await supabase
+            .from('orders')
+            .update({ payment_status: 'paid' })
+            .eq('id', orderId);
+        if (updateErr) throw updateErr;
+
+        // 3. Ghi giao dịch vào cash_transactions để cập nhật Sổ Quỹ
+        const amount = order.totalPrice || order.total_price || 0;
+        if (amount > 0) {
+            const orderIdShort = String(orderId).substring(0, 8);
+            const staffName = sessionStorage.getItem('nohope_staff_name') || localStorage.getItem('nohope_staff_name') || 'Admin';
+            const { error: txErr } = await supabase
+                .from('cash_transactions')
+                .insert({
+                    type: 'income',
+                    amount: amount,
+                    description: `Thu tiền đơn #${orderIdShort} (Bàn ${order.tableNumber || order.table_number || '?'})`,
+                    category: 'order_payment',
+                    created_by: staffName
+                });
+            if (txErr) console.warn('Không ghi được Sổ Quỹ:', txErr.message);
+        }
+
+        logAudit('Xác nhận thanh toán', `Đơn #${String(orderId).substring(0,8)} - ${(order.totalPrice||0).toLocaleString('vi-VN')}đ`);
+        showAdminToast(`✅ Đã thu tiền đơn #${String(orderId).substring(0,8)} — ${(order.totalPrice||0).toLocaleString('vi-VN')}đ`, 'success');
         fetchHistory();
     } catch (e) {
         console.error(e);
-        showAdminToast('Lỗi xác nhận thanh toán.', 'error');
+        showAdminToast('Lỗi xác nhận thanh toán: ' + e.message, 'error');
     }
 };
 
