@@ -268,6 +268,9 @@ window.markOrderPaid = async (orderId) => {
         logAudit('Xác nhận thanh toán', `Đơn #${String(orderId).substring(0,8)} - ${(order.totalPrice||0).toLocaleString('vi-VN')}đ`);
         showAdminToast(`✅ Đã thu tiền đơn #${String(orderId).substring(0,8)} — ${(order.totalPrice||0).toLocaleString('vi-VN')}đ`, 'success');
         fetchHistory();
+        // Refresh dashboard KPI ngay lập tức
+        if (typeof renderDashboardStats === 'function') renderDashboardStats();
+        if (typeof loadDashboard === 'function') loadDashboard();
     } catch (e) {
         console.error(e);
         showAdminToast('Lỗi xác nhận thanh toán: ' + e.message, 'error');
