@@ -42,7 +42,7 @@ function renderAnalytics() {
     const itemSales = {};
 
     orderHistory.forEach(o => {
-        if (o.status !== 'Completed' && o.status !== 'Ready') return;
+        if (o.paymentStatus !== 'paid' || o.status === 'Cancelled') return;
 
         const d = new Date(o.createdAt);
         if (d >= startDate && d <= endDate) {
@@ -245,7 +245,7 @@ async function renderDashboardStats() {
 
         const total = todayOrders?.length || 0;
         const pending = todayOrders?.filter(o => o.status === 'Pending' || o.status === 'Preparing').length || 0;
-        const revenue = todayOrders?.filter(o => o.status === 'Completed').reduce((s, o) => s + (o.total_price || 0), 0) || 0;
+        const revenue = todayOrders?.filter(o => o.payment_status === 'paid' && o.status !== 'Cancelled').reduce((s, o) => s + (o.total_price || 0), 0) || 0;
         const activeTables = tablesData?.filter(t => t.status === 'occupied').length || 0;
 
         container.innerHTML = `
@@ -303,13 +303,13 @@ async function loadDashboard() {
 
         const [{ data: todayOrders }, { data: weekOrders }, { data: lowStock }, { data: pendingOrders }] = await Promise.all([
             supabase.from('orders').select('*').gte('created_at', todayStart.toISOString()).lte('created_at', todayEnd.toISOString()),
-            supabase.from('orders').select('*').gte('created_at', weekStart.toISOString()).eq('status', 'Completed'),
+            supabase.from('orders').select('*').gte('created_at', weekStart.toISOString()).eq('payment_status', 'paid').neq('status', 'Cancelled'),
             supabase.from('ingredients').select('name, stock, low_stock_threshold').lt('stock', supabase.raw ? 1 : Number.MAX_SAFE_INTEGER),
             supabase.from('orders').select('id').in('status', ['Pending', 'Preparing'])
         ]);
 
-        const completedToday = (todayOrders || []).filter(o => o.status === 'Completed');
-        const revenueToday = completedToday.reduce((s, o) => s + (o.total_price || 0), 0);
+        const revenueOrdersToday = (todayOrders || []).filter(o => o.payment_status === 'paid' && o.status !== 'Cancelled');
+        const revenueToday = revenueOrdersToday.reduce((s, o) => s + (o.total_price || 0), 0);
         const orderCountToday = (todayOrders || []).filter(o => o.status !== 'Cancelled').length;
         const pendingCount = pendingOrders ? pendingOrders.length : 0;
 
