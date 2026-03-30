@@ -68,7 +68,7 @@ function renderHistoryTable() {
         const total = order.totalPrice || 0;
         const discount = order.discountAmount || 0;
 
-        if (order.status === 'Completed') {
+        if (order.paymentStatus === 'paid' && order.status !== 'Cancelled') {
             netRevenue += total;
             grossRevenue += (total + discount);
             totalProfit += (order.profit || 0);
@@ -504,9 +504,10 @@ window.openShiftSummary = async function() {
 
     const shiftOrders = orderHistory.filter(o => new Date(o.createdAt) >= shiftStartTime);
     const completed = shiftOrders.filter(o => o.status === 'Completed');
-    const totalRevenue = completed.reduce((s, o) => s + (o.totalPrice || 0), 0);
-    const cashRevenue = completed.filter(o => o.paymentMethod !== 'transfer').reduce((s, o) => s + (o.totalPrice || 0), 0);
-    const transferRevenue = completed.filter(o => o.paymentMethod === 'transfer').reduce((s, o) => s + (o.totalPrice || 0), 0);
+    const paidOrders = shiftOrders.filter(o => o.paymentStatus === 'paid' && o.status !== 'Cancelled');
+    const totalRevenue = paidOrders.reduce((s, o) => s + (o.totalPrice || 0), 0);
+    const cashRevenue = paidOrders.filter(o => o.paymentMethod !== 'transfer').reduce((s, o) => s + (o.totalPrice || 0), 0);
+    const transferRevenue = paidOrders.filter(o => o.paymentMethod === 'transfer').reduce((s, o) => s + (o.totalPrice || 0), 0);
     const cancelled = shiftOrders.filter(o => o.status === 'Cancelled').length;
 
     const staffName = sessionStorage.getItem('nohope_staff_name') || localStorage.getItem('nohope_staff_name') || 'Nhân viên';

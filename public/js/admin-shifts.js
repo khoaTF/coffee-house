@@ -294,13 +294,14 @@ async function openCloseShiftModal() {
     if (!currentShift) return;
 
     try {
-        const { data: orders, error } = await supabase
+        const { data: allOrders, error } = await supabase
             .from('orders')
             .select('*')
-            .eq('status', 'completed')
             .gte('created_at', currentShift.opened_at);
 
         if (error) throw error;
+
+        const orders = allOrders.filter(o => o.payment_status === 'paid' && o.status !== 'Cancelled' && o.status !== 'cancelled');
 
         const totalRevenue = orders.reduce((s, o) => s + (o.total_price || 0), 0);
         const cashRevenue = orders.filter(o => o.payment_method !== 'transfer').reduce((s, o) => s + (o.total_price || 0), 0);
