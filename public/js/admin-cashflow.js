@@ -99,7 +99,8 @@ async function fetchCashflowData() {
         const { data: ordersData, error: ordersErr } = await supabase
             .from('orders')
             .select('*')
-            .eq('status', 'completed')
+            .eq('payment_status', 'paid')
+            .neq('status', 'Cancelled')
             .gte('created_at', startISO)
             .lte('created_at', endISO);
 
