@@ -297,7 +297,7 @@ async function openCloseShiftModal() {
         const { data: orders, error } = await supabase
             .from('orders')
             .select('*')
-            .eq('status', 'Completed')
+            .eq('status', 'completed')
             .gte('created_at', currentShift.opened_at);
 
         if (error) throw error;
