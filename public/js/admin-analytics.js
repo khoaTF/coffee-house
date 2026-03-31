@@ -294,7 +294,7 @@ async function loadDashboard() {
     const container = document.getElementById('dashboard-content');
     if (!container) return;
 
-    container.innerHTML = `<div class="text-center py-16 text-[#A89F88]"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tải...</div>`;
+    container.innerHTML = `<div class="text-center py-16 text-slate-500"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tải...</div>`;
 
     try {
         const todayStart = new Date(); todayStart.setHours(0,0,0,0);
@@ -346,39 +346,39 @@ async function loadDashboard() {
         container.innerHTML = `
             <!-- KPI Cards -->
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <div class="card bg-[#232018] border border-[#3A3528] rounded-2xl p-5 flex items-center gap-4">
+                <div class="card bg-white border border-slate-200 rounded-2xl p-5 flex items-center gap-4">
                     <div class="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center flex-shrink-0">
                         <i class="fa-solid fa-coins text-amber-400 text-xl"></i>
                     </div>
                     <div>
-                        <div class="text-xs text-[#A89F88] uppercase font-bold tracking-wider mb-1">Doanh thu hôm nay</div>
+                        <div class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Doanh thu hôm nay</div>
                         <div class="text-xl font-bold text-[#C0A062]">${revenueToday.toLocaleString('vi-VN')} đ</div>
                     </div>
                 </div>
-                <div class="card bg-[#232018] border border-[#3A3528] rounded-2xl p-5 flex items-center gap-4">
+                <div class="card bg-white border border-slate-200 rounded-2xl p-5 flex items-center gap-4">
                     <div class="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center flex-shrink-0">
                         <i class="fa-solid fa-receipt text-green-400 text-xl"></i>
                     </div>
                     <div>
-                        <div class="text-xs text-[#A89F88] uppercase font-bold tracking-wider mb-1">Đơn hôm nay</div>
+                        <div class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Đơn hôm nay</div>
                         <div class="text-xl font-bold text-[#F2E8D5]">${orderCountToday}</div>
                     </div>
                 </div>
-                <div class="card bg-[#232018] border border-[#3A3528] rounded-2xl p-5 flex items-center gap-4">
+                <div class="card bg-white border border-slate-200 rounded-2xl p-5 flex items-center gap-4">
                     <div class="w-12 h-12 rounded-xl bg-red-500/20 flex items-center justify-center flex-shrink-0">
                         <i class="fa-solid fa-fire text-red-400 text-xl"></i>
                     </div>
                     <div>
-                        <div class="text-xs text-[#A89F88] uppercase font-bold tracking-wider mb-1">Đang xử lý</div>
+                        <div class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Đang xử lý</div>
                         <div class="text-xl font-bold text-red-400">${pendingCount}</div>
                     </div>
                 </div>
-                <div class="card bg-[#232018] border border-[#3A3528] rounded-2xl p-5 flex items-center gap-4">
+                <div class="card bg-white border border-slate-200 rounded-2xl p-5 flex items-center gap-4">
                     <div class="w-12 h-12 rounded-xl bg-orange-500/20 flex items-center justify-center flex-shrink-0">
                         <i class="fa-solid fa-triangle-exclamation text-orange-400 text-xl"></i>
                     </div>
                     <div>
-                        <div class="text-xs text-[#A89F88] uppercase font-bold tracking-wider mb-1">Kho sắp hết</div>
+                        <div class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Kho sắp hết</div>
                         <div class="text-xl font-bold text-orange-400">${lowItems.length}</div>
                     </div>
                 </div>
@@ -386,18 +386,18 @@ async function loadDashboard() {
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
                 <!-- Chart 7 ngày -->
-                <div class="lg:col-span-2 card bg-[#232018] border border-[#3A3528] rounded-2xl p-5">
+                <div class="lg:col-span-2 card bg-white border border-slate-200 rounded-2xl p-5">
                     <h5 class="font-bold text-[#C0A062] mb-4 flex items-center gap-2"><i class="fa-solid fa-chart-line"></i> Doanh thu 7 ngày qua</h5>
                     <div style="height:220px"><canvas id="dash-revenue-chart"></canvas></div>
                 </div>
                 <!-- Top 5 món -->
-                <div class="card bg-[#232018] border border-[#3A3528] rounded-2xl p-5">
+                <div class="card bg-white border border-slate-200 rounded-2xl p-5">
                     <h5 class="font-bold text-[#C0A062] mb-4 flex items-center gap-2"><i class="fa-solid fa-trophy"></i> Top 5 món (7 ngày)</h5>
-                    ${top5.length === 0 ? '<p class="text-[#A89F88] text-sm">Chưa có dữ liệu.</p>' : top5.map(([name, qty], i) => `
-                        <div class="flex items-center justify-between py-2 border-b border-[#3A3528] last:border-0">
+                    ${top5.length === 0 ? '<p class="text-slate-500 text-sm">Chưa có dữ liệu.</p>' : top5.map(([name, qty], i) => `
+                        <div class="flex items-center justify-between py-2 border-b border-slate-200 last:border-0">
                             <div class="flex items-center gap-2">
-                                <span class="w-6 h-6 rounded-full bg-[#3A3528] text-[#C0A062] text-xs font-bold flex items-center justify-center">${i+1}</span>
-                                <span class="text-sm text-[#E8DCC4] truncate max-w-[120px]">${window.escapeHTML(name)}</span>
+                                <span class="w-6 h-6 rounded-full bg-[#e2e8f0] text-[#C0A062] text-xs font-bold flex items-center justify-center">${i+1}</span>
+                                <span class="text-sm text-slate-800 truncate max-w-[120px]">${window.escapeHTML(name)}</span>
                             </div>
                             <span class="text-sm font-bold text-[#C0A062]">${qty} ly</span>
                         </div>
@@ -407,17 +407,17 @@ async function loadDashboard() {
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <!-- 5 đơn gần nhất hôm nay -->
-                <div class="card bg-[#232018] border border-[#3A3528] rounded-2xl overflow-hidden">
-                    <div class="p-4 border-b border-[#3A3528]"><h5 class="font-bold text-[#F2E8D5] mb-0"><i class="fa-solid fa-clock-rotate-left me-2 text-[#C0A062]"></i>5 đơn gần nhất hôm nay</h5></div>
+                <div class="card bg-white border border-slate-200 rounded-2xl overflow-hidden">
+                    <div class="p-4 border-b border-slate-200"><h5 class="font-bold text-[#F2E8D5] mb-0"><i class="fa-solid fa-clock-rotate-left me-2 text-[#C0A062]"></i>5 đơn gần nhất hôm nay</h5></div>
                     <table class="table table-hover mb-0">
-                        <thead class="bg-[#3A3528] text-[#D4AF37]"><tr><th class="border-0 py-2 px-4 text-xs">Bàn</th><th class="border-0 py-2 px-4 text-xs">Tổng</th><th class="border-0 py-2 px-4 text-xs">Trạng thái</th></tr></thead>
+                        <thead class="bg-[#e2e8f0] text-[#D4AF37]"><tr><th class="border-0 py-2 px-4 text-xs">Bàn</th><th class="border-0 py-2 px-4 text-xs">Tổng</th><th class="border-0 py-2 px-4 text-xs">Trạng thái</th></tr></thead>
                         <tbody>
-                            ${recentOrders.length === 0 ? '<tr><td colspan="3" class="text-center py-4 text-[#A89F88] text-sm">Chưa có đơn hôm nay.</td></tr>' :
+                            ${recentOrders.length === 0 ? '<tr><td colspan="3" class="text-center py-4 text-slate-500 text-sm">Chưa có đơn hôm nay.</td></tr>' :
                                 recentOrders.map(o => {
                                     const statusColors = { Pending:'bg-warning text-dark', Preparing:'bg-primary', Ready:'bg-info text-dark', Completed:'bg-success', Cancelled:'bg-danger' };
                                     const statusVI = { Pending:'Chờ', Preparing:'Đang làm', Ready:'Sẵn', Completed:'Hoàn thành', Cancelled:'Hủy' };
                                     return `<tr>
-                                        <td class="py-2 px-4 text-sm text-[#E8DCC4]">Bàn ${window.escapeHTML(o.table_number || '?')}</td>
+                                        <td class="py-2 px-4 text-sm text-slate-800">Bàn ${window.escapeHTML(o.table_number || '?')}</td>
                                         <td class="py-2 px-4 text-sm text-[#C0A062] font-bold">${(o.total_price||0).toLocaleString('vi-VN')} đ</td>
                                         <td class="py-2 px-4"><span class="badge ${statusColors[o.status]||'bg-secondary'} text-xs">${statusVI[o.status]||o.status}</span></td>
                                     </tr>`;
@@ -427,14 +427,14 @@ async function loadDashboard() {
                     </table>
                 </div>
                 <!-- Kho sắp hết -->
-                <div class="card bg-[#232018] border border-[#3A3528] rounded-2xl overflow-hidden">
-                    <div class="p-4 border-b border-[#3A3528]"><h5 class="font-bold text-[#F2E8D5] mb-0"><i class="fa-solid fa-triangle-exclamation me-2 text-orange-400"></i>Nguyên liệu sắp hết</h5></div>
+                <div class="card bg-white border border-slate-200 rounded-2xl overflow-hidden">
+                    <div class="p-4 border-b border-slate-200"><h5 class="font-bold text-[#F2E8D5] mb-0"><i class="fa-solid fa-triangle-exclamation me-2 text-orange-400"></i>Nguyên liệu sắp hết</h5></div>
                     <table class="table table-hover mb-0">
-                        <thead class="bg-[#3A3528] text-[#D4AF37]"><tr><th class="border-0 py-2 px-4 text-xs">Nguyên liệu</th><th class="border-0 py-2 px-4 text-xs">Tồn kho</th></tr></thead>
+                        <thead class="bg-[#e2e8f0] text-[#D4AF37]"><tr><th class="border-0 py-2 px-4 text-xs">Nguyên liệu</th><th class="border-0 py-2 px-4 text-xs">Tồn kho</th></tr></thead>
                         <tbody>
                             ${lowItems.length === 0 ? '<tr><td colspan="2" class="text-center py-4 text-green-400 text-sm"><i class="fa-solid fa-check me-1"></i>Kho đầy đủ!</td></tr>' :
                                 lowItems.slice(0,8).map(ing => `<tr>
-                                    <td class="py-2 px-4 text-sm text-[#E8DCC4]">${window.escapeHTML(ing.name)}</td>
+                                    <td class="py-2 px-4 text-sm text-slate-800">${window.escapeHTML(ing.name)}</td>
                                     <td class="py-2 px-4"><span class="badge bg-danger text-xs">${ing.stock || 0} / ${ing.low_stock_threshold || 50}</span></td>
                                 </tr>`).join('')
                             }
@@ -464,8 +464,8 @@ async function loadDashboard() {
                     responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: {
-                        y: { ticks: { color: '#A89F88', callback: v => (v/1000) + 'k' }, grid: { color: '#3A3528' } },
-                        x: { ticks: { color: '#A89F88' }, grid: { display: false } }
+                        y: { ticks: { color: '#64748b', callback: v => (v/1000) + 'k' }, grid: { color: '#e2e8f0' } },
+                        x: { ticks: { color: '#64748b' }, grid: { display: false } }
                     }
                 }
             });

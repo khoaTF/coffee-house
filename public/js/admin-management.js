@@ -52,8 +52,8 @@ function renderStaff(data) {
         const badgeClass = s.role === 'admin' ? 'bg-danger' : (s.role === 'manager' ? 'bg-warning' : 'bg-info');
         const initials = (s.name || '?').charAt(0).toUpperCase();
         const avatarHtml = s.avatar_url
-            ? `<img src="${window.escapeHTML(s.avatar_url)}" alt="" class="w-9 h-9 rounded-full object-cover border border-[#C0A062]/50" onerror="this.onerror=null;this.outerHTML='<div class=\\'w-9 h-9 rounded-full bg-[#3A3528] border border-[#C0A062]/50 flex items-center justify-center text-[#C0A062] font-bold text-sm\\'>${initials}</div>';">`
-            : `<div class="w-9 h-9 rounded-full bg-[#3A3528] border border-[#C0A062]/50 flex items-center justify-center text-[#C0A062] font-bold text-sm">${initials}</div>`;
+            ? `<img src="${window.escapeHTML(s.avatar_url)}" alt="" class="w-9 h-9 rounded-full object-cover border border-[#C0A062]/50" onerror="this.onerror=null;this.outerHTML='<div class=\\'w-9 h-9 rounded-full bg-[#e2e8f0] border border-[#C0A062]/50 flex items-center justify-center text-[#C0A062] font-bold text-sm\\'>${initials}</div>';">`
+            : `<div class="w-9 h-9 rounded-full bg-[#e2e8f0] border border-[#C0A062]/50 flex items-center justify-center text-[#C0A062] font-bold text-sm">${initials}</div>`;
 
         tr.innerHTML = `
             <td class="px-4">${avatarHtml}</td>
@@ -587,7 +587,7 @@ window.generateQRCodes = function() {
         const tableUrl = `${baseUrl}/?table=${i}`;
 
         const wrapper = document.createElement('div');
-        wrapper.className = 'qr-card bg-[#232018] border border-[#3A3528] rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-soft relative';
+        wrapper.className = 'qr-card bg-white border border-slate-200 rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-soft relative';
 
         const titleSpan = document.createElement('h5');
         titleSpan.className = 'text-[#C0A062] font-noto font-bold mb-3 text-lg';
@@ -608,7 +608,7 @@ window.generateQRCodes = function() {
         const linkElem = document.createElement('a');
         linkElem.href = tableUrl;
         linkElem.target = '_blank';
-        linkElem.className = 'text-[10px] text-[#A89F88] break-all truncate w-full hover:text-[#C0A062] transition-colors mt-2';
+        linkElem.className = 'text-[10px] text-slate-500 break-all truncate w-full hover:text-[#C0A062] transition-colors mt-2';
         linkElem.textContent = tableUrl;
 
         wrapper.appendChild(titleSpan);

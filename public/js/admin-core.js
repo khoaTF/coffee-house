@@ -76,7 +76,7 @@ function showAdminToast(message, type = 'info', duration = 4000) {
 
     const colorMap = { success: '#22c55e', warning: '#f59e0b', error: '#ef4444', info: '#C0A062' };
     const toast = document.createElement('div');
-    toast.style.cssText = `background:#232018;border:1px solid ${colorMap[type]||colorMap.info};border-left:4px solid ${colorMap[type]||colorMap.info};border-radius:12px;padding:14px 18px;color:#E8DCC4;font-size:14px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,0.4);animation:slideInRight 0.3s ease;`;
+    toast.style.cssText = `background:#ffffff;border:1px solid ${colorMap[type]||colorMap.info};border-left:4px solid ${colorMap[type]||colorMap.info};border-radius:12px;padding:14px 18px;color:#1e293b;font-size:14px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,0.4);animation:slideInRight 0.3s ease;`;
     toast.textContent = message;
 
     toastContainer.appendChild(toast);
@@ -370,7 +370,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             document.querySelector('.content-section.active')?.classList.remove('active');
             const mainContent = document.querySelector('main');
-            mainContent.innerHTML = '<div class="flex items-center justify-center h-full"><div class="text-center"><i class="fa-solid fa-lock text-[#A89F88] text-6xl mb-4"></i><h2 class="text-2xl text-[#E8DCC4]">Bạn chưa được cấp quyền truy cập</h2><p class="text-[#A89F88] mt-2">Vui lòng liên hệ Quản trị viên</p></div></div>';
+            mainContent.innerHTML = '<div class="flex items-center justify-center h-full"><div class="text-center"><i class="fa-solid fa-lock text-slate-500 text-6xl mb-4"></i><h2 class="text-2xl text-slate-800">Bạn chưa được cấp quyền truy cập</h2><p class="text-slate-500 mt-2">Vui lòng liên hệ Quản trị viên</p></div></div>';
         }
     } else {
         allTabsId.forEach(tab => {

@@ -257,7 +257,7 @@ async function loadRestockLogs() {
     try {
         const tbody = document.getElementById('restock-logs-table-body');
         if (!tbody) return;
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-6 text-[#A89F88]"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tải dữ liệu...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-6 text-slate-500"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tải dữ liệu...</td></tr>';
 
         const { data, error } = await supabase.from('inventory_logs')
             .select('*, ingredients(name, unit)')
@@ -280,7 +280,7 @@ function renderRestockLogs(logs) {
     tbody.innerHTML = '';
 
     if (!logs || logs.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-[#A89F88]">Chưa có lịch sử nhập hàng nào.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-slate-500">Chưa có lịch sử nhập hàng nào.</td></tr>';
         return;
     }
 
@@ -303,22 +303,22 @@ function renderRestockLogs(logs) {
 
     Object.values(groupedLogs).sort((a,b) => new Date(b.time) - new Date(a.time)).forEach(group => {
         const tr = document.createElement('tr');
-        tr.className = 'border-b border-[#3A3528] hover:bg-[#2A271D] transition-colors';
+        tr.className = 'border-b border-slate-200 hover:bg-[#2A271D] transition-colors';
 
         const timeStr = new Date(group.time).toLocaleString('vi-VN');
         const itemsHtml = group.items.map(i => {
-            const priceTag = i.unit_price > 0 ? ` <span class="text-[#A89F88] text-[10px]">(${i.unit_price.toLocaleString('vi-VN')}đ/${i.unit})</span>` : '';
-            return `<span class="badge bg-[#3A3528] text-[#E8DCC4] border border-[#A89F88] border-opacity-25 me-1 mb-1">+${i.amount} ${i.unit} ${i.name}${priceTag}</span>`;
+            const priceTag = i.unit_price > 0 ? ` <span class="text-slate-500 text-[10px]">(${i.unit_price.toLocaleString('vi-VN')}đ/${i.unit})</span>` : '';
+            return `<span class="badge bg-[#e2e8f0] text-slate-800 border border-[#64748b] border-opacity-25 me-1 mb-1">+${i.amount} ${i.unit} ${i.name}${priceTag}</span>`;
         }).join('');
         const totalCost = group.items.reduce((sum, i) => sum + (i.unit_price * i.amount), 0);
-        const totalCostHtml = totalCost > 0 ? `<span class="text-[#D4AF37] font-bold">${totalCost.toLocaleString('vi-VN')}đ</span>` : '<span class="text-[#A89F88]">-</span>';
+        const totalCostHtml = totalCost > 0 ? `<span class="text-[#D4AF37] font-bold">${totalCost.toLocaleString('vi-VN')}đ</span>` : '<span class="text-slate-500">-</span>';
 
         tr.innerHTML = `
-            <td class="text-[#A89F88] font-mono text-xs">#${group.id.substring(0,8)}</td>
-            <td class="text-[#E8DCC4] text-sm">${timeStr}</td>
+            <td class="text-slate-500 font-mono text-xs">#${group.id.substring(0,8)}</td>
+            <td class="text-slate-800 text-sm">${timeStr}</td>
             <td class="max-w-xs flex-wrap gap-1">${itemsHtml}</td>
             <td class="text-end">${totalCostHtml}</td>
-            <td class="text-[#A89F88] text-sm italic">${group.note || '-'}</td>
+            <td class="text-slate-500 text-sm italic">${group.note || '-'}</td>
         `;
         tbody.appendChild(tr);
     });
@@ -355,7 +355,7 @@ function updateRestockEmptyState() {
 function addRestockItemRow() {
     const container = document.getElementById('restock-items-container');
     const tr = document.createElement('tr');
-    tr.className = 'restock-item-row border-b border-[#3A3528] border-opacity-50';
+    tr.className = 'restock-item-row border-b border-slate-200 border-opacity-50';
 
     let optionsHtml = '<option value="">-- Chọn nguyên liệu --</option>';
     ingredients.forEach(ing => {
@@ -364,20 +364,20 @@ function addRestockItemRow() {
 
     tr.innerHTML = `
         <td class="py-2 pe-2">
-            <select class="form-select form-select-sm bg-[#1A1814] text-[#E8DCC4] border-[#3A3528] restock-ing-select" required>
+            <select class="form-select form-select-sm bg-slate-50 text-slate-800 border-slate-200 restock-ing-select" required>
                 ${optionsHtml}
             </select>
         </td>
         <td class="py-2 px-2">
             <div class="input-group input-group-sm">
-                <input type="number" class="form-control bg-[#1A1814] text-[#E8DCC4] border-[#3A3528] restock-amount-input" placeholder="0" required min="0.1" step="any">
-                <span class="input-group-text bg-[#3A3528] text-[#A89F88] border-[#3A3528] restock-unit-display">-</span>
+                <input type="number" class="form-control bg-slate-50 text-slate-800 border-slate-200 restock-amount-input" placeholder="0" required min="0.1" step="any">
+                <span class="input-group-text bg-[#e2e8f0] text-slate-500 border-slate-200 restock-unit-display">-</span>
             </div>
         </td>
         <td class="py-2 px-2">
             <div class="input-group input-group-sm">
-                <input type="number" class="form-control bg-[#1A1814] text-[#E8DCC4] border-[#3A3528] restock-price-input" placeholder="0" min="0" step="any">
-                <span class="input-group-text bg-[#3A3528] text-[#A89F88] border-[#3A3528]">đ</span>
+                <input type="number" class="form-control bg-slate-50 text-slate-800 border-slate-200 restock-price-input" placeholder="0" min="0" step="any">
+                <span class="input-group-text bg-[#e2e8f0] text-slate-500 border-slate-200">đ</span>
             </div>
         </td>
         <td class="py-2 ps-2 text-end">

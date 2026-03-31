@@ -9,25 +9,25 @@ async function initShiftsModule() {
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
             <div>
                 <h2 class="font-noto text-2xl font-bold text-[#F2E8D5] mb-1 flex items-center gap-2"><i class="fa-solid fa-business-time text-[#C0A062]"></i> Ca làm việc</h2>
-                <p class="text-sm text-[#A89F88] mb-0">Quản lý mở/đóng ca và xem lịch sử các ca làm việc.</p>
+                <p class="text-sm text-slate-500 mb-0">Quản lý mở/đóng ca và xem lịch sử các ca làm việc.</p>
             </div>
             <div id="shift-main-action-btn"></div>
         </div>
 
         <!-- Current shift status card -->
-        <div id="shift-status-card" class="card bg-[#232018] border border-[#3A3528] rounded-2xl shadow-soft p-6 mb-6">
-            <div class="text-center text-[#A89F88]"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang kiểm tra ca...</div>
+        <div id="shift-status-card" class="card bg-white border border-slate-200 rounded-2xl shadow-soft p-6 mb-6">
+            <div class="text-center text-slate-500"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang kiểm tra ca...</div>
         </div>
 
         <!-- Shift history -->
-        <div class="card bg-[#232018] border border-[#3A3528] rounded-2xl shadow-soft overflow-hidden">
+        <div class="card bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden">
             <div class="card-body p-0">
-                <div class="p-4 border-b border-[#3A3528]">
+                <div class="p-4 border-b border-slate-200">
                     <h5 class="font-bold text-[#F2E8D5] mb-0"><i class="fa-solid fa-history me-2 text-[#C0A062]"></i>Lịch sử ca</h5>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0 border-0">
-                        <thead class="bg-[#3A3528] text-[#D4AF37]">
+                        <thead class="bg-[#e2e8f0] text-[#D4AF37]">
                             <tr>
                                 <th class="border-0 py-3 px-4">Người mở</th>
                                 <th class="border-0 py-3 px-4">Mở lúc</th>
@@ -37,7 +37,7 @@ async function initShiftsModule() {
                             </tr>
                         </thead>
                         <tbody id="shifts-history-body">
-                            <tr><td colspan="5" class="text-center py-4 text-[#A89F88]"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tải...</td></tr>
+                            <tr><td colspan="5" class="text-center py-4 text-slate-500"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tải...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -74,16 +74,16 @@ async function renderShiftStatusCard() {
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-[#1A1814] rounded-xl p-3">
-                            <div class="text-xs text-[#A89F88] mb-1">Mở lúc</div>
-                            <div class="font-bold text-[#E8DCC4]">${openedAt.toLocaleTimeString('vi-VN', {hour:'2-digit',minute:'2-digit'})}</div>
+                        <div class="bg-slate-50 rounded-xl p-3">
+                            <div class="text-xs text-slate-500 mb-1">Mở lúc</div>
+                            <div class="font-bold text-slate-800">${openedAt.toLocaleTimeString('vi-VN', {hour:'2-digit',minute:'2-digit'})}</div>
                         </div>
-                        <div class="bg-[#1A1814] rounded-xl p-3">
-                            <div class="text-xs text-[#A89F88] mb-1">Thời gian</div>
-                            <div class="font-bold text-[#E8DCC4]">${hours}h ${mins}m</div>
+                        <div class="bg-slate-50 rounded-xl p-3">
+                            <div class="text-xs text-slate-500 mb-1">Thời gian</div>
+                            <div class="font-bold text-slate-800">${hours}h ${mins}m</div>
                         </div>
-                        <div class="bg-[#1A1814] rounded-xl p-3">
-                            <div class="text-xs text-[#A89F88] mb-1">Vốn đầu ca</div>
+                        <div class="bg-slate-50 rounded-xl p-3">
+                            <div class="text-xs text-slate-500 mb-1">Vốn đầu ca</div>
                             <div class="font-bold text-[#C0A062]">${(currentShift.start_balance || 0).toLocaleString('vi-VN')} đ</div>
                         </div>
                     </div>
@@ -97,15 +97,15 @@ async function renderShiftStatusCard() {
     } else {
         card.innerHTML = `
             <div class="flex flex-col items-center justify-center py-8 text-center">
-                <div class="w-16 h-16 rounded-full bg-[#3A3528] flex items-center justify-center mb-4">
-                    <i class="fa-solid fa-lock text-[#A89F88] text-2xl"></i>
+                <div class="w-16 h-16 rounded-full bg-[#e2e8f0] flex items-center justify-center mb-4">
+                    <i class="fa-solid fa-lock text-slate-500 text-2xl"></i>
                 </div>
                 <div class="font-bold text-[#F2E8D5] text-lg mb-1">Chưa mở ca</div>
-                <div class="text-sm text-[#A89F88]">Bấm "Mở ca" để bắt đầu ca làm việc mới.</div>
+                <div class="text-sm text-slate-500">Bấm "Mở ca" để bắt đầu ca làm việc mới.</div>
             </div>
         `;
         if (actionBtn) {
-            actionBtn.innerHTML = `<button class="btn rounded-xl font-bold py-2 px-5 text-sm" style="background:#C0A062;color:#1A1814;" onclick="openStartShiftModal()"><i class="fa-solid fa-sun me-2"></i>Mở ca</button>`;
+            actionBtn.innerHTML = `<button class="btn rounded-xl font-bold py-2 px-5 text-sm" style="background:#C0A062;color:#f8fafc;" onclick="openStartShiftModal()"><i class="fa-solid fa-sun me-2"></i>Mở ca</button>`;
         }
     }
 }
@@ -124,7 +124,7 @@ async function loadShiftsHistory() {
         if (error) throw error;
 
         if (!data || data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-[#A89F88]">Chưa có lịch sử ca.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-slate-500">Chưa có lịch sử ca.</td></tr>';
             return;
         }
 
@@ -138,9 +138,9 @@ async function loadShiftsHistory() {
                 : '<span class="badge bg-secondary">Đã đóng</span>';
             return `
                 <tr>
-                    <td class="font-bold text-[#E8DCC4]">${window.escapeHTML(s.opened_by || '—')}</td>
-                    <td class="text-[#A89F88] text-sm">${openedAt}</td>
-                    <td class="text-[#A89F88] text-sm">${closedAt}</td>
+                    <td class="font-bold text-slate-800">${window.escapeHTML(s.opened_by || '—')}</td>
+                    <td class="text-slate-500 text-sm">${openedAt}</td>
+                    <td class="text-slate-500 text-sm">${closedAt}</td>
                     <td class="text-[#C0A062] font-bold">${isOpen ? '—' : revenue + ' đ'}</td>
                     <td>${badge}</td>
                 </tr>
@@ -188,7 +188,7 @@ function updateShiftUI(isOpen, openedBy = '', openedAt = null) {
             shiftBadge.className = 'badge bg-[#C0A062]/20 text-[#C0A062] px-2 py-1 rounded-md text-[10px] font-bold tracking-wider';
             shiftBadge.innerHTML = `<i class="fa-solid fa-lock-open me-1"></i>CA: ${window.escapeHTML(openedBy)}`;
         } else {
-            shiftBadge.className = 'badge bg-[#3A3528] text-[#A89F88] px-2 py-1 rounded-md text-[10px] font-bold tracking-wider';
+            shiftBadge.className = 'badge bg-[#e2e8f0] text-slate-500 px-2 py-1 rounded-md text-[10px] font-bold tracking-wider';
             shiftBadge.innerHTML = `<i class="fa-solid fa-lock me-1"></i>CHƯA MỞ CA`;
         }
     }
@@ -222,19 +222,19 @@ function openStartShiftModal() {
     
     const html = `
         <div class="mb-3">
-            <label class="form-label text-[#A89F88] text-xs uppercase font-bold mb-1">Người mở ca</label>
-            <input type="text" class="form-control bg-[#1A1814] border-[#3A3528] text-[#E8DCC4] rounded-xl" value="${staffName}" disabled>
+            <label class="form-label text-slate-500 text-xs uppercase font-bold mb-1">Người mở ca</label>
+            <input type="text" class="form-control bg-slate-50 border-slate-200 text-slate-800 rounded-xl" value="${staffName}" disabled>
         </div>
         <div class="mb-3">
-            <label class="form-label text-[#A89F88] text-xs uppercase font-bold mb-1">Số dư đầu ca (Tiền mặt tại quầy)</label>
+            <label class="form-label text-slate-500 text-xs uppercase font-bold mb-1">Số dư đầu ca (Tiền mặt tại quầy)</label>
             <div class="input-group">
-                <input type="number" id="shift-start-balance" class="form-control bg-[#1A1814] border-[#3A3528] text-[#E8DCC4] rounded-xl focus:border-[#C0A062] border-end-0" value="0" min="0" step="1000">
-                <span class="input-group-text bg-[#1A1814] border-[#3A3528] text-[#A89F88] rounded-xl font-bold">VNĐ</span>
+                <input type="number" id="shift-start-balance" class="form-control bg-slate-50 border-slate-200 text-slate-800 rounded-xl focus:border-[#C0A062] border-end-0" value="0" min="0" step="1000">
+                <span class="input-group-text bg-slate-50 border-slate-200 text-slate-500 rounded-xl font-bold">VNĐ</span>
             </div>
         </div>
         <div class="mb-3">
-            <label class="form-label text-[#A89F88] text-xs uppercase font-bold mb-1">Ghi chú thêm (Nếu có)</label>
-            <textarea id="shift-start-notes" class="form-control bg-[#1A1814] border-[#3A3528] text-[#E8DCC4] rounded-xl focus:border-[#C0A062]" rows="2" placeholder="Tình trạng quầy, tiền lẻ..."></textarea>
+            <label class="form-label text-slate-500 text-xs uppercase font-bold mb-1">Ghi chú thêm (Nếu có)</label>
+            <textarea id="shift-start-notes" class="form-control bg-slate-50 border-slate-200 text-slate-800 rounded-xl focus:border-[#C0A062]" rows="2" placeholder="Tình trạng quầy, tiền lẻ..."></textarea>
         </div>
     `;
 
@@ -243,9 +243,9 @@ function openStartShiftModal() {
     
     const submitBtn = document.getElementById('shiftActionSubmitBtn');
     submitBtn.innerText = 'Xác nhận Bắt đầu';
-    submitBtn.className = 'btn rounded-xl font-bold py-2 px-4 shadow-soft text-[#1A1814]';
+    submitBtn.className = 'btn rounded-xl font-bold py-2 px-4 shadow-soft text-[#f8fafc]';
     submitBtn.style.backgroundColor = '#C0A062';
-    submitBtn.style.cssText += 'color: #1A1814 !important; border: none;';
+    submitBtn.style.cssText += 'color: #f8fafc !important; border: none;';
     submitBtn.onclick = submitStartShift;
 
     const modal = new bootstrap.Modal(document.getElementById('shiftActionModal'));
@@ -315,57 +315,57 @@ async function openCloseShiftModal() {
         const html = `
             <div class="row g-3 text-sm mb-4">
                 <div class="col-6">
-                    <div class="p-3 bg-[#1A1814] rounded-xl border border-[#3A3528] text-center h-100 flex flex-col justify-center">
-                        <span class="text-[#A89F88] block mb-1 text-xs uppercase font-bold">Giờ vào</span>
-                        <strong class="text-[#E8DCC4] text-lg">${startStr}</strong>
+                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-center h-100 flex flex-col justify-center">
+                        <span class="text-slate-500 block mb-1 text-xs uppercase font-bold">Giờ vào</span>
+                        <strong class="text-slate-800 text-lg">${startStr}</strong>
                     </div>
                 </div>
                 <div class="col-6">
-                    <div class="p-3 bg-[#1A1814] rounded-xl border border-[#3A3528] text-center h-100 flex flex-col justify-center">
-                        <span class="text-[#A89F88] block mb-1 text-xs uppercase font-bold">Người ca trước</span>
+                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-center h-100 flex flex-col justify-center">
+                        <span class="text-slate-500 block mb-1 text-xs uppercase font-bold">Người ca trước</span>
                         <strong class="text-[#C0A062] text-sm">${window.escapeHTML(currentShift.opened_by)}</strong>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-[#1A1814] p-4 rounded-xl border border-[#3A3528] mb-4 text-sm shadow-inner">
-                <div class="d-flex justify-content-between mb-3 border-b border-[#3A3528] pb-2">
-                    <span class="text-[#A89F88]">Sẵn có đầu ca:</span>
-                    <strong class="text-[#E8DCC4]">${currentShift.start_balance.toLocaleString('vi-VN')} đ</strong>
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-4 text-sm shadow-inner">
+                <div class="d-flex justify-content-between mb-3 border-b border-slate-200 pb-2">
+                    <span class="text-slate-500">Sẵn có đầu ca:</span>
+                    <strong class="text-slate-800">${currentShift.start_balance.toLocaleString('vi-VN')} đ</strong>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
-                    <span class="text-[#A89F88]">Thu tiền mặt (Đơn):</span>
+                    <span class="text-slate-500">Thu tiền mặt (Đơn):</span>
                     <strong class="text-green-400">+ ${cashRevenue.toLocaleString('vi-VN')} đ</strong>
                 </div>
-                <div class="d-flex justify-content-between mb-3 border-b border-[#3A3528] pb-3">
-                    <span class="text-[#A89F88]">Thu chuyển khoản:</span>
+                <div class="d-flex justify-content-between mb-3 border-b border-slate-200 pb-3">
+                    <span class="text-slate-500">Thu chuyển khoản:</span>
                     <strong class="text-blue-400">+ ${transferRevenue.toLocaleString('vi-VN')} đ</strong>
                 </div>
                 <div class="d-flex justify-content-between mt-3 mb-1">
-                    <span class="text-[#A89F88] text-xs uppercase font-bold">Doanh thu ca:</span>
+                    <span class="text-slate-500 text-xs uppercase font-bold">Doanh thu ca:</span>
                     <strong class="text-[#D4AF37] text-lg">${totalRevenue.toLocaleString('vi-VN')} đ</strong>
                 </div>
-                <div class="d-flex justify-content-between mt-3 pt-3 border-t border-[#3A3528]">
-                    <span class="text-[#E8DCC4] font-bold">Tiền mặt dự kiến tại két:</span>
+                <div class="d-flex justify-content-between mt-3 pt-3 border-t border-slate-200">
+                    <span class="text-slate-800 font-bold">Tiền mặt dự kiến tại két:</span>
                     <strong class="text-warning text-xl">${expectedEndBalance.toLocaleString('vi-VN')} đ</strong>
                 </div>
             </div>
 
-            <div class="mb-4 bg-[#232018] p-3 rounded-xl border border-[#3A3528]">
-                <label class="form-label text-[#E8DCC4] text-sm font-bold mb-2">Nhập thực tế kiểm được <span class="text-danger">*</span></label>
+            <div class="mb-4 bg-white p-3 rounded-xl border border-slate-200">
+                <label class="form-label text-slate-800 text-sm font-bold mb-2">Nhập thực tế kiểm được <span class="text-danger">*</span></label>
                 <div class="input-group input-group-lg">
-                    <input type="number" id="shift-end-actual" class="form-control bg-[#1A1814] border-[#3A3528] text-2xl font-black text-[#D4AF37] text-center rounded-xl border-end-0 focus:border-[#C0A062]" value="${expectedEndBalance}" min="0" step="1000">
-                    <span class="input-group-text bg-[#1A1814] border-[#3A3528] text-[#A89F88] rounded-xl font-bold">VNĐ</span>
+                    <input type="number" id="shift-end-actual" class="form-control bg-slate-50 border-slate-200 text-2xl font-black text-[#D4AF37] text-center rounded-xl border-end-0 focus:border-[#C0A062]" value="${expectedEndBalance}" min="0" step="1000">
+                    <span class="input-group-text bg-slate-50 border-slate-200 text-slate-500 rounded-xl font-bold">VNĐ</span>
                 </div>
                 <div id="shift-diff-notice" class="mt-2 text-sm text-center font-semibold"></div>
             </div>
 
             <div class="mb-3">
-                <label class="form-label text-[#A89F88] text-xs uppercase font-bold mb-1">Người nhận bàn giao</label>
-                <input type="text" id="shift-closed-by" class="form-control bg-[#1A1814] border-[#3A3528] text-[#E8DCC4] rounded-xl mb-3" value="${staffName}">
+                <label class="form-label text-slate-500 text-xs uppercase font-bold mb-1">Người nhận bàn giao</label>
+                <input type="text" id="shift-closed-by" class="form-control bg-slate-50 border-slate-200 text-slate-800 rounded-xl mb-3" value="${staffName}">
                 
-                <label class="form-label text-[#A89F88] text-xs uppercase font-bold mb-1">Giải trình (chênh lệch/sự cố)</label>
-                <textarea id="shift-end-notes" class="form-control bg-[#1A1814] border-[#3A3528] text-[#E8DCC4] rounded-xl focus:border-[#C0A062]" rows="2" placeholder="Lý do lệch tiền..."></textarea>
+                <label class="form-label text-slate-500 text-xs uppercase font-bold mb-1">Giải trình (chênh lệch/sự cố)</label>
+                <textarea id="shift-end-notes" class="form-control bg-slate-50 border-slate-200 text-slate-800 rounded-xl focus:border-[#C0A062]" rows="2" placeholder="Lý do lệch tiền..."></textarea>
             </div>
             
             <input type="hidden" id="shift-total-revenue" value="${totalRevenue}">
