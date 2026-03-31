@@ -1489,13 +1489,22 @@
                 <div class="modal-body" id="tableActionsBody">
                     <p id="tableActionsInfo" class="text-slate-800 mb-4"></p>
                     <div class="d-grid gap-2">
+                        <button id="tableActionPayBtn" class="btn btn-success d-flex align-items-center gap-2" style="display:none!important">
+                            <i class="fa-solid fa-money-bill-wave"></i>
+                            Thu Tiền (Giữ phiên)
+                        </button>
+                        <button id="tableActionBillBtn" class="btn btn-outline-primary d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-receipt"></i>
+                            In Bill Tổng
+                        </button>
                         <button id="tableActionTransferBtn" class="btn btn-outline-warning d-flex align-items-center gap-2">
                             <i class="fa-solid fa-arrow-right-arrow-left"></i>
                             Chuyển Bàn
                         </button>
-                        <button id="tableActionPayBtn" class="btn btn-success d-flex align-items-center gap-2" style="display:none!important">
-                            <i class="fa-solid fa-money-bill-wave"></i>
-                            Xác nhận Đã Thanh Toán
+                        <hr class="my-1">
+                        <button id="tableActionClearBtn" class="btn btn-outline-danger d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-broom"></i>
+                            Dọn Bàn (Kết thúc phiên)
                         </button>
                     </div>
                 </div>
@@ -1509,6 +1518,27 @@
                         </div>
                     </div>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Consolidated Bill Modal -->
+    <div class="modal fade" id="tableBillModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title"><i class="fa-solid fa-receipt text-[#b45309] me-2"></i>Bill Tổng Hợp</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="tableBillBody">
+                    <!-- Filled dynamically -->
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="printConsolidatedBill()">
+                        <i class="fa-solid fa-print me-1"></i>In Bill
+                    </button>
                 </div>
             </div>
         </div>
@@ -1545,7 +1575,7 @@
     <script src="/js/admin-orders.js?v=3.1"></script>
     <script src="/js/admin-inventory.js?v=3.1"></script>
     <script src="/js/admin-analytics.js?v=3.1"></script>
-    <script src="/js/admin-tables.js?v=3.1"></script>
+    <script src="/js/admin-tables.js?v=4.0"></script>
     <script src="/js/admin-management.js?v=3.1"></script>
     <script src="/js/admin-cashflow.js?v=3.1"></script>
     <script src="/js/admin-shifts.js?v=1.1"></script>

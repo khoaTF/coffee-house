@@ -16,10 +16,10 @@ let currentOptionsItem = null; // Tracks item being configured in options modal
 
 // translations moved to i18n.js
 
-// Per-tab session using sessionStorage (isolated per browser tab)
-// Include table number so different table tabs on the same browser are fully isolated
+// Per-table session — reused across tabs/devices as long as table hasn't been cleared
 const sessionKey = 'cafe_session_' + TABLE_NUMBER;
-let sessionId = sessionStorage.getItem(sessionKey);
+let sessionId = sessionStorage.getItem(sessionKey) || null;
+// Will be resolved in acquireTableLock() from table_sessions DB
 
 let appliedPromo = null;
 let currentDiscountAmount = 0;
@@ -28,12 +28,6 @@ window.currentCustomerPhone = localStorage.getItem('customerPhone') || null;
 window.currentCustomerPoints = 0;
 window.loyaltyDiscountApplied = false;
 window.upsellShown = false;
-
-// Generate unique session ID for this device/tab if not exists
-if (!sessionId) {
-    sessionId = 'sess_' + TABLE_NUMBER + '_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
-    sessionStorage.setItem(sessionKey, sessionId);
-}
 
 // Status Map
 const statusMap = {
@@ -187,10 +181,13 @@ function closeCategoryModal() {
     }
 }
 
-// ---- Table Lock (via Supabase table_sessions) ----
+// ---- Table Session (via Supabase table_sessions) ----
+// Session is tied to the TABLE, not the browser tab.
+// Closing the tab and re-scanning QR will rejoin the same session.
+// Only admin "Dọn bàn" clears the session.
 async function acquireTableLock() {
+    const STALE_THRESHOLD = 2 * 60 * 60 * 1000; // 2 hours = cafe session timeout
     try {
-        // Check if table is locked by a different session
         const { data: existing } = await supabase
             .from('table_sessions')
             .select('session_id, last_seen')
@@ -200,20 +197,29 @@ async function acquireTableLock() {
         if (existing) {
             const lastSeen = new Date(existing.last_seen);
             const ageMs = Date.now() - lastSeen.getTime();
-            const STALE_THRESHOLD = 5 * 60 * 1000; // 5 minutes = stale session
 
-            if (existing.session_id !== sessionId && ageMs < STALE_THRESHOLD) {
-                // Table is locked by another active session
-                showTableLockedOverlay();
-                return;
+            if (ageMs < STALE_THRESHOLD) {
+                // Active session exists — JOIN it (reuse session_id)
+                sessionId = existing.session_id;
+                sessionStorage.setItem(sessionKey, sessionId);
+                // Refresh heartbeat
+                await supabase.from('table_sessions')
+                    .update({ last_seen: new Date().toISOString() })
+                    .eq('table_number', TABLE_NUMBER);
+            } else {
+                // Stale session — claim table with new session
+                sessionId = 'sess_' + TABLE_NUMBER + '_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+                sessionStorage.setItem(sessionKey, sessionId);
+                await supabase.from('table_sessions')
+                    .update({ session_id: sessionId, last_seen: new Date().toISOString() })
+                    .eq('table_number', TABLE_NUMBER);
             }
-
-            // Either our own session or a stale one — claim/refresh it
-            await supabase.from('table_sessions')
-                .update({ session_id: sessionId, last_seen: new Date().toISOString() })
-                .eq('table_number', TABLE_NUMBER);
         } else {
-            // No lock exists, create one
+            // No session on this table — create fresh
+            if (!sessionId) {
+                sessionId = 'sess_' + TABLE_NUMBER + '_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+                sessionStorage.setItem(sessionKey, sessionId);
+            }
             await supabase.from('table_sessions').insert([{
                 table_number: TABLE_NUMBER,
                 session_id: sessionId,
@@ -221,7 +227,7 @@ async function acquireTableLock() {
             }]);
         }
 
-        // Start heartbeat to keep lock alive (every 60s)
+        // Heartbeat every 60s to keep session alive
         setInterval(async () => {
             await supabase.from('table_sessions')
                 .update({ last_seen: new Date().toISOString() })
@@ -229,17 +235,19 @@ async function acquireTableLock() {
                 .eq('session_id', sessionId);
         }, 60 * 1000);
 
-        // Release lock when tab closes
-        window.addEventListener('beforeunload', releaseTableLock);
+        // Do NOT release lock on tab close — only admin "Dọn bàn" clears session
 
-        // All good — proceed to load the menu
+        // Proceed to load menu
         fetchMenu();
         attachEventListeners();
         setupRealtimeSubscription();
 
     } catch (e) {
-        // If the table_sessions table doesn't exist yet, just proceed normally
-        console.warn('Table lock: table_sessions table may not exist yet, skipping lock.', e.message);
+        console.warn('Table session: table_sessions may not exist, skipping.', e.message);
+        if (!sessionId) {
+            sessionId = 'sess_' + TABLE_NUMBER + '_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+            sessionStorage.setItem(sessionKey, sessionId);
+        }
         fetchMenu();
         attachEventListeners();
         setupRealtimeSubscription();
