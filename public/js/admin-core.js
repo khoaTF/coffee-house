@@ -22,6 +22,7 @@ let createRestockModalInstance = null;
 let historyDebounceTimer = null;
 let tablesDebounceTimer = null;
 let inventoryDebounceTimer = null;
+let cashflowDebounceTimer = null;
 
 // DOM Elements (Initialized in DOMContentLoaded to prevent null errors)
 let productsTableBody, historyTableBody, inventoryTableBody, totalRevenueEl;
@@ -249,6 +250,15 @@ supabase.channel('admin-orders')
           clearTimeout(tablesDebounceTimer);
           tablesDebounceTimer = setTimeout(() => fetchTablesStatus(), 400);
       }
+      
+      // KPI cards are global, always update them
+      if (typeof renderDashboardStats === 'function') {
+          setTimeout(() => renderDashboardStats(), 400);
+      }
+
+      if (document.getElementById('section-dashboard').classList.contains('active')) {
+          if (typeof loadDashboard === 'function') setTimeout(() => loadDashboard(), 400);
+      }
   })
   .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'staff_requests' }, payload => {
       if(payload.new.status === 'pending') renderStaffRequest(payload.new);
@@ -265,6 +275,18 @@ supabase.channel('admin-ingredients')
       if (document.getElementById('section-inventory')?.classList.contains('active')) {
           clearTimeout(inventoryDebounceTimer);
           inventoryDebounceTimer = setTimeout(() => fetchIngredients(), 400);
+      }
+  })
+  .subscribe();
+
+supabase.channel('admin-cashflow')
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'cash_transactions' }, () => {
+      if (typeof renderDashboardStats === 'function') {
+          setTimeout(() => renderDashboardStats(), 400);
+      }
+      if (typeof fetchCashflowData === 'function' && document.getElementById('section-cashflow')?.classList.contains('active')) {
+          clearTimeout(cashflowDebounceTimer);
+          cashflowDebounceTimer = setTimeout(() => fetchCashflowData(), 400);
       }
   })
   .subscribe();

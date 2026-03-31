@@ -220,7 +220,13 @@ window.cancelOrder = async (orderId) => {
     if (!confirmed) return;
     try {
         const order = orderHistory.find(o => String(o._id) === String(orderId));
-        const { error } = await supabase.from('orders').update({ status: 'Cancelled' }).eq('id', orderId);
+        
+        let updatePayload = { status: 'Cancelled' };
+        if (order && (order.paymentStatus === 'paid' || order.is_paid)) {
+            updatePayload.payment_status = 'refunded';
+        }
+
+        const { error } = await supabase.from('orders').update(updatePayload).eq('id', orderId);
         if (error) throw error;
         // Hoàn kho tự động
         if (order && order.items) await restoreInventoryOnCancel(order.items);
@@ -241,29 +247,12 @@ window.markOrderPaid = async (orderId) => {
         const order = orderHistory.find(o => o._id === orderId || o.id === orderId);
         if (!order) throw new Error('Không tìm thấy đơn hàng');
 
-        // 2. Cập nhật payment_status = 'paid' trên orders table
+        // 2. Cập nhật payment_status = 'paid' và is_paid = true trên orders table
         const { error: updateErr } = await supabase
             .from('orders')
-            .update({ payment_status: 'paid' })
+            .update({ is_paid: true, payment_status: 'paid' })
             .eq('id', orderId);
         if (updateErr) throw updateErr;
-
-        // 3. Ghi giao dịch vào cash_transactions để cập nhật Sổ Quỹ
-        const amount = order.totalPrice || order.total_price || 0;
-        if (amount > 0) {
-            const orderIdShort = String(orderId).substring(0, 8);
-            const staffName = sessionStorage.getItem('nohope_staff_name') || localStorage.getItem('nohope_staff_name') || 'Admin';
-            const { error: txErr } = await supabase
-                .from('cash_transactions')
-                .insert({
-                    type: 'income',
-                    amount: amount,
-                    description: `Thu tiền đơn #${orderIdShort} (Bàn ${order.tableNumber || order.table_number || '?'})`,
-                    category: 'order_payment',
-                    created_by: staffName
-                });
-            if (txErr) console.warn('Không ghi được Sổ Quỹ:', txErr.message);
-        }
 
         logAudit('Xác nhận thanh toán', `Đơn #${String(orderId).substring(0,8)} - ${(order.totalPrice||0).toLocaleString('vi-VN')}đ`);
         showAdminToast(`✅ Đã thu tiền đơn #${String(orderId).substring(0,8)} — ${(order.totalPrice||0).toLocaleString('vi-VN')}đ`, 'success');

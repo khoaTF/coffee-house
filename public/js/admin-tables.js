@@ -15,7 +15,7 @@ async function fetchTablesStatus() {
         const { data, error } = await supabase
             .from('orders')
             .select('*')
-            .in('status', ['Pending', 'Preparing', 'Ready']);
+            .or('status.in.(Pending,Preparing,Ready),and(status.eq.Completed,is_paid.eq.false)');
 
         if (error) throw error;
 
@@ -162,7 +162,22 @@ window.showTableActions = async (tableNum, tableOrders) => {
         try {
             const unpaidOrders = tableOrders.filter(o => !o.is_paid);
             for (const ord of unpaidOrders) {
-                await supabase.from('orders').update({ is_paid: true }).eq('id', ord._id);
+                await supabase.from('orders').update({ is_paid: true, payment_status: 'paid' }).eq('id', ord._id);
+                
+                // --- Ghi lại Sổ Quỹ ---
+                const amount = ord.total_price || ord.totalPrice || 0;
+                if (amount > 0) {
+                    const orderIdShort = String(ord._id).substring(0, 8);
+                    const staffName = sessionStorage.getItem('nohope_staff_name') || localStorage.getItem('nohope_staff_name') || 'Admin';
+                    const { error: txErr } = await supabase.from('cash_transactions').insert({
+                        type: 'income',
+                        amount: amount,
+                        description: `Thu tiền bàn ${tableNum} đơn #${orderIdShort}`,
+                        category: 'order_payment',
+                        created_by: staffName
+                    });
+                    if (txErr) console.warn('Lỗi ghi sổ quỹ:', txErr.message);
+                }
             }
             await supabase.from('table_sessions').delete().eq('table_number', tableNum.toString());
             logAudit('Thanh toán bàn', `Bàn ${tableNum}, ${unpaidOrders.length} đơn`);
