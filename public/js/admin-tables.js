@@ -33,12 +33,12 @@ async function fetchTablesStatus() {
             const isOccupied = tableOrders.length > 0;
             const hasUnpaid = tableOrders.some(o => !o.is_paid);
 
-            let statusConfig = { color: 'rgba(255,255,255,0.05)', icon: 'fa-chair', text: 'Trống', border: 'rgba(255,255,255,0.1)', pulse: false };
+            let statusConfig = { color: '#ffffff', icon: 'fa-chair', text: 'Trống', border: '#e2e8f0', textColor: '#94a3b8', iconColor: '#cbd5e1', pulse: false };
             if (isOccupied) {
                 if (hasUnpaid) {
-                    statusConfig = { color: 'rgba(231, 76, 60, 0.15)', icon: 'fa-money-bill-wave', text: 'Chưa TToán', border: '#e74c3c', pulse: true };
+                    statusConfig = { color: '#fef2f2', icon: 'fa-money-bill-wave', text: 'Chưa TToán', border: '#fca5a5', textColor: '#dc2626', iconColor: '#ef4444', pulse: true };
                 } else {
-                    statusConfig = { color: 'rgba(52, 152, 219, 0.15)', icon: 'fa-utensils', text: 'Đang làm/chờ món', border: '#3498db', pulse: false };
+                    statusConfig = { color: '#eff6ff', icon: 'fa-utensils', text: 'Đang làm/chờ món', border: '#93c5fd', textColor: '#2563eb', iconColor: '#3b82f6', pulse: false };
                 }
             }
 
@@ -46,10 +46,10 @@ async function fetchTablesStatus() {
             col.className = 'col-6 col-md-4 col-lg-3 mb-3';
 
             const card = document.createElement('div');
-            card.className = `card h-100 text-center p-3 table-card ${statusConfig.pulse ? 'pulse-border' : ''}`;
+            card.className = `card h-100 text-center p-3 table-card rounded-2xl shadow-sm ${statusConfig.pulse ? 'pulse-border' : ''}`;
             card.style.transition = 'all 0.3s';
             card.style.background = statusConfig.color;
-            card.style.border = `1px solid ${statusConfig.border}`;
+            card.style.border = `2px solid ${statusConfig.border}`;
             card.style.cursor = isOccupied ? 'pointer' : 'default';
 
             if (isOccupied) {
@@ -58,19 +58,19 @@ async function fetchTablesStatus() {
 
             const iconContainer = document.createElement('div');
             iconContainer.className = 'icon-container fs-1 mb-2';
-            iconContainer.style.color = statusConfig.border;
+            iconContainer.style.color = statusConfig.iconColor;
             const icon = document.createElement('i');
             icon.className = `fa-solid ${statusConfig.icon}`;
             iconContainer.appendChild(icon);
 
             const idText = document.createElement('h5');
-            idText.className = 'mb-1 table-id-text';
+            idText.className = 'mb-1 table-id-text fw-bold';
             idText.textContent = `Bàn ${i}`;
-            idText.style.color = isOccupied ? '#fff' : 'rgba(255,255,255,0.5)';
+            idText.style.color = isOccupied ? '#1e293b' : '#94a3b8';
 
             const statusText = document.createElement('small');
-            statusText.className = 'status-text';
-            statusText.style.color = statusConfig.border;
+            statusText.className = 'status-text fw-semibold';
+            statusText.style.color = statusConfig.textColor;
             statusText.textContent = statusConfig.text;
 
             card.append(iconContainer, idText, statusText);
