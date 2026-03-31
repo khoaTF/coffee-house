@@ -90,6 +90,7 @@ async function fetchCashflowData() {
         const { data: manualData, error: manualErr } = await supabase
             .from('cash_transactions')
             .select('*')
+            .eq('category', 'manual')
             .gte('created_at', startISO)
             .lte('created_at', endISO)
             .order('created_at', { ascending: false });
@@ -99,8 +100,7 @@ async function fetchCashflowData() {
         const { data: ordersData, error: ordersErr } = await supabase
             .from('orders')
             .select('*')
-            .eq('payment_status', 'paid')
-            .neq('status', 'Cancelled')
+            .in('payment_status', ['paid', 'refunded'])
             .gte('created_at', startISO)
             .lte('created_at', endISO);
 
@@ -129,14 +129,25 @@ async function fetchCashflowData() {
         });
 
         ordersData.forEach(o => {
-            combinedData.push({
-                type: 'income',
-                source: 'order',
-                amount: parseFloat(o.total_price),
-                desc: `Doanh thu đơn hàng (Tự động)`,
-                refId: '#O_' + o.id.toString(),
-                createdAt: new Date(o.created_at)
-            });
+            if (o.payment_status === 'paid' && o.status !== 'Cancelled') {
+                combinedData.push({
+                    type: 'income',
+                    source: 'order',
+                    amount: parseFloat(o.total_price),
+                    desc: `Doanh thu đơn hàng (Tự động)`,
+                    refId: '#O_' + o.id.toString(),
+                    createdAt: new Date(o.created_at)
+                });
+            } else if (o.payment_status === 'refunded' || (o.payment_status === 'paid' && o.status === 'Cancelled')) {
+                combinedData.push({
+                    type: 'expense',
+                    source: 'refund',
+                    amount: parseFloat(o.total_price),
+                    desc: `Hoàn tiền đơn hủy (Tự động)`,
+                    refId: '#O_' + o.id.toString(),
+                    createdAt: new Date(o.updated_at || o.created_at)
+                });
+            }
         });
 
         restockData.forEach(r => {

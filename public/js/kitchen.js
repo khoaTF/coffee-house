@@ -370,9 +370,15 @@ window.updateOrderStatus = async (orderId, newStatus, btn) => {
             if (mins) updatePayload.estimated_minutes = mins;
         }
 
+        if (newStatus === 'Cancelled') {
+            const order = orders.find(o => o._id === orderId || o.id === orderId);
+            if (order && (order.payment_status === 'paid' || order.is_paid)) {
+                updatePayload.payment_status = 'refunded';
+            }
+        }
+
         const { error } = await supabase.from('orders').update(updatePayload).eq('id', orderId);
         if (error) throw error;
-
 
         // B3: Hoàn kho tự động khi hủy đơn từ bếp
         if (newStatus === 'Cancelled') {

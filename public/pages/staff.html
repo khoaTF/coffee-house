@@ -265,10 +265,11 @@
             document.getElementById('tables-loader').style.display = 'block';
             document.getElementById('tables-grid').innerHTML = '';
             try {
+                // Fetch active orders OR completed orders that are not paid yet
                 const { data, error } = await supabase
                     .from('orders')
                     .select('*')
-                    .in('status', ['Pending', 'Preparing', 'Ready']);
+                    .or('status.in.(Pending,Preparing,Ready),and(status.eq.Completed,is_paid.eq.false)');
                     
                 if (error) throw error;
                 
@@ -385,9 +386,23 @@
             
             try {
                 for (const ord of unpaidOrders) {
-                    const { error } = await supabase.from('orders').update({ is_paid: true }).eq('id', ord.id);
+                    const { error } = await supabase.from('orders').update({ is_paid: true, payment_status: 'paid' }).eq('id', ord.id);
                     if (error) throw new Error("Cập nhật DB thất bại: " + error.message);
                     
+                    // --- Ghi giao dịch vào cash_transactions ---
+                    const amount = ord.total_price || 0;
+                    if (amount > 0) {
+                        const orderIdShort = String(ord.id).substring(0, 8);
+                        const { error: txErr } = await supabase.from('cash_transactions').insert({
+                            type: 'income',
+                            amount: amount,
+                            description: `Thu tiền bàn ${currentSelectedTable} đơn #${orderIdShort}`,
+                            category: 'order_payment',
+                            created_by: staffName
+                        });
+                        if (txErr) console.warn('Lỗi ghi sổ quỹ:', txErr.message);
+                    }
+
                     // --- Cộng điểm Thành viên ---
                     if (ord.customer_phone && ord.earned_points > 0) {
                         const { data: cData } = await supabase.from('customers').select('*').eq('phone', ord.customer_phone).maybeSingle();
@@ -710,9 +725,23 @@
         async function confirmPayment(orderId) {
             if(!confirm("Xác nhận đã thu thành công tiền order này? Bàn sẽ được dọn tự động để khách mới quét mã.")) return;
             try {
-                const { error: ordErr, data: ordData } = await supabase.from('orders').update({ is_paid: true }).eq('id', orderId).select('table_number').single();
+                const { error: ordErr, data: ordData } = await supabase.from('orders').update({ is_paid: true, payment_status: 'paid' }).eq('id', orderId).select('table_number, total_price').single();
                 if(ordErr) throw ordErr;
                 
+                // --- Ghi giao dịch vào cash_transactions ---
+                const amount = ordData.total_price || 0;
+                if (amount > 0) {
+                    const orderIdShort = String(orderId).substring(0, 8);
+                    const { error: txErr } = await supabase.from('cash_transactions').insert({
+                        type: 'income',
+                        amount: amount,
+                        description: `Thu tiền đơn #${orderIdShort} (Bàn ${ordData.table_number || '?'})`,
+                        category: 'order_payment',
+                        created_by: staffName
+                    });
+                    if (txErr) console.warn('Lỗi ghi sổ quỹ:', txErr.message);
+                }
+
                 // Auto-clear table session for new customers
                 if (ordData && ordData.table_number) {
                     await supabase.from('table_sessions').delete().eq('table_number', ordData.table_number);
