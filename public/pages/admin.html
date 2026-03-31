@@ -960,7 +960,7 @@
     <!-- Choice Recipe Modal -->
     <div class="modal fade" id="choiceRecipeModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
-            <div class="modal-content bg-dark text-light border-secondary">
+            <div class="modal-content bg-white text-slate-800 border-slate-200">
                 <div class="modal-header border-secondary">
                     <h5 class="modal-title" id="choiceRecipeModalLabel">Công thức riêng cho Lựa chọn</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -971,7 +971,7 @@
                         <label class="form-check-label text-warning fw-bold" for="choiceIsAbsolute">
                             <i class="fa-solid fa-triangle-exclamation"></i> Ghi đè tuyệt đối (Dùng cho Size)
                         </label>
-                        <div class="mt-2 text-light" style="font-size: 0.85rem;">
+                        <div class="mt-2 text-slate-800" style="font-size: 0.85rem;">
                             - <strong>BẬT</strong>: Thay thế hoàn toàn công thức của món ăn bằng công thức này (VD: Ly Size L có chuẩn tỷ lệ riêng).<br>
                             - <strong>TẮT</strong>: Công thức dưới đây sẽ được <em>cộng dồn</em> vào đơn hàng (VD: Thêm 50g Trân Châu / Thêm 20g Sữa đặc).
                         </div>
@@ -1295,20 +1295,20 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Số lượng tồn kho</label>
-                            <input type="number" id="ingStock" class="form-control bg-dark text-light border-secondary" required min="0" step="any">
+                            <input type="number" id="ingStock" class="form-control bg-white text-slate-800 border-slate-200" required min="0" step="any">
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Giá nhập (VNĐ / 1 đơn vị)</label>
-                            <input type="number" id="ingCostPrice" class="form-control bg-dark text-light border-secondary" placeholder="Tự động dùng để tính lợi nhuận" min="0">
+                            <input type="number" id="ingCostPrice" class="form-control bg-white text-slate-800 border-slate-200" placeholder="Tự động dùng để tính lợi nhuận" min="0">
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Mức báo động (Sắp hết)</label>
-                            <input type="number" id="ingThreshold" class="form-control bg-dark text-light border-secondary" value="50" min="0" step="any">
+                            <input type="number" id="ingThreshold" class="form-control bg-white text-slate-800 border-slate-200" value="50" min="0" step="any">
                             <small class="text-muted">Hệ thống sẽ cảnh báo nếu tồn kho thấp hơn mức này.</small>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Nhà cung cấp (Tùy chọn)</label>
-                            <input type="text" id="ingSupplierName" class="form-control bg-dark text-light border-secondary" placeholder="Tên công ty hoặc SĐT">
+                            <input type="text" id="ingSupplierName" class="form-control bg-white text-slate-800 border-slate-200" placeholder="Tên công ty hoặc SĐT">
                         </div>
                     </form>
                 </div>
@@ -1333,32 +1333,32 @@
                         <input type="hidden" id="quickPromoId">
                         <div class="text-center mb-3">
                             <h6 id="quickPromoName" class="text-info fw-bold mb-1">Tên món</h6>
-                            <div class="badge bg-secondary bg-opacity-25 text-light border border-secondary p-2">Giá gốc: <span id="quickPromoOriginalPrice" class="fw-bold text-warning">0 đ</span></div>
+                            <div class="badge bg-secondary bg-opacity-25 text-slate-800 border border-secondary p-2">Giá gốc: <span id="quickPromoOriginalPrice" class="fw-bold text-warning">0 đ</span></div>
                         </div>
                         <input type="hidden" id="quickPromoOriginalPriceValue">
                         <div class="row mb-3">
                             <div class="col-6 pe-1">
-                                <label class="form-label text-light small">Giảm theo %</label>
+                                <label class="form-label text-slate-800 small">Giảm theo %</label>
                                 <div class="input-group input-group-sm">
-                                    <input type="number" id="quickPromoPercentInput" class="form-control bg-dark text-light border-danger" placeholder="Vd: 10" min="0" max="100">
-                                    <span class="input-group-text bg-danger text-light border-danger">%</span>
+                                    <input type="number" id="quickPromoPercentInput" class="form-control bg-white text-slate-800 border-red-300" placeholder="Vd: 10" min="0" max="100">
+                                    <span class="input-group-text bg-red-500 text-white border-red-500">%</span>
                                 </div>
                             </div>
                             <div class="col-6 ps-1">
-                                <label class="form-label text-light small">Hoặc nhập VNĐ</label>
-                                <input type="number" id="quickPromoPriceInput" class="form-control bg-dark text-light border-danger form-control-sm" placeholder="Giá sau giảm">
+                                <label class="form-label text-slate-800 small">Hoặc nhập VNĐ</label>
+                                <input type="number" id="quickPromoPriceInput" class="form-control bg-white text-slate-800 border-red-300 form-control-sm" placeholder="Giá sau giảm">
                             </div>
                             <div class="col-12 mt-1">
                                 <small class="text-muted" style="font-size: 0.75rem;">Để trống cả hai để hủy khuyến mãi</small>
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label text-light small">Bắt đầu KM</label>
-                            <input type="datetime-local" class="form-control bg-dark text-light border-secondary" id="quickPromoStart">
+                            <label class="form-label text-slate-800 small">Bắt đầu KM</label>
+                            <input type="datetime-local" class="form-control bg-white text-slate-800 border-slate-200" id="quickPromoStart">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label text-light small">Kết thúc KM</label>
-                            <input type="datetime-local" class="form-control bg-dark text-light border-secondary" id="quickPromoEnd">
+                            <label class="form-label text-slate-800 small">Kết thúc KM</label>
+                            <input type="datetime-local" class="form-control bg-white text-slate-800 border-slate-200" id="quickPromoEnd">
                         </div>
                     </form>
                 </div>
@@ -1433,7 +1433,7 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Điểm tích lũy hiện tại</label>
-                            <input type="number" class="form-control fw-bold text-warning bg-dark" id="customerPoints" required>
+                            <input type="number" class="form-control fw-bold text-warning bg-white" id="customerPoints" required>
                             <small class="text-muted">Bạn có thể điều chỉnh cộng/trừ điểm thủ công.</small>
                         </div>
                     </form>
