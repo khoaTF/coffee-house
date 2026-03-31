@@ -188,6 +188,12 @@ function closeCategoryModal() {
 async function acquireTableLock() {
     const STALE_THRESHOLD = 2 * 60 * 60 * 1000; // 2 hours = cafe session timeout
     try {
+        // --- AUTO-TRANSFER: Detect if customer has an active session at a DIFFERENT table ---
+        const transferred = await checkAutoTransfer();
+        if (transferred) {
+            // Session was transferred to this table — proceed normally
+        }
+
         const { data: existing } = await supabase
             .from('table_sessions')
             .select('session_id, last_seen')
@@ -251,6 +257,75 @@ async function acquireTableLock() {
         fetchMenu();
         attachEventListeners();
         setupRealtimeSubscription();
+    }
+}
+
+// --- Auto-Transfer: customer scans different table QR while having active session elsewhere ---
+async function checkAutoTransfer() {
+    try {
+        // Scan sessionStorage for cafe_session_* keys from OTHER tables
+        let oldTableNum = null;
+        let oldSessionId = null;
+
+        for (let i = 0; i < sessionStorage.length; i++) {
+            const key = sessionStorage.key(i);
+            if (key && key.startsWith('cafe_session_') && key !== sessionKey) {
+                const tNum = key.replace('cafe_session_', '');
+                const sId = sessionStorage.getItem(key);
+                if (sId && tNum !== TABLE_NUMBER) {
+                    oldTableNum = tNum;
+                    oldSessionId = sId;
+                    break;
+                }
+            }
+        }
+
+        if (!oldTableNum || !oldSessionId) return false;
+
+        // Check if old session has active (unpaid) orders
+        const { data: oldOrders } = await supabase
+            .from('orders')
+            .select('id, status, is_paid')
+            .eq('session_id', oldSessionId)
+            .in('status', ['Pending', 'Preparing', 'Ready', 'Completed'])
+            .eq('is_paid', false);
+
+        if (!oldOrders || oldOrders.length === 0) {
+            // No active orders at old table — just clean up old key
+            sessionStorage.removeItem('cafe_session_' + oldTableNum);
+            return false;
+        }
+
+        // Ask customer if they want to transfer
+        const wantTransfer = await customerConfirm(
+            `Bạn đang có ${oldOrders.length} đơn hàng ở Bàn ${oldTableNum}.\nChuyển tất cả sang Bàn ${TABLE_NUMBER}?`
+        );
+
+        if (wantTransfer) {
+            // Transfer all orders to new table
+            for (const ord of oldOrders) {
+                await supabase.from('orders').update({ table_number: TABLE_NUMBER.toString() }).eq('id', ord.id);
+            }
+            // Transfer table_session
+            await supabase.from('table_sessions')
+                .update({ table_number: TABLE_NUMBER.toString(), last_seen: new Date().toISOString() })
+                .eq('session_id', oldSessionId);
+
+            // Reuse old session ID at new table
+            sessionId = oldSessionId;
+            sessionStorage.setItem(sessionKey, sessionId);
+            sessionStorage.removeItem('cafe_session_' + oldTableNum);
+
+            console.log(`Auto-transferred ${oldOrders.length} orders from Table ${oldTableNum} → Table ${TABLE_NUMBER}`);
+            return true;
+        } else {
+            // Customer chose not to transfer — clean up old key, start fresh
+            sessionStorage.removeItem('cafe_session_' + oldTableNum);
+            return false;
+        }
+    } catch (e) {
+        console.warn('Auto-transfer check failed:', e.message);
+        return false;
     }
 }
 
