@@ -20,16 +20,16 @@ window.initPOS = async function() {
                 <h2 class="font-noto text-2xl font-bold text-[#F2E8D5] mb-1 flex items-center gap-2">
                     <i class="fa-solid fa-cash-register text-[#C0A062]"></i> POS Bán hàng
                 </h2>
-                <p class="text-sm text-[#A89F88] mb-0">Đặt hàng nhanh thay khách từ quầy thu ngân.</p>
+                <p class="text-sm text-slate-500 mb-0">Đặt hàng nhanh thay khách từ quầy thu ngân.</p>
             </div>
             
-            <div class="flex items-center gap-2 bg-[#1A1814] px-4 py-2 rounded-xl border border-[#3A3528] shadow-soft">
-                <div id="pos-header-avatar" class="w-8 h-8 rounded-full border border-[#C0A062] flex items-center justify-center overflow-hidden bg-[#232018]">
+            <div class="flex items-center gap-2 bg-slate-50 px-4 py-2 rounded-xl border border-slate-200 shadow-soft">
+                <div id="pos-header-avatar" class="w-8 h-8 rounded-full border border-[#C0A062] flex items-center justify-center overflow-hidden bg-white">
                     ${sessionStorage.getItem('nohope_staff_avatar') ? `<img src="${sessionStorage.getItem('nohope_staff_avatar')}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-user text-[#C0A062] text-xs"></i>`}
                 </div>
                 <div class="flex flex-col justify-center">
-                    <span class="text-[#E8DCC4] text-sm font-bold leading-none">${sessionStorage.getItem('nohope_staff_name') || 'Cashier'}</span>
-                    <span class="text-[#A89F88] text-[10px] leading-tight font-semibold mt-1 uppercase tracking-wider">Thu ngân v2.0</span>
+                    <span class="text-slate-800 text-sm font-bold leading-none">${sessionStorage.getItem('nohope_staff_name') || 'Cashier'}</span>
+                    <span class="text-slate-500 text-[10px] leading-tight font-semibold mt-1 uppercase tracking-wider">Thu ngân v2.0</span>
                 </div>
             </div>
         </div>
@@ -39,17 +39,17 @@ window.initPOS = async function() {
             <div class="lg:col-span-2">
                 <!-- Table selector + search -->
                 <div class="flex gap-3 mb-4">
-                    <div class="flex items-center gap-2 bg-[#232018] border border-[#3A3528] rounded-xl px-4 py-2 flex-shrink-0">
+                    <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2 flex-shrink-0">
                         <i class="fa-solid fa-chair text-[#C0A062]"></i>
-                        <label class="text-sm text-[#A89F88] font-semibold">Đơn:</label>
-                        <select id="pos-table-select" class="bg-transparent text-[#E8DCC4] font-bold text-sm focus:outline-none" onchange="posSelectTable(this.value)">
-                            <option value="POS" class="bg-[#232018] text-[#E8DCC4]" selected>Mang đi (POS)</option>
-                            ${Array.from({length:20}, (_,i) => `<option value="${i+1}" class="bg-[#232018] text-[#E8DCC4]">Bàn ${i+1}</option>`).join('')}
+                        <label class="text-sm text-slate-500 font-semibold">Đơn:</label>
+                        <select id="pos-table-select" class="bg-transparent text-slate-800 font-bold text-sm focus:outline-none" onchange="posSelectTable(this.value)">
+                            <option value="POS" class="bg-white text-slate-800" selected>Mang đi (POS)</option>
+                            ${Array.from({length:20}, (_,i) => `<option value="${i+1}" class="bg-white text-slate-800">Bàn ${i+1}</option>`).join('')}
                         </select>
                     </div>
                     <div class="relative flex-1">
-                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-[#A89F88]"></i>
-                        <input id="pos-search" type="search" placeholder="Tìm món..." class="w-full pl-9 pr-4 py-2.5 bg-[#232018] border border-[#3A3528] rounded-xl text-[#E8DCC4] placeholder-[#A89F88] focus:outline-none focus:border-[#C0A062] text-sm" oninput="posFilterProducts(this.value)">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"></i>
+                        <input id="pos-search" type="search" placeholder="Tìm món..." class="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-800 placeholder-[#64748b] focus:outline-none focus:border-[#C0A062] text-sm" oninput="posFilterProducts(this.value)">
                     </div>
                 </div>
 
@@ -58,36 +58,36 @@ window.initPOS = async function() {
 
                 <!-- Products grid -->
                 <div id="pos-products-grid" class="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    <div class="col-span-full text-center py-10 text-[#A89F88]"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tải thực đơn...</div>
+                    <div class="col-span-full text-center py-10 text-slate-500"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tải thực đơn...</div>
                 </div>
             </div>
 
             <!-- Cart Panel -->
             <div class="lg:col-span-1">
-                <div class="card bg-[#232018] border border-[#3A3528] rounded-2xl overflow-hidden sticky top-4">
-                    <div class="p-4 border-b border-[#3A3528] flex justify-between items-center">
+                <div class="card bg-white border border-slate-200 rounded-2xl overflow-hidden sticky top-4">
+                    <div class="p-4 border-b border-slate-200 flex justify-between items-center">
                         <h5 class="font-bold text-[#F2E8D5] mb-0 flex items-center gap-2">
                             <i class="fa-solid fa-cart-shopping text-[#C0A062]"></i> Giỏ hàng
-                            <span id="pos-cart-count" class="text-xs font-bold bg-[#1A1814] bg-[#C0A062] rounded-full px-2 py-0.5" style="background-color: #C0A062;">0</span>
+                            <span id="pos-cart-count" class="text-xs font-bold bg-slate-50 bg-[#C0A062] rounded-full px-2 py-0.5" style="background-color: #C0A062;">0</span>
                         </h5>
-                        <button class="text-xs text-[#A89F88] hover:text-red-400 transition-colors border-0 bg-transparent" onclick="posClearCart()">
+                        <button class="text-xs text-slate-500 hover:text-red-400 transition-colors border-0 bg-transparent" onclick="posClearCart()">
                             <i class="fa-solid fa-trash"></i> Xóa
                         </button>
                     </div>
 
                     <div id="pos-cart-items" class="p-4 space-y-3 max-h-[320px] overflow-y-auto custom-scrollbar">
-                        <div class="text-center py-8 text-[#A89F88] text-sm">Chưa có món nào</div>
+                        <div class="text-center py-8 text-slate-500 text-sm">Chưa có món nào</div>
                     </div>
 
-                    <div class="border-t border-[#3A3528] p-4">
+                    <div class="border-t border-slate-200 p-4">
                         <div class="flex justify-between items-center mb-4">
-                            <span class="text-[#A89F88] font-semibold">Tổng cộng:</span>
+                            <span class="text-slate-500 font-semibold">Tổng cộng:</span>
                             <span id="pos-cart-total" class="text-xl font-bold text-[#C0A062]">0 đ</span>
                         </div>
                         <div class="mb-3">
-                            <input id="pos-order-note" type="text" placeholder="Ghi chú đơn hàng (nếu có)..." class="w-full px-3 py-2 bg-[#1A1814] border border-[#3A3528] rounded-xl text-[#E8DCC4] placeholder-[#A89F88] text-sm focus:outline-none focus:border-[#C0A062]">
+                            <input id="pos-order-note" type="text" placeholder="Ghi chú đơn hàng (nếu có)..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-[#64748b] text-sm focus:outline-none focus:border-[#C0A062]">
                         </div>
-                        <button id="pos-submit-btn" class="w-full py-3 rounded-xl font-bold text-[#1A1814] text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2" style="background:#C0A062;" onclick="posSubmitOrder()">
+                        <button id="pos-submit-btn" class="w-full py-3 rounded-xl font-bold text-[#f8fafc] text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2" style="background:#C0A062;" onclick="posSubmitOrder()">
                             <i class="fa-solid fa-paper-plane"></i> Gửi đơn hàng
                         </button>
                     </div>
@@ -99,17 +99,17 @@ window.initPOS = async function() {
 
         <!-- POS Options Modal -->
         <div id="pos-options-modal" class="hidden fixed inset-0 bg-black/80 z-[60] flex items-center justify-center p-4">
-            <div class="bg-[#232018] border border-[#3A3528] rounded-2xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
-                <div class="px-5 py-4 border-b border-[#3A3528] flex justify-between items-center">
-                    <h3 id="pos-options-modal-title" class="font-bold text-[#E8DCC4] text-lg">Tùy chọn</h3>
-                    <button class="text-[#A89F88] hover:text-[#E8DCC4] bg-transparent border-none" onclick="posCloseOptionsModal()">
+            <div class="bg-white border border-slate-200 rounded-2xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
+                <div class="px-5 py-4 border-b border-slate-200 flex justify-between items-center">
+                    <h3 id="pos-options-modal-title" class="font-bold text-slate-800 text-lg">Tùy chọn</h3>
+                    <button class="text-slate-500 hover:text-slate-800 bg-transparent border-none" onclick="posCloseOptionsModal()">
                         <i class="fa-solid fa-xmark text-xl"></i>
                     </button>
                 </div>
                 <div id="pos-options-container" class="p-5 overflow-y-auto custom-scrollbar flex-1 space-y-4">
                 </div>
-                <div class="px-5 py-4 border-t border-[#3A3528] bg-[#1A1814]">
-                    <button class="w-full py-3 rounded-xl font-bold flex justify-center items-center gap-2 hover:opacity-90 transition-opacity text-[#1A1814]" style="background:#C0A062;" onclick="posConfirmOptions()">
+                <div class="px-5 py-4 border-t border-slate-200 bg-slate-50">
+                    <button class="w-full py-3 rounded-xl font-bold flex justify-center items-center gap-2 hover:opacity-90 transition-opacity text-[#f8fafc]" style="background:#C0A062;" onclick="posConfirmOptions()">
                         <i class="fa-solid fa-check"></i> Xác nhận
                     </button>
                 </div>
@@ -148,7 +148,7 @@ function posRenderCategories() {
     if (!categoriesEl) return;
     const cats = ['Tất cả', ...new Set(posProductsList.map(p => p.category).filter(Boolean))];
     categoriesEl.innerHTML = cats.map((cat, i) => `
-        <button class="pos-cat-btn flex-shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${i === 0 ? 'bg-[#C0A062] text-[#1A1814]' : 'bg-[#232018] border border-[#3A3528] text-[#A89F88] hover:text-[#E8DCC4]'}"
+        <button class="pos-cat-btn flex-shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${i === 0 ? 'bg-[#C0A062] text-[#f8fafc]' : 'bg-white border border-slate-200 text-slate-500 hover:text-slate-800'}"
             onclick="posFilterByCategory('${window.escapeHTML(cat)}', this)">
             ${window.escapeHTML(cat)}
         </button>
@@ -157,9 +157,9 @@ function posRenderCategories() {
 
 window.posFilterByCategory = function(cat, btn) {
     document.querySelectorAll('.pos-cat-btn').forEach(b => {
-        b.className = 'pos-cat-btn flex-shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all bg-[#232018] border border-[#3A3528] text-[#A89F88] hover:text-[#E8DCC4]';
+        b.className = 'pos-cat-btn flex-shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all bg-white border border-slate-200 text-slate-500 hover:text-slate-800';
     });
-    btn.className = 'pos-cat-btn flex-shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all bg-[#C0A062] text-[#1A1814]';
+    btn.className = 'pos-cat-btn flex-shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all bg-[#C0A062] text-[#f8fafc]';
     const filtered = cat === 'Tất cả' ? posProductsList : posProductsList.filter(p => p.category === cat);
     posRenderProducts(filtered);
 };
@@ -174,7 +174,7 @@ function posRenderProducts(list) {
     const grid = document.getElementById('pos-products-grid');
     if (!grid) return;
     if (list.length === 0) {
-        grid.innerHTML = '<div class="col-span-full text-center py-10 text-[#A89F88]">Không tìm thấy món phù hợp.</div>';
+        grid.innerHTML = '<div class="col-span-full text-center py-10 text-slate-500">Không tìm thấy món phù hợp.</div>';
         return;
     }
     grid.innerHTML = list.map(p => {
@@ -183,13 +183,13 @@ function posRenderProducts(list) {
         const isOutOfStock = !canAddMore;
 
         return `
-            <div class="card bg-[#232018] border border-[#3A3528] rounded-2xl overflow-hidden cursor-pointer hover:border-[#C0A062] transition-all active:scale-95 group ${isOutOfStock ? 'opacity-50 saturate-50' : ''}" onclick="posAddToCart('${p.id}')">
-                <div class="relative w-full h-24 bg-[#3A3528] flex items-center justify-center">
-                    ${p.image_url ? `<img src="${window.escapeHTML(p.image_url)}" alt="" class="w-full h-full object-cover" onerror="this.onerror=null; this.outerHTML='<i class=\\'fa-solid fa-mug-hot text-[#A89F88] text-2xl\\'></i>';">` : '<i class="fa-solid fa-mug-hot text-[#A89F88] text-2xl"></i>'}
+            <div class="card bg-white border border-slate-200 rounded-2xl overflow-hidden cursor-pointer hover:border-[#C0A062] transition-all active:scale-95 group ${isOutOfStock ? 'opacity-50 saturate-50' : ''}" onclick="posAddToCart('${p.id}')">
+                <div class="relative w-full h-24 bg-[#e2e8f0] flex items-center justify-center">
+                    ${p.image_url ? `<img src="${window.escapeHTML(p.image_url)}" alt="" class="w-full h-full object-cover" onerror="this.onerror=null; this.outerHTML='<i class=\\'fa-solid fa-mug-hot text-slate-500 text-2xl\\'></i>';">` : '<i class="fa-solid fa-mug-hot text-slate-500 text-2xl"></i>'}
                     ${isOutOfStock ? '<div class="absolute inset-0 bg-black/50 flex items-center justify-center z-10"><span class="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">Hết hàng</span></div>' : ''}
                 </div>
                 <div class="p-3">
-                    <div class="text-sm font-bold text-[#E8DCC4] line-clamp-1 group-hover:text-[#C0A062] transition-colors">${window.escapeHTML(p.name)}</div>
+                    <div class="text-sm font-bold text-slate-800 line-clamp-1 group-hover:text-[#C0A062] transition-colors">${window.escapeHTML(p.name)}</div>
                     <div class="text-sm font-bold text-[#C0A062] mt-1">${price.toLocaleString('vi-VN')} đ</div>
                 </div>
             </div>
@@ -290,7 +290,7 @@ window.posOpenOptionsModal = function(item) {
             const groupName = group.name;
             const containerDiv = document.createElement('div');
             containerDiv.className = 'mb-3';
-            containerDiv.innerHTML = `<h3 class="text-[#E8DCC4] font-bold mb-2">${window.escapeHTML(groupName)}</h3>`;
+            containerDiv.innerHTML = `<h3 class="text-slate-800 font-bold mb-2">${window.escapeHTML(groupName)}</h3>`;
             
             group.items.forEach((cItem, itemIndex) => {
                 const p = posProductsList.find(x => x.id === cItem.id);
@@ -300,10 +300,10 @@ window.posOpenOptionsModal = function(item) {
                 const priceExtraText = cItem.priceExtra > 0 ? `+${cItem.priceExtra.toLocaleString('vi-VN')}đ` : '';
                 
                 containerDiv.innerHTML += `
-                    <label class="flex items-center justify-between p-3 border border-[#3A3528] rounded-xl mb-2 cursor-pointer hover:border-[#C0A062] transition-colors">
+                    <label class="flex items-center justify-between p-3 border border-slate-200 rounded-xl mb-2 cursor-pointer hover:border-[#C0A062] transition-colors">
                         <div class="flex items-center gap-3">
                             <input type="radio" name="pos_combo_${groupIndex}" value="${window.escapeHTML(cItem.id)}" data-name="${window.escapeHTML(choiceName)}" data-price="${cItem.priceExtra}" ${isChecked} class="accent-[#C0A062] w-4 h-4">
-                            <span class="text-[#E8DCC4] text-sm">${window.escapeHTML(choiceName)}</span>
+                            <span class="text-slate-800 text-sm">${window.escapeHTML(choiceName)}</span>
                         </div>
                         <span class="text-[#C0A062] text-sm">${priceExtraText}</span>
                     </label>
@@ -316,7 +316,7 @@ window.posOpenOptionsModal = function(item) {
             const optName = opt.name || opt.optionName;
             const group = document.createElement('div');
             group.className = 'mb-3';
-            group.innerHTML = `<h3 class="text-[#E8DCC4] font-bold mb-2">${window.escapeHTML(optName)}</h3>`;
+            group.innerHTML = `<h3 class="text-slate-800 font-bold mb-2">${window.escapeHTML(optName)}</h3>`;
             
             opt.choices.forEach((choice, choiceIndex) => {
                 const choiceName = choice.name || choice.choiceName;
@@ -325,10 +325,10 @@ window.posOpenOptionsModal = function(item) {
                 const recipeData = choice.recipe ? encodeURIComponent(JSON.stringify(choice.recipe)) : '';
                 
                 group.innerHTML += `
-                    <label class="flex items-center justify-between p-3 border border-[#3A3528] rounded-xl mb-2 cursor-pointer hover:border-[#C0A062] transition-colors">
+                    <label class="flex items-center justify-between p-3 border border-slate-200 rounded-xl mb-2 cursor-pointer hover:border-[#C0A062] transition-colors">
                         <div class="flex items-center gap-3">
                             <input type="radio" name="pos_opt_${optIndex}" value="${window.escapeHTML(choiceName)}" data-price="${choice.priceExtra}" data-recipe="${recipeData}" ${isChecked} class="accent-[#C0A062] w-4 h-4">
-                            <span class="text-[#E8DCC4] text-sm">${window.escapeHTML(choiceName)}</span>
+                            <span class="text-slate-800 text-sm">${window.escapeHTML(choiceName)}</span>
                         </div>
                         <span class="text-[#C0A062] text-sm">${priceExtraText}</span>
                     </label>
@@ -437,7 +437,7 @@ function posRenderCart() {
     posRenderProducts(posProductsList.filter(p => document.getElementById('pos-search')?.value ? p.name.toLowerCase().includes(document.getElementById('pos-search').value.toLowerCase()) : true));
 
     if (posCart.length === 0) {
-        el.innerHTML = '<div class="text-center py-8 text-[#A89F88] text-sm">Chưa có món nào</div>';
+        el.innerHTML = '<div class="text-center py-8 text-slate-500 text-sm">Chưa có món nào</div>';
         return;
     }
 
@@ -445,20 +445,20 @@ function posRenderCart() {
         const optionsPrice = (c.selectedOptions || []).reduce((sum, o) => sum + o.priceExtra, 0);
         const itemTotal = (c.price + optionsPrice) * c.quantity;
         const optionsHtml = (c.selectedOptions && c.selectedOptions.length > 0) 
-            ? `<div class="text-xs text-[#A89F88] mt-1">+ ${c.selectedOptions.map(o => window.escapeHTML(o.choiceName)).join(', ')}</div>` 
+            ? `<div class="text-xs text-slate-500 mt-1">+ ${c.selectedOptions.map(o => window.escapeHTML(o.choiceName)).join(', ')}</div>` 
             : '';
             
         return `
-        <div class="flex items-center justify-between gap-2 py-2 border-b border-[#3A3528] last:border-0">
+        <div class="flex items-center justify-between gap-2 py-2 border-b border-slate-200 last:border-0">
             <div class="flex-1 min-w-0">
-                <div class="text-sm font-semibold text-[#E8DCC4] truncate">${window.escapeHTML(c.name)}</div>
+                <div class="text-sm font-semibold text-slate-800 truncate">${window.escapeHTML(c.name)}</div>
                 ${optionsHtml}
                 <div class="text-xs text-[#C0A062] mt-1">${itemTotal.toLocaleString('vi-VN')} đ</div>
             </div>
             <div class="flex items-center gap-1 flex-shrink-0">
-                <button class="w-6 h-6 rounded-lg bg-[#3A3528] text-[#E8DCC4] text-xs hover:bg-red-900/40 transition-colors flex items-center justify-center" onclick="posUpdateQty('${c.cartKey || c.id}', -1)">−</button>
-                <span class="w-6 text-center text-sm font-bold text-[#E8DCC4]">${c.quantity}</span>
-                <button class="w-6 h-6 rounded-lg bg-[#3A3528] text-[#E8DCC4] text-xs hover:bg-green-900/40 transition-colors flex items-center justify-center" onclick="posUpdateQty('${c.cartKey || c.id}', 1)">+</button>
+                <button class="w-6 h-6 rounded-lg bg-[#e2e8f0] text-slate-800 text-xs hover:bg-red-900/40 transition-colors flex items-center justify-center" onclick="posUpdateQty('${c.cartKey || c.id}', -1)">−</button>
+                <span class="w-6 text-center text-sm font-bold text-slate-800">${c.quantity}</span>
+                <button class="w-6 h-6 rounded-lg bg-[#e2e8f0] text-slate-800 text-xs hover:bg-green-900/40 transition-colors flex items-center justify-center" onclick="posUpdateQty('${c.cartKey || c.id}', 1)">+</button>
             </div>
         </div>
         `;

@@ -84,7 +84,7 @@ async function fetchCashflowData() {
     const endISO = endDate.toISOString();
 
     const tbody = document.getElementById('cashflow-table-body');
-    if(tbody) tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-[#A89F88]"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tải dữ liệu...</td></tr>`;
+    if(tbody) tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-500"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tải dữ liệu...</td></tr>`;
 
     try {
         const { data: manualData, error: manualErr } = await supabase
@@ -206,43 +206,43 @@ function renderCashflowKPI(data) {
     if (!kpiContainer) return;
 
     kpiContainer.innerHTML = `
-        <div class="card bg-[#232018] border border-[#3A3528] rounded-2xl p-4 shadow-soft relative overflow-hidden">
+        <div class="card bg-white border border-slate-200 rounded-2xl p-4 shadow-soft relative overflow-hidden">
             <div class="flex justify-between items-start mb-2">
                 <div>
-                    <h6 class="text-[#A89F88] font-semibold text-sm mb-1">Tổng Thu</h6>
+                    <h6 class="text-slate-500 font-semibold text-sm mb-1">Tổng Thu</h6>
                     <h3 class="font-noto font-bold text-success text-2xl mb-0">${totalIncome.toLocaleString()}đ</h3>
                 </div>
                 <div class="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center">
                     <i class="fa-solid fa-arrow-down text-success"></i>
                 </div>
             </div>
-            <p class="text-xs text-[#A89F88] mb-0 mt-2">Bao gồm Cả Đơn Hàng</p>
+            <p class="text-xs text-slate-500 mb-0 mt-2">Bao gồm Cả Đơn Hàng</p>
         </div>
 
-        <div class="card bg-[#232018] border border-[#3A3528] rounded-2xl p-4 shadow-soft relative overflow-hidden">
+        <div class="card bg-white border border-slate-200 rounded-2xl p-4 shadow-soft relative overflow-hidden">
             <div class="flex justify-between items-start mb-2">
                 <div>
-                    <h6 class="text-[#A89F88] font-semibold text-sm mb-1">Tổng Chi</h6>
+                    <h6 class="text-slate-500 font-semibold text-sm mb-1">Tổng Chi</h6>
                     <h3 class="font-noto font-bold text-danger text-2xl mb-0">${totalExpense.toLocaleString()}đ</h3>
                 </div>
                 <div class="w-10 h-10 rounded-xl bg-danger/10 flex items-center justify-center">
                     <i class="fa-solid fa-arrow-up text-danger"></i>
                 </div>
             </div>
-            <p class="text-xs text-[#A89F88] mb-0 mt-2">Bao gồm phiếu nhập hàng</p>
+            <p class="text-xs text-slate-500 mb-0 mt-2">Bao gồm phiếu nhập hàng</p>
         </div>
 
-        <div class="card bg-[#232018] border border-[#3A3528] rounded-2xl p-4 shadow-soft relative overflow-hidden">
+        <div class="card bg-white border border-slate-200 rounded-2xl p-4 shadow-soft relative overflow-hidden">
             <div class="flex justify-between items-start mb-2">
                 <div>
-                    <h6 class="text-[#A89F88] font-semibold text-sm mb-1">Thực Thu (Lợi Nhuận)</h6>
+                    <h6 class="text-slate-500 font-semibold text-sm mb-1">Thực Thu (Lợi Nhuận)</h6>
                     <h3 class="font-noto font-bold ${profitColor} text-2xl mb-0">${netProfit.toLocaleString()}đ</h3>
                 </div>
                 <div class="w-10 h-10 rounded-xl ${netProfit >= 0 ? 'bg-success/10' : 'bg-danger/10'} flex items-center justify-center">
                     <i class="fa-solid ${profitIcon} ${profitColor}"></i>
                 </div>
             </div>
-            <p class="text-xs text-[#A89F88] mb-0 mt-2">Đã trừ mọi khoản chi</p>
+            <p class="text-xs text-slate-500 mb-0 mt-2">Đã trừ mọi khoản chi</p>
         </div>
     `;
 }
@@ -252,7 +252,7 @@ function renderCashflowTable(data) {
     if (!tbody) return;
 
     if (data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-[#A89F88]">Không có giao dịch nào trong thời gian này</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-500">Không có giao dịch nào trong thời gian này</td></tr>`;
         return;
     }
 
@@ -265,12 +265,12 @@ function renderCashflowTable(data) {
         const srcIcon = item.source === 'order' ? '<i class="fa-solid fa-receipt me-1"></i>' : (item.source === 'restock' ? '<i class="fa-solid fa-box-open me-1"></i>' : '<i class="fa-solid fa-pen-to-square me-1"></i>');
 
         html += `
-            <tr class="hover:bg-[#3A3528]/30 transition-colors border-b border-[#3A3528]">
-                <td class="py-3 px-4"><div class="text-[#E8DCC4]">${dateStr}</div></td>
+            <tr class="hover:bg-[#e2e8f0]/30 transition-colors border-b border-slate-200">
+                <td class="py-3 px-4"><div class="text-slate-800">${dateStr}</div></td>
                 <td class="py-3 px-4 text-[#C0A062] font-mono text-sm">${item.refId}</td>
                 <td class="py-3 px-4"><span class="badge ${badgeClass} border-0 rounded-lg px-2 py-1">${srcIcon}${typeText}</span></td>
-                <td class="py-3 px-4 text-[#A89F88]">${item.desc}</td>
-                <td class="py-3 px-4 text-end font-bold text-[#E8DCC4]">${sign}${item.amount.toLocaleString()}đ</td>
+                <td class="py-3 px-4 text-slate-500">${item.desc}</td>
+                <td class="py-3 px-4 text-end font-bold text-slate-800">${sign}${item.amount.toLocaleString()}đ</td>
             </tr>
         `;
     });

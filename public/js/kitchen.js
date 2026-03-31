@@ -877,25 +877,25 @@ function promptEstimatedTime() {
                 animation:slideUp 0.3s ease;
             ">
                 <div style="font-size:2rem; margin-bottom:8px;">⏱️</div>
-                <h3 style="color:#E8DCC4; font-size:1.1rem; font-weight:800; margin-bottom:4px;">Thời gian ước tính</h3>
-                <p style="color:#A89F88; font-size:0.85rem; margin-bottom:16px;">Mất khoảng bao nhiêu phút để hoàn thành?</p>
+                <h3 style="color:#1e293b; font-size:1.1rem; font-weight:800; margin-bottom:4px;">Thời gian ước tính</h3>
+                <p style="color:#64748b; font-size:0.85rem; margin-bottom:16px;">Mất khoảng bao nhiêu phút để hoàn thành?</p>
                 <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:16px;">
                     ${[5,10,15,20,30].map(m => `
                         <button onclick="document.getElementById('est-min-input').value='${m}'" style="
-                            background:#2d2a1e; border:1px solid #3A3528; color:#C0A062;
+                            background:#2d2a1e; border:1px solid #e2e8f0; color:#C0A062;
                             border-radius:10px; padding:7px 14px; font-weight:700; cursor:pointer;
                         ">${m} phút</button>
                     `).join('')}
                 </div>
                 <input id="est-min-input" type="number" min="1" max="120" placeholder="Nhập số phút..." style="
-                    width:100%; background:#232018; border:1px solid #3A3528;
-                    color:#E8DCC4; border-radius:10px; padding:10px 14px;
+                    width:100%; background:#ffffff; border:1px solid #e2e8f0;
+                    color:#1e293b; border-radius:10px; padding:10px 14px;
                     font-size:1rem; text-align:center; margin-bottom:16px; outline:none;
                 ">
                 <div style="display:flex; gap:10px;">
                     <button id="est-skip-btn" style="
-                        flex:1; background:transparent; border:1px solid #3A3528;
-                        color:#A89F88; border-radius:12px; padding:10px;
+                        flex:1; background:transparent; border:1px solid #e2e8f0;
+                        color:#64748b; border-radius:12px; padding:10px;
                         font-size:0.9rem; cursor:pointer;
                     ">Bỏ qua</button>
                     <button id="est-confirm-btn" style="
