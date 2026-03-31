@@ -57,7 +57,7 @@ function renderStaff(data) {
 
         tr.innerHTML = `
             <td class="px-4">${avatarHtml}</td>
-            <td class="font-bold text-light">${window.escapeHTML(s.name)}</td>
+            <td class="font-bold text-slate-800">${window.escapeHTML(s.name)}</td>
             <td><span class="badge ${badgeClass} text-dark rounded-xl px-2 py-1">${roleLabel}</span></td>
             <td class="font-mono text-warning font-bold tracking-widest">${s.pin || '---'}</td>
             <td class="text-end">
@@ -450,7 +450,7 @@ function renderDiscountsTable(data) {
         const isActive = d.active !== false;
 
         tr.innerHTML = `
-            <td class="font-bold text-light">${d.code}</td>
+            <td class="font-bold text-slate-800">${d.code}</td>
             <td>${d.discount_type === 'PERCENT' ? 'Phần trăm' : 'Cố định'}</td>
             <td class="text-success">${d.discount_type === 'PERCENT' ? d.value + '%' : d.value.toLocaleString('vi-VN') + ' đ'}</td>
             <td>${d.usage_limit || 'Không giới hạn'}</td>
