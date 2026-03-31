@@ -42,11 +42,8 @@ async function fetchTablesStatus() {
                 }
             }
 
-            const col = document.createElement('div');
-            col.className = 'col-6 col-md-4 col-lg-3 mb-3';
-
             const card = document.createElement('div');
-            card.className = `card h-100 text-center p-3 table-card rounded-2xl shadow-sm ${statusConfig.pulse ? 'pulse-border' : ''}`;
+            card.className = `table-card text-center p-4 rounded-2xl shadow-sm ${statusConfig.pulse ? 'pulse-border' : ''}`;
             card.style.transition = 'all 0.3s';
             card.style.background = statusConfig.color;
             card.style.border = `2px solid ${statusConfig.border}`;
@@ -57,19 +54,19 @@ async function fetchTablesStatus() {
             }
 
             const iconContainer = document.createElement('div');
-            iconContainer.className = 'icon-container fs-1 mb-2';
+            iconContainer.className = 'text-3xl mb-2';
             iconContainer.style.color = statusConfig.iconColor;
             const icon = document.createElement('i');
             icon.className = `fa-solid ${statusConfig.icon}`;
             iconContainer.appendChild(icon);
 
-            const idText = document.createElement('h5');
-            idText.className = 'mb-1 table-id-text fw-bold';
+            const idText = document.createElement('div');
+            idText.className = 'text-lg font-bold mb-1';
             idText.textContent = `Bàn ${i}`;
             idText.style.color = isOccupied ? '#1e293b' : '#94a3b8';
 
-            const statusText = document.createElement('small');
-            statusText.className = 'status-text fw-semibold';
+            const statusText = document.createElement('div');
+            statusText.className = 'text-xs font-semibold';
             statusText.style.color = statusConfig.textColor;
             statusText.textContent = statusConfig.text;
 
@@ -77,16 +74,15 @@ async function fetchTablesStatus() {
 
             if (isOccupied) {
                 const badgeContainer = document.createElement('div');
-                badgeContainer.className = 'small mt-2';
+                badgeContainer.className = 'mt-2';
                 const badge = document.createElement('span');
-                badge.className = hasUnpaid ? 'badge bg-danger' : 'badge bg-primary';
+                badge.className = `text-xs font-bold px-2 py-0.5 rounded-full text-white ${hasUnpaid ? 'bg-red-500' : 'bg-blue-500'}`;
                 badge.textContent = `${tableOrders.length} đơn hàng`;
                 badgeContainer.appendChild(badge);
                 card.appendChild(badgeContainer);
             }
 
-            col.appendChild(card);
-            grid.appendChild(col);
+            grid.appendChild(card);
         }
     } catch (e) {
         console.error('Error fetching table status:', e);
