@@ -23,7 +23,7 @@ window.initPOS = async function() {
                 <p class="text-sm text-slate-500 mb-0">Đặt hàng nhanh thay khách từ quầy thu ngân.</p>
             </div>
             
-            <div class="flex items-center gap-2 bg-slate-50 px-4 py-2 rounded-xl border border-slate-200 shadow-soft">
+            <div class="flex items-center gap-2 bg-slate-100 px-4 py-2 rounded-xl border border-slate-200 shadow-soft">
                 <div id="pos-header-avatar" class="w-8 h-8 rounded-full border border-[#C0A062] flex items-center justify-center overflow-hidden bg-white">
                     ${sessionStorage.getItem('nohope_staff_avatar') ? `<img src="${sessionStorage.getItem('nohope_staff_avatar')}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-user text-[#C0A062] text-xs"></i>`}
                 </div>
@@ -68,7 +68,7 @@ window.initPOS = async function() {
                     <div class="p-4 border-b border-slate-200 flex justify-between items-center">
                         <h5 class="font-bold text-[#F2E8D5] mb-0 flex items-center gap-2">
                             <i class="fa-solid fa-cart-shopping text-[#C0A062]"></i> Giỏ hàng
-                            <span id="pos-cart-count" class="text-xs font-bold bg-slate-50 bg-[#C0A062] rounded-full px-2 py-0.5" style="background-color: #C0A062;">0</span>
+                            <span id="pos-cart-count" class="text-xs font-bold bg-slate-100 bg-[#C0A062] rounded-full px-2 py-0.5" style="background-color: #C0A062;">0</span>
                         </h5>
                         <button class="text-xs text-slate-500 hover:text-red-400 transition-colors border-0 bg-transparent" onclick="posClearCart()">
                             <i class="fa-solid fa-trash"></i> Xóa
@@ -85,9 +85,9 @@ window.initPOS = async function() {
                             <span id="pos-cart-total" class="text-xl font-bold text-[#C0A062]">0 đ</span>
                         </div>
                         <div class="mb-3">
-                            <input id="pos-order-note" type="text" placeholder="Ghi chú đơn hàng (nếu có)..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-[#64748b] text-sm focus:outline-none focus:border-[#C0A062]">
+                            <input id="pos-order-note" type="text" placeholder="Ghi chú đơn hàng (nếu có)..." class="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-slate-800 placeholder-[#64748b] text-sm focus:outline-none focus:border-[#C0A062]">
                         </div>
-                        <button id="pos-submit-btn" class="w-full py-3 rounded-xl font-bold text-[#f8fafc] text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2" style="background:#C0A062;" onclick="posSubmitOrder()">
+                        <button id="pos-submit-btn" class="w-full py-3 rounded-xl font-bold text-[#f1f5f9] text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2" style="background:#C0A062;" onclick="posSubmitOrder()">
                             <i class="fa-solid fa-paper-plane"></i> Gửi đơn hàng
                         </button>
                     </div>
@@ -108,8 +108,8 @@ window.initPOS = async function() {
                 </div>
                 <div id="pos-options-container" class="p-5 overflow-y-auto custom-scrollbar flex-1 space-y-4">
                 </div>
-                <div class="px-5 py-4 border-t border-slate-200 bg-slate-50">
-                    <button class="w-full py-3 rounded-xl font-bold flex justify-center items-center gap-2 hover:opacity-90 transition-opacity text-[#f8fafc]" style="background:#C0A062;" onclick="posConfirmOptions()">
+                <div class="px-5 py-4 border-t border-slate-200 bg-slate-100">
+                    <button class="w-full py-3 rounded-xl font-bold flex justify-center items-center gap-2 hover:opacity-90 transition-opacity text-[#f1f5f9]" style="background:#C0A062;" onclick="posConfirmOptions()">
                         <i class="fa-solid fa-check"></i> Xác nhận
                     </button>
                 </div>
@@ -148,7 +148,7 @@ function posRenderCategories() {
     if (!categoriesEl) return;
     const cats = ['Tất cả', ...new Set(posProductsList.map(p => p.category).filter(Boolean))];
     categoriesEl.innerHTML = cats.map((cat, i) => `
-        <button class="pos-cat-btn flex-shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${i === 0 ? 'bg-[#C0A062] text-[#f8fafc]' : 'bg-white border border-slate-200 text-slate-500 hover:text-slate-800'}"
+        <button class="pos-cat-btn flex-shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${i === 0 ? 'bg-[#C0A062] text-[#f1f5f9]' : 'bg-white border border-slate-200 text-slate-500 hover:text-slate-800'}"
             onclick="posFilterByCategory('${window.escapeHTML(cat)}', this)">
             ${window.escapeHTML(cat)}
         </button>
@@ -159,7 +159,7 @@ window.posFilterByCategory = function(cat, btn) {
     document.querySelectorAll('.pos-cat-btn').forEach(b => {
         b.className = 'pos-cat-btn flex-shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all bg-white border border-slate-200 text-slate-500 hover:text-slate-800';
     });
-    btn.className = 'pos-cat-btn flex-shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all bg-[#C0A062] text-[#f8fafc]';
+    btn.className = 'pos-cat-btn flex-shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all bg-[#C0A062] text-[#f1f5f9]';
     const filtered = cat === 'Tất cả' ? posProductsList : posProductsList.filter(p => p.category === cat);
     posRenderProducts(filtered);
 };
