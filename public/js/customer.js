@@ -17,8 +17,9 @@ let currentOptionsItem = null; // Tracks item being configured in options modal
 // translations moved to i18n.js
 
 // Per-table session — reused across tabs/devices as long as table hasn't been cleared
+// Using localStorage (not sessionStorage) so auto-transfer works across tabs/QR scans
 const sessionKey = 'cafe_session_' + TABLE_NUMBER;
-let sessionId = sessionStorage.getItem(sessionKey) || null;
+let sessionId = localStorage.getItem(sessionKey) || null;
 // Will be resolved in acquireTableLock() from table_sessions DB
 
 let appliedPromo = null;
@@ -207,7 +208,7 @@ async function acquireTableLock() {
             if (ageMs < STALE_THRESHOLD) {
                 // Active session exists — JOIN it (reuse session_id)
                 sessionId = existing.session_id;
-                sessionStorage.setItem(sessionKey, sessionId);
+                localStorage.setItem(sessionKey, sessionId);
                 // Refresh heartbeat
                 await supabase.from('table_sessions')
                     .update({ last_seen: new Date().toISOString() })
@@ -215,7 +216,7 @@ async function acquireTableLock() {
             } else {
                 // Stale session — claim table with new session
                 sessionId = 'sess_' + TABLE_NUMBER + '_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
-                sessionStorage.setItem(sessionKey, sessionId);
+                localStorage.setItem(sessionKey, sessionId);
                 await supabase.from('table_sessions')
                     .update({ session_id: sessionId, last_seen: new Date().toISOString() })
                     .eq('table_number', TABLE_NUMBER);
@@ -224,7 +225,7 @@ async function acquireTableLock() {
             // No session on this table — create fresh
             if (!sessionId) {
                 sessionId = 'sess_' + TABLE_NUMBER + '_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
-                sessionStorage.setItem(sessionKey, sessionId);
+                localStorage.setItem(sessionKey, sessionId);
             }
             await supabase.from('table_sessions').insert([{
                 table_number: TABLE_NUMBER,
@@ -252,7 +253,7 @@ async function acquireTableLock() {
         console.warn('Table session: table_sessions may not exist, skipping.', e.message);
         if (!sessionId) {
             sessionId = 'sess_' + TABLE_NUMBER + '_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
-            sessionStorage.setItem(sessionKey, sessionId);
+            localStorage.setItem(sessionKey, sessionId);
         }
         fetchMenu();
         attachEventListeners();
@@ -263,15 +264,15 @@ async function acquireTableLock() {
 // --- Auto-Transfer: customer scans different table QR while having active session elsewhere ---
 async function checkAutoTransfer() {
     try {
-        // Scan sessionStorage for cafe_session_* keys from OTHER tables
+        // Scan localStorage for cafe_session_* keys from OTHER tables
         let oldTableNum = null;
         let oldSessionId = null;
 
-        for (let i = 0; i < sessionStorage.length; i++) {
-            const key = sessionStorage.key(i);
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
             if (key && key.startsWith('cafe_session_') && key !== sessionKey) {
                 const tNum = key.replace('cafe_session_', '');
-                const sId = sessionStorage.getItem(key);
+                const sId = localStorage.getItem(key);
                 if (sId && tNum !== TABLE_NUMBER) {
                     oldTableNum = tNum;
                     oldSessionId = sId;
@@ -292,7 +293,7 @@ async function checkAutoTransfer() {
 
         if (!oldOrders || oldOrders.length === 0) {
             // No active orders at old table — just clean up old key
-            sessionStorage.removeItem('cafe_session_' + oldTableNum);
+            localStorage.removeItem('cafe_session_' + oldTableNum);
             return false;
         }
 
@@ -313,14 +314,14 @@ async function checkAutoTransfer() {
 
             // Reuse old session ID at new table
             sessionId = oldSessionId;
-            sessionStorage.setItem(sessionKey, sessionId);
-            sessionStorage.removeItem('cafe_session_' + oldTableNum);
+            localStorage.setItem(sessionKey, sessionId);
+            localStorage.removeItem('cafe_session_' + oldTableNum);
 
             console.log(`Auto-transferred ${oldOrders.length} orders from Table ${oldTableNum} → Table ${TABLE_NUMBER}`);
             return true;
         } else {
             // Customer chose not to transfer — clean up old key, start fresh
-            sessionStorage.removeItem('cafe_session_' + oldTableNum);
+            localStorage.removeItem('cafe_session_' + oldTableNum);
             return false;
         }
     } catch (e) {
@@ -1544,6 +1545,9 @@ function handleOrderStatusUpdate(updatedOrderData) {
         } else if (updatedOrder.status === 'Completed' || updatedOrder.status === 'Cancelled') {
             if (activeOrderId === updatedOrder._id) {
                 activeOrderId = null;
+                // Re-render menu to unlock + buttons
+                const activeCategory = getActiveCategory();
+                renderMenu(activeCategory);
             }
             if (trackedOrderId === updatedOrder._id) {
                 if(updatedOrder.status === 'Completed') {
