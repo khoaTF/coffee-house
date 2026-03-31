@@ -410,7 +410,7 @@ async function loadDashboard() {
                 <div class="card bg-white border border-slate-200 rounded-2xl overflow-hidden">
                     <div class="p-4 border-b border-slate-200"><h5 class="font-bold text-[#F2E8D5] mb-0"><i class="fa-solid fa-clock-rotate-left me-2 text-[#C0A062]"></i>5 đơn gần nhất hôm nay</h5></div>
                     <table class="table table-hover mb-0">
-                        <thead class="bg-[#e2e8f0] text-[#D4AF37]"><tr><th class="border-0 py-2 px-4 text-xs">Bàn</th><th class="border-0 py-2 px-4 text-xs">Tổng</th><th class="border-0 py-2 px-4 text-xs">Trạng thái</th></tr></thead>
+                        <thead class="bg-[#e2e8f0] text-[#b45309]"><tr><th class="border-0 py-2 px-4 text-xs">Bàn</th><th class="border-0 py-2 px-4 text-xs">Tổng</th><th class="border-0 py-2 px-4 text-xs">Trạng thái</th></tr></thead>
                         <tbody>
                             ${recentOrders.length === 0 ? '<tr><td colspan="3" class="text-center py-4 text-slate-500 text-sm">Chưa có đơn hôm nay.</td></tr>' :
                                 recentOrders.map(o => {
@@ -430,7 +430,7 @@ async function loadDashboard() {
                 <div class="card bg-white border border-slate-200 rounded-2xl overflow-hidden">
                     <div class="p-4 border-b border-slate-200"><h5 class="font-bold text-[#F2E8D5] mb-0"><i class="fa-solid fa-triangle-exclamation me-2 text-orange-400"></i>Nguyên liệu sắp hết</h5></div>
                     <table class="table table-hover mb-0">
-                        <thead class="bg-[#e2e8f0] text-[#D4AF37]"><tr><th class="border-0 py-2 px-4 text-xs">Nguyên liệu</th><th class="border-0 py-2 px-4 text-xs">Tồn kho</th></tr></thead>
+                        <thead class="bg-[#e2e8f0] text-[#b45309]"><tr><th class="border-0 py-2 px-4 text-xs">Nguyên liệu</th><th class="border-0 py-2 px-4 text-xs">Tồn kho</th></tr></thead>
                         <tbody>
                             ${lowItems.length === 0 ? '<tr><td colspan="2" class="text-center py-4 text-green-400 text-sm"><i class="fa-solid fa-check me-1"></i>Kho đầy đủ!</td></tr>' :
                                 lowItems.slice(0,8).map(ing => `<tr>

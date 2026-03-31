@@ -311,7 +311,7 @@ function renderRestockLogs(logs) {
             return `<span class="badge bg-[#e2e8f0] text-slate-800 border border-[#64748b] border-opacity-25 me-1 mb-1">+${i.amount} ${i.unit} ${i.name}${priceTag}</span>`;
         }).join('');
         const totalCost = group.items.reduce((sum, i) => sum + (i.unit_price * i.amount), 0);
-        const totalCostHtml = totalCost > 0 ? `<span class="text-[#D4AF37] font-bold">${totalCost.toLocaleString('vi-VN')}đ</span>` : '<span class="text-slate-500">-</span>';
+        const totalCostHtml = totalCost > 0 ? `<span class="text-[#b45309] font-bold">${totalCost.toLocaleString('vi-VN')}đ</span>` : '<span class="text-slate-500">-</span>';
 
         tr.innerHTML = `
             <td class="text-slate-500 font-mono text-xs">#${group.id.substring(0,8)}</td>
@@ -364,19 +364,19 @@ function addRestockItemRow() {
 
     tr.innerHTML = `
         <td class="py-2 pe-2">
-            <select class="form-select form-select-sm bg-slate-50 text-slate-800 border-slate-200 restock-ing-select" required>
+            <select class="form-select form-select-sm bg-slate-100 text-slate-800 border-slate-200 restock-ing-select" required>
                 ${optionsHtml}
             </select>
         </td>
         <td class="py-2 px-2">
             <div class="input-group input-group-sm">
-                <input type="number" class="form-control bg-slate-50 text-slate-800 border-slate-200 restock-amount-input" placeholder="0" required min="0.1" step="any">
+                <input type="number" class="form-control bg-slate-100 text-slate-800 border-slate-200 restock-amount-input" placeholder="0" required min="0.1" step="any">
                 <span class="input-group-text bg-[#e2e8f0] text-slate-500 border-slate-200 restock-unit-display">-</span>
             </div>
         </td>
         <td class="py-2 px-2">
             <div class="input-group input-group-sm">
-                <input type="number" class="form-control bg-slate-50 text-slate-800 border-slate-200 restock-price-input" placeholder="0" min="0" step="any">
+                <input type="number" class="form-control bg-slate-100 text-slate-800 border-slate-200 restock-price-input" placeholder="0" min="0" step="any">
                 <span class="input-group-text bg-[#e2e8f0] text-slate-500 border-slate-200">đ</span>
             </div>
         </td>

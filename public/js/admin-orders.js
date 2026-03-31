@@ -549,9 +549,9 @@ window.openShiftSummary = async function() {
             <div class="shift-kpi"><div class="shift-kpi-val text-success">${completed.length}</div><div class="shift-kpi-lbl">Hoàn thành</div></div>
             <div class="shift-kpi"><div class="shift-kpi-val text-danger">${cancelled}</div><div class="shift-kpi-lbl">Đã hủy</div></div>
         </div>
-        <hr class="border-[#3A3528] my-4">
+        <hr class="border-slate-200 my-4">
         <div class="shift-revenue-table">
-            <div class="shift-rev-row"><span>Doanh thu tổng</span><strong class="text-[#D4AF37]">${totalRevenue.toLocaleString('vi-VN')} đ</strong></div>
+            <div class="shift-rev-row"><span>Doanh thu tổng</span><strong class="text-[#b45309]">${totalRevenue.toLocaleString('vi-VN')} đ</strong></div>
             <div class="shift-rev-row"><span><i class="fa-solid fa-money-bill-wave me-1 text-green-400"></i>Tiền mặt</span><strong>${cashRevenue.toLocaleString('vi-VN')} đ</strong></div>
             <div class="shift-rev-row"><span><i class="fa-solid fa-qrcode me-1 text-blue-400"></i>Chuyển khoản</span><strong>${transferRevenue.toLocaleString('vi-VN')} đ</strong></div>
         </div>
