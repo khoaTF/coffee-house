@@ -651,7 +651,7 @@ function addChoiceRecipeRow(ingId = '', qty = '') {
     row.className = 'd-flex gap-2 mb-2 choice-recipe-row';
 
     const select = document.createElement('select');
-    select.className = 'form-select form-select-sm choice-recipe-ing bg-dark text-light border-secondary';
+    select.className = 'form-select form-select-sm choice-recipe-ing bg-white text-slate-800 border-slate-200';
     select.required = true;
 
     const defaultOpt = document.createElement('option');
@@ -669,7 +669,7 @@ function addChoiceRecipeRow(ingId = '', qty = '') {
 
     const input = document.createElement('input');
     input.type = 'number';
-    input.className = 'form-control form-control-sm choice-recipe-qty bg-dark text-light border-secondary';
+    input.className = 'form-control form-control-sm choice-recipe-qty bg-white text-slate-800 border-slate-200';
     input.placeholder = 'Số lượng';
     input.value = qty;
     input.required = true;

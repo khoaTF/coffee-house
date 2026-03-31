@@ -133,7 +133,7 @@ function renderAnalytics() {
                 const badgeClass = index === 0 ? 'bg-danger' : (index === 1 ? 'bg-warning' : (index === 2 ? 'bg-success' : 'bg-secondary'));
                 tr.innerHTML = `
                     <td><span class="badge ${badgeClass} me-2">#${index+1}</span> ${item.name}</td>
-                    <td class="text-center font-bold text-light">${item.qty} đv</td>
+                    <td class="text-center font-bold text-slate-800">${item.qty} đv</td>
                     <td class="text-end text-success">${item.rev.toLocaleString('vi-VN')} đ</td>
                 `;
                 topItemsEl.appendChild(tr);
@@ -179,7 +179,7 @@ async function fetchFeedbackStats() {
             mappedData.slice(0, 50).forEach(f => {
                 const item = document.createElement('div');
                 item.className = 'p-3 border-bottom fb-item';
-                item.style.borderColor = 'rgba(255,255,255,0.08) !important';
+                item.style.borderColor = 'rgba(0,0,0,0.08) !important';
 
                 const header = document.createElement('div');
                 header.className = 'd-flex justify-content-between mb-1';
@@ -201,11 +201,11 @@ async function fetchFeedbackStats() {
                 header.append(starsDiv, dateSmall);
 
                 const tableInfo = document.createElement('div');
-                tableInfo.className = 'fw-bold small text-light';
+                tableInfo.className = 'fw-bold small text-slate-800';
                 tableInfo.textContent = `Bàn số: ${f.tableNumber || '?'}`;
 
                 const commentDiv = document.createElement('div');
-                commentDiv.className = 'text-white small mt-1';
+                commentDiv.className = 'text-slate-800 small mt-1';
                 commentDiv.style.fontSize = '0.95rem';
                 if (f.comment) {
                     commentDiv.textContent = f.comment;
