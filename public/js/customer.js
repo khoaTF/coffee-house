@@ -222,11 +222,10 @@ async function acquireTableLock() {
                     .eq('table_number', TABLE_NUMBER);
             }
         } else {
-            // No session on this table — create fresh
-            if (!sessionId) {
-                sessionId = 'sess_' + TABLE_NUMBER + '_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
-                localStorage.setItem(sessionKey, sessionId);
-            }
+            // No session on this table — ALWAYS create fresh
+            // (Old localStorage value may be from a transferred/cleared session)
+            sessionId = 'sess_' + TABLE_NUMBER + '_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+            localStorage.setItem(sessionKey, sessionId);
             await supabase.from('table_sessions').insert([{
                 table_number: TABLE_NUMBER,
                 session_id: sessionId,
