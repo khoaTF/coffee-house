@@ -131,15 +131,22 @@ window.showTableActions = async (tableNum, tableOrders) => {
         newConfirmBtn.disabled = true;
         newConfirmBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i>';
         try {
-            const orderIds = tableOrders.map(o => o._id);
-            for (const oid of orderIds) {
-                await supabase.from('orders').update({ table_number: newTable }).eq('id', oid);
-            }
-            const sessionIds = [...new Set(tableOrders.map(o => o.session_id))];
-            for (const sid of sessionIds) {
-                await supabase.from('table_sessions').update({ table_number: newTable }).eq('session_id', sid).eq('table_number', tableNum.toString());
-            }
+            // Batch update ALL orders at this table (not just active ones)
+            const { error: ordErr } = await supabase
+                .from('orders')
+                .update({ table_number: newTable.toString() })
+                .eq('table_number', tableNum.toString());
+            if (ordErr) throw ordErr;
+
+            // Transfer table_session
+            const { error: sessErr } = await supabase
+                .from('table_sessions')
+                .update({ table_number: newTable.toString(), last_seen: new Date().toISOString() })
+                .eq('table_number', tableNum.toString());
+            if (sessErr) console.warn('Session transfer warning:', sessErr.message);
+
             logAudit('Chuyển bàn', `Bàn ${tableNum} → Bàn ${newTable}`);
+            showAdminToast(`Đã chuyển tất cả đơn từ Bàn ${tableNum} sang Bàn ${newTable}`, 'success');
             tableActionsModalInstance.hide();
             fetchTablesStatus();
         } catch(e) {
