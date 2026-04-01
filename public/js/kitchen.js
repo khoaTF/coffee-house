@@ -510,8 +510,40 @@ function setupRealtimeSubscription() {
                 }
             } else {
                 if (orderIndex > -1) {
-                    orders[orderIndex].status = updatedOrder.status;
-                    renderOrders();
+                    // GAP 2: Detect table number change (customer transferred)
+                    const oldTable = orders[orderIndex].tableNumber;
+                    const newTable = updatedOrder.tableNumber;
+                    if (oldTable && newTable && String(oldTable) !== String(newTable)) {
+                        // Update order data
+                        orders[orderIndex] = { ...orders[orderIndex], ...updatedOrder };
+                        renderOrders();
+                        // Flash the card to alert barista
+                        playDing();
+                        setTimeout(() => {
+                            const card = document.getElementById(`order-${updatedOrder._id}`);
+                            if (card) {
+                                card.style.transition = 'box-shadow 0.3s, border-color 0.3s';
+                                card.style.boxShadow = '0 0 0 4px rgba(234, 179, 8, 0.5)';
+                                card.style.borderColor = '#eab308';
+                                // Add a transfer badge
+                                const badge = document.createElement('div');
+                                badge.className = 'absolute top-0 left-0 right-0 bg-yellow-400 text-yellow-900 text-center text-sm font-bold py-1.5 z-10';
+                                badge.innerHTML = `<i class="fa-solid fa-people-arrows mr-1"></i> Đổi bàn: ${oldTable} → ${newTable}`;
+                                card.style.position = 'relative';
+                                card.prepend(badge);
+                                // Remove flash after 8 seconds
+                                setTimeout(() => {
+                                    card.style.boxShadow = '';
+                                    card.style.borderColor = '';
+                                    badge.remove();
+                                }, 8000);
+                            }
+                        }, 100);
+                    } else {
+                        orders[orderIndex].status = updatedOrder.status;
+                        orders[orderIndex].tableNumber = updatedOrder.tableNumber;
+                        renderOrders();
+                    }
                 } else {
                     // Only add if it's one of the statuses we care about
                     if (['Pending', 'Preparing', 'Ready'].includes(updatedOrder.status)) {
