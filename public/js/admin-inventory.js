@@ -100,9 +100,9 @@ function renderIngredientAlerts() {
         const alertDiv = document.createElement('div');
         alertDiv.className = 'alert alert-warning alert-dismissible fade show';
         alertDiv.role = 'alert';
-        alertDiv.style.backgroundColor = 'rgba(255, 193, 7, 0.1)';
-        alertDiv.style.color = '#ecc94b';
-        alertDiv.style.borderColor = 'rgba(255, 193, 7, 0.3)';
+        alertDiv.style.backgroundColor = 'rgba(255, 193, 7, 0.12)';
+        alertDiv.style.color = '#92600a';
+        alertDiv.style.borderColor = 'rgba(255, 193, 7, 0.35)';
 
         const icon = document.createElement('i');
         icon.className = 'fa-solid fa-triangle-exclamation me-2';
