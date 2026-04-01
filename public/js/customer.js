@@ -296,16 +296,33 @@ async function checkAutoTransfer() {
             return false;
         }
 
+        // GAP 1: Check if target table already has an ACTIVE session from someone else
+        const { data: targetSession } = await supabase
+            .from('table_sessions')
+            .select('session_id')
+            .eq('table_number', TABLE_NUMBER)
+            .maybeSingle();
+
+        if (targetSession && targetSession.session_id !== oldSessionId) {
+            // Target table is occupied by another customer
+            await customerConfirm(
+                `Bàn ${TABLE_NUMBER} đang có người sử dụng.\nVui lòng chọn bàn trống khác hoặc gọi nhân viên để được hỗ trợ.`
+            );
+            localStorage.removeItem('cafe_session_' + oldTableNum);
+            return false;
+        }
+
         // Ask customer if they want to transfer
         const wantTransfer = await customerConfirm(
             `Bạn đang có ${oldOrders.length} đơn hàng ở Bàn ${oldTableNum}.\nChuyển tất cả sang Bàn ${TABLE_NUMBER}?`
         );
 
         if (wantTransfer) {
-            // Transfer all orders to new table
-            for (const ord of oldOrders) {
-                await supabase.from('orders').update({ table_number: TABLE_NUMBER.toString() }).eq('id', ord.id);
-            }
+            // GAP 5: Batch transfer all orders (not sequential loop)
+            const orderIds = oldOrders.map(o => o.id);
+            await supabase.from('orders')
+                .update({ table_number: TABLE_NUMBER.toString() })
+                .in('id', orderIds);
             // Transfer table_session
             await supabase.from('table_sessions')
                 .update({ table_number: TABLE_NUMBER.toString(), last_seen: new Date().toISOString() })

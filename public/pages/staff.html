@@ -233,11 +233,54 @@
         });
 
         // --- 3. Supabase Realtime ---
-        // Setup channels for Orders and Staff Requests
+        // Track last-known table numbers for transfer detection
+        const orderTableMap = {}; // { orderId: tableNumber }
+
+        function showStaffToast(message, type = 'info') {
+            let container = document.getElementById('staff-toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'staff-toast-container';
+                container.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none;max-width:92vw;';
+                document.body.appendChild(container);
+            }
+            const colors = {
+                warning: 'background:#fef3c7;color:#92400e;border:1px solid #f59e0b;',
+                success: 'background:#d1fae5;color:#065f46;border:1px solid #10b981;',
+                info: 'background:#dbeafe;color:#1e40af;border:1px solid #3b82f6;'
+            };
+            const toast = document.createElement('div');
+            toast.style.cssText = `${colors[type] || colors.info}padding:12px 20px;border-radius:12px;font-weight:600;font-size:14px;box-shadow:0 4px 12px rgba(0,0,0,0.15);pointer-events:auto;animation:slideDown 0.3s ease;`;
+            toast.innerHTML = message;
+            container.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.3s'; setTimeout(() => toast.remove(), 300); }, 6000);
+        }
+
         function setupRealtime() {
             supabase
                 .channel('staff-orders')
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, payload => {
+                    // GAP 3: Detect table transfers
+                    if (payload.eventType === 'UPDATE' && payload.new && payload.old) {
+                        const orderId = payload.new.id;
+                        const oldTable = orderTableMap[orderId] || payload.old.table_number;
+                        const newTable = payload.new.table_number;
+                        if (oldTable && newTable && String(oldTable) !== String(newTable)) {
+                            showStaffToast(`<i class="fa-solid fa-people-arrows mr-2"></i> CHÚ Ý: Khách Bàn ${oldTable} đã chuyển sang Bàn ${newTable}`, 'warning');
+                            // Play alert sound
+                            try {
+                                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                                const osc = ctx.createOscillator(); const gain = ctx.createGain();
+                                osc.connect(gain); gain.connect(ctx.destination);
+                                osc.frequency.value = 880; gain.gain.value = 0.3;
+                                osc.start(); osc.stop(ctx.currentTime + 0.15);
+                                setTimeout(() => { const o2 = ctx.createOscillator(); const g2 = ctx.createGain(); o2.connect(g2); g2.connect(ctx.destination); o2.frequency.value = 1100; g2.gain.value = 0.3; o2.start(); o2.stop(ctx.currentTime + 0.15); }, 200);
+                            } catch(e) {}
+                        }
+                        orderTableMap[orderId] = newTable;
+                    } else if (payload.eventType === 'INSERT' && payload.new) {
+                        orderTableMap[payload.new.id] = payload.new.table_number;
+                    }
                     if(currentTab === 'orders') fetchOrders();
                     if(currentTab === 'tables') fetchTablesStatus();
                 })
@@ -283,7 +326,12 @@
                 
                 activeTableOrders = {};
 
-                const maxTable = 15;
+                // GAP 6: Dynamic table count from store_settings (same as admin)
+                let maxTable = 15;
+                try {
+                    const { data: storeSettings } = await supabase.from('store_settings').select('table_count').eq('id', 1).maybeSingle();
+                    if (storeSettings && storeSettings.table_count > 0) maxTable = storeSettings.table_count;
+                } catch(_) {}
                 for (let i = 1; i <= maxTable; i++) {
                     const tableOrders = data.filter(o => parseInt(o.table_number) === i || o.table_number == i);
                     activeTableOrders[i] = tableOrders;
