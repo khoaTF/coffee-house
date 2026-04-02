@@ -277,14 +277,20 @@ h3 { color: #d4a76a; font-size: 1.1rem; margin-bottom: 15px; }
 }
 
 /* ===== HEATMAP STYLES ===== */
-.heatmap-grid {
-    display: grid;
-    grid-template-columns: 60px repeat(24, 1fr);
-    grid-template-rows: auto repeat(7, 1fr);
+.heatmap-row {
+    display: flex;
     gap: 4px;
-    font-size: 0.75rem;
+    margin-bottom: 4px;
+}
+.heatmap-cell.label-cell {
+    width: 60px;
+    justify-content: flex-end;
+    padding-right: 8px;
+    font-weight: 600;
+    color: #6b7280;
 }
 .heatmap-cell {
+    flex: 1;
     border-radius: 4px;
     min-height: 28px;
     display: flex;

@@ -483,7 +483,7 @@ async function loadDashboard() {
 
 // --- Heatmap (Bản đồ nhiệt) ---
 function renderHeatmap(startDate, endDate) {
-    const heatmapEl = document.getElementById('heatmap-grid');
+    const heatmapEl = document.getElementById('heatmap-container');
     if (!heatmapEl) return;
 
     heatmapEl.innerHTML = ''; // Clear old
@@ -539,7 +539,7 @@ function renderHeatmap(startDate, endDate) {
 
 // --- Smart Purchasing (Dự báo nhập hàng thông minh) ---
 function renderSmartPurchasing(startDate, endDate) {
-    const purchasingEl = document.getElementById('purchasing-body');
+    const purchasingEl = document.getElementById('smart-purchasing-body');
     if (!purchasingEl) return;
     
     // Bước 1: Tính toán tổng mức tiêu thụ của từng nguyên liệu từ các đơn hàng.
