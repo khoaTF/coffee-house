@@ -81,6 +81,78 @@ function init() {
         document.getElementById('customer-phone-input').value = window.currentCustomerPhone;
         verifyCustomerPhone(false);
     }
+    
+    // Fetch advertisement banners
+    fetchBanners();
+}
+
+async function fetchBanners() {
+    try {
+        const { data, error } = await supabase
+            .from('promotion_banners')
+            .select('*')
+            .eq('is_active', true);
+
+        if (error) throw error;
+        
+        let hasHomeBanner = false;
+
+        data.forEach(banner => {
+            if (banner.is_popup) {
+                // Show Popup
+                const popupImage = document.getElementById('adPopupImage');
+                const popupLink = document.getElementById('adPopupLink');
+                const popupModal = document.getElementById('adPopupModal');
+                
+                if (popupImage && popupModal && !sessionStorage.getItem('ad_banner_shown_' + banner.id)) {
+                    popupImage.src = banner.image_url;
+                    if (banner.target_url) {
+                        popupLink.href = banner.target_url;
+                        if (!banner.target_url.startsWith('#') && !banner.target_url.startsWith(window.location.origin)) {
+                            popupLink.target = '_blank';
+                        }
+                    } else {
+                        popupLink.href = 'javascript:void(0)';
+                    }
+
+                    // Show Modal
+                    popupModal.classList.remove('hidden');
+                    popupModal.classList.add('flex');
+                    setTimeout(() => {
+                        popupModal.classList.remove('opacity-0');
+                    }, 50);
+                    
+                    // Prevent showing again in current session
+                    sessionStorage.setItem('ad_banner_shown_' + banner.id, 'true');
+                }
+            } else if (!hasHomeBanner) {
+                // Home Top Banner (use the first active non-popup banner found)
+                const heroImg = document.getElementById('hero-banner-image');
+                const heroLink = document.getElementById('hero-banner-link');
+                if (heroImg) heroImg.src = banner.image_url;
+                if (heroLink && banner.target_url) {
+                    heroLink.href = banner.target_url;
+                    if (!banner.target_url.startsWith('#') && !banner.target_url.startsWith(window.location.origin)) {
+                        heroLink.target = '_blank';
+                    }
+                }
+                hasHomeBanner = true;
+            }
+        });
+    } catch (err) {
+        console.error("Error fetching banners:", err);
+    }
+}
+
+window.closeAdPopup = function() {
+    const popupModal = document.getElementById('adPopupModal');
+    if (popupModal) {
+        popupModal.classList.add('opacity-0');
+        setTimeout(() => {
+            popupModal.classList.add('hidden');
+            popupModal.classList.remove('flex');
+        }, 300);
+    }
 }
 
 // D3 — Auto dark/light mode theo giờ hệ thống
@@ -408,7 +480,8 @@ async function fetchMenu() {
                 imageUrl: p.image_url,
                 originalPrice: p.price,
                 price: activePrice,
-                isPromo: isPromo
+                isPromo: isPromo,
+                isBestSeller: p.is_best_seller
             };
         });
         
