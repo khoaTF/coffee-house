@@ -142,9 +142,9 @@
         </div>
 
         <!-- Welcome Hero - Compact Redesign -->
-        <div class="mb-8">
+        <a id="hero-banner-link" href="#" class="mb-8 block">
             <div class="relative h-36 md:h-48 rounded-[1.5rem] overflow-hidden shadow-sm ring-1 ring-black/5">
-                <img src="/images/banner-coffee.jpg" onerror="this.onerror=null; this.src='https://placehold.co/1200x600/2A1A14/F5EFE6?text=Nohope+Coffee'" alt="Hero" class="absolute inset-0 w-full h-full object-cover">
+                <img id="hero-banner-image" src="/images/banner-coffee.jpg" onerror="this.onerror=null; this.src='https://placehold.co/1200x600/2A1A14/F5EFE6?text=Nohope+Coffee'" alt="Hero" class="absolute inset-0 w-full h-full object-cover">
                 <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
                 
                 <div class="absolute inset-0 p-5 flex flex-col justify-between">
@@ -165,7 +165,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </a>
 
         <!-- Mobile Search (only on sm) -->
         <div class="md:hidden relative mb-6">
@@ -634,6 +634,19 @@
                 </div>
             </div>
         </div>
+    </div>
+</div>
+<!-- Ad Banner Popup -->
+<div class="fixed inset-0 bg-black/60 z-[3000] hidden items-center justify-center backdrop-blur-sm transition-opacity duration-300 opacity-0" id="adPopupModal">
+    <div class="relative w-11/12 max-w-md mx-auto rounded-3xl overflow-hidden shadow-2xl transform scale-95 transition-all duration-300 bg-[#FCF9F8] dark:bg-[#1B1C1B]">
+        <!-- Close button right over the image -->
+        <button onclick="closeAdPopup()" class="absolute top-3 right-3 w-10 h-10 bg-black/50 hover:bg-black/80 backdrop-blur-md rounded-full text-white flex items-center justify-center z-10 transition-colors pointer-events-auto shadow-sm">
+            <i class="fa-solid fa-times text-lg"></i>
+        </button>
+        
+        <a href="#" id="adPopupLink" class="block w-full cursor-pointer h-full pointer-events-auto">
+            <img id="adPopupImage" src="" alt="Khuyến mãi đặc biệt" class="w-full h-auto object-cover max-h-[70vh]">
+        </a>
     </div>
 </div>
 
