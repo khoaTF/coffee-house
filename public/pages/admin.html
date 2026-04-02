@@ -223,7 +223,10 @@
                             <h2 class="font-noto text-2xl font-bold text-slate-900 mb-1">Thực đơn</h2>
                             <p class="text-sm text-slate-500 mb-0">Quản lý danh sách món ăn, giá cả và trạng thái.</p>
                         </div>
-                        <button class="btn btn-success rounded-xl font-semibold shadow-soft whitespace-nowrap" onclick="openProductModal()"><i class="fa-solid fa-plus me-2"></i> Thêm món</button>
+                        <div class="flex items-center gap-2">
+                            <button class="btn btn-warning rounded-xl font-semibold shadow-soft whitespace-nowrap text-white me-2" onclick="autoAssignBestSellers()" style="background-color: var(--primary-color); border: none;"><i class="fa-solid fa-wand-magic-sparkles me-2"></i> AI Best Seller</button>
+                            <button class="btn btn-success rounded-xl font-semibold shadow-soft whitespace-nowrap" onclick="openProductModal()"><i class="fa-solid fa-plus me-2"></i> Thêm món</button>
+                        </div>
                     </div>
                     <div class="card bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden">
                         <div class="card-body p-0">
@@ -444,12 +447,12 @@
                     </div>
                 </section>
 
-                <!-- Khuyến mãi Section -->
+                <!-- Khuyến mãi & Quảng cáo Section -->
                 <section id="section-promo" class="content-section">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                         <div>
-                            <h2 class="font-noto text-2xl font-bold text-slate-900 mb-1 flex items-center gap-2"><i class="fa-solid fa-ticket-simple text-[#C0A062]"></i> Khuyến mãi</h2>
-                            <p class="text-sm text-slate-500 mb-0">Quản lý các chương trình ưu đãi.</p>
+                            <h2 class="font-noto text-2xl font-bold text-slate-900 mb-1 flex items-center gap-2"><i class="fa-solid fa-bullhorn text-[#C0A062]"></i> Khuyến mãi & Quảng cáo</h2>
+                            <p class="text-sm text-slate-500 mb-0">Quản lý ưu đãi và các banner hiển thị.</p>
                         </div>
                         <button class="btn btn-success rounded-xl font-semibold shadow-soft whitespace-nowrap" onclick="openPromoModal()"><i class="fa-solid fa-plus me-2"></i> Tạo khuyến mãi mới</button>
                     </div>
@@ -470,6 +473,36 @@
                                     </thead>
                                     <tbody id="promo-table-body" class="border-transparent">
                                         <tr><td colspan="7" class="text-center py-6 text-slate-500">Đang tải biểu mẫu...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quản lý Banner Quảng cáo -->
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-10 mb-6 gap-4">
+                        <div>
+                            <h3 class="font-noto text-xl font-bold text-slate-800 mb-1 flex items-center gap-2"><i class="fa-solid fa-images text-indigo-500"></i> Banner Quảng Cáo</h3>
+                            <p class="text-sm text-slate-500 mb-0">Thiết lập các hình ảnh quảng cáo, pop-up cho khách hàng.</p>
+                        </div>
+                        <button class="btn btn-primary bg-indigo-500 hover:bg-indigo-600 rounded-xl font-semibold shadow-soft whitespace-nowrap text-white border-0" onclick="openAdBannerModal()"><i class="fa-solid fa-plus me-2"></i> Thêm Banner</button>
+                    </div>
+                    <div class="card bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden">
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0 border-0">
+                                    <thead class="bg-indigo-50 text-indigo-900">
+                                        <tr>
+                                            <th class="border-0 font-semibold py-3 px-4 w-24">Hình ảnh</th>
+                                            <th class="border-0 font-semibold py-3 px-4">Tiêu đề</th>
+                                            <th class="border-0 font-semibold py-3 px-4">Vị trí hiển thị</th>
+                                            <th class="border-0 font-semibold py-3 px-4">Ngày hết hạn</th>
+                                            <th class="border-0 font-semibold py-3 px-4">Trạng thái</th>
+                                            <th class="border-0 font-semibold py-3 px-4 text-end">Hành động</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="banners-table-body" class="border-transparent">
+                                        <tr><td colspan="6" class="text-center py-6 text-slate-500">Đang tải danh sách banner...</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -1618,7 +1651,7 @@
     <script src="/js/admin-cashflow.js?v=3.1"></script>
     <script src="/js/admin-shifts.js?v=1.1"></script>
     <script src="/js/admin-pos.js?v=1.1"></script>
-
+    <script src="/js/admin-ads.js?v=1.0"></script>
     <!-- Shift Action Modal -->
     <div class="modal fade" id="shiftActionModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog modal-dialog-centered">
@@ -1633,6 +1666,64 @@
                 <div class="modal-footer border-t border-slate-200 px-6 py-4 flex gap-3">
                     <button type="button" class="btn btn-secondary rounded-xl font-semibold flex-1" data-bs-dismiss="modal">Hủy</button>
                     <button type="button" id="shiftActionSubmitBtn" class="btn btn-primary rounded-xl font-semibold flex-1">Xác nhận</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ad Banner Modal -->
+    <div class="modal fade" id="adBannerModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-2xl border-0 shadow-xl overflow-hidden bg-white">
+                <div class="modal-header border-b border-slate-200 px-6 py-4 bg-slate-50/50">
+                    <h5 class="modal-title font-bold text-slate-800 font-noto" id="adBannerModalTitle"><i class="fa-solid fa-image text-indigo-500 me-2"></i>Thêm Banner Quảng Cáo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-6">
+                    <form id="adBannerForm" autocomplete="off">
+                        <input type="hidden" id="bannerId">
+                        
+                        <div class="mb-4">
+                            <label class="form-label font-medium text-slate-700">Hình ảnh URL <span class="text-red-500">*</span></label>
+                            <input type="text" class="form-control rounded-xl border-slate-200 bg-slate-50 focus:bg-white transition-colors" id="bannerImageUrl" placeholder="Nhập link ảnh (Imgur, Cloudinary...)" required>
+                            <div class="text-xs text-slate-500 mt-1">Sử dụng URL ảnh trực tiếp. Gợi ý: https://i.imgur.com/xyz.jpg</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label font-medium text-slate-700">Link Đích (Tùy chọn)</label>
+                            <input type="text" class="form-control rounded-xl border-slate-200 bg-slate-50 focus:bg-white transition-colors" id="bannerTargetUrl" placeholder="Link khi khách hàng nhấn vào banner (http://...)">
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label font-medium text-slate-700">Tiêu đề (Thay thế ảnh lỗi)</label>
+                            <input type="text" class="form-control rounded-xl border-slate-200 bg-slate-50" id="bannerTitle" placeholder="Tiêu đề banner" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label font-medium text-slate-700">Vị trí hiển thị <span class="text-red-500">*</span></label>
+                            <select class="form-select rounded-xl border-slate-200 bg-slate-50" id="bannerPosition" required>
+                                <option value="home_top">Đầu trang (Slider ngang)</option>
+                                <option value="pop_up">Pop-up (Hiện khi khách hàng vào)</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label font-medium text-slate-700">Ngày hết hạn (Tùy chọn)</label>
+                            <input type="datetime-local" class="form-control rounded-xl border-slate-200 bg-slate-50" id="bannerExpiresAt">
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label font-medium text-slate-700">Trạng thái hiển thị</label>
+                            <div class="form-check form-switch custom-switch">
+                                <input class="form-check-input" type="checkbox" role="switch" id="bannerIsActive" checked>
+                                <label class="form-check-label text-slate-600 font-medium" for="bannerIsActive">Bật / Tắt trạng thái</label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-t border-slate-200 px-6 py-4">
+                    <button type="button" class="btn btn-secondary rounded-xl font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 px-5" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary rounded-xl font-semibold px-5 text-white" style="background-color: var(--primary-color); border: none;" onclick="saveAdBanner()">Lưu Banner</button>
                 </div>
             </div>
         </div>
