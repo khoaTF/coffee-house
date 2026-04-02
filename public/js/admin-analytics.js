@@ -627,16 +627,17 @@ function renderSmartPurchasing(startDate, endDate) {
         if (requiresAction) {
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td><span class="fw-bold">${window.escapeHTML(ing.name)}</span><br><small class="text-muted">Tồn: ${ing.stock} ${ing.unit}</small></td>
-                <td class="text-center font-bold text-danger">${avgDaily > 0 ? avgDaily.toFixed(1) : 0} ${ing.unit}/ngày</td>
-                <td class="text-center">${daysUntilEmpty === 'N/A' || daysUntilEmpty > 999 ? '-' : '<span class="badge bg-danger">' + daysUntilEmpty + ' ngày</span>'}</td>
-                <td class="text-end fw-bold text-[#b45309]">Nhập ${Math.ceil(suggestedBuy)} ${ing.unit}</td>
+                <td class="py-3"><span class="fw-bold text-slate-800">${window.escapeHTML(ing.name)}</span></td>
+                <td class="py-3 text-center"><span class="${ing.stock <= threshold ? 'text-danger font-bold' : 'text-slate-600'}">${ing.stock} ${ing.unit}</span></td>
+                <td class="py-3 text-center font-bold text-orange-500">${avgDaily > 0 ? avgDaily.toFixed(1) : 0} ${ing.unit}/ngày</td>
+                <td class="py-3 text-center">${daysUntilEmpty === 'N/A' || daysUntilEmpty > 999 ? '-' : '<span class="badge bg-danger">' + daysUntilEmpty + ' ngày</span>'}</td>
+                <td class="py-3 text-end fw-bold text-[#27ae60]"><i class="fa-solid fa-cart-plus me-1"></i>Nhập ${Math.ceil(suggestedBuy)} ${ing.unit}</td>
             `;
             purchasingEl.appendChild(tr);
         }
     });
 
     if (!hasAlerts) {
-        purchasingEl.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-slate-500"><i class="fa-solid fa-face-smile text-success fs-4 block mb-2"></i>Kho dồi dào. Chưa cần nhập thêm trong 7 ngày tới.</td></tr>';
+        purchasingEl.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-slate-500"><i class="fa-solid fa-face-smile text-success fs-4 block mb-2"></i>Kho dồi dào. Chưa cần nhập thêm trong 7 ngày tới.</td></tr>';
     }
 }
