@@ -140,6 +140,10 @@ function renderAnalytics() {
             });
         }
     }
+
+    // Analytics Enhanced Features
+    renderHeatmap(startDate, endDate);
+    renderSmartPurchasing(startDate, endDate);
 }
 
 // --- Feedback Stats ---
@@ -474,5 +478,146 @@ async function loadDashboard() {
     } catch(e) {
         console.error('loadDashboard error:', e);
         container.innerHTML = '<div class="text-center py-16 text-red-400"><i class="fa-solid fa-circle-xmark me-2"></i>Lỗi tải Dashboard.</div>';
+    }
+}
+
+// --- Heatmap (Bản đồ nhiệt) ---
+function renderHeatmap(startDate, endDate) {
+    const heatmapEl = document.getElementById('heatmap-grid');
+    if (!heatmapEl) return;
+
+    heatmapEl.innerHTML = ''; // Clear old
+
+    // Logic: Khởi tạo mảng đếm 7 ngày, 24 giờ
+    const counts = Array(7).fill(0).map(() => Array(24).fill(0));
+    let maxCount = 0;
+
+    orderHistory.forEach(order => {
+        const d = new Date(order.created_at);
+        if (startDate && d < startDate) return;
+        if (endDate && d > endDate) return;
+        
+        let day = d.getDay() - 1; // 0 = Mon, 6 = Sun
+        if (day === -1) day = 6;
+        const hour = d.getHours();
+
+        counts[day][hour]++;
+        if (counts[day][hour] > maxCount) {
+            maxCount = counts[day][hour];
+        }
+    });
+
+    const days = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+    
+    // Header row (Hours 6-22) - Giả sử quán mở từ 6h sáng đến 10h tối
+    const headerRow = document.createElement('div');
+    headerRow.className = 'heatmap-row heatmap-header';
+    headerRow.innerHTML = '<div class="heatmap-cell label-cell"></div>' + 
+        Array(17).fill(0).map((_, i) => `<div class="heatmap-cell">${i+6}h</div>`).join('');
+    heatmapEl.appendChild(headerRow);
+
+    // Data rows
+    days.forEach((dayLabel, dayIndex) => {
+        const row = document.createElement('div');
+        row.className = 'heatmap-row';
+        row.innerHTML = `<div class="heatmap-cell label-cell">${dayLabel}</div>`;
+        
+        for (let h = 6; h <= 22; h++) {
+            const count = counts[dayIndex][h];
+            let intensity = 0;
+            if (count > 0) {
+                if (count <= maxCount * 0.25) intensity = 1;
+                else if (count <= maxCount * 0.5) intensity = 2;
+                else if (count <= maxCount * 0.75) intensity = 3;
+                else intensity = 4;
+            }
+            row.innerHTML += `<div class="heatmap-cell intensity-${intensity}" title="${dayLabel} ${h}h: ${count} đơn"></div>`;
+        }
+        heatmapEl.appendChild(row);
+    });
+}
+
+// --- Smart Purchasing (Dự báo nhập hàng thông minh) ---
+function renderSmartPurchasing(startDate, endDate) {
+    const purchasingEl = document.getElementById('purchasing-body');
+    if (!purchasingEl) return;
+    
+    // Bước 1: Tính toán tổng mức tiêu thụ của từng nguyên liệu từ các đơn hàng.
+    const consumption = {}; // { ingredient_id: total_consumed_amount }
+    
+    // Tính tổng số ngày trong khoảng thời gian lọc (chọn tối thiểu 1 ngày)
+    let daysDiff = 1;
+    if (startDate && endDate) {
+        daysDiff = Math.max(1, Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)));
+    } else if (orderHistory.length > 0) {
+        const firstOrder = new Date(orderHistory[orderHistory.length - 1].created_at);
+        const lastOrder = new Date(orderHistory[0].created_at);
+        daysDiff = Math.max(1, Math.ceil((lastOrder - firstOrder) / (1000 * 60 * 60 * 24)));
+    }
+    
+    orderHistory.forEach(order => {
+        const d = new Date(order.created_at);
+        if (startDate && d < startDate) return;
+        if (endDate && d > endDate) return;
+
+        if (order.status !== 'Completed' && order.status !== 'Ready') return; // Chỉ tính đơn đã bán
+        
+        if (order.items) {
+            order.items.forEach(item => {
+                // Find product recipe
+                const product = products.find(p => p.id === item.product_id);
+                if (product && product.recipe) {
+                    product.recipe.forEach(ri => {
+                        if (!consumption[ri.ingredient_id]) consumption[ri.ingredient_id] = 0;
+                        consumption[ri.ingredient_id] += ri.amount * item.quantity;
+                    });
+                }
+            });
+        }
+    });
+
+    purchasingEl.innerHTML = '';
+    
+    let hasAlerts = false;
+
+    // Xem ingredient nào cần mua
+    ingredients.forEach(ing => {
+        const totalConsumed = consumption[ing.id] || 0;
+        const avgDaily = totalConsumed / daysDiff;
+        
+        let daysUntilEmpty = 'N/A';
+        let suggestedBuy = 0;
+        let requiresAction = false;
+        
+        if (avgDaily > 0) {
+            daysUntilEmpty = Math.floor(ing.stock / avgDaily);
+            // Cảnh báo nếu số ngày còn lại <= 3
+            if (daysUntilEmpty <= 3) {
+                requiresAction = true;
+                hasAlerts = true;
+                // Gợi ý mua cho 7 ngày
+                suggestedBuy = (avgDaily * 7) - ing.stock;
+                if (suggestedBuy < 0) suggestedBuy = 0;
+            }
+        } else if (ing.stock <= (ing.low_stock_threshold || 0)) {
+             requiresAction = true;
+             hasAlerts = true;
+             suggestedBuy = (ing.low_stock_threshold || 10) * 2 - ing.stock;
+        }
+
+        if (requiresAction) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><span class="fw-bold">${window.escapeHTML(ing.name)}</span><br><small class="text-muted">Tồn: ${ing.stock} ${ing.unit}</small></td>
+                <td class="text-center font-bold text-danger">${avgDaily > 0 ? avgDaily.toFixed(1) : 0} ${ing.unit}/ngày</td>
+                <td class="text-center">${daysUntilEmpty === 'N/A' || daysUntilEmpty > 999 ? '-' : '<span class="badge bg-danger">' + daysUntilEmpty + ' ngày</span>'}</td>
+                <td class="text-end fw-bold text-[#b45309]">Nhập ${Math.ceil(suggestedBuy)} ${ing.unit}</td>
+            `;
+            purchasingEl.appendChild(tr);
+        }
+    });
+
+    if (!hasAlerts) {
+        purchasingEl.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-slate-500"><i class="fa-solid fa-face-smile text-success fs-4 block mb-2"></i>Kho dồi dào. Chưa cần nhập thêm trong 7 ngày tới.</td></tr>';
     }
 }

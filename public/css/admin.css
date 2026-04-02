@@ -276,6 +276,54 @@ h3 { color: #d4a76a; font-size: 1.1rem; margin-bottom: 15px; }
     color: #9ca3af !important;
 }
 
+/* ===== HEATMAP STYLES ===== */
+.heatmap-grid {
+    display: grid;
+    grid-template-columns: 60px repeat(24, 1fr);
+    grid-template-rows: auto repeat(7, 1fr);
+    gap: 4px;
+    font-size: 0.75rem;
+}
+.heatmap-cell {
+    border-radius: 4px;
+    min-height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: transparent;
+    transition: all 0.2s;
+    cursor: crosshair;
+}
+.heatmap-cell:hover {
+    transform: scale(1.1);
+    color: #111827;
+    font-weight: bold;
+    z-index: 10;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+.heatmap-header-x {
+    text-align: center;
+    color: #9ca3af;
+    padding-bottom: 8px;
+    font-weight: 600;
+}
+.heatmap-header-y {
+    text-align: right;
+    padding-right: 12px;
+    color: #6b7280;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+/* Scale: 0 -> 4 */
+.intensity-0 { background-color: #f3f4f6; }
+.intensity-1 { background-color: #fde68a; } /* amber-200 */
+.intensity-2 { background-color: #f59e0b; } /* amber-500 */
+.intensity-3 { background-color: #ea580c; } /* orange-600 */
+.intensity-4 { background-color: #9a3412; color: #fff; } /* orange-800 */
+.intensity-4:hover { color: #fff; }
+
 /* ===== PRINT STYLES ===== */
 @media print {
     body { background: white !important; padding: 0 !important; color: black !important; }
