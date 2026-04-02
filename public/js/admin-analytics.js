@@ -564,13 +564,28 @@ function renderSmartPurchasing(startDate, endDate) {
         
         if (order.items) {
             order.items.forEach(item => {
-                // Find product recipe
-                const product = products.find(p => p.id === item.product_id);
-                if (product && product.recipe) {
-                    product.recipe.forEach(ri => {
-                        if (!consumption[ri.ingredient_id]) consumption[ri.ingredient_id] = 0;
-                        consumption[ri.ingredient_id] += ri.amount * item.quantity;
+                // Kiểm tra xem item có lưu sẵn recipe không (hỗ trợ combo và options)
+                if (item.recipe && Array.isArray(item.recipe) && item.recipe.length > 0) {
+                    item.recipe.forEach(ri => {
+                        const iId = ri.ingredientId || ri.ingredient_id;
+                        if (!iId) return;
+                        if (!consumption[iId]) consumption[iId] = 0;
+                        const qty = ri.quantity !== undefined ? ri.quantity : (ri.amount || 0);
+                        consumption[iId] += qty * item.quantity;
                     });
+                } else {
+                    // Fallback tương thích cũ: Tìm product gốc
+                    const prodId = item.productId || item.product_id || item.id;
+                    const product = typeof products !== 'undefined' ? products.find(p => p._id === prodId || p.id === prodId) : null;
+                    if (product && product.recipe && !product.is_combo) {
+                        product.recipe.forEach(ri => {
+                            const iId = ri.ingredient_id || ri.ingredientId;
+                            if (!iId) return;
+                            if (!consumption[iId]) consumption[iId] = 0;
+                            const qty = ri.amount !== undefined ? ri.amount : (ri.quantity || 0);
+                            consumption[iId] += qty * item.quantity;
+                        });
+                    }
                 }
             });
         }
@@ -582,8 +597,9 @@ function renderSmartPurchasing(startDate, endDate) {
 
     // Xem ingredient nào cần mua
     ingredients.forEach(ing => {
-        const totalConsumed = consumption[ing.id] || 0;
+        const totalConsumed = consumption[ing.id] || consumption[ing._id] || 0;
         const avgDaily = totalConsumed / daysDiff;
+        const threshold = ing.low_stock_threshold || ing.lowStockThreshold || 10;
         
         let daysUntilEmpty = 'N/A';
         let suggestedBuy = 0;
@@ -591,18 +607,21 @@ function renderSmartPurchasing(startDate, endDate) {
         
         if (avgDaily > 0) {
             daysUntilEmpty = Math.floor(ing.stock / avgDaily);
-            // Cảnh báo nếu số ngày còn lại <= 3
-            if (daysUntilEmpty <= 3) {
+            // Cảnh báo nếu số ngày còn lại <= 3 HOẶC tồn kho thấp hơn ngưỡng
+            if (daysUntilEmpty <= 3 || ing.stock <= threshold) {
                 requiresAction = true;
                 hasAlerts = true;
-                // Gợi ý mua cho 7 ngày
-                suggestedBuy = (avgDaily * 7) - ing.stock;
+                // Mua đảm bảo đủ 7 ngày hoặc ít nhất là gấp đôi ngưỡng tối thiểu
+                let buyFor7Days = (avgDaily * 7) - ing.stock;
+                let buyForThreshold = (threshold * 2) - ing.stock;
+                suggestedBuy = Math.max(buyFor7Days, buyForThreshold);
                 if (suggestedBuy < 0) suggestedBuy = 0;
             }
-        } else if (ing.stock <= (ing.low_stock_threshold || 0)) {
+        } else if (ing.stock <= threshold) {
              requiresAction = true;
              hasAlerts = true;
-             suggestedBuy = (ing.low_stock_threshold || 10) * 2 - ing.stock;
+             suggestedBuy = (threshold * 2) - ing.stock;
+             if (suggestedBuy < 0) suggestedBuy = 0;
         }
 
         if (requiresAction) {
