@@ -300,6 +300,44 @@
                         </div>
                     </div>
 
+                    <!-- Heatmap Row -->
+                    <div class="card bg-white border border-slate-200 rounded-2xl shadow-soft mb-6 overflow-hidden">
+                        <div class="card-header bg-slate-100 border-b border-slate-200 p-4">
+                            <h5 class="font-noto font-bold text-slate-800 mb-0 flex items-center gap-2"><i class="fa-solid fa-map text-[#C0A062]"></i> Bản đồ nhiệt (Traffic) Khung giờ vàng</h5>
+                        </div>
+                        <div class="card-body p-4 w-full overflow-x-auto custom-scrollbar">
+                            <div id="heatmap-container" class="min-w-[800px]">
+                                <div class="text-center py-6 text-slate-500">Đang tính toán dữ liệu...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Smart Purchasing Row -->
+                    <div class="card bg-white border border-slate-200 rounded-2xl shadow-soft mb-6 overflow-hidden">
+                        <div class="card-header bg-slate-100 border-b border-slate-200 p-4 flex justify-between items-center">
+                            <h5 class="font-noto font-bold text-slate-800 mb-0 flex items-center gap-2"><i class="fa-solid fa-cart-shopping text-[#27ae60]"></i> Dự báo Nhập hàng Thông minh</h5>
+                            <span class="text-xs text-slate-500 font-semibold bg-white px-2 py-1 rounded-lg border border-slate-200">Gợi ý nhập cho 7 ngày tới</span>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover text-slate-800 mb-0 border-0">
+                                    <thead class="bg-white text-slate-500 text-xs uppercase tracking-wider">
+                                        <tr>
+                                            <th class="border-0 px-4 py-3 font-semibold">Nguyên liệu</th>
+                                            <th class="border-0 px-4 py-3 font-semibold text-center">Tồn kho</th>
+                                            <th class="border-0 px-4 py-3 font-semibold text-center">Tiêu thụ BQ/Ngày</th>
+                                            <th class="border-0 px-4 py-3 font-semibold text-center">Cảnh báo hết (Ngày)</th>
+                                            <th class="border-0 px-4 py-3 font-semibold text-end text-[#27ae60]">Nên nhập thêm</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="smart-purchasing-body" class="border-transparent">
+                                        <tr><td colspan="5" class="text-center py-4 text-slate-500">Đang phân tích thuật toán tiêu thụ...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Best Selling Row -->
                     <div class="card bg-white border border-slate-200 rounded-2xl shadow-soft mb-6 overflow-hidden">
                         <div class="card-header bg-slate-100 border-b border-slate-200 p-4">
