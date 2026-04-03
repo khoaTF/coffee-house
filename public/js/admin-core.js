@@ -107,14 +107,43 @@ async function logAudit(action, details) {
 }
 
 // --- Tab Switching Logic ---
+window.hasPermission = function(perm) {
+    if (sessionStorage.getItem('cafe_role') === 'admin') return true;
+    try {
+        const perms = JSON.parse(sessionStorage.getItem('nohope_permissions') || '[]');
+        return perms.includes(perm);
+    } catch(e) {
+        return false;
+    }
+};
+
+window.canAccessTab = function(tabId) {
+    if (sessionStorage.getItem('cafe_role') === 'admin') return true;
+    const perms = JSON.parse(sessionStorage.getItem('nohope_permissions') || '[]');
+    // dashboard and analytics are specific. orders handles history if they have orders though they should have explicit history perm
+    return perms.includes(tabId) || perms.includes(tabId + '_edit');
+};
+
 function switchTab(tabId) {
+    if (!window.canAccessTab(tabId)) {
+        if (typeof showAdminToast === 'function') {
+            showAdminToast('Bạn không có quyền truy cập chức năng này', 'error');
+        }
+        return;
+    }
+
     document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-    document.getElementById(`tab-${tabId}`).classList.add('active');
+    
+    // Add active class if nav button exists
+    const navLink = document.getElementById(`tab-${tabId}`);
+    if (navLink) navLink.classList.add('active');
 
     document.querySelectorAll('.content-section').forEach(section => {
         section.classList.remove('active');
     });
-    document.getElementById(`section-${tabId}`).classList.add('active');
+    
+    const targetSection = document.getElementById(`section-${tabId}`);
+    if (targetSection) targetSection.classList.add('active');
 
     if (tabId === 'dashboard') {
         if (typeof loadDashboard === 'function') loadDashboard();
@@ -387,9 +416,9 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch(e) {
             return false;
         }
-    };
+    }; // We redefine it here just in case, but it's already global
 
-    const allTabsId = ['orders', 'pos', 'history', 'tables', 'menu', 'inventory', 'restock', 'promo', 'customers', 'staff', 'analytics', 'audit', 'cashflow', 'shifts', 'qr', 'settings'];
+    const allTabsId = ['dashboard', 'orders', 'pos', 'history', 'tables', 'menu', 'inventory', 'restock', 'promo', 'customers', 'staff', 'analytics', 'audit', 'cashflow', 'shifts', 'qr', 'settings'];
     let defaultTab = '';
     
     if (role !== 'admin') {
@@ -397,8 +426,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const el = document.getElementById(`tab-${tab}`);
             const navEl = document.getElementById(`nav-${tab}`);
             if (el) {
-                // For tab access, we just check if they have the specific tab permission (or something _edit).
-                if (!permissions.includes(tab) && !permissions.includes(`${tab}_edit`)) {
+                if (!window.canAccessTab(tab)) {
                     el.style.display = 'none';
                     if (navEl) navEl.style.display = 'none';
                 } else {
