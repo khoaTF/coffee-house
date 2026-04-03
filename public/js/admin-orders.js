@@ -137,7 +137,7 @@ function renderHistoryTable() {
 
         if (['Pending', 'Preparing', 'Ready'].includes(order.status)) {
             const btn = document.createElement('button');
-            btn.className = 'btn btn-sm btn-outline-danger';
+            btn.className = 'btn btn-sm btn-outline-danger needs-orders-edit';
             btn.textContent = 'Hủy';
             btn.onclick = () => cancelOrder(order._id);
             tdAction.appendChild(btn);
@@ -145,7 +145,7 @@ function renderHistoryTable() {
 
         if (order.status !== 'Cancelled' && order.paymentStatus !== 'paid') {
             const btnPaid = document.createElement('button');
-            btnPaid.className = 'btn btn-sm btn-success ms-1';
+            btnPaid.className = 'btn btn-sm btn-success ms-1 needs-orders-edit';
             btnPaid.innerHTML = '<i class="fa-solid fa-check"></i> Thu tiền';
             btnPaid.title = "Xác nhận đã nhận tiền (Tiền mặt/Chuyển khoản)";
             btnPaid.onclick = () => markOrderPaid(order._id);

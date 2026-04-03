@@ -379,24 +379,72 @@ document.addEventListener('DOMContentLoaded', () => {
             .subscribe();
     }
 
-    const allTabsId = ['orders', 'pos', 'history', 'tables', 'menu', 'inventory', 'restock', 'promo', 'customers', 'staff', 'analytics', 'audit', 'cashflow'];
+    window.hasPermission = function(perm) {
+        if (sessionStorage.getItem('cafe_role') === 'admin') return true;
+        try {
+            const perms = JSON.parse(sessionStorage.getItem('nohope_permissions') || '[]');
+            return perms.includes(perm);
+        } catch(e) {
+            return false;
+        }
+    };
+
+    const allTabsId = ['orders', 'pos', 'history', 'tables', 'menu', 'inventory', 'restock', 'promo', 'customers', 'staff', 'analytics', 'audit', 'cashflow', 'shifts', 'qr', 'settings'];
     let defaultTab = '';
     
     if (role !== 'admin') {
         allTabsId.forEach(tab => {
             const el = document.getElementById(`tab-${tab}`);
+            const navEl = document.getElementById(`nav-${tab}`);
             if (el) {
-                if (!permissions.includes(tab)) {
+                // For tab access, we just check if they have the specific tab permission (or something _edit).
+                if (!permissions.includes(tab) && !permissions.includes(`${tab}_edit`)) {
                     el.style.display = 'none';
+                    if (navEl) navEl.style.display = 'none';
                 } else {
                     el.style.display = '';
+                    if (navEl) navEl.style.display = '';
                     if (!defaultTab) defaultTab = tab;
                 }
             }
         });
         
-        const btnAddPromo = document.querySelector('button[onclick="openPromoModal()"]');
-        if (btnAddPromo && !permissions.includes('promo')) btnAddPromo.style.display = 'none';
+        // Hide granular action elements based on write permissions
+        const actionRules = [
+            { query: 'button[onclick*="openProductModal"]', perm: 'menu_edit' },
+            { query: 'button[onclick*="openCategoryModal"]', perm: 'menu_edit' },
+            { query: 'button[onclick*="openIngredientModal"]', perm: 'inventory_edit' },
+            { query: 'button[onclick*="openCreateRestockModal"]', perm: 'inventory_edit' },
+            { query: 'button[onclick*="openCreateCashflowModal"]', perm: 'cashflow_edit' },
+            { query: 'button[onclick*="openPromoModal"]', perm: 'promo' },
+            { query: 'button[onclick*="openAdBannerModal"]', perm: 'promo' },
+            { query: 'button[onclick*="exportCashflowCSV"]', perm: 'cashflow_edit' },
+            { query: 'button[onclick*="exportRestockHistoryCSV"]', perm: 'inventory_edit' }
+        ];
+
+        actionRules.forEach(rule => {
+            const els = document.querySelectorAll(rule.query);
+            els.forEach(el => {
+                if (!permissions.includes(rule.perm)) {
+                    el.style.display = 'none';
+                }
+            });
+        });
+
+        // Add dynamic CSS to hide table action buttons class
+        let cssRules = '';
+        if (!permissions.includes('menu_edit')) cssRules += '.needs-menu-edit { display: none !important; } ';
+        if (!permissions.includes('orders_edit')) cssRules += '.needs-orders-edit { display: none !important; } ';
+        if (!permissions.includes('inventory_edit')) cssRules += '.needs-inventory-edit { display: none !important; } ';
+        if (!permissions.includes('cashflow_edit')) cssRules += '.needs-cashflow-edit { display: none !important; } ';
+        if (!permissions.includes('staff')) cssRules += '.needs-staff-edit { display: none !important; } ';
+        if (!permissions.includes('promo')) cssRules += '.needs-promo-edit { display: none !important; } ';
+        
+        if (cssRules) {
+            const style = document.createElement('style');
+            style.innerHTML = cssRules;
+            document.head.appendChild(style);
+        }
 
         if (defaultTab) {
             switchTab(defaultTab);
@@ -408,7 +456,9 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         allTabsId.forEach(tab => {
             const el = document.getElementById(`tab-${tab}`);
+            const navEl = document.getElementById(`nav-${tab}`);
             if (el) el.style.display = '';
+            if (navEl) navEl.style.display = '';
         });
         switchTab('dashboard');
     }

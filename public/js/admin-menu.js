@@ -121,7 +121,7 @@ function renderProductsTable() {
         tdAction.className = 'text-end';
 
         const quickPromoBtn = document.createElement('button');
-        quickPromoBtn.className = 'action-btn text-warning me-2';
+        quickPromoBtn.className = 'action-btn text-warning me-2 needs-promo-edit';
         quickPromoBtn.title = 'Giảm giá nhanh';
         const quickPromoIcon = document.createElement('i');
         quickPromoIcon.className = 'fa-solid fa-tag';
@@ -129,7 +129,7 @@ function renderProductsTable() {
         quickPromoBtn.onclick = () => openQuickPromo(p._id);
 
         const editBtn = document.createElement('button');
-        editBtn.className = 'action-btn edit-btn';
+        editBtn.className = 'action-btn edit-btn needs-menu-edit';
         editBtn.title = 'Sửa';
         const editIcon = document.createElement('i');
         editIcon.className = 'fa-solid fa-pen';
@@ -138,14 +138,14 @@ function renderProductsTable() {
 
         const toggleBtn = document.createElement('button');
         if (isAvail) {
-            toggleBtn.className = 'action-btn delete';
+            toggleBtn.className = 'action-btn delete needs-menu-edit';
             toggleBtn.title = 'Ẩn món';
             const hideIcon = document.createElement('i');
             hideIcon.className = 'fa-solid fa-eye-slash';
             toggleBtn.appendChild(hideIcon);
             toggleBtn.onclick = () => deleteProduct(p._id);
         } else {
-            toggleBtn.className = 'action-btn text-success';
+            toggleBtn.className = 'action-btn text-success needs-menu-edit';
             toggleBtn.title = 'Hiện lại';
             const showIcon = document.createElement('i');
             showIcon.className = 'fa-solid fa-eye';
