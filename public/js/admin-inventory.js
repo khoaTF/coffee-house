@@ -68,14 +68,14 @@ function renderIngredients() {
             tdAction.className = 'text-end';
 
             const editBtn = document.createElement('button');
-            editBtn.className = 'action-btn me-2';
+            editBtn.className = 'action-btn me-2 needs-inventory-edit';
             const editIcon = document.createElement('i');
             editIcon.className = 'fa-solid fa-pen-to-square';
             editBtn.appendChild(editIcon);
             editBtn.onclick = () => openIngredientModal(i._id);
 
             const delBtn = document.createElement('button');
-            delBtn.className = 'action-btn delete';
+            delBtn.className = 'action-btn delete needs-inventory-edit';
             const delIcon = document.createElement('i');
             delIcon.className = 'fa-solid fa-trash';
             delBtn.appendChild(delIcon);
