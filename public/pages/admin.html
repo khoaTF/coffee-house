@@ -1154,58 +1154,91 @@
                                 <option value="admin">Quản trị viên (Admin)</option>
                             </select>
                         </div>
-                        <div class="mb-2" id="staff-permissions-block">
-                            <label class="form-label text-slate-500 text-xs uppercase tracking-wider font-bold mb-3 d-block border-t border-slate-200 pt-3">Phân quyền chi tiết (Tabs & Thao tác)</label>
-                            <div id="perms-checkbox-list" class="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                                <!-- Bán hàng -->
-                                <div>
-                                    <h6 class="text-xs font-bold text-slate-800 mb-2 border-b border-slate-100 pb-1"><i class="fa-solid fa-cart-shopping me-1 text-[#C0A062]"></i> Bán hàng & Đơn hàng</h6>
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="pos"> <span>Máy POS (Tạo đơn)</span></label>
-                                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="orders"> <span>Xem Đơn đang chờ</span></label>
-                                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="orders_edit"> <span>Xử lý Đơn (Duyệt/Hủy)</span></label>
-                                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="history"> <span>Lịch sử Hóa đơn</span></label>
-                                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="tables"> <span>Quản lý Bàn</span></label>
-                                    </div>
-                                </div>
-                                
-                                <!-- Sản phẩm & Kho -->
-                                <div>
-                                    <h6 class="text-xs font-bold text-slate-800 mb-2 border-b border-slate-100 pb-1"><i class="fa-solid fa-box-open me-1 text-[#C0A062]"></i> Sản phẩm & Kho hàng</h6>
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="menu"> <span>Xem Menu</span></label>
-                                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="menu_edit"> <span>Sửa/Thêm Menu</span></label>
-                                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="inventory"> <span>Xem Tồn kho</span></label>
-                                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="inventory_edit"> <span>Nhập/Chỉnh Kho</span></label>
-                                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="restock"> <span>Lịch sử Nhập hàng</span></label>
-                                    </div>
-                                </div>
+        <div class="mb-2" id="staff-permissions-block">
+            <label class="form-label text-slate-500 text-xs uppercase tracking-wider font-bold mb-3 d-block border-t border-slate-200 pt-3">Phân quyền chi tiết thao tác</label>
+            <div id="perms-checkbox-list" class="space-y-4 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
+                
+                <!-- Nhóm 1: Trang chủ & Thống Kê -->
+                <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+                    <div class="flex items-center space-x-2 mb-3 pb-2 border-b border-slate-100">
+                        <i class="fa-solid fa-chart-line text-[#C0A062]"></i>
+                        <h6 class="text-sm font-bold text-slate-800 m-0">Thống Kê & Báo Cáo</h6>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="dashboard"> <span>Xem Tổng quan</span></label>
+                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="analytics"> <span>Xem Báo cáo chi tiết</span></label>
+                    </div>
+                </div>
 
-                                <!-- Tài chính & Marketing -->
-                                <div>
-                                    <h6 class="text-xs font-bold text-slate-800 mb-2 border-b border-slate-100 pb-1"><i class="fa-solid fa-chart-pie me-1 text-[#C0A062]"></i> Tài chính & Thống kê</h6>
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="cashflow"> <span>Xem Sổ quỹ</span></label>
-                                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="cashflow_edit"> <span>Tạo phiếu Thu/Chi</span></label>
-                                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="analytics"> <span>Báo cáo Thống kê</span></label>
-                                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="promo"> <span>Khuyến mãi & Ads</span></label>
-                                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="customers"> <span>Khách hàng</span></label>
-                                    </div>
-                                </div>
+                <!-- Nhóm 2: Bán Hàng & Đơn Hàng -->
+                <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+                    <div class="flex items-center space-x-2 mb-3 pb-2 border-b border-slate-100">
+                        <i class="fa-solid fa-cart-shopping text-[#C0A062]"></i>
+                        <h6 class="text-sm font-bold text-slate-800 m-0">Bán Hàng & Hoạt Động</h6>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="pos"> <span>Sử dụng máy POS</span></label>
+                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="orders"> <span>Xem danh sách đơn</span></label>
+                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="orders_edit"> <span>Tương tác đơn (Thu/Duyệt/Quản lý)</span></label>
+                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="history"> <span>Lịch sử Hóa đơn</span></label>
+                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="history_edit"> <span>Quyền được Hủy hóa đơn lỗi</span></label>
+                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="tables"> <span>Quản lý sơ đồ bàn</span></label>
+                    </div>
+                </div>
 
-                                <!-- Hệ thống -->
-                                <div>
-                                    <h6 class="text-xs font-bold text-slate-800 mb-2 border-b border-slate-100 pb-1"><i class="fa-solid fa-gear me-1 text-[#C0A062]"></i> Hệ thống</h6>
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="shifts"> <span>Ca làm việc</span></label>
-                                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="staff"> <span>Nhân sự & Quyền</span></label>
-                                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="audit"> <span>Lịch sử thao tác</span></label>
-                                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="qr"> <span>Quản lý QR Bàn</span></label>
-                                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="settings"> <span>Cài đặt Cửa hàng</span></label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                <!-- Nhóm 3: Thực Đơn -->
+                <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+                    <div class="flex items-center space-x-2 mb-3 pb-2 border-b border-slate-100">
+                        <i class="fa-solid fa-bell-concierge text-[#C0A062]"></i>
+                        <h6 class="text-sm font-bold text-slate-800 m-0">Sản Phẩm & Thực Đơn</h6>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="menu"> <span>Xem Thực đơn</span></label>
+                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="menu_add"> <span>Thêm Món mới</span></label>
+                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="menu_edit"> <span>Chỉnh sửa Món</span></label>
+                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer text-danger"><input type="checkbox" class="form-checkbox border-slate-300 text-danger rounded focus:ring-0 perm-cb" value="menu_delete"> <span>Xóa Món</span></label>
+                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="menu_category"> <span>Quản lý Danh mục</span></label>
+                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="promo"> <span>Quản lý Khuyến mãi/Ads</span></label>
+                    </div>
+                </div>
+
+                <!-- Nhóm 4: Kho & Thu Chi -->
+                <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+                    <div class="flex items-center space-x-2 mb-3 pb-2 border-b border-slate-100">
+                        <i class="fa-solid fa-boxes-stacked text-[#C0A062]"></i>
+                        <h6 class="text-sm font-bold text-slate-800 m-0">Vật Tư & Tài Chính</h6>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="inventory"> <span>Xem Tồn kho</span></label>
+                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="inventory_edit"> <span>Chỉnh sửa số dư kho</span></label>
+                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="restock"> <span>Xem Lịch sử Nhập</span></label>
+                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="restock_create"> <span>Lập Phiếu Nhập kho</span></label>
+                        <label class="flex items-center space-x-2 text-sm pb-2 pt-2 col-span-1 sm:col-span-2 border-b border-slate-50 border-t mt-1 text-slate-700 font-bold">--- Tài chính ---</label>
+                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="cashflow"> <span>Xem Sổ quỹ</span></label>
+                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="cashflow_create"> <span>Tạo báo cáo Thu/Chi</span></label>
+                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="cashflow_export"> <span>Xuất file Sổ quỹ/Kho</span></label>
+                    </div>
+                </div>
+
+                <!-- Nhóm 5: Hệ thống & Khách hàng -->
+                <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+                    <div class="flex items-center space-x-2 mb-3 pb-2 border-b border-slate-100">
+                        <i class="fa-solid fa-users-gear text-[#C0A062]"></i>
+                        <h6 class="text-sm font-bold text-slate-800 m-0">Cấu Hình & Quản Trị</h6>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="customers"> <span>Xem danh sách KH</span></label>
+                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="customers_edit"> <span>Sửa điểm Tích lũy KH</span></label>
+                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="shifts"> <span>Theo dõi Ca trực</span></label>
+                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="staff"> <span>Quản lý Nhân sự</span></label>
+                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="audit"> <span>Nhật ký Thao tác (Log)</span></label>
+                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="qr"> <span>Xuất File QR & API</span></label>
+                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer text-danger"><input type="checkbox" class="form-checkbox border-slate-300 text-danger rounded focus:ring-0 perm-cb" value="settings"> <span>Sở hữu Hệ thống (Thiết lập)</span></label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
                     </form>
                 </div>
                 <div class="modal-footer border-t border-slate-200 px-6 py-4">
