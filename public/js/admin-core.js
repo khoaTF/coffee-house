@@ -120,8 +120,33 @@ window.hasPermission = function(perm) {
 window.canAccessTab = function(tabId) {
     if (sessionStorage.getItem('cafe_role') === 'admin') return true;
     const perms = JSON.parse(sessionStorage.getItem('nohope_permissions') || '[]');
-    // dashboard and analytics are specific. orders handles history if they have orders though they should have explicit history perm
-    return perms.includes(tabId) || perms.includes(tabId + '_edit');
+    if (perms.length === 0) return false;
+
+    const accessMap = {
+        'dashboard': ['analytics_dashboard', 'analytics_revenue', 'analytics_products'],
+        'pos': ['pos_create'],
+        'orders': ['orders_view', 'orders_status', 'orders_payment', 'orders_cancel', 'orders_discount'],
+        'menu': ['menu_view', 'menu_add', 'menu_edit', 'menu_delete', 'menu_category', 'menu_promo'],
+        'inventory': ['inventory_view', 'inventory_edit', 'inventory_delete'],
+        'restock': ['restock_view', 'restock_create'],
+        'promo': ['menu_promo'],
+        'history': ['history_view', 'history_export', 'history_cancel', 'history_print'],
+        'shifts': ['shifts_view', 'shifts_manage'],
+        'analytics': ['analytics_revenue', 'analytics_products', 'analytics_export'],
+        'cashflow': ['cashflow_view', 'cashflow_export', 'cashflow_create', 'cashflow_edit', 'cashflow_delete'],
+        'tables': ['tables_view', 'tables_add', 'tables_edit', 'tables_delete', 'tables_qr'],
+        'customers': ['customers_view', 'customers_edit'],
+        'staff': ['staff_view', 'staff_add', 'staff_edit', 'staff_permissions', 'staff_delete'],
+        'audit': ['settings_audit'],
+        'qr': ['tables_qr'],
+        'settings': ['settings_manage']
+    };
+
+    if (accessMap[tabId]) {
+        return accessMap[tabId].some(p => perms.includes(p));
+    }
+
+    return perms.includes(tabId) || perms.some(p => p.startsWith(tabId + '_'));
 };
 
 function switchTab(tabId) {
@@ -439,15 +464,15 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Hide granular action elements based on write permissions
         const actionRules = [
-            { query: 'button[onclick*="openProductModal"]', perm: 'menu_edit' },
-            { query: 'button[onclick*="openCategoryModal"]', perm: 'menu_edit' },
+            { query: 'button[onclick*="openProductModal"]', perm: 'menu_add' },
+            { query: 'button[onclick*="openCategoryModal"]', perm: 'menu_category' },
             { query: 'button[onclick*="openIngredientModal"]', perm: 'inventory_edit' },
-            { query: 'button[onclick*="openCreateRestockModal"]', perm: 'inventory_edit' },
-            { query: 'button[onclick*="openCreateCashflowModal"]', perm: 'cashflow_edit' },
-            { query: 'button[onclick*="openPromoModal"]', perm: 'promo' },
-            { query: 'button[onclick*="openAdBannerModal"]', perm: 'promo' },
-            { query: 'button[onclick*="exportCashflowCSV"]', perm: 'cashflow_edit' },
-            { query: 'button[onclick*="exportRestockHistoryCSV"]', perm: 'inventory_edit' }
+            { query: 'button[onclick*="openCreateRestockModal"]', perm: 'restock_create' },
+            { query: 'button[onclick*="openCreateCashflowModal"]', perm: 'cashflow_create' },
+            { query: 'button[onclick*="openPromoModal"]', perm: 'menu_promo' },
+            { query: 'button[onclick*="openAdBannerModal"]', perm: 'menu_promo' },
+            { query: 'button[onclick*="exportCashflowCSV"]', perm: 'cashflow_export' },
+            { query: 'button[onclick*="exportRestockHistoryCSV"]', perm: 'cashflow_export' }
         ];
 
         actionRules.forEach(rule => {
@@ -461,12 +486,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Add dynamic CSS to hide table action buttons class
         let cssRules = '';
+        if (!permissions.includes('analytics_export')) cssRules += '.needs-analytics-export { display: none !important; } ';
+        if (!permissions.includes('pos_create')) cssRules += '.needs-pos-create { display: none !important; } ';
+        if (!permissions.includes('orders_status')) cssRules += '.needs-orders-status { display: none !important; } ';
+        if (!permissions.includes('orders_discount')) cssRules += '.needs-orders-discount { display: none !important; } ';
+        if (!permissions.includes('orders_payment')) cssRules += '.needs-orders-payment { display: none !important; } ';
+        if (!permissions.includes('orders_cancel')) cssRules += '.needs-orders-cancel { display: none !important; } ';
+        if (!permissions.includes('history_export')) cssRules += '.needs-history-export { display: none !important; } ';
+        if (!permissions.includes('history_print')) cssRules += '.needs-history-print { display: none !important; } ';
+        if (!permissions.includes('history_cancel')) cssRules += '.needs-history-cancel { display: none !important; } ';
+        if (!permissions.includes('tables_add')) cssRules += '.needs-tables-add { display: none !important; } ';
+        if (!permissions.includes('tables_edit')) cssRules += '.needs-tables-edit { display: none !important; } ';
+        if (!permissions.includes('tables_delete')) cssRules += '.needs-tables-delete { display: none !important; } ';
+        if (!permissions.includes('tables_qr')) cssRules += '.needs-tables-qr { display: none !important; } ';
+        if (!permissions.includes('menu_add')) cssRules += '.needs-menu-add { display: none !important; } ';
         if (!permissions.includes('menu_edit')) cssRules += '.needs-menu-edit { display: none !important; } ';
-        if (!permissions.includes('orders_edit')) cssRules += '.needs-orders-edit { display: none !important; } ';
+        if (!permissions.includes('menu_delete')) cssRules += '.needs-menu-delete { display: none !important; } ';
+        if (!permissions.includes('menu_category')) cssRules += '.needs-menu-category { display: none !important; } ';
+        if (!permissions.includes('menu_promo')) cssRules += '.needs-menu-promo { display: none !important; } ';
         if (!permissions.includes('inventory_edit')) cssRules += '.needs-inventory-edit { display: none !important; } ';
+        if (!permissions.includes('inventory_delete')) cssRules += '.needs-inventory-delete { display: none !important; } ';
+        if (!permissions.includes('restock_create')) cssRules += '.needs-restock-create { display: none !important; } ';
+        if (!permissions.includes('cashflow_create')) cssRules += '.needs-cashflow-create { display: none !important; } ';
         if (!permissions.includes('cashflow_edit')) cssRules += '.needs-cashflow-edit { display: none !important; } ';
-        if (!permissions.includes('staff')) cssRules += '.needs-staff-edit { display: none !important; } ';
-        if (!permissions.includes('promo')) cssRules += '.needs-promo-edit { display: none !important; } ';
+        if (!permissions.includes('cashflow_delete')) cssRules += '.needs-cashflow-delete { display: none !important; } ';
+        if (!permissions.includes('cashflow_export')) cssRules += '.needs-cashflow-export { display: none !important; } ';
+        if (!permissions.includes('shifts_manage')) cssRules += '.needs-shifts-manage { display: none !important; } ';
+        if (!permissions.includes('staff_add')) cssRules += '.needs-staff-add { display: none !important; } ';
+        if (!permissions.includes('staff_edit')) cssRules += '.needs-staff-edit { display: none !important; } ';
+        if (!permissions.includes('staff_permissions')) cssRules += '.needs-staff-permissions { display: none !important; } ';
+        if (!permissions.includes('staff_delete')) cssRules += '.needs-staff-delete { display: none !important; } ';
+        if (!permissions.includes('customers_edit')) cssRules += '.needs-customers-edit { display: none !important; } ';
+        if (!permissions.includes('settings_manage')) cssRules += '.needs-settings-manage { display: none !important; } ';
+        if (!permissions.includes('promo_manage')) cssRules += '.needs-promo-manage { display: none !important; } ';
         
         if (cssRules) {
             const style = document.createElement('style');

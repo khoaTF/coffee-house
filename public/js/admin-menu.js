@@ -138,14 +138,14 @@ function renderProductsTable() {
 
         const toggleBtn = document.createElement('button');
         if (isAvail) {
-            toggleBtn.className = 'action-btn delete needs-menu-edit';
+            toggleBtn.className = 'action-btn delete needs-menu-delete';
             toggleBtn.title = 'Ẩn món';
             const hideIcon = document.createElement('i');
             hideIcon.className = 'fa-solid fa-eye-slash';
             toggleBtn.appendChild(hideIcon);
             toggleBtn.onclick = () => deleteProduct(p._id);
         } else {
-            toggleBtn.className = 'action-btn text-success needs-menu-edit';
+            toggleBtn.className = 'action-btn text-success needs-menu-delete';
             toggleBtn.title = 'Hiện lại';
             const showIcon = document.createElement('i');
             showIcon.className = 'fa-solid fa-eye';
