@@ -330,9 +330,9 @@ document.addEventListener('DOMContentLoaded', () => {
         desktopAvatarEl.innerHTML = `<img src="${initAvatarUrl}" alt="" class="w-full h-full object-cover" onerror="this.onerror=null;this.parentElement.innerHTML='<i class=\\'fa-solid fa-user text-[#C0A062] text-xs\\'></i>';">`;
     }
 
-    // Refresh avatar from DB seamlessly
+    // Refresh avatar and sync permissions from DB seamlessly
     if (staffName && staffName !== 'Administrator' && staffName !== 'Nhân viên') {
-        supabase.from('users').select('avatar_url').eq('name', staffName).maybeSingle().then(({data}) => {
+        supabase.from('users').select('avatar_url, permissions, role').eq('name', staffName).maybeSingle().then(({data}) => {
             if (data && data.avatar_url) {
                 sessionStorage.setItem('nohope_staff_avatar', data.avatar_url);
                 if (desktopAvatarEl) {
@@ -343,7 +343,40 @@ document.addEventListener('DOMContentLoaded', () => {
                     posAvatarEl.innerHTML = `<img src="${data.avatar_url}" alt="" class="w-full h-full object-cover" onerror="this.onerror=null;this.parentElement.innerHTML='<i class=\\'fa-solid fa-user text-[#C0A062] text-xs\\'></i>';">`;
                 }
             }
+
+            // Sync permissions on page load to prevent stale sessions
+            if (data) {
+                const currentPerms = JSON.parse(sessionStorage.getItem('nohope_permissions') || '[]');
+                const currentRole = sessionStorage.getItem('cafe_role');
+                const newPerms = data.permissions || [];
+                const newRole = data.role;
+
+                if (JSON.stringify(currentPerms) !== JSON.stringify(newPerms) || currentRole !== newRole) {
+                    sessionStorage.setItem('nohope_permissions', JSON.stringify(newPerms));
+                    sessionStorage.setItem('cafe_role', newRole);
+                    window.location.reload();
+                }
+            }
         });
+
+        // Listen for realtime permission/role changes
+        supabase.channel('admin-user-channel')
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'users' }, payload => {
+                if (payload.new.name === staffName) {
+                    const newPerms = payload.new.permissions || [];
+                    const newRole = payload.new.role;
+                    const oldPerms = JSON.parse(sessionStorage.getItem('nohope_permissions') || '[]');
+                    const oldRole = sessionStorage.getItem('cafe_role');
+                    
+                    if (JSON.stringify(newPerms) !== JSON.stringify(oldPerms) || newRole !== oldRole) {
+                        sessionStorage.setItem('nohope_permissions', JSON.stringify(newPerms));
+                        sessionStorage.setItem('cafe_role', newRole);
+                        showAdminToast('Quản trị viên vừa cập nhật quyền truy cập của bạn! Hệ thống đang tải lại...', 'warning', 3000);
+                        setTimeout(() => window.location.reload(), 3000);
+                    }
+                }
+            })
+            .subscribe();
     }
 
     const allTabsId = ['orders', 'pos', 'history', 'tables', 'menu', 'inventory', 'restock', 'promo', 'customers', 'staff', 'analytics', 'audit', 'cashflow'];
