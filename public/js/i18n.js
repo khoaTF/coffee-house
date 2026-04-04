@@ -221,12 +221,20 @@ function applyLanguage() {
     const cartModalTitle = document.querySelector('#cart-modal h2');
     if (cartModalTitle) cartModalTitle.textContent = t.your_order;
 
-    // --- 5. Re-render menu to update dynamically-built card text ---
-    // FIX: selector was '.pill.active' — correct class is 'category-pill'
-    if (typeof renderMenu === 'function') {
-        const activeCategory = window.getActiveCategory ? window.getActiveCategory() : 'All';
-        renderMenu(activeCategory);
-    }
+
+    // --- 5. Patch card button text in-place (no full re-render) ---
+    // Only update the text node inside "Add to Cart" / "Options" buttons
+    // that were built dynamically by customer.js — avoids a costly full DOM rebuild.
+    document.querySelectorAll('article[data-product-id] .action-btn-container > button:not(.w-10)').forEach(btn => {
+        const icon = btn.querySelector('i');
+        if (!icon) return;
+        const isOptions = icon.classList.contains('fa-sliders');
+        // Clear all child nodes after the icon, then append translated text
+        Array.from(btn.childNodes).forEach(node => {
+            if (node.nodeType === Node.TEXT_NODE) node.remove();
+        });
+        btn.append(document.createTextNode(' ' + (isOptions ? t.options_label : t.add_to_cart)));
+    });
 
     // --- 6. Dispatch custom event so other modules can react ---
     document.dispatchEvent(new CustomEvent('langchange', { detail: { lang: currentLang, t } }));
