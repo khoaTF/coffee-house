@@ -667,8 +667,8 @@ function renderMenu(category) {
                       </button>
                     </div>
                     ` : `
-                    <button class="w-full bg-[#1b1c1b] dark:bg-[#F0EDEC] text-white dark:text-[#1b1c1b] font-bold py-2.5 rounded-full hover:bg-black active:scale-95 transition-transform flex items-center justify-center gap-2" 
-                        onclick="event.stopPropagation(); updateCart('${item._id}', 1)" ${disableAddBtn ? "disabled style='opacity:0.5;background:#888;cursor:not-allowed;color:white;'" : ""}>
+                    <button class="w-full bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white font-bold py-2.5 rounded-full hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 shadow-sm" 
+                        onclick="event.stopPropagation(); updateCart('${item._id}', 1)" ${disableAddBtn ? "disabled style='opacity:0.45;cursor:not-allowed;'" : ""}>
                       <i class="fa-solid ${hasOptions ? 'fa-sliders' : 'fa-plus'} text-[16px]"></i>
                       ${hasOptions ? (window.t ? window.t('options_label') : 'Tùy chọn') : (window.t ? window.t('add_to_cart') : 'Thêm vào giỏ')}
                     </button>
@@ -764,10 +764,10 @@ function updateMenuCardsUI() {
                 `;
             } else {
                 actionBtnContainer.innerHTML = `
-                    <button class="w-full bg-[#1b1c1b] dark:bg-[#F0EDEC] text-white dark:text-[#1b1c1b] font-bold py-2.5 rounded-full hover:bg-black active:scale-95 transition-transform flex items-center justify-center gap-2" 
-                        onclick="event.stopPropagation(); updateCart('${item._id}', 1)" ${disableAddBtn ? "disabled style='opacity:0.5;background:#888;cursor:not-allowed;color:white;'" : ""}>
+                    <button class="w-full bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white font-bold py-2.5 rounded-full hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 shadow-sm" 
+                        onclick="event.stopPropagation(); updateCart('${item._id}', 1)" ${disableAddBtn ? "disabled style='opacity:0.45;cursor:not-allowed;'" : ""}>
                       <i class="fa-solid ${hasOptions ? 'fa-sliders' : 'fa-plus'} text-[16px]"></i>
-                      ${hasOptions ? 'Tùy chọn' : 'Thêm vào giỏ'}
+                      ${hasOptions ? (window.t ? window.t('options_label') : 'T\u00f9y ch\u1ecdn') : (window.t ? window.t('add_to_cart') : 'Th\u00eam v\u00e0o gi\u1ecf')}
                     </button>
                 `;
             }
