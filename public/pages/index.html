@@ -43,7 +43,7 @@
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .no-tap-highlight { -webkit-tap-highlight-color: transparent; }
 
-        /* === GACHA / Mystery Box === */
+        /* === GACHA / Mystery Box v2 — Slot Machine === */
         .gacha-star {
             position: absolute; color: rgba(255,200,100,0.6); font-size: 14px;
             animation: gacha-twinkle 2s ease-in-out infinite;
@@ -71,14 +71,65 @@
         }
         .active-scale { transition: transform 0.15s; }
         .active-scale:active { transform: scale(0.95); }
-        .gacha-pointer {
-            width: 0; height: 0;
-            border-left: 14px solid transparent;
-            border-right: 14px solid transparent;
-            border-top: 28px solid #FF7A00;
-            filter: drop-shadow(0 2px 6px rgba(255,122,0,0.5));
-            position: absolute; top: -6px; left: 50%; transform: translateX(-50%);
-            z-index: 20;
+
+        /* Slot Machine Reel */
+        #gacha-slot-modal {
+            display: none; position: fixed; inset: 0; z-index: 2100;
+            background: rgba(0,0,0,0.65); backdrop-filter: blur(6px);
+            align-items: center; justify-content: center;
+        }
+        #gacha-slot-modal.active { display: flex; }
+        .gacha-slot-card {
+            background: var(--surface-color, #fff); border-radius: 28px;
+            width: min(92vw, 400px); max-height: 90vh; overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: gacha-pop 0.3s ease both;
+        }
+        .gacha-reel-container {
+            position: relative; height: 200px; overflow: hidden;
+            margin: 0 20px; border-radius: 16px;
+            background: linear-gradient(135deg, #1B1C1B, #2A1A14);
+            border: 2px solid rgba(255,122,0,0.3);
+        }
+        .gacha-reel-container::before,
+        .gacha-reel-container::after {
+            content: ''; position: absolute; left: 0; right: 0; height: 60px;
+            z-index: 5; pointer-events: none;
+        }
+        .gacha-reel-container::before {
+            top: 0;
+            background: linear-gradient(to bottom, #1B1C1B, transparent);
+        }
+        .gacha-reel-container::after {
+            bottom: 0;
+            background: linear-gradient(to top, #1B1C1B, transparent);
+        }
+        /* Center line indicator */
+        .gacha-reel-center-line {
+            position: absolute; top: 50%; left: 10px; right: 10px;
+            height: 64px; transform: translateY(-50%); z-index: 4;
+            border: 2px solid #FF7A00; border-radius: 12px;
+            background: rgba(255,122,0,0.08);
+            box-shadow: 0 0 20px rgba(255,122,0,0.2);
+        }
+        .gacha-reel {
+            display: flex; flex-direction: column;
+        }
+        .gacha-reel-item {
+            height: 64px; display: flex; align-items: center;
+            justify-content: space-between; padding: 0 20px;
+            flex-shrink: 0;
+        }
+        .gacha-reel-name {
+            font-weight: 700; font-size: 0.95rem;
+            color: rgba(255,255,255,0.7);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            max-width: 60%;
+        }
+        .gacha-winner-name { color: #FF7A00 !important; font-weight: 900; }
+        .gacha-reel-price {
+            font-size: 0.8rem; color: rgba(255,255,255,0.4);
+            font-weight: 600;
         }
     </style>
 
@@ -688,51 +739,29 @@
     </div>
 </div>
 
-<!-- Modal: Gacha Spin Wheel -->
-<div class="cart-modal" id="gacha-modal" style="z-index: 2080;">
-    <div class="cart-modal-content" style="max-height: 92vh; border-radius: 28px 28px 0 0; background: var(--surface-color);">
-        <!-- Drag Handle -->
-        <div class="flex justify-center pt-3 pb-1 desktop-hide">
-            <div class="w-12 h-1.5 rounded-full bg-outline-variant/30"></div>
+<!-- Modal: Gacha Slot Machine (Reveals AFTER payment) -->
+<div id="gacha-slot-modal">
+    <div class="gacha-slot-card">
+        <!-- Header -->
+        <div style="padding:20px 20px 10px;text-align:center;">
+            <h2 style="font-size:1.4rem;font-weight:900;color:var(--text-main,#1b1c1b);font-family:'Plus Jakarta Sans',sans-serif;">🎰 Mở Túi Mù</h2>
+            <p style="font-size:0.8rem;color:var(--text-muted,#888);margin-top:4px;">Đang bốc món cho bạn...</p>
         </div>
-        <div class="cart-modal-header flex-between border-0 pb-2 pt-0">
-            <div>
-                <h2 class="text-2xl font-black text-on-surface tracking-tight" style="font-family:'Plus Jakarta Sans',sans-serif;">🎰 Túi Mù</h2>
-                <p class="text-on-surface-variant text-sm mt-0.5">Quay & nhận món ngẫu nhiên!</p>
-            </div>
-            <button onclick="closeGachaModal()" class="btn-icon bg-surface-container-low w-10 h-10 rounded-full flex items-center justify-center">
-                <i class="fa-solid fa-times text-on-surface"></i>
-            </button>
+
+        <!-- Reel Container -->
+        <div id="gacha-reel-container" class="gacha-reel-container">
+            <div class="gacha-reel-center-line"></div>
+            <div id="gacha-reel" class="gacha-reel"></div>
         </div>
-        <div class="cart-modal-body hide-scrollbar" style="padding:0 16px 16px;overflow-y:auto;">
-            <!-- Info pill -->
-            <div style="background:linear-gradient(135deg,rgba(255,122,0,0.1),rgba(245,158,11,0.1));border:1px solid rgba(255,122,0,0.2);border-radius:12px;padding:10px 14px;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
-                <span style="font-size:1.5rem;">🎁</span>
-                <div style="font-size:0.8rem;color:var(--text-muted,#584235);line-height:1.4;">
-                    <b style="color:#FF7A00;">29.000đ / lượt quay</b> — Món trúng sẽ được thêm vào giỏ với giá cố định. Lời hay lỗ — hên xui!
-                </div>
-            </div>
 
-            <!-- Wheel Area -->
-            <div style="position:relative;display:flex;justify-content:center;align-items:center;margin-bottom:16px;">
-                <!-- Pointer -->
-                <div class="gacha-pointer"></div>
-                <!-- Confetti container -->
-                <div id="gacha-confetti" style="position:absolute;inset:0;pointer-events:none;overflow:hidden;border-radius:50%;"></div>
-                <!-- Wheel -->
-                <div id="gacha-wheel-wrapper" style="transition:none;transform:rotate(0deg);">
-                    <canvas id="gacha-canvas" width="320" height="320"></canvas>
-                </div>
-            </div>
+        <!-- Result Panel (hidden initially) -->
+        <div id="gacha-slot-result" class="hidden" style="padding:0 20px;"></div>
 
-            <!-- Spin Button -->
-            <button id="gacha-spin-btn" onclick="spinGachaWheel()" style="width:100%;background:linear-gradient(135deg,#994700,#FF7A00);color:white;padding:14px;border-radius:9999px;font-weight:800;font-size:1rem;border:none;cursor:pointer;box-shadow:0 6px 20px rgba(255,122,0,0.35);letter-spacing:0.02em;" class="active-scale">
-                <i class="fa-solid fa-play"></i> QUAY! (29.000đ)
-            </button>
+        <!-- Confetti -->
+        <div id="gacha-slot-confetti" style="position:absolute;inset:0;pointer-events:none;overflow:hidden;border-radius:28px;"></div>
 
-            <!-- Result Area -->
-            <div id="gacha-result" class="hidden" style="margin-top:16px;"></div>
-        </div>
+        <!-- Footer spacing -->
+        <div style="height:24px;"></div>
     </div>
 </div>
 
@@ -743,6 +772,6 @@
 <script src="js/constants.js"></script>
 <script src="js/helpers.js"></script>
 <script src="js/customer.js?v=2.5"></script>
-<script src="js/gacha.js?v=1.0"></script>
+<script src="js/gacha.js?v=2.0"></script>
 </body>
 </html>

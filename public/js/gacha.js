@@ -1,332 +1,233 @@
 // =============================================
-// GACHA.JS — Mystery Box Spin Wheel 🎰
+// GACHA.JS v2 — Túi Mù (Mystery Box) Slot Machine
+// Flow: Add to cart → Pay → Reveal with slot animation
 // =============================================
 
 const GACHA_PRICE = 29000;
-const GACHA_SEGMENT_COUNT = 8;
-const GACHA_MISS_COUNT = 2;
-const GACHA_COLORS = [
-    '#FF7A00', '#22C55E', '#3B82F6', '#994700',
-    '#EC4899', '#8B5CF6', '#F59E0B', '#06B6D4'
-];
+const GACHA_PRODUCT_ID = '__mystery_box__';
 
-let gachaSegments = [];
-let gachaSpinning = false;
-let gachaRotation = 0;
-let _gachaWinItem = null;
-
-// --- Build Segments ---
-function buildGachaSegments() {
-    const available = menuItems.filter(i => i.price > 0 && getAvailableToAdd(i) > 0);
-    if (available.length < GACHA_SEGMENT_COUNT - GACHA_MISS_COUNT) return false;
-
-    const shuffled = [...available].sort(() => Math.random() - 0.5);
-    gachaSegments = [];
-
-    shuffled.slice(0, GACHA_SEGMENT_COUNT - GACHA_MISS_COUNT).forEach(item => {
-        gachaSegments.push({
-            name: item.name,
-            price: item.price,
-            _id: item._id,
-            imageUrl: item.imageUrl,
-            recipe: item.recipe || [],
-            isMiss: false,
-            original: item
-        });
-    });
-
-    for (let i = 0; i < GACHA_MISS_COUNT; i++) {
-        const pos = Math.floor(Math.random() * (gachaSegments.length + 1));
-        gachaSegments.splice(pos, 0, { name: 'Trượt!', price: 0, isMiss: true });
-    }
-    return true;
-}
-
-// --- Draw Canvas Wheel ---
-function drawGachaWheel() {
-    const canvas = document.getElementById('gacha-canvas');
-    if (!canvas) return;
-
-    const dpr = window.devicePixelRatio || 1;
-    const displaySize = Math.min(320, window.innerWidth - 80);
-    canvas.style.width = displaySize + 'px';
-    canvas.style.height = displaySize + 'px';
-    canvas.width = displaySize * dpr;
-    canvas.height = displaySize * dpr;
-
-    const ctx = canvas.getContext('2d');
-    ctx.scale(dpr, dpr);
-
-    const center = displaySize / 2;
-    const radius = center - 8;
-    const segAngle = (2 * Math.PI) / gachaSegments.length;
-
-    ctx.clearRect(0, 0, displaySize, displaySize);
-
-    // Outer glow ring
-    ctx.beginPath();
-    ctx.arc(center, center, radius + 5, 0, 2 * Math.PI);
-    ctx.strokeStyle = 'rgba(255,122,0,0.3)';
-    ctx.lineWidth = 4;
-    ctx.stroke();
-
-    gachaSegments.forEach((seg, i) => {
-        const start = i * segAngle - Math.PI / 2;
-        const end = start + segAngle;
-
-        // Segment fill
-        ctx.beginPath();
-        ctx.moveTo(center, center);
-        ctx.arc(center, center, radius, start, end);
-        ctx.closePath();
-        ctx.fillStyle = seg.isMiss ? '#1B1C1B' : GACHA_COLORS[i % GACHA_COLORS.length];
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        // Text
-        ctx.save();
-        ctx.translate(center, center);
-        ctx.rotate(start + segAngle / 2);
-
-        if (seg.isMiss) {
-            ctx.fillStyle = '#666';
-            ctx.font = 'bold 13px Inter, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('💨', radius * 0.6, 0);
-            ctx.fillStyle = '#aaa';
-            ctx.font = 'bold 11px Inter, sans-serif';
-            ctx.fillText('Trượt', radius * 0.38, 0);
-        } else {
-            ctx.fillStyle = 'white';
-            ctx.font = 'bold 11px Inter, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            const truncName = seg.name.length > 10 ? seg.name.slice(0, 9) + '…' : seg.name;
-            ctx.fillText(truncName, radius * 0.6, -6);
-            ctx.font = '10px Inter, sans-serif';
-            ctx.fillStyle = 'rgba(255,255,255,0.85)';
-            ctx.fillText(seg.price.toLocaleString('vi-VN') + 'đ', radius * 0.6, 8);
-        }
-        ctx.restore();
-    });
-
-    // Center hub
-    const grad = ctx.createRadialGradient(center, center, 5, center, center, 28);
-    grad.addColorStop(0, '#fff');
-    grad.addColorStop(1, '#F0EDEC');
-    ctx.beginPath();
-    ctx.arc(center, center, 28, 0, 2 * Math.PI);
-    ctx.fillStyle = grad;
-    ctx.fill();
-    ctx.strokeStyle = '#FF7A00';
-    ctx.lineWidth = 3;
-    ctx.stroke();
-
-    ctx.fillStyle = '#FF7A00';
-    ctx.font = 'bold 11px Inter, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('🎰', center, center);
-}
-
-// --- Open Modal ---
-function openGachaModal() {
+// --- Add Mystery Box to Cart ---
+function addMysteryBoxToCart() {
     if (activeOrderId) {
         showToast('Đợi đơn hiện tại hoàn thành trước nhé!', 'warning');
         return;
     }
 
-    const ok = buildGachaSegments();
-    if (!ok) {
-        showToast('Không đủ món trong menu để quay!', 'error');
-        return;
-    }
-
-    // Reset
-    gachaRotation = 0;
-    _gachaWinItem = null;
-    const wheelEl = document.getElementById('gacha-wheel-wrapper');
-    if (wheelEl) {
-        wheelEl.style.transition = 'none';
-        wheelEl.style.transform = 'rotate(0deg)';
-    }
-    document.getElementById('gacha-result').classList.add('hidden');
-    document.getElementById('gacha-result').innerHTML = '';
-    document.getElementById('gacha-confetti').innerHTML = '';
-
-    const btn = document.getElementById('gacha-spin-btn');
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-play"></i> QUAY! (29.000đ)';
-
-    drawGachaWheel();
-    document.getElementById('gacha-modal').classList.add('active');
-}
-
-function closeGachaModal() {
-    document.getElementById('gacha-modal').classList.remove('active');
-}
-
-// --- Spin ---
-function spinGachaWheel() {
-    if (gachaSpinning) return;
-    gachaSpinning = true;
-
-    const resultIdx = Math.floor(Math.random() * gachaSegments.length);
-    const result = gachaSegments[resultIdx];
-    _gachaWinItem = result;
-
-    const segAngle = 360 / gachaSegments.length;
-    // Pointer is at top (12 o'clock). Segment 0 starts at top.
-    // To land on segment `resultIdx`, rotate so that segment's center is at top.
-    const targetAngle = 360 - (resultIdx * segAngle + segAngle / 2);
-    const spins = 5 + Math.floor(Math.random() * 4); // 5-8 full spins
-    const totalRotation = gachaRotation + 360 * spins + targetAngle + (Math.random() * segAngle * 0.4 - segAngle * 0.2);
-
-    const wheelEl = document.getElementById('gacha-wheel-wrapper');
-    // Force reflow for transition reset
-    void wheelEl.offsetWidth;
-    wheelEl.style.transition = 'transform 5s cubic-bezier(0.12, 0.75, 0.08, 1.00)';
-    wheelEl.style.transform = `rotate(${totalRotation}deg)`;
-    gachaRotation = totalRotation % 360;
-
-    const btn = document.getElementById('gacha-spin-btn');
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang quay...';
-
-    // Play tick sound simulation with vibration
-    if (navigator.vibrate) navigator.vibrate([50, 30, 50, 30, 50]);
-
-    setTimeout(() => {
-        gachaSpinning = false;
-        showGachaResult(result);
-        if (navigator.vibrate) navigator.vibrate(200);
-    }, 5300);
-}
-
-// --- Show Result ---
-function showGachaResult(result) {
-    const el = document.getElementById('gacha-result');
-
-    if (result.isMiss) {
-        el.innerHTML = `
-            <div class="text-center py-6 gacha-result-anim">
-                <div style="font-size:4rem;margin-bottom:12px;">😢</div>
-                <h3 style="font-size:1.25rem;font-weight:900;color:var(--text-main,#1b1c1b);margin-bottom:4px;">Trượt rồi!</h3>
-                <p style="font-size:0.875rem;color:var(--text-muted,#888);">Hên xui mà, thử lại nhé! 🍀</p>
-                <button onclick="resetGachaSpin()" style="margin-top:16px;background:linear-gradient(135deg,#994700,#FF7A00);color:white;padding:12px 32px;border-radius:9999px;font-weight:700;border:none;cursor:pointer;font-size:0.95rem;" class="active-scale">
-                    <i class="fa-solid fa-rotate-right"></i> Quay lại
-                </button>
-            </div>`;
-    } else {
-        const diff = result.price - GACHA_PRICE;
-        const isWin = diff > 0;
-        const emoji = isWin ? '🎉' : '😅';
-        const label = isWin ? 'LỜI RỒI!' : 'Lỗ nhẹ!';
-        const diffColor = isWin ? '#22C55E' : '#EF4444';
-        const diffText = isWin ? `Tiết kiệm ${Math.abs(diff).toLocaleString('vi-VN')}đ` : `Chênh ${Math.abs(diff).toLocaleString('vi-VN')}đ`;
-
-        el.innerHTML = `
-            <div class="text-center py-4 gacha-result-anim">
-                <div style="font-size:4rem;margin-bottom:8px;">${emoji}</div>
-                <h3 style="font-size:1.25rem;font-weight:900;color:${isWin ? '#22C55E' : '#EF4444'};margin-bottom:12px;">${label}</h3>
-                <div style="background:var(--surface-container-low, #F0EDEC);border-radius:16px;padding:16px;text-align:left;">
-                    <p style="font-weight:800;font-size:1rem;color:var(--text-main,#1b1c1b);margin-bottom:6px;">${window.escapeHTML ? window.escapeHTML(result.name) : result.name}</p>
-                    <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:var(--text-muted,#888);">
-                        <span>Giá gốc: <b style="color:#FF7A00;">${result.price.toLocaleString('vi-VN')}đ</b></span>
-                        <span>Bạn trả: <b>${GACHA_PRICE.toLocaleString('vi-VN')}đ</b></span>
-                    </div>
-                    <div style="margin-top:8px;font-weight:700;font-size:0.85rem;color:${diffColor};">
-                        ${isWin ? '🔥' : '📉'} ${diffText}
-                    </div>
-                </div>
-                <button onclick="addGachaToCart()" style="margin-top:16px;width:100%;background:linear-gradient(135deg,#994700,#FF7A00);color:white;padding:14px;border-radius:9999px;font-weight:700;border:none;cursor:pointer;font-size:1rem;box-shadow:0 4px 16px rgba(255,122,0,0.3);" class="active-scale">
-                    <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ
-                </button>
-                <button onclick="resetGachaSpin()" style="margin-top:8px;width:100%;background:transparent;color:var(--text-muted,#888);padding:10px;border-radius:9999px;font-weight:600;border:none;cursor:pointer;font-size:0.875rem;">
-                    Quay lại
-                </button>
-            </div>`;
-
-        if (isWin) launchGachaConfetti();
-    }
-
-    el.classList.remove('hidden');
-
-    const btn = document.getElementById('gacha-spin-btn');
-    btn.disabled = true;
-    btn.style.opacity = '0.4';
-}
-
-// --- Reset for another spin ---
-function resetGachaSpin() {
-    _gachaWinItem = null;
-    document.getElementById('gacha-result').classList.add('hidden');
-    document.getElementById('gacha-result').innerHTML = '';
-    document.getElementById('gacha-confetti').innerHTML = '';
-
-    // Rebuild segments with new random items
-    buildGachaSegments();
-    drawGachaWheel();
-
-    // Reset wheel
-    const wheelEl = document.getElementById('gacha-wheel-wrapper');
-    wheelEl.style.transition = 'none';
-    gachaRotation = 0;
-    wheelEl.style.transform = 'rotate(0deg)';
-
-    const btn = document.getElementById('gacha-spin-btn');
-    btn.disabled = false;
-    btn.style.opacity = '1';
-    btn.innerHTML = '<i class="fa-solid fa-play"></i> QUAY! (29.000đ)';
-}
-
-// --- Add to Cart ---
-function addGachaToCart() {
-    if (!_gachaWinItem || _gachaWinItem.isMiss) return;
-
     const cartItem = {
-        _id: _gachaWinItem._id,
-        name: '🎰 ' + _gachaWinItem.name,
+        _id: GACHA_PRODUCT_ID,
+        name: '🎰 Túi Mù',
         price: GACHA_PRICE,
         quantity: 1,
-        imageUrl: _gachaWinItem.imageUrl || '',
         cartKey: 'gacha_' + Date.now(),
-        recipe: _gachaWinItem.recipe || [],
+        recipe: [],
         selectedOptions: [],
         isGacha: true
     };
 
     cart.push(cartItem);
     updateCartUI();
-    closeGachaModal();
-    showToast('🎰 Đã thêm món Túi Mù vào giỏ!', 'success');
+    showToast('🎰 Đã thêm Túi Mù vào giỏ! Thanh toán để mở túi.', 'success');
+}
+
+// --- Check if cart contains gacha items ---
+function cartHasGacha() {
+    return cart.some(i => i.isGacha);
+}
+
+// --- Resolve gacha items BEFORE order placement ---
+// Replaces mystery box entries in cart with actual random items (keeping gacha price)
+// Returns array of { gachaCartKey, resolvedItem } for animation later
+function resolveGachaInCart() {
+    const available = menuItems.filter(i => i.price > 0 && !i.isGacha);
+    if (available.length === 0) return [];
+
+    const results = [];
+
+    cart.forEach(item => {
+        if (!item.isGacha) return;
+
+        const randomItem = available[Math.floor(Math.random() * available.length)];
+
+        results.push({
+            cartKey: item.cartKey,
+            resolvedItem: randomItem,
+            gachaPrice: GACHA_PRICE,
+            actualPrice: randomItem.price
+        });
+
+        // Replace in cart
+        item._id = randomItem._id;
+        item.name = '🎰 ' + randomItem.name;
+        item.recipe = randomItem.recipe || [];
+        // Keep price at GACHA_PRICE
+        item._resolvedName = randomItem.name;
+        item._resolvedPrice = randomItem.price;
+    });
+
+    return results;
+}
+
+// --- Slot Machine Animation ---
+// Shows a vertical scrolling list of item names, decelerating to reveal result
+function showSlotReveal(gachaResults) {
+    if (!gachaResults || gachaResults.length === 0) return Promise.resolve();
+
+    return new Promise(resolve => {
+        const modal = document.getElementById('gacha-slot-modal');
+        if (!modal) { resolve(); return; }
+
+        // Build name pool for scrolling (use all menu items)
+        const allNames = menuItems
+            .filter(i => i.price > 0)
+            .map(i => ({ name: i.name, price: i.price }));
+
+        // For simplicity, we reveal the FIRST gacha result
+        // (multiple mystery boxes will queue)
+        let currentResultIndex = 0;
+
+        function revealNext() {
+            if (currentResultIndex >= gachaResults.length) {
+                modal.classList.remove('active');
+                resolve();
+                return;
+            }
+
+            const result = gachaResults[currentResultIndex];
+            currentResultIndex++;
+
+            renderSlotMachine(allNames, result, () => {
+                // Short pause before next or close
+                setTimeout(revealNext, 800);
+            });
+        }
+
+        modal.classList.add('active');
+        revealNext();
+    });
+}
+
+function renderSlotMachine(allNames, result, onComplete) {
+    const reel = document.getElementById('gacha-reel');
+    const resultPanel = document.getElementById('gacha-slot-result');
+    const reelContainer = document.getElementById('gacha-reel-container');
+
+    if (!reel || !resultPanel || !reelContainer) { onComplete(); return; }
+
+    resultPanel.classList.add('hidden');
+    resultPanel.innerHTML = '';
+    reelContainer.classList.remove('hidden');
+
+    // Create reel items: many random names, then the winning name at the end
+    const REEL_COUNT = 25;
+    const shuffled = [...allNames].sort(() => Math.random() - 0.5);
+    const reelItems = [];
+
+    for (let i = 0; i < REEL_COUNT; i++) {
+        reelItems.push(shuffled[i % shuffled.length]);
+    }
+    // Winning item is last
+    reelItems.push({ name: result.resolvedItem.name, price: result.resolvedItem.price });
+
+    // Render reel
+    reel.innerHTML = '';
+    reel.style.transition = 'none';
+    reel.style.transform = 'translateY(0)';
+
+    const ITEM_HEIGHT = 64;
+
+    reelItems.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = 'gacha-reel-item';
+        const isWinner = index === reelItems.length - 1;
+        div.innerHTML = `
+            <span class="gacha-reel-name ${isWinner ? 'gacha-winner-name' : ''}">${window.escapeHTML ? window.escapeHTML(item.name) : item.name}</span>
+            <span class="gacha-reel-price">${item.price.toLocaleString('vi-VN')}đ</span>
+        `;
+        reel.appendChild(div);
+    });
+
+    // Force reflow
+    void reel.offsetHeight;
+
+    // Calculate scroll distance: move reel up so the LAST item is centered
+    const totalHeight = reelItems.length * ITEM_HEIGHT;
+    const containerHeight = reelContainer.offsetHeight || 200;
+    const targetOffset = totalHeight - containerHeight / 2 - ITEM_HEIGHT / 2;
+
+    // Animate
+    requestAnimationFrame(() => {
+        reel.style.transition = `transform 3.5s cubic-bezier(0.10, 0.80, 0.05, 1.00)`;
+        reel.style.transform = `translateY(-${targetOffset}px)`;
+    });
+
+    // Vibrate during scroll
+    if (navigator.vibrate) {
+        setTimeout(() => navigator.vibrate([30, 20, 30, 20, 30]), 200);
+        setTimeout(() => navigator.vibrate(100), 3000);
+    }
+
+    // Show result after animation
+    setTimeout(() => {
+        reelContainer.classList.add('hidden');
+
+        const diff = result.actualPrice - result.gachaPrice;
+        const isWin = diff > 0;
+        const isEven = diff === 0;
+        const emoji = isWin ? '🎉' : (isEven ? '😄' : '😅');
+        const label = isWin ? 'LỜI RỒI!' : (isEven ? 'Hoà!' : 'Lỗ nhẹ!');
+        const diffColor = isWin ? '#22C55E' : (isEven ? '#FF7A00' : '#EF4444');
+        const diffText = isWin
+            ? `🔥 Tiết kiệm ${Math.abs(diff).toLocaleString('vi-VN')}đ`
+            : (isEven ? '➡️ Giá vừa đúng!' : `📉 Chênh ${Math.abs(diff).toLocaleString('vi-VN')}đ`);
+
+        resultPanel.innerHTML = `
+            <div class="gacha-result-anim" style="text-align:center;padding:20px 0;">
+                <div style="font-size:3.5rem;margin-bottom:8px;">${emoji}</div>
+                <h3 style="font-size:1.3rem;font-weight:900;color:${diffColor};margin-bottom:16px;">${label}</h3>
+                <div style="background:var(--surface-container-low,#F0EDEC);border-radius:16px;padding:16px;text-align:left;">
+                    <p style="font-weight:800;font-size:1.05rem;color:var(--text-main,#1b1c1b);margin-bottom:8px;">
+                        ${window.escapeHTML ? window.escapeHTML(result.resolvedItem.name) : result.resolvedItem.name}
+                    </p>
+                    <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:var(--text-muted,#888);">
+                        <span>Giá gốc: <b style="color:#FF7A00;">${result.actualPrice.toLocaleString('vi-VN')}đ</b></span>
+                        <span>Bạn trả: <b>${result.gachaPrice.toLocaleString('vi-VN')}đ</b></span>
+                    </div>
+                    <div style="margin-top:8px;font-weight:700;font-size:0.85rem;color:${diffColor};">
+                        ${diffText}
+                    </div>
+                </div>
+            </div>`;
+
+        resultPanel.classList.remove('hidden');
+
+        if (isWin) launchGachaConfetti();
+
+        // Auto-close after delay
+        setTimeout(onComplete, 3500);
+    }, 3800);
 }
 
 // --- Confetti ---
 function launchGachaConfetti() {
-    const container = document.getElementById('gacha-confetti');
+    const container = document.getElementById('gacha-slot-confetti');
     if (!container) return;
     container.innerHTML = '';
 
     const colors = ['#FF7A00', '#22C55E', '#3B82F6', '#EF4444', '#F59E0B', '#EC4899', '#8B5CF6', '#FFD700'];
 
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < 50; i++) {
         const piece = document.createElement('div');
         const size = Math.random() * 8 + 5;
         const x = Math.random() * 100;
-        const delay = Math.random() * 0.6;
+        const delay = Math.random() * 0.5;
         const duration = Math.random() * 1.5 + 1.8;
         const color = colors[Math.floor(Math.random() * colors.length)];
-        const shape = Math.random() > 0.5 ? '50%' : '2px';
 
         piece.style.cssText = `
             position:absolute;width:${size}px;height:${size}px;background:${color};
-            left:${x}%;top:-10px;border-radius:${shape};opacity:0;
+            left:${x}%;top:-10px;border-radius:${Math.random() > 0.5 ? '50%' : '2px'};opacity:0;
             animation:gacha-confetti-fall ${duration}s ease-out ${delay}s forwards;
-            transform:rotate(${Math.random()*360}deg);
+            transform:rotate(${Math.random() * 360}deg);
         `;
         container.appendChild(piece);
     }
@@ -334,26 +235,23 @@ function launchGachaConfetti() {
     setTimeout(() => { container.innerHTML = ''; }, 3500);
 }
 
-// --- Inject Mystery Card into Menu ---
+// --- Inject Mystery Card into Menu Grid ---
 function injectGachaCard() {
     const container = document.getElementById('menu-container');
     if (!container) return;
 
-    // Only show if enough items exist
     const available = menuItems.filter(i => i.price > 0);
-    if (available.length < GACHA_SEGMENT_COUNT - GACHA_MISS_COUNT) return;
+    if (available.length < 3) return;
 
-    // Check if already active order
     const disableGacha = activeOrderId !== null;
 
     const card = document.createElement('article');
     card.id = 'gacha-mystery-card';
     card.className = 'rounded-[24px] overflow-hidden group cursor-pointer active:scale-[0.98] transition-all col-span-2 sm:col-span-2 lg:col-span-2';
-    card.onclick = () => { if (!disableGacha) openGachaModal(); };
+    card.onclick = () => { if (!disableGacha) addMysteryBoxToCart(); };
 
     card.innerHTML = `
-        <div class="gacha-card-inner relative overflow-hidden rounded-[24px]" style="background:linear-gradient(135deg,#1B1C1B 0%,#2A1A14 40%,#994700 100%);min-height:140px;">
-            <!-- Animated particles -->
+        <div class="gacha-card-inner relative overflow-hidden rounded-[24px]" style="background:linear-gradient(135deg,#1B1C1B 0%,#2A1A14 40%,#994700 100%);min-height:130px;">
             <div class="gacha-particles">
                 <span class="gacha-star" style="top:15%;left:10%;animation-delay:0s;">✦</span>
                 <span class="gacha-star" style="top:60%;left:85%;animation-delay:0.4s;">✦</span>
@@ -370,12 +268,12 @@ function injectGachaCard() {
                         🎰 Túi Mù
                     </h3>
                     <p style="font-size:0.75rem;color:rgba(255,255,255,0.6);line-height:1.4;margin-bottom:10px;">
-                        Quay vòng quay, nhận món ngẫu nhiên. Lời hay lỗ — hên xui!
+                        Thanh toán trước, mở túi sau! Lời hay lỗ — hên xui!
                     </p>
                     <div class="flex items-center gap-3">
                         <span style="font-size:1.1rem;font-weight:900;color:#FF7A00;">${GACHA_PRICE.toLocaleString('vi-VN')}đ</span>
                         <button style="background:linear-gradient(135deg,#FF7A00,#F59E0B);color:white;padding:8px 20px;border-radius:9999px;font-size:0.8rem;font-weight:700;border:none;cursor:pointer;box-shadow:0 4px 12px rgba(255,122,0,0.4);" ${disableGacha ? 'disabled style="opacity:0.4;"' : ''} class="active-scale">
-                            Thử Vận May!
+                            Thêm vào giỏ
                         </button>
                     </div>
                 </div>
@@ -386,6 +284,11 @@ function injectGachaCard() {
         </div>
     `;
 
-    // Insert as first child
     container.insertBefore(card, container.firstChild);
+}
+
+// --- Close Slot Modal ---
+function closeGachaSlotModal() {
+    const modal = document.getElementById('gacha-slot-modal');
+    if (modal) modal.classList.remove('active');
 }

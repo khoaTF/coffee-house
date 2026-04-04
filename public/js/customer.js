@@ -1157,6 +1157,13 @@ let currentPaymentMethod = 'cash';
 // Supabase Communication
 async function placeOrder(method = 'cash') {
     currentPaymentMethod = method;
+
+    // GACHA: Resolve mystery box items BEFORE order placement
+    let gachaResults = [];
+    if (typeof resolveGachaInCart === 'function' && cartHasGacha()) {
+        gachaResults = resolveGachaInCart();
+    }
+
     const subtotal = cart.reduce((sum, item) => {
         const itemOptionsPrice = (item.selectedOptions || []).reduce((s, o) => s + o.priceExtra, 0);
         return sum + ((item.price + itemOptionsPrice) * item.quantity);
@@ -1262,8 +1269,18 @@ async function placeOrder(method = 'cash') {
             if(document.getElementById('promo-message')) document.getElementById('promo-message').style.display = 'none';
             updateCartUI();
             
+            // GACHA: Show slot machine reveal AFTER order placed
+            if (gachaResults.length > 0) {
+                await showSlotReveal(gachaResults);
+            }
+            
             openPaymentModal(savedOrder);
         } else {
+            // GACHA: Show slot machine reveal AFTER order placed
+            if (gachaResults.length > 0) {
+                await showSlotReveal(gachaResults);
+            }
+            
             handleOrderConfirmed(savedOrder);
         }
         
