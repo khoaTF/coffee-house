@@ -111,6 +111,14 @@ function renderMenu() {
         filtered = filtered.filter(p => p.name.toLowerCase().includes(search));
     }
     
+    // Check if delivery is disabled
+    if (storeConfig && storeConfig.delivery_enabled === false) {
+        container.innerHTML = '<div class="col-span-full py-12 text-center text-[#584235] dark:text-[#E0C0AF]"><i class="fa-solid fa-store-slash text-4xl mb-3 opacity-50"></i><p class="font-bold">Quán đang tạm ngừng nhận đơn giao hàng</p><p class="text-sm opacity-70">Rất xin lỗi vì sự bất tiện này, bạn vui lòng quay lại sau nhé!</p></div>';
+        const nextBtn = document.getElementById('btn-next-step2');
+        if (nextBtn) nextBtn.disabled = true;
+        return;
+    }
+
     if (filtered.length === 0) {
         container.innerHTML = '<p class="text-center text-[#584235]/60 py-6 text-sm">Không có món nào.</p>';
         return;
@@ -166,6 +174,11 @@ function getProductPrice(p) {
 }
 
 window.addToDeliveryCart = function(productId) {
+    if (storeConfig && storeConfig.delivery_enabled === false) {
+        showDeliveryToast('Quán hiện đang tạm ngừng nhận đơn.', 'error');
+        return;
+    }
+
     const product = deliveryProducts.find(p => p.id === productId);
     if (!product) return;
     
@@ -481,6 +494,11 @@ function renderConfirmation() {
 
 // --- Place Order ---
 window.placeDeliveryOrder = async function() {
+    if (storeConfig && storeConfig.delivery_enabled === false) {
+        showDeliveryToast('Xin lỗi, quán vừa tạm ngừng nhận đơn giao hàng.', 'error');
+        return;
+    }
+
     const btn = document.getElementById('btn-place-order');
     const originalHTML = btn.innerHTML;
     btn.disabled = true;
