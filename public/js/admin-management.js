@@ -652,18 +652,19 @@ window.saveStoreSettings = async function(type) {
     try {
         if (typeof supabase !== 'undefined') {
             const { error } = await supabase.from('store_settings').upsert({ id: 1, ...updates });
-            if (error && error.code !== '42P01') console.warn(error);
+            if (error) throw error;
         }
+
+        const existing = JSON.parse(localStorage.getItem('store_settings') || '{}');
+        const newSettings = { ...existing, ...updates };
+        localStorage.setItem('store_settings', JSON.stringify(newSettings));
+
+        if(typeof logAudit === 'function') logAudit('Cập nhật cài đặt', `Loại: ${type}`);
+        showAdminToast(`Đã lưu thiết lập ${type === 'general' ? 'thông tin' : 'thanh toán'} thành công!`, 'success');
     } catch (e) {
-        console.warn('Supabase context missing or table missing, using localStorage');
+        console.error('Lỗi lưu cài đặt:', e);
+        showAdminToast(`Lỗi khi lưu: ${e.message || 'Không xác định'}`, 'error');
     }
-
-    const existing = JSON.parse(localStorage.getItem('store_settings') || '{}');
-    const newSettings = { ...existing, ...updates };
-    localStorage.setItem('store_settings', JSON.stringify(newSettings));
-
-    if(typeof logAudit === 'function') logAudit('Cập nhật cài đặt', `Loại: ${type}`);
-    showAdminToast(`Đã lưu thiết lập ${type === 'general' ? 'thông tin' : 'thanh toán'} thành công!`, 'success');
 };
 
 window.loadStoreSettings = async function() {
