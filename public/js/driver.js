@@ -6,6 +6,7 @@ let driverData = null;
 let driverMap = null;
 let driverMarker = null;
 let accuracyCircle = null;
+let routeLines = [];
 let locationWatchId = null;
 let ordersChannel = null;
 let currentOrders = [];
@@ -252,31 +253,76 @@ function renderOrders() {
                         <i class="fa-solid fa-motorcycle"></i> Bắt đầu giao
                     </button>
                 `}
-                <a href="https://www.google.com/maps/dir/?api=1&destination=${order.delivery_lat},${order.delivery_lng}" target="_blank" class="action-btn" style="background:#3B82F6;color:white">
-                    <i class="fa-solid fa-location-arrow"></i>
+                <a href="https://www.google.com/maps/dir/?api=1&destination=${order.delivery_lat},${order.delivery_lng}&travelmode=driving" target="_blank" class="action-btn flex-1" style="background:#3B82F6;color:white">
+                    <i class="fa-solid fa-diamond-turn-right"></i> Chỉ đường
                 </a>
+            </div>
+            <div class="flex gap-2 mt-2">
+                <a href="tel:${order.delivery_phone}" class="action-btn flex-1" style="background:#2A2B2B;color:#22C55E;border:1px solid #333">
+                    <i class="fa-solid fa-phone"></i> Gọi khách
+                </a>
+                <button class="action-btn flex-1" style="background:#2A2B2B;color:#FF7A00;border:1px solid #333" onclick="focusOrderOnMap(${order.delivery_lat}, ${order.delivery_lng})">
+                    <i class="fa-solid fa-crosshairs"></i> Xem trên map
+                </button>
             </div>
         </div>`;
     }).join('');
 }
 
+let orderMarkers = [];
+
 function renderOrderMarkers() {
     if (!driverMap) return;
     
-    currentOrders.forEach(order => {
+    // Clear old markers and routes
+    orderMarkers.forEach(m => driverMap.removeLayer(m));
+    orderMarkers = [];
+    routeLines.forEach(l => driverMap.removeLayer(l));
+    routeLines = [];
+    
+    const bounds = [];
+    if (driverMarker) bounds.push(driverMarker.getLatLng());
+    
+    currentOrders.forEach((order, idx) => {
         if (order.delivery_lat && order.delivery_lng) {
+            const destLatLng = [order.delivery_lat, order.delivery_lng];
+            bounds.push(L.latLng(destLatLng));
+            
+            // Destination marker
             const icon = L.divIcon({
-                html: `<div style="background:#FF7A00;color:white;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3)"><i class="fa-solid fa-box"></i></div>`,
-                iconSize: [28, 28],
-                iconAnchor: [14, 14],
+                html: `<div style="background:#FF7A00;color:white;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;border:3px solid white;box-shadow:0 2px 10px rgba(0,0,0,0.4)">${idx + 1}</div>`,
+                iconSize: [32, 32],
+                iconAnchor: [16, 16],
                 className: ''
             });
-            L.marker([order.delivery_lat, order.delivery_lng], { icon })
+            const marker = L.marker(destLatLng, { icon })
                 .addTo(driverMap)
-                .bindPopup(`<b>#${String(order.id).slice(-6)}</b><br>${order.delivery_address || ''}`);
+                .bindPopup(`<b>#${String(order.id).slice(-6)}</b><br>${order.delivery_address || ''}<br><a href="https://www.google.com/maps/dir/?api=1&destination=${order.delivery_lat},${order.delivery_lng}&travelmode=driving" target="_blank" style="color:#3B82F6;font-weight:bold">🧭 Mở Google Maps</a>`);
+            orderMarkers.push(marker);
+            
+            // Draw route line from driver to destination
+            if (driverMarker) {
+                const line = L.polyline(
+                    [driverMarker.getLatLng(), destLatLng],
+                    { color: '#FF7A00', weight: 3, opacity: 0.7, dashArray: '8, 8' }
+                ).addTo(driverMap);
+                routeLines.push(line);
+            }
         }
     });
+    
+    // Fit map to show all points
+    if (bounds.length > 1) {
+        driverMap.fitBounds(L.latLngBounds(bounds), { padding: [40, 40] });
+    }
 }
+
+// Focus map on a specific order
+window.focusOrderOnMap = function(lat, lng) {
+    if (driverMap && lat && lng) {
+        driverMap.setView([lat, lng], 16);
+    }
+};
 
 // --- Actions ---
 window.startDelivery = async function(orderId) {
