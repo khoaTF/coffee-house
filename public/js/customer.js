@@ -174,6 +174,8 @@ function getActiveCategory() {
     const node = activeDesktopNode || activeMobileNode;
     return node && node.dataset ? node.dataset.category : 'All';
 }
+// Expose for i18n.js
+window.getActiveCategory = getActiveCategory;
 
 function renderCategories(activeCategory = 'All') {
     const categories = ['All', ...new Set(menuItems.map(item => item.category).filter(Boolean))];
@@ -577,7 +579,7 @@ function getAvailableToAdd(product) {
     return additionalAllowed === Infinity ? 999 : additionalAllowed;
 }
 
-// Render Menu
+// Render Menu (also exposed on window for i18n re-render)
 function renderMenu(category) {
     menuContainer.innerHTML = '';
     const sqDesktop = document.getElementById('menu-search-desktop')?.value || '';
@@ -668,7 +670,7 @@ function renderMenu(category) {
                     <button class="w-full bg-[#1b1c1b] dark:bg-[#F0EDEC] text-white dark:text-[#1b1c1b] font-bold py-2.5 rounded-full hover:bg-black active:scale-95 transition-transform flex items-center justify-center gap-2" 
                         onclick="event.stopPropagation(); updateCart('${item._id}', 1)" ${disableAddBtn ? "disabled style='opacity:0.5;background:#888;cursor:not-allowed;color:white;'" : ""}>
                       <i class="fa-solid ${hasOptions ? 'fa-sliders' : 'fa-plus'} text-[16px]"></i>
-                      ${hasOptions ? 'Tùy chọn' : 'Thêm vào giỏ'}
+                      ${hasOptions ? (window.t ? window.t('options_label') : 'Tùy chọn') : (window.t ? window.t('add_to_cart') : 'Thêm vào giỏ')}
                     </button>
                     `}
                 </div>
@@ -695,7 +697,9 @@ function renderMenu(category) {
     if (typeof injectGachaCard === 'function' && !searchQuery && (category === 'All')) {
         injectGachaCard();
     }
-};
+}
+// Expose for i18n.js re-render on language toggle
+window.renderMenu = renderMenu;
 
 function updateMenuCardsUI() {
     const cards = document.querySelectorAll('article[data-product-id]');
