@@ -1,10 +1,33 @@
 // =============================================
-// GACHA.JS v2 — Túi Mù (Mystery Box) Slot Machine
-// Flow: Add to cart → Pay → Reveal with slot animation
+// GACHA.JS v3 — CS:GO Case Opening Style
+// Flow: Add to cart → Pay → Horizontal reel reveal
 // =============================================
 
 const GACHA_PRICE = 29000;
 const GACHA_PRODUCT_ID = '__mystery_box__';
+
+// --- Rarity tier based on price ---
+function getRarityClass(price) {
+    if (price <= GACHA_PRICE) return 'rarity-common';        // Blue: ≤29k
+    if (price <= GACHA_PRICE * 1.4) return 'rarity-uncommon'; // Purple: ≤40.6k
+    if (price <= GACHA_PRICE * 1.75) return 'rarity-rare';    // Pink: ≤50.75k  
+    return 'rarity-legendary';                                // Red: >50.75k
+}
+
+// --- Item emoji based on name ---
+function getItemEmoji(name) {
+    const n = name.toLowerCase();
+    if (n.includes('cà phê') || n.includes('coffee') || n.includes('espresso') || n.includes('latte') || n.includes('cappuccino')) return '☕';
+    if (n.includes('trà') || n.includes('tea')) return '🍵';
+    if (n.includes('sinh tố') || n.includes('smoothie')) return '🥤';
+    if (n.includes('nước ép') || n.includes('juice')) return '🧃';
+    if (n.includes('sữa') || n.includes('milk')) return '🥛';
+    if (n.includes('đá xay') || n.includes('frapp')) return '🧊';
+    if (n.includes('bánh') || n.includes('cake')) return '🍰';
+    if (n.includes('matcha')) return '🍃';
+    if (n.includes('chocolate') || n.includes('cacao') || n.includes('sô-cô-la')) return '🍫';
+    return '🥤';
+}
 
 // --- Add Mystery Box to Cart ---
 function addMysteryBoxToCart() {
@@ -36,7 +59,6 @@ function cartHasGacha() {
 
 // --- Weighted random: expensive items are rarer ---
 function weightedRandomItem(items) {
-    // Weight: <=GACHA_PRICE → 3x, <=1.5x → 2x, >1.5x → 1x
     const weighted = items.map(item => ({
         item,
         weight: item.price <= GACHA_PRICE ? 3
@@ -71,11 +93,9 @@ function resolveGachaInCart() {
             actualPrice: randomItem.price
         });
 
-        // Replace in cart
         item._id = randomItem._id;
         item.name = '🎰 ' + randomItem.name;
         item.recipe = randomItem.recipe || [];
-        // Keep price at GACHA_PRICE
         item._resolvedName = randomItem.name;
         item._resolvedPrice = randomItem.price;
     });
@@ -83,8 +103,7 @@ function resolveGachaInCart() {
     return results;
 }
 
-// --- Slot Machine Animation ---
-// Shows a vertical scrolling list of item names, decelerating to reveal result
+// --- CS:GO Case Opening Animation ---
 function showSlotReveal(gachaResults) {
     if (!gachaResults || gachaResults.length === 0) return Promise.resolve();
 
@@ -92,13 +111,10 @@ function showSlotReveal(gachaResults) {
         const modal = document.getElementById('gacha-slot-modal');
         if (!modal) { resolve(); return; }
 
-        // Build name pool for scrolling (use all menu items)
         const allNames = menuItems
             .filter(i => i.price > 0)
             .map(i => ({ name: i.name, price: i.price }));
 
-        // For simplicity, we reveal the FIRST gacha result
-        // (multiple mystery boxes will queue)
         let currentResultIndex = 0;
 
         function revealNext() {
@@ -111,18 +127,21 @@ function showSlotReveal(gachaResults) {
             const result = gachaResults[currentResultIndex];
             currentResultIndex++;
 
-            renderSlotMachine(allNames, result, () => {
-                // Short pause before next or close
+            renderCaseOpening(allNames, result, () => {
                 setTimeout(revealNext, 800);
             });
         }
+
+        // Reset subtitle
+        const subtitle = document.getElementById('gacha-slot-subtitle');
+        if (subtitle) subtitle.textContent = 'Đang bốc món cho bạn...';
 
         modal.classList.add('active');
         revealNext();
     });
 }
 
-function renderSlotMachine(allNames, result, onComplete) {
+function renderCaseOpening(allNames, result, onComplete) {
     const reel = document.getElementById('gacha-reel');
     const resultPanel = document.getElementById('gacha-slot-result');
     const reelContainer = document.getElementById('gacha-reel-container');
@@ -133,30 +152,39 @@ function renderSlotMachine(allNames, result, onComplete) {
     resultPanel.innerHTML = '';
     reelContainer.classList.remove('hidden');
 
-    // Create reel items: many random names, then the winning name at the end
-    const REEL_COUNT = 35;
+    // CS:GO reel: ~40 items, winner placed at specific index from end
+    const REEL_COUNT = 45;
+    const ITEM_WIDTH = 120;
+    const WINNER_OFFSET = 3; // winner is 3 slots from the end (for suspense)
     const shuffled = [...allNames].sort(() => Math.random() - 0.5);
     const reelItems = [];
 
-    for (let i = 0; i < REEL_COUNT; i++) {
-        reelItems.push(shuffled[i % shuffled.length]);
-    }
-    // Winning item is last
-    reelItems.push({ name: result.resolvedItem.name, price: result.resolvedItem.price });
+    const winnerIndex = REEL_COUNT - WINNER_OFFSET;
 
-    // Render reel
+    for (let i = 0; i < REEL_COUNT; i++) {
+        if (i === winnerIndex) {
+            reelItems.push({ name: result.resolvedItem.name, price: result.resolvedItem.price, isWinner: true });
+        } else {
+            reelItems.push(shuffled[i % shuffled.length]);
+        }
+    }
+
+    // Build reel DOM
     reel.innerHTML = '';
     reel.style.transition = 'none';
-    reel.style.transform = 'translateY(0)';
-
-    const ITEM_HEIGHT = 64;
+    reel.style.transform = 'translateX(0)';
 
     reelItems.forEach((item, index) => {
         const div = document.createElement('div');
-        div.className = 'gacha-reel-item';
-        const isWinner = index === reelItems.length - 1;
+        const rarity = getRarityClass(item.price);
+        div.className = `gacha-reel-item ${rarity}${item.isWinner ? ' rarity-winner' : ''}`;
+        
+        const emoji = getItemEmoji(item.name);
+        const esc = window.escapeHTML ? window.escapeHTML(item.name) : item.name;
+        
         div.innerHTML = `
-            <span class="gacha-reel-name ${isWinner ? 'gacha-winner-name' : ''}">${window.escapeHTML ? window.escapeHTML(item.name) : item.name}</span>
+            <span class="item-emoji">${emoji}</span>
+            <span class="gacha-reel-name">${esc}</span>
             <span class="gacha-reel-price">${item.price.toLocaleString('vi-VN')}đ</span>
         `;
         reel.appendChild(div);
@@ -165,26 +193,42 @@ function renderSlotMachine(allNames, result, onComplete) {
     // Force reflow
     void reel.offsetHeight;
 
-    // Calculate scroll distance: move reel up so the LAST item is centered
-    const totalHeight = reelItems.length * ITEM_HEIGHT;
-    const containerHeight = reelContainer.offsetHeight || 200;
-    const targetOffset = totalHeight - containerHeight / 2 - ITEM_HEIGHT / 2;
+    // Calculate scroll: center the winner item under the indicator
+    const containerWidth = reelContainer.offsetWidth || 360;
+    const targetOffset = (winnerIndex * ITEM_WIDTH) + (ITEM_WIDTH / 2) - (containerWidth / 2);
+    // Add slight random offset for realism (-10 to +10px)
+    const jitter = (Math.random() - 0.5) * 20;
 
-    // Animate
+    // Animate with CS:GO-style deceleration
     requestAnimationFrame(() => {
-        reel.style.transition = `transform 5s cubic-bezier(0.10, 0.80, 0.05, 1.00)`;
-        reel.style.transform = `translateY(-${targetOffset}px)`;
+        reel.style.transition = `transform 6s cubic-bezier(0.05, 0.85, 0.03, 1.00)`;
+        reel.style.transform = `translateX(-${targetOffset + jitter}px)`;
     });
 
-    // Vibrate during scroll
+    // Tick vibration during scroll
     if (navigator.vibrate) {
-        setTimeout(() => navigator.vibrate([30, 20, 30, 20, 30]), 200);
-        setTimeout(() => navigator.vibrate(100), 4500);
+        // Fast ticks at start
+        const tickInterval = setInterval(() => {
+            navigator.vibrate(10);
+        }, 120);
+        // Stop ticks and do final vibrate
+        setTimeout(() => {
+            clearInterval(tickInterval);
+            navigator.vibrate([50, 30, 100]);
+        }, 5500);
     }
 
-    // Show result after animation
+    // Update subtitle during animation
+    const subtitle = document.getElementById('gacha-slot-subtitle');
+    if (subtitle) {
+        subtitle.textContent = 'Đang quay...';
+        setTimeout(() => { subtitle.textContent = 'Sắp dừng...'; }, 4000);
+    }
+
+    // Show result after animation completes
     setTimeout(() => {
         reelContainer.classList.add('hidden');
+        if (subtitle) subtitle.textContent = '🎉 Kết quả!';
 
         const diff = result.actualPrice - result.gachaPrice;
         const isWin = diff > 0;
@@ -192,6 +236,9 @@ function renderSlotMachine(allNames, result, onComplete) {
         const emoji = isWin ? '🎉' : (isEven ? '😄' : '😅');
         const label = isWin ? 'LỜI RỒI!' : (isEven ? 'Hoà!' : 'Lỗ nhẹ!');
         const diffColor = isWin ? '#22C55E' : (isEven ? '#FF7A00' : '#EF4444');
+        const rarityColor = getRarityClass(result.actualPrice).replace('rarity-', '');
+        const tierLabels = { common: 'Phổ thông', uncommon: 'Hiếm', rare: 'Rất hiếm', legendary: 'Huyền thoại' };
+        const tierColors = { common: '#4B69FF', uncommon: '#8847FF', rare: '#D32CE6', legendary: '#EB4B4B' };
         const diffText = isWin
             ? `🔥 Tiết kiệm ${Math.abs(diff).toLocaleString('vi-VN')}đ`
             : (isEven ? '➡️ Giá vừa đúng!' : `📉 Chênh ${Math.abs(diff).toLocaleString('vi-VN')}đ`);
@@ -199,14 +246,17 @@ function renderSlotMachine(allNames, result, onComplete) {
         resultPanel.innerHTML = `
             <div class="gacha-result-anim" style="text-align:center;padding:20px 0;">
                 <div style="font-size:3.5rem;margin-bottom:8px;">${emoji}</div>
-                <h3 style="font-size:1.3rem;font-weight:900;color:${diffColor};margin-bottom:16px;">${label}</h3>
-                <div style="background:var(--surface-container-low,#F0EDEC);border-radius:16px;padding:16px;text-align:left;">
-                    <p style="font-weight:800;font-size:1.05rem;color:var(--text-main,#1b1c1b);margin-bottom:8px;">
-                        ${window.escapeHTML ? window.escapeHTML(result.resolvedItem.name) : result.resolvedItem.name}
+                <h3 style="font-size:1.3rem;font-weight:900;color:${diffColor};margin-bottom:4px;">${label}</h3>
+                <span style="display:inline-block;padding:2px 12px;border-radius:999px;font-size:0.65rem;font-weight:700;background:${tierColors[rarityColor]}22;color:${tierColors[rarityColor]};border:1px solid ${tierColors[rarityColor]}44;margin-bottom:14px;">
+                    ${tierLabels[rarityColor] || 'Phổ thông'}
+                </span>
+                <div style="background:#161b22;border-radius:16px;padding:16px;text-align:left;border:1px solid rgba(255,255,255,0.06);">
+                    <p style="font-weight:800;font-size:1.05rem;color:#fff;margin-bottom:8px;">
+                        ${getItemEmoji(result.resolvedItem.name)} ${window.escapeHTML ? window.escapeHTML(result.resolvedItem.name) : result.resolvedItem.name}
                     </p>
-                    <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:var(--text-muted,#888);">
+                    <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:rgba(255,255,255,0.5);">
                         <span>Giá gốc: <b style="color:#FF7A00;">${result.actualPrice.toLocaleString('vi-VN')}đ</b></span>
-                        <span>Bạn trả: <b>${result.gachaPrice.toLocaleString('vi-VN')}đ</b></span>
+                        <span>Bạn trả: <b style="color:#fff;">${result.gachaPrice.toLocaleString('vi-VN')}đ</b></span>
                     </div>
                     <div style="margin-top:8px;font-weight:700;font-size:0.85rem;color:${diffColor};">
                         ${diffText}
@@ -218,9 +268,8 @@ function renderSlotMachine(allNames, result, onComplete) {
 
         if (isWin) launchGachaConfetti();
 
-        // Auto-close after delay
         setTimeout(onComplete, 3500);
-    }, 5300);
+    }, 6300);
 }
 
 // --- Confetti ---
