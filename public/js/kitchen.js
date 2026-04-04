@@ -462,13 +462,15 @@ window.updateOrderStatus = async (orderId, newStatus, btn) => {
     // Optimistic update locally
     const orderIndex = orders.findIndex(o => o._id === orderId);
     if (orderIndex > -1) {
-        const order = orders[orderIndex];
-        const isDeliveryReady = newStatus === 'Ready' && (order.order_type === 'delivery' || order.orderType === 'delivery');
-        // If completed, cancelled, or delivery ready, we remove it from the active dashboard view immediately
-        if (newStatus === 'Completed' || newStatus === 'Cancelled' || isDeliveryReady) {
+        // Remove only on Completed or Cancelled. Delivery-Ready stays visible with "Chờ Shipper..."
+        if (newStatus === 'Completed' || newStatus === 'Cancelled') {
             orders.splice(orderIndex, 1);
         } else {
             orders[orderIndex].status = newStatus;
+            // Sync delivery_status for delivery orders
+            if (orders[orderIndex].order_type === 'delivery' || orders[orderIndex].orderType === 'delivery') {
+                orders[orderIndex].delivery_status = newStatus;
+            }
         }
         renderOrders();
     }
@@ -553,11 +555,12 @@ function setupRealtimeSubscription() {
             }
         })
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders' }, payload => {
-            const updatedOrder = { ...payload.new, _id: payload.new.id, createdAt: payload.new.created_at, tableNumber: payload.new.table_number, orderNote: payload.new.order_note, orderType: payload.new.order_type };
+            const updatedOrder = { ...payload.new, _id: payload.new.id, createdAt: payload.new.created_at, tableNumber: payload.new.table_number, orderNote: payload.new.order_note, orderType: payload.new.order_type, totalPrice: payload.new.total_price };
             const orderIndex = orders.findIndex(o => o._id === updatedOrder._id);
 
             const isDeliveryPickedUp = ['Delivering', 'Completed'].includes(updatedOrder.delivery_status || updatedOrder.deliveryStatus);
 
+            // Remove from kitchen view: finished orders OR delivery orders picked up by shipper
             if (!['Pending', 'Preparing', 'Ready'].includes(updatedOrder.status) || isDeliveryPickedUp) {
                 if (orderIndex > -1) {
                     orders.splice(orderIndex, 1);
@@ -568,10 +571,13 @@ function setupRealtimeSubscription() {
                     // GAP 2: Detect table number change (customer transferred)
                     const oldTable = orders[orderIndex].tableNumber;
                     const newTable = updatedOrder.tableNumber;
-                    if (oldTable && newTable && String(oldTable) !== String(newTable)) {
-                        // Update order data
-                        orders[orderIndex] = { ...orders[orderIndex], ...updatedOrder };
-                        renderOrders();
+                    const isTableChange = oldTable && newTable && String(oldTable) !== String(newTable);
+
+                    // Full merge all fields from realtime payload
+                    orders[orderIndex] = { ...orders[orderIndex], ...updatedOrder };
+                    renderOrders();
+
+                    if (isTableChange) {
                         // Flash the card to alert barista
                         playDing();
                         setTimeout(() => {
@@ -580,13 +586,11 @@ function setupRealtimeSubscription() {
                                 card.style.transition = 'box-shadow 0.3s, border-color 0.3s';
                                 card.style.boxShadow = '0 0 0 4px rgba(234, 179, 8, 0.5)';
                                 card.style.borderColor = '#eab308';
-                                // Add a transfer badge
                                 const badge = document.createElement('div');
                                 badge.className = 'absolute top-0 left-0 right-0 bg-yellow-400 text-yellow-900 text-center text-sm font-bold py-1.5 z-10';
                                 badge.innerHTML = `<i class="fa-solid fa-people-arrows mr-1"></i> Đổi bàn: ${oldTable} → ${newTable}`;
                                 card.style.position = 'relative';
                                 card.prepend(badge);
-                                // Remove flash after 8 seconds
                                 setTimeout(() => {
                                     card.style.boxShadow = '';
                                     card.style.borderColor = '';
@@ -594,14 +598,9 @@ function setupRealtimeSubscription() {
                                 }, 8000);
                             }
                         }, 100);
-                    } else {
-                        orders[orderIndex].status = updatedOrder.status;
-                        orders[orderIndex].tableNumber = updatedOrder.tableNumber;
-                        renderOrders();
                     }
                 } else {
-                    // Only add if it's one of the statuses we care about
-                    const isDeliveryPickedUp = ['Delivering', 'Completed'].includes(updatedOrder.delivery_status || updatedOrder.deliveryStatus);
+                    // Order not in local array — add it if it belongs on the kitchen dashboard
                     if (['Pending', 'Preparing', 'Ready'].includes(updatedOrder.status) && !isDeliveryPickedUp) {
                         orders.push(updatedOrder);
                         orders.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
