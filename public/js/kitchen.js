@@ -43,7 +43,7 @@ async function fetchActiveOrders() {
         if (error) throw error;
 
         // Map ids for compatibility
-        orders = data.map(o => ({ ...o, _id: o.id, createdAt: o.created_at, tableNumber: o.table_number, orderNote: o.order_note }));
+        orders = data.map(o => ({ ...o, _id: o.id, createdAt: o.created_at, tableNumber: o.table_number, orderNote: o.order_note, orderType: o.order_type || 'dine_in' }));
         loader.style.display = 'none';
         renderOrders();
     } catch (error) {
@@ -127,15 +127,29 @@ function renderOrders() {
             if (order.status === 'Ready') card.classList.add('border-l-4', 'border-l-green-500');
             card.id = `order-${order._id}`;
 
+            const isDelivery = order.orderType === 'delivery' || order.order_type === 'delivery';
+            const headerIcon = isDelivery
+                ? `<div class="w-8 h-8 rounded-full bg-[#FF7A00]/10 text-[#FF7A00] flex items-center justify-center text-sm shadow-inner"><i class="fa-solid fa-motorcycle"></i></div>`
+                : `<div class="w-8 h-8 rounded-full bg-[#F6F3F2] dark:bg-[#1B1C1C] text-[#994700] flex items-center justify-center text-sm shadow-inner">${window.escapeHTML(order.tableNumber || '?')}</div>`;
+            const headerTitle = isDelivery
+                ? `<span class="text-[#FF7A00]">🛵 Giao hàng</span>`
+                : `<span>Bàn ${window.escapeHTML(order.tableNumber || '?')}</span>`;
+            const deliveryInfoHtml = isDelivery
+                ? `<div class="p-3 bg-[#FFF4E8] dark:bg-[#FF7A00]/10 rounded-xl mb-3 text-sm border border-[#FFDDBB] dark:border-[#FF7A00]/30">
+                    <div class="flex items-center gap-2 mb-1 font-bold text-[#994700] dark:text-[#FF7A00]"><i class="fa-solid fa-motorcycle"></i> Đơn giao hàng</div>
+                    ${order.delivery_name ? `<div class="flex items-center gap-1.5 text-gray-700 dark:text-gray-300"><i class="fa-solid fa-user text-xs"></i> ${window.escapeHTML(order.delivery_name)}</div>` : ''}
+                    ${order.delivery_phone ? `<div class="flex items-center gap-1.5 text-gray-700 dark:text-gray-300"><i class="fa-solid fa-phone text-xs"></i> <a href="tel:${order.delivery_phone}" class="underline">${window.escapeHTML(order.delivery_phone)}</a></div>` : ''}
+                    ${order.delivery_address ? `<div class="flex items-center gap-1.5 text-gray-600 dark:text-gray-400 truncate"><i class="fa-solid fa-map-pin text-xs"></i> ${window.escapeHTML(order.delivery_address)}</div>` : ''}
+                  </div>`
+                : '';
+
             card.innerHTML = `
                 <div>
                     <div class="flex justify-between items-center mb-4 pb-3 border-b border-gray-100 dark:border-gray-800">
                         <div class="font-headline font-bold text-lg text-[#1B1C1C] dark:text-white flex items-center gap-2">
-                            <div class="w-8 h-8 rounded-full bg-[#F6F3F2] dark:bg-[#1B1C1C] text-[#994700] flex items-center justify-center text-sm shadow-inner">
-                                ${window.escapeHTML(order.tableNumber || '?')}
-                            </div>
+                            ${headerIcon}
                             <div>
-                                <span>Bàn ${window.escapeHTML(order.tableNumber || '?')}</span>
+                                ${headerTitle}
                                 ${order.customer_phone ? `<div class="text-xs font-normal mt-0.5 flex items-center gap-1.5"><span class="text-amber-500 font-bold"><i class="fa-solid fa-crown"></i> VIP</span><span class="text-gray-500 dark:text-gray-400">${window.escapeHTML(order.customer_phone)}</span></div>` : ''}
                                 <span class="text-stone-500 dark:text-stone-400 ml-2 font-medium text-sm">(Đơn #${window.escapeHTML(String(order.orderId))})</span>
                             </div>
@@ -147,6 +161,7 @@ function renderOrders() {
                             ${diffInMinutes > 0 ? `<div class="text-xs font-bold mt-1 ${diffInMinutes >= 10 ? 'text-red-500' : diffInMinutes >= 5 ? 'text-yellow-600' : 'text-green-500'}">${diffInMinutes} phút trước</div>` : ''}
                         </div>
                     </div>
+                    ${deliveryInfoHtml}
                     <ul class="mb-4 list-none pl-0">
                         ${itemsHtml}
                     </ul>

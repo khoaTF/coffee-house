@@ -29,6 +29,18 @@
     {
       "source": "/tv",
       "destination": "/pages/tv.html"
+    },
+    {
+      "source": "/delivery",
+      "destination": "/pages/delivery.html"
+    },
+    {
+      "source": "/tracking",
+      "destination": "/pages/tracking.html"
+    },
+    {
+      "source": "/driver",
+      "destination": "/pages/driver.html"
     }
   ]
 }

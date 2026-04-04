@@ -139,6 +139,7 @@ window.canAccessTab = function(tabId) {
         'staff': ['staff_view', 'staff_add', 'staff_edit', 'staff_permissions', 'staff_delete'],
         'audit': ['settings_audit'],
         'qr': ['tables_qr'],
+        'delivery': ['delivery_view', 'delivery_manage', 'delivery_drivers', 'delivery_settings'],
         'settings': ['settings_manage']
     };
 
@@ -197,6 +198,8 @@ function switchTab(tabId) {
         loadStoreSettings();
     } else if (tabId === 'cashflow') {
         fetchCashflowData();
+    } else if (tabId === 'delivery') {
+        if (typeof initDeliveryModule === 'function') initDeliveryModule();
     } else {
         fetchProducts();
     }
