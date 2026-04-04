@@ -37,7 +37,7 @@ function customConfirm(message, title = 'Xác nhận') {
         const icon = document.createElement('i');
         icon.className = 'fa-solid fa-triangle-exclamation text-warning me-2';
         document.getElementById('confirmModalTitle').prepend(icon);
-        document.getElementById('confirmModalBody').textContent = message;
+        document.getElementById('confirmModalBody').innerHTML = message;
 
         const okBtn = document.getElementById('confirmModalOk');
         const cancelBtn = document.getElementById('confirmModalCancel');
