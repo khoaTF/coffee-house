@@ -252,7 +252,7 @@ function setupRealtime(orderId, driverId) {
             filter: `id=eq.${orderId}`
         }, payload => {
             orderData = { ...orderData, ...payload.new };
-            const status = payload.new.delivery_status || payload.new.status;
+            const status = orderData.delivery_status || orderData.status;
             
             // Update stepper
             updateStepper(status);

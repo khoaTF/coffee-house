@@ -42,8 +42,9 @@ async function fetchActiveOrders() {
 
         if (error) throw error;
 
-        // Map ids for compatibility
-        orders = data.map(o => ({ ...o, _id: o.id, createdAt: o.created_at, tableNumber: o.table_number, orderNote: o.order_note, orderType: o.order_type || 'dine_in' }));
+        // Map ids for compatibility and hide delivery orders that are already Ready
+        orders = data.map(o => ({ ...o, _id: o.id, createdAt: o.created_at, tableNumber: o.table_number, orderNote: o.order_note, orderType: o.order_type || 'dine_in' }))
+                     .filter(o => !(o.status === 'Ready' && (o.orderType === 'delivery' || o.order_type === 'delivery')));
         loader.style.display = 'none';
         renderOrders();
     } catch (error) {
@@ -121,7 +122,7 @@ function renderOrders() {
 
             const card = document.createElement('div');
             card.className = `${bgClass} rounded-[1.25rem] p-5 shadow-sm border ${borderClass} flex flex-col justify-between transition-all hover:shadow-md order-card-${order.status || 'Pending'} relative overflow-hidden ${pulseClass}`;
-            
+
             if (order.status === 'Pending') card.classList.add('border-l-4', 'border-l-[#D97531]');
             if (order.status === 'Preparing') card.classList.add('border-l-4', 'border-l-[#994700]');
             if (order.status === 'Ready') card.classList.add('border-l-4', 'border-l-green-500');
@@ -193,7 +194,7 @@ function renderOrders() {
         console.error("Lỗi hiển thị đơn hàng:", e);
         ordersContainer.innerHTML = '<div class="text-danger">Không tải được giao diện đơn hàng. Xem console để biết thêm chi tiết.</div>';
     }
-    
+
     // Always render sidebar
     if (typeof renderBatchSidebar === 'function') renderBatchSidebar();
 }
@@ -204,7 +205,7 @@ function renderGroupedOrders() {
     const activeOrders = orders.filter(o => o.status === 'Pending' || o.status === 'Preparing');
 
     if (activeOrders.length === 0) {
-            ordersContainer.innerHTML = `
+        ordersContainer.innerHTML = `
                 <div class="col-span-1 md:col-span-2 lg:col-span-3 flex flex-col items-center justify-center py-16 text-center bg-white dark:bg-[#2A2B2B] rounded-[1.5rem] border border-gray-200 dark:border-gray-800 shadow-sm min-h-[400px]">
                     <div class="w-24 h-24 bg-orange-50 dark:bg-orange-900/20 rounded-full flex items-center justify-center text-[#994700] text-4xl mb-4">
                         <i class="fa-solid fa-check-double"></i>
@@ -271,9 +272,9 @@ function renderGroupedOrders() {
 function renderBatchSidebar() {
     const listContainer = document.getElementById('batch-list');
     if (!listContainer) return;
-    
+
     const activeOrders = orders.filter(o => o.status === 'Pending' || o.status === 'Preparing');
-    
+
     if (activeOrders.length === 0) {
         listContainer.innerHTML = `
             <div class="flex flex-col items-center justify-center py-8 text-center bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-800">
@@ -298,8 +299,8 @@ function renderBatchSidebar() {
         });
     });
 
-    const sortedItems = Object.keys(groupMap).map(k => ({ name: k, qty: groupMap[k] })).sort((a,b) => b.qty - a.qty);
-    
+    const sortedItems = Object.keys(groupMap).map(k => ({ name: k, qty: groupMap[k] })).sort((a, b) => b.qty - a.qty);
+
     let html = '';
     sortedItems.forEach(item => {
         html += `
@@ -312,7 +313,7 @@ function renderBatchSidebar() {
     listContainer.innerHTML = html;
 }
 
-window.toggleOrderGrouping = function() {
+window.toggleOrderGrouping = function () {
     isGroupedView = document.getElementById('groupOrdersToggle')?.checked || false;
     renderOrders();
 };
@@ -336,7 +337,7 @@ window.updateOrderStatus = async (orderId, newStatus, btn) => {
                 const { data: custData } = await supabase.from('customers').select('id, current_points, total_spent').eq('phone', order.customer_phone).maybeSingle();
                 const earnedPts = order.earned_points || 0;
                 const paidAmt = order.total_price || order.totalPrice || 0;
-                
+
                 if (custData) {
                     const newPts = (custData.current_points || 0) + earnedPts;
                     const newSpent = (custData.total_spent || 0) + paidAmt;
@@ -347,12 +348,12 @@ window.updateOrderStatus = async (orderId, newStatus, btn) => {
 
                     await supabase.from('customers').update({ current_points: newPts, total_spent: newSpent, tier: newTier }).eq('id', custData.id);
                     if (earnedPts > 0) {
-                        await supabase.from('point_logs').insert([{ customer_id: custData.id, amount: earnedPts, reason: 'Tich diem don hang ' + orderId.substring(0,8) }]);
+                        await supabase.from('point_logs').insert([{ customer_id: custData.id, amount: earnedPts, reason: 'Tich diem don hang ' + orderId.substring(0, 8) }]);
                     }
                     // D7 - Auto-generate voucher when points reach 500
                     if (newPts >= 500) {
-                        const vCode = 'VIP-' + (order.customer_phone || '').slice(-4) + '-' + Math.random().toString(36).substr(2,5).toUpperCase();
-                        const expiry = new Date(Date.now() + 30*24*3600*1000).toISOString().slice(0,10);
+                        const vCode = 'VIP-' + (order.customer_phone || '').slice(-4) + '-' + Math.random().toString(36).substr(2, 5).toUpperCase();
+                        const expiry = new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString().slice(0, 10);
                         const { error: vcErr } = await supabase.from('discounts').insert([{
                             code: vCode, type: 'fixed', value: 20000,
                             min_order: 0, max_uses: 1, current_uses: 0,
@@ -370,23 +371,54 @@ window.updateOrderStatus = async (orderId, newStatus, btn) => {
                     const { data: newCust } = await supabase.from('customers').insert([{
                         phone: order.customer_phone, name: 'Khách hàng', current_points: earnedPts, total_spent: paidAmt, tier: newTier
                     }]).select().single();
-                    
+
                     if (newCust && earnedPts > 0) {
-                        await supabase.from('point_logs').insert([{ customer_id: newCust.id, amount: earnedPts, reason: 'Tích điẻm đơn hàng ' + orderId.substring(0,8) }]);
+                        await supabase.from('point_logs').insert([{ customer_id: newCust.id, amount: earnedPts, reason: 'Tích điẻm đơn hàng ' + orderId.substring(0, 8) }]);
                     }
                 }
             }
+        }
+
+        // Prompt for estimated wait time
+        async function promptEstimatedTime() {
+            return new Promise((resolve) => {
+                const time = window.prompt("Nhập thời gian chuẩn bị dự kiến (phút):\n(Chọn Hủy nếu không muốn cập nhật trạng thái)", "15");
+                if (time !== null) {
+                    const mins = parseInt(time, 10);
+                    if (!isNaN(mins) && mins >= 0) {
+                        return resolve(mins);
+                    } else {
+                        alert("Vui lòng nhập số phút hợp lệ.");
+                        return resolve(false);
+                    }
+                }
+                return resolve(false);
+            });
         }
 
         // D5 — Estimated wait time: ask kitchen when starting preparation
         let updatePayload = { status: newStatus };
         if (newStatus === 'Preparing') {
             const mins = await promptEstimatedTime();
-            if (mins) updatePayload.estimated_minutes = mins;
+            if (mins === false) {
+                if (btn) {
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                }
+                return; // Abort update
+            }
+            if (mins > 0) updatePayload.estimated_minutes = mins;
+        }
+
+        const order = orders.find(o => o._id === orderId || o.id === orderId);
+
+        if (order && (order.order_type === 'delivery' || order.orderType === 'delivery')) {
+            if (newStatus === 'Preparing' || newStatus === 'Ready' || newStatus === 'Cancelled') {
+                updatePayload.delivery_status = newStatus;
+            }
         }
 
         if (newStatus === 'Cancelled') {
-            const order = orders.find(o => o._id === orderId || o.id === orderId);
             if (order && (order.payment_status === 'paid' || order.is_paid)) {
                 updatePayload.payment_status = 'refunded';
             }
@@ -413,14 +445,14 @@ window.updateOrderStatus = async (orderId, newStatus, btn) => {
                             if (cur) await supabase.from('ingredients').update({ stock: (cur.stock || 0) + restoreAmt }).eq('id', ingrId);
                         }
                     }
-                } catch(re) { console.warn('Restore inventory warning:', re); }
+                } catch (re) { console.warn('Restore inventory warning:', re); }
             }
         }
 
     } catch (error) {
         console.error("Lỗi cập nhật trạng thái:", error);
         showRetryToast("Lỗi khi cập nhật trạng thái đơn hàng", 'error');
-        if(btn) {
+        if (btn) {
             btn.innerHTML = originalHtml;
             btn.disabled = false;
         }
@@ -429,8 +461,10 @@ window.updateOrderStatus = async (orderId, newStatus, btn) => {
     // Optimistic update locally
     const orderIndex = orders.findIndex(o => o._id === orderId);
     if (orderIndex > -1) {
-        // If completed or cancelled, we remove it from the active dashboard view immediately
-        if (newStatus === 'Completed' || newStatus === 'Cancelled') {
+        const order = orders[orderIndex];
+        const isDeliveryReady = newStatus === 'Ready' && (order.order_type === 'delivery' || order.orderType === 'delivery');
+        // If completed, cancelled, or delivery ready, we remove it from the active dashboard view immediately
+        if (newStatus === 'Completed' || newStatus === 'Cancelled' || isDeliveryReady) {
             orders.splice(orderIndex, 1);
         } else {
             orders[orderIndex].status = newStatus;
@@ -464,7 +498,7 @@ function playDing() {
     if (!audioEnabled) return;
     try {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        
+
         // Helper to play a single beep
         const playBeep = (freq, startTime, duration) => {
             const oscillator = audioCtx.createOscillator();
@@ -483,7 +517,7 @@ function playDing() {
         // Double Beep for higher attention
         playBeep(880, now, 0.2); // First beep
         playBeep(1046.50, now + 0.3, 0.3); // Second higher beep (C6)
-        
+
     } catch (e) { console.error("Audio API not supported or blocked", e); }
 }
 
@@ -502,23 +536,28 @@ function setupRealtimeSubscription() {
                 totalPrice: payload.new.total_price
             };
 
-            // Avoid duplicates
-            if (!orders.some(o => o._id === newOrder._id)) {
+            const isDeliveryReady = newOrder.status === 'Ready' && (newOrder.order_type === 'delivery' || newOrder.orderType === 'delivery');
+            const isFinished = ['Completed', 'Cancelled'].includes(newOrder.status);
+
+            // Avoid duplicates and filter out completed or ready delivery orders
+            if (!orders.some(o => o._id === newOrder._id) && !isDeliveryReady && !isFinished) {
                 playDing();
                 orders.push(newOrder);
                 orders.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
                 renderOrders();
-                
+
                 if (window.autoPrintKitchen) {
                     window.printKitchenTicket(newOrder);
                 }
             }
         })
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders' }, payload => {
-            const updatedOrder = { ...payload.new, _id: payload.new.id, createdAt: payload.new.created_at, tableNumber: payload.new.table_number, orderNote: payload.new.order_note };
+            const updatedOrder = { ...payload.new, _id: payload.new.id, createdAt: payload.new.created_at, tableNumber: payload.new.table_number, orderNote: payload.new.order_note, orderType: payload.new.order_type };
             const orderIndex = orders.findIndex(o => o._id === updatedOrder._id);
 
-            if (updatedOrder.status === 'Completed' || updatedOrder.status === 'Cancelled') {
+            const isDeliveryReady = updatedOrder.status === 'Ready' && (updatedOrder.orderType === 'delivery');
+
+            if (updatedOrder.status === 'Completed' || updatedOrder.status === 'Cancelled' || isDeliveryReady) {
                 if (orderIndex > -1) {
                     orders.splice(orderIndex, 1);
                     renderOrders();
@@ -854,18 +893,18 @@ window.printKitchenTicket = (order) => {
     let itemsHtml = '';
     let orderItems = order.items;
     if (typeof orderItems === 'string') {
-        try { orderItems = JSON.parse(orderItems); } catch(e) { orderItems = []; }
+        try { orderItems = JSON.parse(orderItems); } catch (e) { orderItems = []; }
     }
-    
+
     if (Array.isArray(orderItems)) {
         itemsHtml = orderItems.map(i => {
-            const optionNames = i.selectedOptions && i.selectedOptions.length > 0 
-               ? `<div style="font-size: 14px; margin-left: 20px; color: #333;">• ${i.selectedOptions.map(o => o.choiceName).join(', ')}</div>` 
-               : '';
+            const optionNames = i.selectedOptions && i.selectedOptions.length > 0
+                ? `<div style="font-size: 14px; margin-left: 20px; color: #333;">• ${i.selectedOptions.map(o => o.choiceName).join(', ')}</div>`
+                : '';
             return `<div style="margin-bottom: 8px; font-weight: bold; font-size: 18px;">${i.quantity}x ${i.name}</div>${optionNames}`;
         }).join('');
     }
-    
+
     const timeStr = order.createdAt ? new Date(order.createdAt).toLocaleTimeString('vi-VN') : new Date().toLocaleTimeString('vi-VN');
     const noteHtml = order.orderNote ? `<div style="margin-top: 15px; font-style: italic; border: 1px dashed #000; padding: 5px;">Ghi chú: ${order.orderNote}</div>` : '';
 
@@ -927,7 +966,7 @@ function promptEstimatedTime() {
                 <h3 style="color:#1e293b; font-size:1.1rem; font-weight:800; margin-bottom:4px;">Thời gian ước tính</h3>
                 <p style="color:#64748b; font-size:0.85rem; margin-bottom:16px;">Mất khoảng bao nhiêu phút để hoàn thành?</p>
                 <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:16px;">
-                    ${[5,10,15,20,30].map(m => `
+                    ${[5, 10, 15, 20, 30].map(m => `
                         <button onclick="document.getElementById('est-min-input').value='${m}'" style="
                             background:#2d2a1e; border:1px solid #e2e8f0; color:#C0A062;
                             border-radius:10px; padding:7px 14px; font-weight:700; cursor:pointer;

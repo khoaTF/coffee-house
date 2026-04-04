@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -7,7 +8,9 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Serif:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Serif:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet" />
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Tailwind CSS (Compiled for Production) -->
@@ -15,63 +18,132 @@
     <link rel="stylesheet" href="../css/styles.css?v=1.4">
     <link rel="icon" type="image/png" href="../images/bunny_logo.png">
     <style>
-        .prose h1 { @apply text-3xl font-black text-primary mb-6 font-serif tracking-tight; }
-        .prose h2 { @apply text-2xl font-bold text-primary mt-10 mb-4 border-b border-outline-variant/30 pb-2; }
-        .prose h3 { @apply text-xl font-bold text-on-surface mt-6 mb-3 flex items-center gap-2; }
-        .prose p { @apply mb-4 text-on-surface-variant leading-relaxed; }
-        .prose ul, .prose ol { @apply mb-6 pl-5 space-y-2 text-on-surface-variant; }
-        .prose li { @apply relative pl-2; }
-        .prose li::marker { @apply text-secondary font-bold; }
-        .prose strong { @apply text-on-surface font-bold; }
-        .prose table { @apply w-full text-left border-collapse mb-6; }
-        .prose th, .prose td { @apply border border-outline-variant/50 p-3; }
-        .prose th { @apply bg-surface-variant text-on-surface font-bold; }
-        .prose code { @apply bg-surface-variant text-secondary px-1.5 py-0.5 rounded text-sm font-mono border border-outline-variant/30; }
-        .guide-section { @apply bg-surface rounded-3xl p-6 shadow-soft border border-outline-variant/30 mb-8 hover:shadow-float transition-all duration-300; }
-        .icon-box { @apply w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0; }
-        .link-code { @apply bg-surface-variant text-secondary px-2 py-1 rounded-lg text-sm font-mono font-bold border border-outline-variant/30 no-underline inline-flex items-center gap-1.5 transition-all duration-200; }
-        .link-code:hover { @apply bg-primary text-on-primary border-primary shadow-md; }
-        .link-code i { font-size: 0.7em; }
+        .prose h1 {
+            @apply text-3xl font-black text-primary mb-6 font-serif tracking-tight;
+        }
+
+        .prose h2 {
+            @apply text-2xl font-bold text-primary mt-10 mb-4 border-b border-outline-variant/30 pb-2;
+        }
+
+        .prose h3 {
+            @apply text-xl font-bold text-on-surface mt-6 mb-3 flex items-center gap-2;
+        }
+
+        .prose p {
+            @apply mb-4 text-on-surface-variant leading-relaxed;
+        }
+
+        .prose ul,
+        .prose ol {
+            @apply mb-6 pl-5 space-y-2 text-on-surface-variant;
+        }
+
+        .prose li {
+            @apply relative pl-2;
+        }
+
+        .prose li::marker {
+            @apply text-secondary font-bold;
+        }
+
+        .prose strong {
+            @apply text-on-surface font-bold;
+        }
+
+        .prose table {
+            @apply w-full text-left border-collapse mb-6;
+        }
+
+        .prose th,
+        .prose td {
+            @apply border border-outline-variant/50 p-3;
+        }
+
+        .prose th {
+            @apply bg-surface-variant text-on-surface font-bold;
+        }
+
+        .prose code {
+            @apply bg-surface-variant text-secondary px-1.5 py-0.5 rounded text-sm font-mono border border-outline-variant/30;
+        }
+
+        .guide-section {
+            @apply bg-surface rounded-3xl p-6 shadow-soft border border-outline-variant/30 mb-8 hover:shadow-float transition-all duration-300;
+        }
+
+        .icon-box {
+            @apply w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0;
+        }
+
+        .link-code {
+            @apply bg-surface-variant text-secondary px-2 py-1 rounded-lg text-sm font-mono font-bold border border-outline-variant/30 no-underline inline-flex items-center gap-1.5 transition-all duration-200;
+        }
+
+        .link-code:hover {
+            @apply bg-primary text-on-primary border-primary shadow-md;
+        }
+
+        .link-code i {
+            font-size: 0.7em;
+        }
     </style>
 </head>
+
 <body class="bg-surface-container min-h-screen pb-10">
 
-    <nav class="bg-surface/90 backdrop-blur-md border-b border-surface-glass-border px-5 py-4 flex justify-between items-center sticky top-0 z-50 shadow-sm">
-        <div class="text-2xl font-black text-primary flex items-center gap-3 font-serif tracking-tight cursor-pointer" onclick="window.history.back()">
+    <nav
+        class="bg-surface/90 backdrop-blur-md border-b border-surface-glass-border px-5 py-4 flex justify-between items-center sticky top-0 z-50 shadow-sm">
+        <div class="text-2xl font-black text-primary flex items-center gap-3 font-serif tracking-tight cursor-pointer"
+            onclick="window.history.back()">
             <i class="fa-solid fa-arrow-left text-on-surface-variant hover:text-primary transition-colors text-xl"></i>
             <i class="fa-solid fa-book-open text-secondary"></i> Kho Tri Thức
         </div>
         <div>
-            <button onclick="window.history.back()" class="bg-surface-variant text-on-surface-variant px-4 py-2 rounded-xl font-bold text-sm hover:bg-surface-variant/80 transition-colors hidden sm:block">
+            <button onclick="window.history.back()"
+                class="bg-surface-variant text-on-surface-variant px-4 py-2 rounded-xl font-bold text-sm hover:bg-surface-variant/80 transition-colors hidden sm:block">
                 Tắt Hướng Dẫn
             </button>
         </div>
     </nav>
 
     <div class="max-w-[800px] mx-auto p-4 sm:p-6 mt-6 prose">
-        
+
         <div class="text-center mb-10">
-            <h1 class="text-4xl sm:text-5xl font-black font-serif tracking-tight text-primary mb-4">Hướng Dẫn & Nguyên Lý Hoạt Động</h1>
+            <h1 class="text-4xl sm:text-5xl font-black font-serif tracking-tight text-primary mb-4">Hướng Dẫn & Nguyên
+                Lý Hoạt Động</h1>
             <p class="text-lg text-on-surface-variant/80 font-medium max-w-2xl mx-auto">
-                Tài liệu này không chỉ hướng dẫn thao tác cơ bản mà còn giải thích chi tiết <strong class="text-secondary">Nguyên lý hoạt động (Under the hood)</strong>, <strong>Kiến trúc hệ thống</strong>, và <strong>Luồng dữ liệu (Data Flow)</strong> của hệ thống Urban Brew (Nohope Coffee).
+                Tài liệu này không chỉ hướng dẫn thao tác cơ bản mà còn giải thích chi tiết <strong
+                    class="text-secondary">Nguyên lý hoạt động (Under the hood)</strong>, <strong>Kiến trúc hệ
+                    thống</strong>, và <strong>Luồng dữ liệu (Data Flow)</strong> của hệ thống Urban Brew (Nohope
+                Coffee).
             </p>
         </div>
 
         <div class="guide-section">
-            <h2 class="mt-0 group"><i class="fa-solid fa-network-wired text-secondary mr-2"></i>1. TỔNG QUAN KIẾN TRÚC HỆ THỐNG</h2>
+            <h2 class="mt-0 group"><i class="fa-solid fa-network-wired text-secondary mr-2"></i>1. TỔNG QUAN KIẾN TRÚC
+                HỆ THỐNG</h2>
             <p>Hệ thống được thiết kế theo mô hình <strong>Client-Server Real-time</strong> hiện đại.</p>
             <ul class="list-disc">
-                <li><strong>Backend (Dữ liệu & Serverless API):</strong> Sử dụng <strong>Supabase</strong> (dựa trên PostgreSQL). Lưu trữ vĩnh viễn hình ảnh qua <em>Supabase Storage</em>, đảm bảo dữ liệu toàn vẹn và bảo mật cao.</li>
-                <li><strong>WebSocket & Real-time:</strong> Sử dụng Supabase Realtime Channel. Các bảng (tables) quan trọng được theo dõi liên tục. Khi một thay đổi xảy ra trên Database, nó được đẩy xuống mọi thiết bị chỉ trong milliseconds mà không cần bấm nút (refresh) tải lại trang.</li>
-                <li><strong>Phân luồng thông tin (Routing):</strong> Xem phần <em>Bản đồ các trang hệ thống</em> bên dưới.</li>
+                <li><strong>Backend (Dữ liệu & Serverless API):</strong> Sử dụng <strong>Supabase</strong> (dựa trên
+                    PostgreSQL). Lưu trữ vĩnh viễn hình ảnh qua <em>Supabase Storage</em>, đảm bảo dữ liệu toàn vẹn và
+                    bảo mật cao.</li>
+                <li><strong>WebSocket & Real-time:</strong> Sử dụng Supabase Realtime Channel. Các bảng (tables) quan
+                    trọng được theo dõi liên tục. Khi một thay đổi xảy ra trên Database, nó được đẩy xuống mọi thiết bị
+                    chỉ trong milliseconds mà không cần bấm nút (refresh) tải lại trang.</li>
+                <li><strong>Phân luồng thông tin (Routing):</strong> Xem phần <em>Bản đồ các trang hệ thống</em> bên
+                    dưới.</li>
             </ul>
         </div>
 
         <div class="guide-section border-t-4 border-t-secondary">
             <h2 class="mt-0"><i class="fa-solid fa-sitemap text-secondary mr-2"></i>BẢN ĐỒ CÁC TRANG HỆ THỐNG</h2>
-            <p>Hệ thống bao gồm nhiều giao diện chuyên biệt dành cho từng vai trò. Dưới đây là tất cả các trang có sẵn:</p>
+            <p>Hệ thống bao gồm nhiều giao diện chuyên biệt dành cho từng vai trò. Dưới đây là tất cả các trang có sẵn:
+            </p>
 
-            <h3><div class="icon-box"><i class="fa-solid fa-users"></i></div> Dành cho Khách hàng</h3>
+            <h3>
+                <div class="icon-box"><i class="fa-solid fa-users"></i></div> Dành cho Khách hàng
+            </h3>
             <table>
                 <thead>
                     <tr>
@@ -82,24 +154,32 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td><a href="/" class="link-code" target="_blank"><i class="fa-solid fa-arrow-up-right-from-square"></i> /</a></td>
-                        <td><strong>Menu khách hàng (Tại quán)</strong> — Xem thực đơn, chọn món, đặt hàng qua QR tại bàn. Tham số <code>?table=X</code> giúp hệ thống biết khách đang ngồi bàn nào.</td>
+                        <td><a href="/" class="link-code" target="_blank"><i
+                                    class="fa-solid fa-arrow-up-right-from-square"></i> /</a></td>
+                        <td><strong>Menu khách hàng (Tại quán)</strong> — Xem thực đơn, chọn món, đặt hàng qua QR tại
+                            bàn. Tham số <code>?table=X</code> giúp hệ thống biết khách đang ngồi bàn nào.</td>
                         <td>Quét mã QR trên bàn</td>
                     </tr>
                     <tr>
-                        <td><a href="/delivery" class="link-code" target="_blank"><i class="fa-solid fa-arrow-up-right-from-square"></i> /delivery</a></td>
-                        <td><strong>Đặt hàng giao tận nơi</strong> — Chọn món → Nhập địa chỉ & chọn vị trí trên bản đồ → Xác nhận & thanh toán. Hệ thống tự tính phí ship theo khoảng cách (Haversine).</td>
+                        <td><a href="/delivery" class="link-code" target="_blank"><i
+                                    class="fa-solid fa-arrow-up-right-from-square"></i> /delivery</a></td>
+                        <td><strong>Đặt hàng giao tận nơi</strong> — Chọn món → Nhập địa chỉ & chọn vị trí trên bản đồ →
+                            Xác nhận & thanh toán. Hệ thống tự tính phí ship theo khoảng cách (Haversine).</td>
                         <td>Chia sẻ link cho khách</td>
                     </tr>
                     <tr>
-                        <td><a href="/tracking" class="link-code" target="_blank"><i class="fa-solid fa-arrow-up-right-from-square"></i> /tracking</a></td>
-                        <td><strong>Theo dõi đơn giao hàng</strong> — Nhập mã tracking 8 ký tự để xem trạng thái đơn + vị trí shipper trên bản đồ real-time.</td>
+                        <td><a href="/tracking" class="link-code" target="_blank"><i
+                                    class="fa-solid fa-arrow-up-right-from-square"></i> /tracking</a></td>
+                        <td><strong>Theo dõi đơn giao hàng</strong> — Nhập mã tracking 8 ký tự để xem trạng thái đơn +
+                            vị trí shipper trên bản đồ real-time.</td>
                         <td>Khách nhận mã sau khi đặt hàng</td>
                     </tr>
                 </tbody>
             </table>
 
-            <h3 class="mt-6"><div class="icon-box"><i class="fa-solid fa-user-tie"></i></div> Dành cho Nhân viên</h3>
+            <h3 class="mt-6">
+                <div class="icon-box"><i class="fa-solid fa-user-tie"></i></div> Dành cho Nhân viên
+            </h3>
             <table>
                 <thead>
                     <tr>
@@ -110,29 +190,39 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td><a href="/kitchen" class="link-code" target="_blank"><i class="fa-solid fa-arrow-up-right-from-square"></i> /kitchen</a></td>
-                        <td><strong>Bếp (Kitchen Display)</strong> — Nhận đơn real-time, chuyển trạng thái (Đang làm → Xong), gộp món, xem đơn giao hàng với badge 🛵.</td>
+                        <td><a href="/kitchen" class="link-code" target="_blank"><i
+                                    class="fa-solid fa-arrow-up-right-from-square"></i> /kitchen</a></td>
+                        <td><strong>Bếp (Kitchen Display)</strong> — Nhận đơn real-time, chuyển trạng thái (Đang làm →
+                            Xong), gộp món, xem đơn giao hàng với badge 🛵.</td>
                         <td>Đăng nhập vai trò Bếp</td>
                     </tr>
                     <tr>
-                        <td><a href="/staff" class="link-code" target="_blank"><i class="fa-solid fa-arrow-up-right-from-square"></i> /staff</a></td>
-                        <td><strong>Nhân viên phục vụ</strong> — Sơ đồ bàn trực quan, xem trạng thái đơn, bưng bê, hỗ trợ thanh toán.</td>
+                        <td><a href="/staff" class="link-code" target="_blank"><i
+                                    class="fa-solid fa-arrow-up-right-from-square"></i> /staff</a></td>
+                        <td><strong>Nhân viên phục vụ</strong> — Sơ đồ bàn trực quan, xem trạng thái đơn, bưng bê, hỗ
+                            trợ thanh toán.</td>
                         <td>Đăng nhập vai trò Staff</td>
                     </tr>
                     <tr>
-                        <td><a href="/driver" class="link-code" target="_blank"><i class="fa-solid fa-arrow-up-right-from-square"></i> /driver</a></td>
-                        <td><strong>Giao diện Shipper</strong> — Đăng nhập bằng mã shipper, nhận đơn giao, bắt đầu giao, GPS tự động cập nhật vị trí liên tục.</td>
+                        <td><a href="/driver" class="link-code" target="_blank"><i
+                                    class="fa-solid fa-arrow-up-right-from-square"></i> /driver</a></td>
+                        <td><strong>Giao diện Shipper</strong> — Đăng nhập bằng mã shipper, nhận đơn giao, bắt đầu giao,
+                            GPS tự động cập nhật vị trí liên tục.</td>
                         <td>Mã shipper (do Admin tạo)</td>
                     </tr>
                     <tr>
-                        <td><a href="/tv" class="link-code" target="_blank"><i class="fa-solid fa-arrow-up-right-from-square"></i> /tv</a></td>
-                        <td><strong>Màn hình TV</strong> — Hiển thị trên TV tại quán, thông báo đơn sẵn sàng phục vụ cho khách.</td>
+                        <td><a href="/tv" class="link-code" target="_blank"><i
+                                    class="fa-solid fa-arrow-up-right-from-square"></i> /tv</a></td>
+                        <td><strong>Màn hình TV</strong> — Hiển thị trên TV tại quán, thông báo đơn sẵn sàng phục vụ cho
+                            khách.</td>
                         <td>Mở trên TV/Tablet tại quán</td>
                     </tr>
                 </tbody>
             </table>
 
-            <h3 class="mt-6"><div class="icon-box"><i class="fa-solid fa-shield-halved"></i></div> Dành cho Quản lý</h3>
+            <h3 class="mt-6">
+                <div class="icon-box"><i class="fa-solid fa-shield-halved"></i></div> Dành cho Quản lý
+            </h3>
             <table>
                 <thead>
                     <tr>
@@ -143,97 +233,189 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td><a href="/admin" class="link-code" target="_blank"><i class="fa-solid fa-arrow-up-right-from-square"></i> /admin</a></td>
-                        <td><strong>Dashboard Quản trị</strong> — Toàn bộ hệ thống quản lý: Dashboard, POS bán hàng, Thực đơn, Tồn kho, Nhập hàng, Khuyến mãi, Đơn hàng, Ca làm việc, <strong>Giao hàng</strong>, Báo cáo, Sổ quỹ, Bàn, Khách hàng, Nhân viên, Nhật ký HĐ, Mã QR, Cài đặt.</td>
+                        <td><a href="/admin" class="link-code" target="_blank"><i
+                                    class="fa-solid fa-arrow-up-right-from-square"></i> /admin</a></td>
+                        <td><strong>Dashboard Quản trị</strong> — Toàn bộ hệ thống quản lý: Dashboard, POS bán hàng,
+                            Thực đơn, Tồn kho, Nhập hàng, Khuyến mãi, Đơn hàng, Ca làm việc, <strong>Giao hàng</strong>,
+                            Báo cáo, Sổ quỹ, Bàn, Khách hàng, Nhân viên, Nhật ký HĐ, Mã QR, Cài đặt.</td>
                         <td>Admin / Manager đăng nhập</td>
                     </tr>
                     <tr>
-                        <td><a href="/login" class="link-code" target="_blank"><i class="fa-solid fa-arrow-up-right-from-square"></i> /login</a></td>
-                        <td><strong>Trang đăng nhập</strong> — Xác thực tài khoản qua Supabase Auth + mã PIN nhân viên.</td>
+                        <td><a href="/login" class="link-code" target="_blank"><i
+                                    class="fa-solid fa-arrow-up-right-from-square"></i> /login</a></td>
+                        <td><strong>Trang đăng nhập</strong> — Xác thực tài khoản qua Supabase Auth + mã PIN nhân viên.
+                        </td>
                         <td>Công khai</td>
                     </tr>
                 </tbody>
             </table>
 
             <div class="bg-blue-50 border border-blue-200 rounded-2xl p-4 mt-6">
-                <p class="mb-0 text-sm"><i class="fa-solid fa-circle-info text-blue-500 mr-2"></i><strong>Lưu ý:</strong> Tất cả URL trên đều sử dụng tên miền chính của quán. Ví dụ: <code>https://tenmien.vercel.app/delivery</code></p>
+                <p class="mb-0 text-sm"><i class="fa-solid fa-circle-info text-blue-500 mr-2"></i><strong>Lưu
+                        ý:</strong> Tất cả URL trên đều sử dụng tên miền chính của quán. Ví dụ:
+                    <code>https://tenmien.vercel.app/delivery</code></p>
             </div>
         </div>
 
         <div class="guide-section">
-            <h2 class="mt-0"><i class="fa-solid fa-gears text-secondary mr-2"></i>2. NGUYÊN LÝ HOẠT ĐỘNG CÁC TÍNH NĂNG CỐT LÕI</h2>
-            
-            <h3><div class="icon-box"><i class="fa-solid fa-diagram-project"></i></div> 2.1 Máy Trạng Thái Của Một Đơn Hàng (Order State Machine)</h3>
-            <p>Mỗi đơn hàng (Order) là một thực thể trải qua vòng đời bảo mật khép kín, ngăn chặn sự mâu thuẫn hệ thống cục bộ:</p>
+            <h2 class="mt-0"><i class="fa-solid fa-gears text-secondary mr-2"></i>2. NGUYÊN LÝ HOẠT ĐỘNG CÁC TÍNH NĂNG
+                CỐT LÕI</h2>
+
+            <h3>
+                <div class="icon-box"><i class="fa-solid fa-diagram-project"></i></div> 2.1 Máy Trạng Thái Của Một Đơn
+                Hàng (Order State Machine)
+            </h3>
+            <p>Mỗi đơn hàng (Order) là một thực thể trải qua vòng đời bảo mật khép kín, ngăn chặn sự mâu thuẫn hệ thống
+                cục bộ:</p>
             <ol class="list-decimal font-medium space-y-3">
-                <li><strong class="text-orange-500">Pending (Chờ xử lý):</strong> Khách gửi yêu cầu từ thiết bị. Đơn được ghi vào Database. Bếp nhận được "Ping" âm thanh khẩn.</li>
-                <li><strong class="text-blue-500">Preparing (Đang chuẩn bị):</strong> Bếp bấm "Bắt đầu làm". <br><span class="text-sm font-normal text-on-surface-variant block mt-1"><strong class="text-error">[QUAN TRỌNG/CỐT LÕI]:</strong> Ngay khoảnh khắc này, Trigger logic nội bộ sẽ truy vấn công thức (recipe) và tự động trừ khối lượng nguyên liệu trong kho dữ liệu tổng. Tồn kho mượt mà, không thể bị thao túng. App khách cập nhật realtime.</span></li>
-                <li><strong class="text-green-500">Ready (Sẵn sàng phục vụ):</strong> Bếp hoàn tất và bấm "Xong". Báo về trạm điều phối (Staff App) để bưng bê.</li>
-                <li><strong class="text-primary">Completed (Hoàn thành / Đã thanh toán):</strong> Thu ngân xác minh nguồn tiền. Khi bấm đóng đơn, Hệ Thống mở khoá Bàn đó về trạng thái Trống. Doanh thu của đơn được đưa vào kho dữ liệu báo cáo.</li>
-                <li><strong class="text-error">Cancelled (Đã Hủy):</strong> Thu ngân hoặc Bếp buộc huỷ lệnh. Hệ thống áp dụng <strong>Quy trình Hoàn kho (Inventory Rollback)</strong> để tự động bồi hoàn dữ liệu tồn kho cho các nguyên liệu của đơn hàng bị huỷ.</li>
+                <li><strong class="text-orange-500">Pending (Chờ xử lý):</strong> Khách gửi yêu cầu từ thiết bị. Đơn
+                    được ghi vào Database. Bếp nhận được "Ping" âm thanh khẩn.</li>
+                <li><strong class="text-blue-500">Preparing (Đang chuẩn bị):</strong> Bếp bấm "Bắt đầu làm". <br><span
+                        class="text-sm font-normal text-on-surface-variant block mt-1"><strong class="text-error">[QUAN
+                            TRỌNG/CỐT LÕI]:</strong> Ngay khoảnh khắc này, Trigger logic nội bộ sẽ truy vấn công thức
+                        (recipe) và tự động trừ khối lượng nguyên liệu trong kho dữ liệu tổng. Tồn kho mượt mà, không
+                        thể bị thao túng. App khách cập nhật realtime.</span></li>
+                <li><strong class="text-green-500">Ready (Sẵn sàng phục vụ):</strong> Bếp hoàn tất và bấm "Xong". Báo về
+                    trạm điều phối (Staff App) để bưng bê.</li>
+                <li><strong class="text-primary">Completed (Hoàn thành / Đã thanh toán):</strong> Thu ngân xác minh
+                    nguồn tiền. Khi bấm đóng đơn, Hệ Thống mở khoá Bàn đó về trạng thái Trống. Doanh thu của đơn được
+                    đưa vào kho dữ liệu báo cáo.</li>
+                <li><strong class="text-error">Cancelled (Đã Hủy):</strong> Thu ngân hoặc Bếp buộc huỷ lệnh. Hệ thống áp
+                    dụng <strong>Quy trình Hoàn kho (Inventory Rollback)</strong> để tự động bồi hoàn dữ liệu tồn kho
+                    cho các nguyên liệu của đơn hàng bị huỷ.</li>
             </ol>
 
-            <h3><div class="icon-box"><i class="fa-solid fa-code-merge"></i></div> 2.2 Xử Lý Đồng Bộ & Nhóm Chỗ Ngồi</h3>
-            <p>Khi khách đang ở Bàn số 5 và muốn gọi thêm (Re-order) món, trình duyệt Web App nhận diện Cờ Bàn (Table Session) vẫn đang kích hoạt. Hệ thống cho phép thêm đơn mới trực tiếp vào bàn đó và báo bếp làm riêng nhưng gộp chung tiền vào cùng một bàn (Session), không làm xuất hiện quá nhiều đơn ảo làm phiền Thu Ngân.</p>
+            <h3>
+                <div class="icon-box"><i class="fa-solid fa-code-merge"></i></div> 2.2 Xử Lý Đồng Bộ & Nhóm Chỗ Ngồi
+            </h3>
+            <p>Khi khách đang ở Bàn số 5 và muốn gọi thêm (Re-order) món, trình duyệt Web App nhận diện Cờ Bàn (Table
+                Session) vẫn đang kích hoạt. Hệ thống cho phép thêm đơn mới trực tiếp vào bàn đó và báo bếp làm riêng
+                nhưng gộp chung tiền vào cùng một bàn (Session), không làm xuất hiện quá nhiều đơn ảo làm phiền Thu
+                Ngân.</p>
 
-            <h3><div class="icon-box"><i class="fa-solid fa-boxes-stacked"></i></div> 2.3 Quản Lý Sản Phẩm Phức Nguyên (Options & Toppings)</h3>
-            <p>Hệ thống hỗ trợ Cấu trúc Vây (Branching): 1 sản phẩm có vô hạn biến thể <code>options</code> (Size L + 30K, Sữa đặc + 5K). Giá bán cuối cùng = Giá Gốc (Base Price) + Giá Biến Thể. Dữ liệu này được mã hóa nguyên khối (JSON) để đảm bảo dù giá menu có thay đổi vào ngày mai thì giá lịch sử của đơn hàng vẫn giữ nguyên.</p>
+            <h3>
+                <div class="icon-box"><i class="fa-solid fa-boxes-stacked"></i></div> 2.3 Quản Lý Sản Phẩm Phức Nguyên
+                (Options & Toppings)
+            </h3>
+            <p>Hệ thống hỗ trợ Cấu trúc Vây (Branching): 1 sản phẩm có vô hạn biến thể <code>options</code> (Size L +
+                30K, Sữa đặc + 5K). Giá bán cuối cùng = Giá Gốc (Base Price) + Giá Biến Thể. Dữ liệu này được mã hóa
+                nguyên khối (JSON) để đảm bảo dù giá menu có thay đổi vào ngày mai thì giá lịch sử của đơn hàng vẫn giữ
+                nguyên.</p>
 
-            <h3><div class="icon-box"><i class="fa-solid fa-warehouse"></i></div> 2.4 Bảo Toàn Kho Thực Tế (Inventory Pipeline)</h3>
+            <h3>
+                <div class="icon-box"><i class="fa-solid fa-warehouse"></i></div> 2.4 Bảo Toàn Kho Thực Tế (Inventory
+                Pipeline)
+            </h3>
             <p>Bức tranh chuỗi cung ứng được lập mô hình dưới dạng <em>Sổ Nhật Ký Kế Toán</em>:</p>
             <ul class="list-disc">
-                <li><strong>Nhập Hàng:</strong> Quản lý vào tab Kho để nhập dữ liệu. `stock_quantity` tăng bằng phép cộng.</li>
-                <li><strong>Xuất / Bán:</strong> Khi bếp bấm "Đang chuẩn bị" hoặc Đơn POS được chốt, hệ thống truy vấn công thức và tự trừ đi đúng định lượng nguyên liệu.</li>
-                <li><strong>Hoàn Huỷ:</strong> Hủy đơn ở bất kỳ màn hình nào, hệ thống cũng quét lại <code>recipe</code> và cẩn thận cộng ngược (Rollback) từng gram định lượng về kho.</li>
+                <li><strong>Nhập Hàng:</strong> Quản lý vào tab Kho để nhập dữ liệu. `stock_quantity` tăng bằng phép
+                    cộng.</li>
+                <li><strong>Xuất / Bán:</strong> Khi bếp bấm "Đang chuẩn bị" hoặc Đơn POS được chốt, hệ thống truy vấn
+                    công thức và tự trừ đi đúng định lượng nguyên liệu.</li>
+                <li><strong>Hoàn Huỷ:</strong> Hủy đơn ở bất kỳ màn hình nào, hệ thống cũng quét lại <code>recipe</code>
+                    và cẩn thận cộng ngược (Rollback) từng gram định lượng về kho.</li>
             </ul>
         </div>
 
         <div class="guide-section border-t-4 border-t-primary">
-            <h2 class="mt-0"><i class="fa-solid fa-users-gear text-secondary mr-2"></i>3. HƯỚNG DẪN DÀNH CHO 3 ĐỐI TƯỢNG VẬN HÀNH</h2>
-            
+            <h2 class="mt-0"><i class="fa-solid fa-users-gear text-secondary mr-2"></i>3. HƯỚNG DẪN DÀNH CHO 3 ĐỐI TƯỢNG
+                VẬN HÀNH</h2>
+
             <h3>👨‍💻 3.1 Khách Hàng (Customer Application)</h3>
             <ul class="list-none space-y-3">
-                <li class="flex items-start gap-3"><i class="fa-solid fa-floppy-disk mt-1 text-primary"></i> <div><strong>Lưu Nhớ Hành Vi (Giỏ hàng Offline):</strong> Giỏ hàng được lưu vào <code>localStorage</code> của máy khách. Tắt app, tắt máy mai quét lại vẫn còn giỏ hàng cũ.</div></li>
-                <li class="flex items-start gap-3"><i class="fa-solid fa-qrcode mt-1 text-primary"></i> <div><strong>Mã Thanh Toán Thông Minh (VietQR):</strong> App sinh QR code tự động đúng số tài khoản, tên ngân hàng và số tiền (Store Settings). Khách quét để chuyển khoản không cần nhập tay.</div></li>
+                <li class="flex items-start gap-3"><i class="fa-solid fa-floppy-disk mt-1 text-primary"></i>
+                    <div><strong>Lưu Nhớ Hành Vi (Giỏ hàng Offline):</strong> Giỏ hàng được lưu vào
+                        <code>localStorage</code> của máy khách. Tắt app, tắt máy mai quét lại vẫn còn giỏ hàng cũ.
+                    </div>
+                </li>
+                <li class="flex items-start gap-3"><i class="fa-solid fa-qrcode mt-1 text-primary"></i>
+                    <div><strong>Mã Thanh Toán Thông Minh (VietQR):</strong> App sinh QR code tự động đúng số tài khoản,
+                        tên ngân hàng và số tiền (Store Settings). Khách quét để chuyển khoản không cần nhập tay.</div>
+                </li>
             </ul>
 
             <h3 class="mt-8">🍳 3.2 Bếp & Pha Chế (Kitchen Display System)</h3>
             <ul class="list-none space-y-3">
-                <li class="flex items-start gap-3"><i class="fa-solid fa-bolt mt-1 text-orange-500"></i> <div><strong>Lắng Nghe Vĩnh Cửu:</strong> Giao diện cắm rễ bằng WebSockets. Không cần Refresh. Đơn mới nhảy sẽ kêu tiếng Ting Ting liên tục.</div></li>
-                <li class="flex items-start gap-3"><i class="fa-solid fa-box-open mt-1 text-orange-500"></i> <div><strong>Kiểm soát Trạng Thái Món:</strong> Bếp có thể tắt món nếu tạm thời hết nguyên liệu. Món đó sẽ hiện mờ đục trên menu của Khách (Sold out) và vô hiệu hóa nút đặt hàng.</div></li>
-                <li class="flex items-start gap-3"><i class="fa-solid fa-layer-group mt-1 text-orange-500"></i> <div><strong>Gộp Món (Group View):</strong> Giúp đầu bếp thấy ngay tổng số Cafe Sữa Đá cần pha cho 5 đơn khác nhau để thao tác làm hàng loạt 1 lần nhanh hơn.</div></li>
+                <li class="flex items-start gap-3"><i class="fa-solid fa-bolt mt-1 text-orange-500"></i>
+                    <div><strong>Lắng Nghe Vĩnh Cửu:</strong> Giao diện cắm rễ bằng WebSockets. Không cần Refresh. Đơn
+                        mới nhảy sẽ kêu tiếng Ting Ting liên tục.</div>
+                </li>
+                <li class="flex items-start gap-3"><i class="fa-solid fa-box-open mt-1 text-orange-500"></i>
+                    <div><strong>Kiểm soát Trạng Thái Món:</strong> Bếp có thể tắt món nếu tạm thời hết nguyên liệu. Món
+                        đó sẽ hiện mờ đục trên menu của Khách (Sold out) và vô hiệu hóa nút đặt hàng.</div>
+                </li>
+                <li class="flex items-start gap-3"><i class="fa-solid fa-layer-group mt-1 text-orange-500"></i>
+                    <div><strong>Gộp Món (Group View):</strong> Giúp đầu bếp thấy ngay tổng số Cafe Sữa Đá cần pha cho 5
+                        đơn khác nhau để thao tác làm hàng loạt 1 lần nhanh hơn.</div>
+                </li>
             </ul>
 
             <h3 class="mt-8">👔 3.3 Quản Lý Trưởng / Cashier (Admin Control)</h3>
             <ul class="list-none space-y-3">
-                <li class="flex items-start gap-3"><i class="fa-solid fa-desktop mt-1 text-blue-500"></i> <div><strong>Bán Hàng Tại Quầy (POS):</strong> Admin ở tab Bán Mới thu ngân trực tiếp, click chọn đồ như app quét QR. Đơn gộp vào hệ thống chung một cách trơn tru.</div></li>
-                <li class="flex items-start gap-3"><i class="fa-solid fa-ticket mt-1 text-blue-500"></i> <div><strong>Khuyến Mãi Mã Động (Discount Core):</strong> Giám đốc tự tạo Mã giảm giá, cài đặt giới hạn và Hạn sử dụng. App khách sẽ check logic hợp lệ.</div></li>
-                <li class="flex items-start gap-3"><i class="fa-solid fa-chart-pie mt-1 text-blue-500"></i> <div><strong>Báo cáo Hợp Giao (Analytics):</strong> Dashboard hiển thị biểu đồ nhiệt, dòng tiền và món bán chạy thời gian thực cho ngày/tuần/tháng không cần reload!</div></li>
-                <li class="flex items-start gap-3"><i class="fa-solid fa-users mt-1 text-blue-500"></i> <div><strong>Chăm sóc Thành Viên (Loyalty):</strong> Khách nhập SĐT để thăng hạng (Đồng, Bạc, Vàng). Quản lý có thể xem toàn bộ hồ sơ khách hạng nặng.</div></li>
+                <li class="flex items-start gap-3"><i class="fa-solid fa-desktop mt-1 text-blue-500"></i>
+                    <div><strong>Bán Hàng Tại Quầy (POS):</strong> Admin ở tab Bán Mới thu ngân trực tiếp, click chọn đồ
+                        như app quét QR. Đơn gộp vào hệ thống chung một cách trơn tru.</div>
+                </li>
+                <li class="flex items-start gap-3"><i class="fa-solid fa-ticket mt-1 text-blue-500"></i>
+                    <div><strong>Khuyến Mãi Mã Động (Discount Core):</strong> Giám đốc tự tạo Mã giảm giá, cài đặt giới
+                        hạn và Hạn sử dụng. App khách sẽ check logic hợp lệ.</div>
+                </li>
+                <li class="flex items-start gap-3"><i class="fa-solid fa-chart-pie mt-1 text-blue-500"></i>
+                    <div><strong>Báo cáo Hợp Giao (Analytics):</strong> Dashboard hiển thị biểu đồ nhiệt, dòng tiền và
+                        món bán chạy thời gian thực cho ngày/tuần/tháng không cần reload!</div>
+                </li>
+                <li class="flex items-start gap-3"><i class="fa-solid fa-users mt-1 text-blue-500"></i>
+                    <div><strong>Chăm sóc Thành Viên (Loyalty):</strong> Khách nhập SĐT để thăng hạng (Đồng, Bạc, Vàng).
+                        Quản lý có thể xem toàn bộ hồ sơ khách hạng nặng.</div>
+                </li>
             </ul>
         </div>
-        
-        <div class="guide-section">
-            <h2 class="mt-0"><i class="fa-solid fa-motorcycle text-secondary mr-2"></i>4. GIAO H&Agrave;NG &amp; GPS TRACKING</h2>
 
-            <h3><div class="icon-box"><i class="fa-solid fa-route"></i></div> 4.1 Lu&#7891;ng ho&#7841;t &#273;&#7897;ng &#273;&#417;n giao h&agrave;ng</h3>
+        <div class="guide-section">
+            <h2 class="mt-0"><i class="fa-solid fa-motorcycle text-secondary mr-2"></i>4. GIAO H&Agrave;NG &amp; GPS
+                TRACKING</h2>
+
+            <h3>
+                <div class="icon-box"><i class="fa-solid fa-route"></i></div> 4.1 Lu&#7891;ng ho&#7841;t &#273;&#7897;ng
+                &#273;&#417;n giao h&agrave;ng
+            </h3>
             <ol class="list-decimal font-medium space-y-3">
-                <li><strong class="text-orange-500">Kh&aacute;ch &#273;&#7863;t h&agrave;ng</strong> tr&ecirc;n <code>/delivery</code> &rarr; Ch&#7885;n m&oacute;n &rarr; Nh&#7853;p &#273;&#7883;a ch&#7881; + ch&#7885;n v&#7883; tr&iacute; tr&ecirc;n b&#7843;n &#273;&#7891; &rarr; H&#7879; th&#7889;ng t&iacute;nh ph&iacute; ship t&#7921; &#273;&#7897;ng &rarr; X&aacute;c nh&#7853;n.</li>
-                <li><strong class="text-blue-500">B&#7871;p nh&#7853;n &#273;&#417;n</strong> qua <code>/kitchen</code> &mdash; Hi&#7875;n th&#7883; badge &#128693; Giao h&agrave;ng k&egrave;m &#273;&#7883;a ch&#7881; + S&#272;T kh&aacute;ch.</li>
-                <li><strong class="text-purple-500">Admin g&aacute;n shipper</strong> trong tab Giao h&agrave;ng c&#7911;a <code>/admin</code> &rarr; Ch&#7885;n shipper online &rarr; G&aacute;n v&agrave;o &#273;&#417;n.</li>
-                <li><strong class="text-indigo-500">Shipper nh&#7853;n &#273;&#417;n</strong> tr&ecirc;n <code>/driver</code> &rarr; &#272;&aacute;ng nh&#7853;p b&#7857;ng m&atilde; &rarr; B&#7845;m &ldquo;B&#7855;t &#273;&#7847;u giao&rdquo; &rarr; GPS t&#7921; c&#7853;p nh&#7853;t m&#7895;i 5 gi&acirc;y.</li>
-                <li><strong class="text-green-500">Kh&aacute;ch theo d&otilde;i</strong> tr&ecirc;n <code>/tracking</code> &rarr; Nh&#7853;p m&atilde; tracking &rarr; Xem v&#7883; tr&iacute; shipper real-time.</li>
+                <li><strong class="text-orange-500">Kh&aacute;ch &#273;&#7863;t h&agrave;ng</strong> tr&ecirc;n
+                    <code>/delivery</code> &rarr; Ch&#7885;n m&oacute;n &rarr; Nh&#7853;p &#273;&#7883;a ch&#7881; +
+                    ch&#7885;n v&#7883; tr&iacute; tr&ecirc;n b&#7843;n &#273;&#7891; &rarr; H&#7879; th&#7889;ng
+                    t&iacute;nh ph&iacute; ship t&#7921; &#273;&#7897;ng &rarr; X&aacute;c nh&#7853;n.</li>
+                <li><strong class="text-blue-500">B&#7871;p nh&#7853;n &#273;&#417;n</strong> qua <code>/kitchen</code>
+                    &mdash; Hi&#7875;n th&#7883; badge &#128693; Giao h&agrave;ng k&egrave;m &#273;&#7883;a ch&#7881; +
+                    S&#272;T kh&aacute;ch.</li>
+                <li><strong class="text-purple-500">Admin g&aacute;n shipper</strong> trong tab Giao h&agrave;ng
+                    c&#7911;a <code>/admin</code> &rarr; Ch&#7885;n shipper online &rarr; G&aacute;n v&agrave;o
+                    &#273;&#417;n.</li>
+                <li><strong class="text-indigo-500">Shipper nh&#7853;n &#273;&#417;n</strong> tr&ecirc;n
+                    <code>/driver</code> &rarr; &#272;&aacute;ng nh&#7853;p b&#7857;ng m&atilde; &rarr; B&#7845;m
+                    &ldquo;B&#7855;t &#273;&#7847;u giao&rdquo; &rarr; GPS t&#7921; c&#7853;p nh&#7853;t m&#7895;i 5
+                    gi&acirc;y.</li>
+                <li><strong class="text-green-500">Kh&aacute;ch theo d&otilde;i</strong> tr&ecirc;n
+                    <code>/tracking</code> &rarr; Nh&#7853;p m&atilde; tracking &rarr; Xem v&#7883; tr&iacute; shipper
+                    real-time.</li>
             </ol>
 
-            <h3><div class="icon-box"><i class="fa-solid fa-calculator"></i></div> 4.2 Ph&iacute; giao h&agrave;ng</h3>
+            <h3>
+                <div class="icon-box"><i class="fa-solid fa-calculator"></i></div> 4.2 Ph&iacute; giao h&agrave;ng
+            </h3>
             <ul class="list-disc">
-                <li><strong>C&ocirc;ng th&#7913;c:</strong> <code>Ph&iacute; ship = Ph&iacute; c&#417; b&#7843;n + (km x Ph&iacute;/km)</code></li>
-                <li><strong>Kho&#7843;ng c&aacute;ch:</strong> Haversine (t&#7885;a &#273;&#7897; qu&aacute;n &rarr; t&#7885;a &#273;&#7897; kh&aacute;ch)</li>
-                <li><strong>B&aacute;n k&iacute;nh:</strong> M&#7863;c &#273;&#7883;nh 3km (admin t&ugrave;y ch&#7881;nh)</li>
-                <li><strong>&#272;&#417;n t&#7889;i thi&#7875;u:</strong> M&#7863;c &#273;&#7883;nh 30.000&#273; (admin t&ugrave;y ch&#7881;nh)</li>
+                <li><strong>C&ocirc;ng th&#7913;c:</strong>
+                    <code>Ph&iacute; ship = Ph&iacute; c&#417; b&#7843;n + (km x Ph&iacute;/km)</code></li>
+                <li><strong>Kho&#7843;ng c&aacute;ch:</strong> Haversine (t&#7885;a &#273;&#7897; qu&aacute;n &rarr;
+                    t&#7885;a &#273;&#7897; kh&aacute;ch)</li>
+                <li><strong>B&aacute;n k&iacute;nh:</strong> M&#7863;c &#273;&#7883;nh 3km (admin t&ugrave;y
+                    ch&#7881;nh)</li>
+                <li><strong>&#272;&#417;n t&#7889;i thi&#7875;u:</strong> M&#7863;c &#273;&#7883;nh 30.000&#273; (admin
+                    t&ugrave;y ch&#7881;nh)</li>
             </ul>
 
-            <h3><div class="icon-box"><i class="fa-solid fa-gear"></i></div> 4.3 C&#7845;u h&igrave;nh Admin</h3>
+            <h3>
+                <div class="icon-box"><i class="fa-solid fa-gear"></i></div> 4.3 C&#7845;u h&igrave;nh Admin
+            </h3>
             <p>V&agrave;o <strong>Admin &rarr; Tab Giao h&agrave;ng &rarr; C&agrave;i &#273;&#7863;t Ship</strong>:</p>
             <ul class="list-disc">
                 <li>B&#7853;t/t&#7855;t giao h&agrave;ng</li>
@@ -244,15 +426,19 @@
             </ul>
 
             <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 mt-4">
-                <p class="mb-0 text-sm"><i class="fa-solid fa-triangle-exclamation text-amber-500 mr-2"></i><strong>Quan tr&#7885;ng:</strong> Admin ph&#7843;i nh&#7853;p Latitude/Longitude trong C&agrave;i &#273;&#7863;t Ship tr&#432;&#7899;c khi b&#7853;t t&iacute;nh n&#259;ng giao h&agrave;ng.</p>
+                <p class="mb-0 text-sm"><i class="fa-solid fa-triangle-exclamation text-amber-500 mr-2"></i><strong>Quan
+                        tr&#7885;ng:</strong> Admin ph&#7843;i nh&#7853;p Latitude/Longitude trong C&agrave;i
+                    &#273;&#7863;t Ship tr&#432;&#7899;c khi b&#7853;t t&iacute;nh n&#259;ng giao h&agrave;ng.</p>
             </div>
         </div>
 
         <div class="text-center text-sm font-bold text-on-surface-variant/50 mt-12 pb-8">
-            Urban Brew (Nohope Coffee) v3.0 &mdash; Delivery &amp; GPS Tracking &mdash; <i class="fa-solid fa-heart text-error/60"></i> Modern JS
+            Urban Brew (Nohope Coffee) v3.0 &mdash; Delivery &amp; GPS Tracking &mdash; <i
+                class="fa-solid fa-heart text-error/60"></i> Modern JS
         </div>
 
     </div>
 
 </body>
+
 </html>

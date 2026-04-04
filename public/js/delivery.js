@@ -35,9 +35,15 @@ async function loadStoreConfig() {
         const { data } = await supabase.from('store_settings').select('*').eq('id', 1).maybeSingle();
         if (data) {
             storeConfig = data;
+            
+            checkStoreHours(data);
+
             if (!data.delivery_enabled) {
                 document.getElementById('delivery-status-badge').textContent = 'Tạm ngừng';
                 document.getElementById('delivery-status-badge').closest('.flex').querySelector('.bg-green-400')?.classList.replace('bg-green-400', 'bg-red-400');
+            } else {
+                document.getElementById('delivery-status-badge').textContent = 'Đang nhận đơn';
+                document.getElementById('delivery-status-badge').closest('.flex').querySelector('.bg-red-400')?.classList.replace('bg-red-400', 'bg-green-400');
             }
             if (data.delivery_base_fee) {
                 document.getElementById('base-fee-display').textContent = formatVND(data.delivery_base_fee);
@@ -47,6 +53,81 @@ async function loadStoreConfig() {
         console.error('Error loading store config:', e);
     }
 }
+
+// --- Store Open Hours ---
+function checkStoreHours(settings) {
+    if (settings.is_open_override === true) { removeClosedOverlay(); return; }
+    if (settings.is_open_override === false) { showClosedOverlay(settings.store_name || 'Quán', settings.open_time, settings.close_time); return; }
+
+    const openTime = settings.open_time || '07:00';
+    const closeTime = settings.close_time || '22:00';
+
+    const now = new Date();
+    const [openH, openM] = openTime.split(':').map(Number);
+    const [closeH, closeM] = closeTime.split(':').map(Number);
+
+    const openMinutes = openH * 60 + openM;
+    const closeMinutes = closeH * 60 + closeM;
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+
+    const isOpen = nowMinutes >= openMinutes && nowMinutes < closeMinutes;
+    if (!isOpen) showClosedOverlay(settings.store_name || 'Quán', openTime, closeTime);
+    else removeClosedOverlay();
+}
+
+function showClosedOverlay(storeName, openTime, closeTime) {
+    let el = document.getElementById('store-closed-overlay');
+    if (!el) {
+        el = document.createElement('div');
+        el.id = 'store-closed-overlay';
+        el.style.cssText = `
+            position:fixed; inset:0; z-index:9999; 
+            background:rgba(0,0,0,0.85); backdrop-filter:blur(6px);
+            display:flex; align-items:center; justify-content:center; flex-direction:column;
+            text-align:center; padding:32px; animation:fadeIn 0.5s ease;
+        `;
+        const style = document.createElement('style');
+        style.textContent = '@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }';
+        document.head.appendChild(style);
+        
+        el.innerHTML = `
+            <div style="max-width:360px;">
+                <div style="font-size:4rem; margin-bottom:16px;">🌙</div>
+                <h2 style="color:#fff;font-size:1.6rem;font-weight:800;margin-bottom:8px;">${storeName}</h2>
+                <p style="color:#aaa;font-size:1rem;margin-bottom:4px;">Quán hiện đang đóng cửa</p>
+                ${openTime ? `<p style="color:#C0A062;font-weight:700;font-size:1.1rem;margin-top:12px;">⏰ Mở cửa lúc ${openTime} – ${closeTime || '?'}</p>` : ''}
+                <p style="color:#666;font-size:0.85rem;margin-top:16px;">Vui lòng quay lại trong giờ phục vụ</p>
+            </div>
+        `;
+        document.body.appendChild(el);
+    }
+}
+
+function removeClosedOverlay() {
+    const el = document.getElementById('store-closed-overlay');
+    if (el) el.remove();
+}
+
+// Realtime Store Config Update
+supabase.channel('delivery-store-config')
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'store_settings' }, payload => {
+        storeConfig = payload.new;
+        checkStoreHours(storeConfig);
+        
+        if (!storeConfig.delivery_enabled) {
+            document.getElementById('delivery-status-badge').textContent = 'Tạm ngừng';
+            document.getElementById('delivery-status-badge').closest('.flex').querySelector('.bg-green-400')?.classList.replace('bg-green-400', 'bg-red-400');
+            renderMenu();
+        } else {
+            document.getElementById('delivery-status-badge').textContent = 'Đang nhận đơn';
+            document.getElementById('delivery-status-badge').closest('.flex').querySelector('.bg-red-400')?.classList.replace('bg-red-400', 'bg-green-400');
+            renderMenu();
+        }
+        if (storeConfig.delivery_base_fee) {
+            document.getElementById('base-fee-display').textContent = formatVND(storeConfig.delivery_base_fee);
+        }
+    })
+    .subscribe();
 
 // --- Load Menu ---
 async function loadMenu() {
@@ -494,6 +575,41 @@ function renderConfirmation() {
 
 // --- Place Order ---
 window.placeDeliveryOrder = async function() {
+    // Re-fetch store config to ensure delivery isn't recently disabled
+    try {
+        const { data } = await supabase.from('store_settings').select('*').eq('id', 1).maybeSingle();
+        if (data) {
+            storeConfig = data;
+        }
+    } catch (e) {}
+
+    let isStoreClosed = false;
+    if (storeConfig) {
+        if (storeConfig.is_open_override === false) {
+            isStoreClosed = true;
+        } else if (storeConfig.is_open_override !== true) {
+            const now = new Date();
+            const openTime = storeConfig.open_time || '07:00';
+            const closeTime = storeConfig.close_time || '22:00';
+            const [openH, openM] = openTime.split(':').map(Number);
+            const [closeH, closeM] = closeTime.split(':').map(Number);
+            const openMinutes = openH * 60 + openM;
+            const closeMinutes = closeH * 60 + closeM;
+            const nowMinutes = now.getHours() * 60 + now.getMinutes();
+            if (nowMinutes < openMinutes || nowMinutes >= closeMinutes) isStoreClosed = true;
+        }
+    }
+    
+    if (!storeConfig || !storeConfig.delivery_enabled) {
+        showDeliveryToast("Quán hiện đang tạm ngừng nhận đơn giao hàng. Vui lòng thử lại sau.", "error");
+        return;
+    }
+
+    if (isStoreClosed) {
+        showDeliveryToast('Xin lỗi, quán hiện đang đóng cửa.', 'error');
+        return;
+    }
+
     if (storeConfig && storeConfig.delivery_enabled === false) {
         showDeliveryToast('Xin lỗi, quán vừa tạm ngừng nhận đơn giao hàng.', 'error');
         return;
@@ -503,6 +619,7 @@ window.placeDeliveryOrder = async function() {
     const originalHTML = btn.innerHTML;
     btn.disabled = true;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang đặt hàng...';
+
     
     try {
         const subtotal = deliveryCart.reduce((s, c) => s + (c.price * c.quantity), 0);
