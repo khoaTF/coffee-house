@@ -181,7 +181,7 @@ function buildDeliveryTabHTML() {
 }
 
 // --- Sub-Tab Switching ---
-window.switchDeliverySubTab = function(tab) {
+window.switchDeliverySubTab = function (tab) {
     document.getElementById('delivery-orders-subtab').style.display = tab === 'orders' ? '' : 'none';
     document.getElementById('delivery-drivers-subtab').style.display = tab === 'drivers' ? '' : 'none';
     document.getElementById('delivery-settings-subtab').style.display = tab === 'settings' ? '' : 'none';
@@ -207,12 +207,12 @@ async function loadDeliveryOrders() {
         deliveryOrders = data || [];
         renderDeliveryOrders();
         updateDeliveryKPIs();
-    } catch(e) {
+    } catch (e) {
         console.error('Error loading delivery orders:', e);
     }
 }
 
-window.filterDeliveryOrders = function(status, btn) {
+window.filterDeliveryOrders = function (status, btn) {
     currentDeliveryFilter = status;
     document.querySelectorAll('#delivery-orders-subtab .history-filter-btn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
@@ -317,7 +317,7 @@ async function loadDeliveryDrivers() {
         if (error) throw error;
         deliveryDrivers = data || [];
         renderDeliveryDrivers();
-    } catch(e) {
+    } catch (e) {
         console.error('Error loading drivers:', e);
     }
 }
@@ -365,7 +365,7 @@ function renderDeliveryDrivers() {
 }
 
 // --- Assign Driver Modal ---
-window.openAssignDriverModal = async function(orderId) {
+window.openAssignDriverModal = async function (orderId) {
     await loadDeliveryDrivers();
     const available = deliveryDrivers.filter(d => d.is_active && d.status !== 'offline');
 
@@ -392,39 +392,39 @@ window.openAssignDriverModal = async function(orderId) {
             await supabase.from('delivery_drivers').update({ status: 'busy' }).eq('id', driverId);
             showAdminToast('Đã gán shipper thành công!', 'success');
             loadDeliveryOrders();
-        } catch(e) {
+        } catch (e) {
             showAdminToast('Lỗi gán shipper: ' + e.message, 'error');
         }
     }
 };
 
 // --- Admin Actions ---
-window.adminUpdateDeliveryStatus = async function(orderId, status) {
+window.adminUpdateDeliveryStatus = async function (orderId, status) {
     try {
         const updates = { delivery_status: status };
         if (status === 'Completed') updates.status = 'Completed';
         await supabase.from('orders').update(updates).eq('id', orderId);
         showAdminToast('Cập nhật trạng thái thành công!', 'success');
         loadDeliveryOrders();
-    } catch(e) {
+    } catch (e) {
         showAdminToast('Lỗi: ' + e.message, 'error');
     }
 };
 
-window.adminCancelDelivery = async function(orderId) {
+window.adminCancelDelivery = async function (orderId) {
     const confirmed = await customConfirm('Bạn có chắc muốn hủy đơn giao hàng này?');
     if (!confirmed) return;
     try {
         await supabase.from('orders').update({ delivery_status: 'Cancelled', status: 'Cancelled' }).eq('id', orderId);
         showAdminToast('Đã hủy đơn giao hàng.', 'warning');
         loadDeliveryOrders();
-    } catch(e) {
+    } catch (e) {
         showAdminToast('Lỗi: ' + e.message, 'error');
     }
 };
 
 // --- Add Driver ---
-window.openDriverModal = async function() {
+window.openDriverModal = async function () {
     const confirmed = await customConfirm(`
         <div class="mb-3">
             <label class="form-label text-slate-500 font-bold text-xs uppercase">Tên Shipper *</label>
@@ -457,30 +457,30 @@ window.openDriverModal = async function() {
             if (error) throw error;
             showAdminToast('Thêm shipper thành công!', 'success');
             loadDeliveryDrivers();
-        } catch(e) {
+        } catch (e) {
             showAdminToast('Lỗi: ' + e.message, 'error');
         }
     }
 };
 
-window.toggleDriverActive = async function(id, active) {
+window.toggleDriverActive = async function (id, active) {
     try {
         await supabase.from('delivery_drivers').update({ is_active: active }).eq('id', id);
         showAdminToast(active ? 'Đã mở khóa shipper.' : 'Đã khóa shipper.', 'success');
         loadDeliveryDrivers();
-    } catch(e) {
+    } catch (e) {
         showAdminToast('Lỗi: ' + e.message, 'error');
     }
 };
 
-window.deleteDriver = async function(id) {
+window.deleteDriver = async function (id) {
     const confirmed = await customConfirm('Xóa shipper này? Hành động không thể hoàn tác.');
     if (!confirmed) return;
     try {
         await supabase.from('delivery_drivers').delete().eq('id', id);
         showAdminToast('Đã xóa shipper.', 'warning');
         loadDeliveryDrivers();
-    } catch(e) {
+    } catch (e) {
         showAdminToast('Lỗi: ' + e.message, 'error');
     }
 };
@@ -504,19 +504,19 @@ async function loadDeliverySettingsForm() {
                 }
             }
         }
-    } catch(e) {
+    } catch (e) {
         console.error('Error loading delivery settings:', e);
     }
 }
 
-window.autoDetectStoreLocation = function() {
+window.autoDetectStoreLocation = function () {
     if (!navigator.geolocation) {
         showAdminToast('Trình duyệt không hỗ trợ định vị.', 'error');
         return;
     }
     const btn = document.querySelector('button[onclick="autoDetectStoreLocation()"]');
     if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Đang tìm...';
-    
+
     navigator.geolocation.getCurrentPosition((pos) => {
         document.getElementById('ds-store-coords').value = `${pos.coords.latitude}, ${pos.coords.longitude}`;
         if (btn) btn.innerHTML = '<i class="fa-solid fa-crosshairs me-1"></i> Tự định vị';
@@ -526,10 +526,14 @@ window.autoDetectStoreLocation = function() {
         let msg = 'Không thể lấy vị trí.';
         if (err.code === 1) msg = 'Vui lòng cấp quyền vị trí cho trình duyệt.';
         showAdminToast(msg, 'error');
+    }, {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
     });
 };
 
-window.saveDeliverySettings = async function() {
+window.saveDeliverySettings = async function () {
     try {
         let lat = null, lng = null;
         const coordsStr = document.getElementById('ds-store-coords').value;
@@ -554,7 +558,7 @@ window.saveDeliverySettings = async function() {
 
         showAdminToast('Đã lưu cài đặt giao hàng!', 'success');
         logAudit('delivery_settings_update', update);
-    } catch(e) {
+    } catch (e) {
         showAdminToast('Lỗi lưu cài đặt: ' + e.message, 'error');
     }
 };
@@ -598,7 +602,7 @@ function setupDeliveryRealtime() {
 // --- Helpers ---
 function escapeH(str) {
     if (!str) return '';
-    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 function formatVNDAdmin(amount) {

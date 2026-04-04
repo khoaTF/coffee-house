@@ -632,7 +632,9 @@ window.saveStoreSettings = async function(type) {
             wifi_pass: document.getElementById('setting-wifi-pass').value,
             table_count: parseInt(document.getElementById('setting-table-count')?.value || '15') || 15,
             open_time: document.getElementById('setting-open-time')?.value || '07:00',
-            close_time: document.getElementById('setting-close-time')?.value || '22:00'
+            close_time: document.getElementById('setting-close-time')?.value || '22:00',
+            latitude: document.getElementById('setting-latitude')?.value ? parseFloat(document.getElementById('setting-latitude').value) : null,
+            longitude: document.getElementById('setting-longitude')?.value ? parseFloat(document.getElementById('setting-longitude').value) : null
         };
         const overrideEl = document.getElementById('setting-open-override');
         if (overrideEl) {
@@ -688,6 +690,8 @@ window.loadStoreSettings = async function() {
     if (document.getElementById('setting-table-count')) document.getElementById('setting-table-count').value = settings.table_count || 15;
     if (document.getElementById('setting-open-time')) document.getElementById('setting-open-time').value = settings.open_time || '07:00';
     if (document.getElementById('setting-close-time')) document.getElementById('setting-close-time').value = settings.close_time || '22:00';
+    if (document.getElementById('setting-latitude')) document.getElementById('setting-latitude').value = settings.latitude || '';
+    if (document.getElementById('setting-longitude')) document.getElementById('setting-longitude').value = settings.longitude || '';
     if (document.getElementById('setting-open-override')) {
         const ov = settings.is_open_override;
         document.getElementById('setting-open-override').value = ov === true ? 'open' : ov === false ? 'closed' : 'auto';
