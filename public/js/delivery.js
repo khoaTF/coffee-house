@@ -70,7 +70,13 @@ function checkStoreHours(settings) {
     const closeMinutes = closeH * 60 + closeM;
     const nowMinutes = now.getHours() * 60 + now.getMinutes();
 
-    const isOpen = nowMinutes >= openMinutes && nowMinutes < closeMinutes;
+    let isOpen = false;
+    if (closeMinutes < openMinutes) {
+        isOpen = nowMinutes >= openMinutes || nowMinutes < closeMinutes;
+    } else {
+        isOpen = nowMinutes >= openMinutes && nowMinutes < closeMinutes;
+    }
+    
     if (!isOpen) showClosedOverlay(settings.store_name || 'Quán', openTime, closeTime);
     else removeClosedOverlay();
 }
@@ -596,7 +602,14 @@ window.placeDeliveryOrder = async function() {
             const openMinutes = openH * 60 + openM;
             const closeMinutes = closeH * 60 + closeM;
             const nowMinutes = now.getHours() * 60 + now.getMinutes();
-            if (nowMinutes < openMinutes || nowMinutes >= closeMinutes) isStoreClosed = true;
+            
+            let isOpen = false;
+            if (closeMinutes < openMinutes) {
+                isOpen = nowMinutes >= openMinutes || nowMinutes < closeMinutes;
+            } else {
+                isOpen = nowMinutes >= openMinutes && nowMinutes < closeMinutes;
+            }
+            if (!isOpen) isStoreClosed = true;
         }
     }
     
