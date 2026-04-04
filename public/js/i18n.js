@@ -33,6 +33,9 @@ const translations = {
         btn_confirm: "Có, xác nhận",
         payment_done: "Tôi đã chuyển khoản xong",
         qr_transfer_memo: "Nội dung CK bắt buộc:",
+        add_to_cart: "Thêm vào giỏ",
+        options_label: "Tùy chọn",
+        your_order: "Đơn hàng của bạn",
         // Gacha
         gacha_title: "🎰 Túi Mù",
         gacha_subtitle: "Thanh toán trước, mở túi sau! Lời hay lỗ — hên xui!",
@@ -93,6 +96,9 @@ const translations = {
         btn_confirm: "Yes, confirm",
         payment_done: "I have completed the transfer",
         qr_transfer_memo: "Mandatory Transfer Memo:",
+        add_to_cart: "Add to Cart",
+        options_label: "Options",
+        your_order: "Your Order",
         // Gacha
         gacha_title: "🎰 Mystery Box",
         gacha_subtitle: "Pay first, reveal after! Win or lose — it's a gamble!",
@@ -123,78 +129,113 @@ const translations = {
 
 let currentLang = localStorage.getItem('lang') || 'vi';
 
+/**
+ * Exposed globally so customer.js can call t() for dynamic text.
+ * Usage: window.t('add_to_cart') → "Thêm vào giỏ" or "Add to Cart"
+ */
+window.t = function(key) {
+    return (translations[currentLang] && translations[currentLang][key]) || key;
+};
+
 window.toggleLanguage = function() {
     currentLang = currentLang === 'vi' ? 'en' : 'vi';
     localStorage.setItem('lang', currentLang);
     applyLanguage();
-}
+};
 
 function applyLanguage() {
     const t = translations[currentLang];
-    
-    // Update Toggle Button text
-    const langBtn = document.getElementById('lang-toggle');
-    if (langBtn) langBtn.textContent = currentLang === 'vi' ? 'EN' : 'VI';
-    if (document.documentElement) document.documentElement.lang = currentLang;
 
-    // We replace strings systematically
+    // --- 1. Update <html lang=""> ---
+    document.documentElement.lang = currentLang;
+
+    // --- 2. Update lang toggle button (preserve icon) ---
+    const langBtn = document.getElementById('lang-toggle');
+    if (langBtn) {
+        // Keep the material icon span, only swap the text span
+        const textSpan = langBtn.querySelector('span:not(.material-symbols-outlined)');
+        if (textSpan) {
+            textSpan.textContent = currentLang === 'vi' ? 'EN / VI' : 'VI / EN';
+        } else {
+            langBtn.textContent = currentLang === 'vi' ? 'EN' : 'VI';
+        }
+    }
+
+    // --- 3. Static element map (selectors → update type) ---
     const map = {
         '[data-i18n="app_title"]': { html: `<i class="fa-solid fa-mug-hot"></i> ${t.app_title}` },
         '[data-i18n="my_orders"]': { html: t.my_orders },
-        '#menu-search': { placeholder: t.search_placeholder },
+        // Search inputs (both desktop and mobile)
+        '#menu-search':         { placeholder: t.search_placeholder },
+        '#menu-search-desktop': { placeholder: t.search_placeholder },
+        '#menu-search-mobile':  { placeholder: t.search_placeholder },
+        // Banner
         '.banner-title': { html: `<i class="fa-solid fa-clock pulse-icon text-primary me-2"></i> ${t.order_status}` },
-        [`button[onclick="requestStaffService('staff')"]`]: { html: `<i class="fa-solid fa-bell text-primary"></i> ${t.call_staff}` },
-        [`button[onclick="requestStaffService('water')"]`]: { html: `<i class="fa-solid fa-glass-water text-primary"></i> ${t.water}` },
-        [`button[onclick="requestStaffService('checkout')"]`]: { html: `<i class="fa-solid fa-money-bill text-danger"></i> ${t.checkout}` },
-        'button[data-category="All"]': { text: t.filter_all },
-        'button[data-category="Coffee"]': { text: t.filter_coffee },
-        'button[data-category="Tea"]': { text: t.filter_tea },
-        'button[data-category="Food"]': { text: t.filter_food },
-        '#view-cart-btn': { text: t.view_cart },
-        '#loader': { text: t.loading_menu },
-        '.empty-cart': { text: t.cart_empty },
-        'label[for="order-note"]': { text: t.cart_note },
-        '#payment-modal h2': { text: t.modal_checkout_title },
-        '#order-history-modal h2': { text: t.modal_history_title },
-        '#options-modal h2': { text: t.options_title },
-        '#checkout-cash-btn': { html: `<i class="fa-solid fa-money-bill-wave"></i> ${t.btn_cash}` },
+        // Staff service buttons — match by onclick attribute
+        [`button[onclick*="requestStaffService('staff')"]`]:    { html: `<i class="fa-solid fa-bell text-primary"></i> ${t.call_staff}` },
+        [`button[onclick*="requestStaffService('water')"]`]:    { html: `<i class="fa-solid fa-glass-water text-primary"></i> ${t.water}` },
+        [`button[onclick*="requestStaffService('checkout')"]`]: { html: `<i class="fa-solid fa-money-bill text-danger"></i> ${t.checkout}` },
+        // Cart/checkout
+        '#checkout-cash-btn':     { html: `<i class="fa-solid fa-money-bill-wave"></i> ${t.btn_cash}` },
         '#checkout-transfer-btn': { html: `<i class="fa-solid fa-qrcode"></i> ${t.btn_transfer}` },
-        '#confirm-payment-btn': { html: `<i class="fa-solid fa-check-circle"></i> ${t.payment_done}` },
-        '#confirm-options-btn': { text: t.confirm_options },
-        '#confirmModalTitle': { html: `<i class="fa-solid fa-triangle-exclamation text-accent me-2"></i>${t.modal_confirm_title}` },
+        '#confirm-payment-btn':   { html: `<i class="fa-solid fa-check-circle"></i> ${t.payment_done}` },
+        '#confirm-options-btn':   { text: t.confirm_options },
+        // Modal titles
+        '#payment-modal h2':        { text: t.modal_checkout_title },
+        '#order-history-modal h2':  { text: t.modal_history_title },
+        '#options-modal-title':     { text: t.options_title },
+        '#options-modal h2':        { text: t.options_title },
+        // Confirm modal
+        '#confirmModalTitle':  { html: `<i class="fa-solid fa-triangle-exclamation text-accent me-2"></i>${t.modal_confirm_title}` },
         '#confirmModalCancel': { text: t.btn_cancel },
-        '#confirmModalOk': { text: t.btn_confirm }
+        '#confirmModalOk':     { text: t.btn_confirm },
+        // Misc
+        'label[for="order-note"]': { text: t.cart_note },
+        '.empty-cart':             { text: t.cart_empty },
     };
-    
+
     for (const selector in map) {
         document.querySelectorAll(selector).forEach(el => {
-            if (map[selector].html) el.innerHTML = map[selector].html;
-            else if (map[selector].text) el.textContent = map[selector].text;
-            else if (map[selector].placeholder) el.placeholder = map[selector].placeholder;
+            const cfg = map[selector];
+            if (cfg.html !== undefined)         el.innerHTML = cfg.html;
+            else if (cfg.text !== undefined)    el.textContent = cfg.text;
+            else if (cfg.placeholder !== undefined) el.placeholder = cfg.placeholder;
         });
     }
-    
-    // Custom fine-grained replacements
+
+    // --- 4. Fine-grained replacements that need extra care ---
+
+    // History empty state
     const historyEmpty = document.querySelector('#history-items-container .empty-cart');
     if (historyEmpty) historyEmpty.textContent = t.history_empty;
 
+    // Payment modal QR prompt
     const qrScanPrompt = document.querySelector('#payment-modal .cart-modal-body p');
     if (qrScanPrompt) qrScanPrompt.innerHTML = t.qr_scan_prompt;
 
-    const qrMemo = document.querySelector('#payment-modal .cart-modal-body .mb-2 span.text-muted');
-    if (qrMemo) qrMemo.textContent = t.qr_transfer_memo;
+    // Cart total label
+    const cartTotalLabel = document.querySelector('.cart-modal-footer .flex-between.mb-2 span:first-child, .cart-modal-footer span.font-bold.text-lg');
+    if (cartTotalLabel && !cartTotalLabel.id) cartTotalLabel.textContent = t.cart_total;
 
-    const cartTotalLabel = document.querySelector('.cart-modal-footer .flex-between.mb-2 span:first-child');
-    if (cartTotalLabel) cartTotalLabel.textContent = t.cart_total;
-    
-    const yourOrderLabel = document.querySelector('#cart-modal h2');
-    if (yourOrderLabel && !yourOrderLabel.id) yourOrderLabel.textContent = t.cart_empty === 'Cart is empty.' ? 'Your Order' : 'Đơn hàng của bạn';
+    // Cart modal title
+    const cartModalTitle = document.querySelector('#cart-modal h2');
+    if (cartModalTitle) cartModalTitle.textContent = t.your_order;
 
-    // Re-render menu to update inner HTML built texts (like add to cart buttons)
-    if (typeof renderMenu === 'function' && document.querySelector('.pill.active')) {
-        renderMenu(document.querySelector('.pill.active').dataset.category);
+    // --- 5. Re-render menu to update dynamically-built card text ---
+    // FIX: selector was '.pill.active' — correct class is 'category-pill'
+    if (typeof renderMenu === 'function') {
+        const activeCategory = window.getActiveCategory ? window.getActiveCategory() : 'All';
+        renderMenu(activeCategory);
     }
+
+    // --- 6. Dispatch custom event so other modules can react ---
+    document.dispatchEvent(new CustomEvent('langchange', { detail: { lang: currentLang, t } }));
 }
+
+/** Utility: get the current translation object (for use in other JS files) */
+window.getCurrentTranslations = function() {
+    return translations[currentLang];
+};
 
 document.addEventListener('DOMContentLoaded', () => {
     applyLanguage();
