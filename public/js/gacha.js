@@ -177,7 +177,7 @@ function renderCaseOpening(allNames, result, onComplete) {
     reelItems.forEach((item, index) => {
         const div = document.createElement('div');
         const rarity = getRarityClass(item.price);
-        div.className = `gacha-reel-item ${rarity}${item.isWinner ? ' rarity-winner' : ''}`;
+        div.className = `gacha-reel-item ${rarity}`;
         
         const emoji = getItemEmoji(item.name);
         const esc = window.escapeHTML ? window.escapeHTML(item.name) : item.name;
