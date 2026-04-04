@@ -42,9 +42,9 @@ async function fetchActiveOrders() {
 
         if (error) throw error;
 
-        // Map ids for compatibility and hide delivery orders that are already Ready
+        // Map ids for compatibility and hide delivery orders that are already picked up
         orders = data.map(o => ({ ...o, _id: o.id, createdAt: o.created_at, tableNumber: o.table_number, orderNote: o.order_note, orderType: o.order_type || 'dine_in' }))
-                     .filter(o => !(o.status === 'Ready' && (o.orderType === 'delivery' || o.order_type === 'delivery')));
+                     .filter(o => !['Delivering', 'Completed'].includes(o.delivery_status));
         loader.style.display = 'none';
         renderOrders();
     } catch (error) {
@@ -555,9 +555,9 @@ function setupRealtimeSubscription() {
             const updatedOrder = { ...payload.new, _id: payload.new.id, createdAt: payload.new.created_at, tableNumber: payload.new.table_number, orderNote: payload.new.order_note, orderType: payload.new.order_type };
             const orderIndex = orders.findIndex(o => o._id === updatedOrder._id);
 
-            const isDeliveryReady = updatedOrder.status === 'Ready' && (updatedOrder.orderType === 'delivery');
+            const isDeliveryPickedUp = ['Delivering', 'Completed'].includes(updatedOrder.delivery_status || updatedOrder.deliveryStatus);
 
-            if (updatedOrder.status === 'Completed' || updatedOrder.status === 'Cancelled' || isDeliveryReady) {
+            if (!['Pending', 'Preparing', 'Ready'].includes(updatedOrder.status) || isDeliveryPickedUp) {
                 if (orderIndex > -1) {
                     orders.splice(orderIndex, 1);
                     renderOrders();
@@ -600,7 +600,8 @@ function setupRealtimeSubscription() {
                     }
                 } else {
                     // Only add if it's one of the statuses we care about
-                    if (['Pending', 'Preparing', 'Ready'].includes(updatedOrder.status)) {
+                    const isDeliveryPickedUp = ['Delivering', 'Completed'].includes(updatedOrder.delivery_status || updatedOrder.deliveryStatus);
+                    if (['Pending', 'Preparing', 'Ready'].includes(updatedOrder.status) && !isDeliveryPickedUp) {
                         orders.push(updatedOrder);
                         orders.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
                         renderOrders();

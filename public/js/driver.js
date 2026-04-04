@@ -385,16 +385,12 @@ window.focusOrderOnMap = function (lat, lng) {
     }
 };
 
-// --- Actions ---
 window.claimOrder = async function(orderId) {
     try {
-        const { error } = await supabase
-            .from('orders')
-            .update({ 
-                assigned_driver_id: driverData.id
-            })
-            .eq('id', orderId)
-            .is('assigned_driver_id', null);
+        const { error } = await supabase.rpc('driver_claim_order', {
+            p_order_id: orderId,
+            p_driver_id: driverData.id
+        });
 
         if (error) throw error;
         
@@ -407,10 +403,14 @@ window.claimOrder = async function(orderId) {
 
 window.startDelivery = async function (orderId) {
     try {
-        await supabase
-            .from('orders')
-            .update({ delivery_status: 'Delivering' })
-            .eq('id', orderId);
+        const { error } = await supabase.rpc('driver_update_status', {
+            p_order_id: orderId,
+            p_driver_id: driverData.id,
+            p_delivery_status: 'Delivering',
+            p_status: 'Ready'
+        });
+        
+        if (error) throw error;
 
         // Refresh
         await loadAssignedOrders();
@@ -423,13 +423,14 @@ window.completeDelivery = async function (orderId) {
     if (!confirm('Xác nhận đã giao thành công?')) return;
 
     try {
-        await supabase
-            .from('orders')
-            .update({
-                delivery_status: 'Completed',
-                status: 'Completed'
-            })
-            .eq('id', orderId);
+        const { error } = await supabase.rpc('driver_update_status', {
+            p_order_id: orderId,
+            p_driver_id: driverData.id,
+            p_delivery_status: 'Completed',
+            p_status: 'Completed'
+        });
+        
+        if (error) throw error;
 
         // Refresh
         await loadAssignedOrders();
