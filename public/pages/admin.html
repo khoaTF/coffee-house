@@ -107,6 +107,10 @@
                 <button class="nav-link bg-transparent border-0 w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 text-slate-500 hover:bg-slate-100 hover:text-slate-800" onclick="switchTab('shifts'); closeSidebarMobile()" id="tab-shifts">
                     <i class="fa-solid fa-business-time w-5 text-center"></i> Ca làm việc
                 </button>
+                <button class="nav-link bg-transparent border-0 w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 text-slate-500 hover:bg-slate-100 hover:text-slate-800" onclick="switchTab('delivery'); closeSidebarMobile()" id="tab-delivery">
+                    <span class="flex items-center gap-3"><i class="fa-solid fa-motorcycle w-5 text-center"></i> Giao hàng</span>
+                    <span id="delivery-pending-badge" class="hidden text-xs font-bold bg-orange-500 text-white rounded-full px-2 py-0.5 min-w-[20px] text-center">0</span>
+                </button>
                 <p class="px-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 mt-6">Cửa hàng</p>
                 <button class="nav-link bg-transparent border-0 w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 text-slate-500 hover:bg-slate-100 hover:text-slate-800" onclick="switchTab('analytics'); closeSidebarMobile()" id="tab-analytics">
                     <i class="fa-solid fa-chart-pie w-5 text-center"></i> Báo cáo
@@ -561,6 +565,14 @@
                     <div id="shifts-tab-content">
                         <!-- Populated by admin-shifts.js initShiftsModule() -->
                         <div class="text-center py-10 text-slate-500"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tải dữ liệu ca...</div>
+                    </div>
+                </section>
+
+                <!-- Delivery Management Section -->
+                <section id="section-delivery" class="content-section">
+                    <div id="delivery-tab-content">
+                        <!-- Populated by admin-delivery.js initDeliveryModule() -->
+                        <div class="text-center py-10 text-slate-500"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tải dữ liệu giao hàng...</div>
                     </div>
                 </section>
 
@@ -1724,6 +1736,7 @@
     <script src="/js/admin-shifts.js?v=1.1"></script>
     <script src="/js/admin-pos.js?v=1.1"></script>
     <script src="/js/admin-ads.js?v=1.0"></script>
+    <script src="/js/admin-delivery.js?v=1.0"></script>
     <!-- Shift Action Modal -->
     <div class="modal fade" id="shiftActionModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog modal-dialog-centered">

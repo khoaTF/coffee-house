@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nohope Coffee - Shipper</title>
+    <meta name="description" content="Giao diện shipper Nohope Coffee">
+    
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="css/index.css">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #1B1C1C; color: white; min-height: 100vh; }
+        h1, h2, h3 { font-family: 'Plus Jakarta Sans', sans-serif; }
+        
+        #driver-map { height: 45vh; min-height: 260px; }
+        
+        .driver-sheet {
+            background: #1B1C1C;
+            border-radius: 24px 24px 0 0;
+            margin-top: -24px;
+            position: relative;
+            z-index: 10;
+            padding: 20px;
+            min-height: 55vh;
+        }
+        
+        .status-toggle {
+            display: flex;
+            background: #2A2B2B;
+            border-radius: 12px;
+            padding: 4px;
+        }
+        .status-toggle button {
+            flex: 1;
+            padding: 10px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 13px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #999;
+            background: transparent;
+        }
+        .status-toggle button.active {
+            color: white;
+        }
+        .status-toggle button.online.active {
+            background: linear-gradient(135deg, #22C55E, #16A34A);
+            box-shadow: 0 4px 12px rgba(34,197,94,0.3);
+        }
+        .status-toggle button.offline.active {
+            background: #EF4444;
+            box-shadow: 0 4px 12px rgba(239,68,68,0.3);
+        }
+        
+        .order-card {
+            background: #2A2B2B;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border-left: 4px solid #FF7A00;
+            transition: transform 0.2s;
+        }
+        .order-card:active { transform: scale(0.98); }
+        
+        .action-btn {
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .action-btn:active { transform: scale(0.95); }
+        .action-btn.primary {
+            background: linear-gradient(135deg, #FF7A00, #FF9A40);
+            color: white;
+            box-shadow: 0 4px 12px rgba(255,122,0,0.3);
+        }
+        .action-btn.success {
+            background: linear-gradient(135deg, #22C55E, #16A34A);
+            color: white;
+            box-shadow: 0 4px 12px rgba(34,197,94,0.3);
+        }
+        .action-btn.danger {
+            background: #EF4444;
+            color: white;
+        }
+        
+        .login-screen {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+        .login-card {
+            background: #2A2B2B;
+            border-radius: 24px;
+            padding: 32px 24px;
+            width: 100%;
+            max-width: 380px;
+        }
+        
+        .stat-chip {
+            background: #2A2B2B;
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+        }
+        .stat-chip .value {
+            font-size: 24px;
+            font-weight: 800;
+            color: #FF7A00;
+        }
+        .stat-chip .label {
+            font-size: 11px;
+            color: #999;
+            margin-top: 2px;
+        }
+    </style>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js?v=1.2"></script>
+    <link rel="icon" type="image/png" href="/images/bunny_logo.png">
+</head>
+<body>
+
+<!-- Login Screen -->
+<div id="driver-login" class="login-screen">
+    <div class="login-card">
+        <div class="text-center mb-6">
+            <div class="w-16 h-16 mx-auto mb-4 bg-[#FF7A00]/20 rounded-full flex items-center justify-center">
+                <i class="fa-solid fa-motorcycle text-[#FF7A00] text-2xl"></i>
+            </div>
+            <h1 class="text-2xl font-black">Shipper Login</h1>
+            <p class="text-sm text-gray-500 mt-1">Đăng nhập bằng mã shipper</p>
+        </div>
+        <input type="text" id="driver-code" placeholder="Nhập mã shipper" class="w-full bg-[#1B1C1C] rounded-xl px-4 py-3 text-center font-bold text-lg uppercase tracking-widest mb-3 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 text-white">
+        <button onclick="driverLogin()" class="action-btn primary w-full">
+            <i class="fa-solid fa-right-to-bracket"></i> Đăng nhập
+        </button>
+        <p id="login-error" class="text-red-500 text-sm text-center mt-3 hidden"></p>
+    </div>
+</div>
+
+<!-- Main Driver UI -->
+<div id="driver-main" class="hidden">
+    <!-- Map -->
+    <div id="driver-map"></div>
+    
+    <!-- Bottom Sheet -->
+    <div class="driver-sheet">
+        <div class="flex justify-center mb-4">
+            <div class="w-12 h-1.5 rounded-full bg-gray-700"></div>
+        </div>
+        
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h2 class="text-lg font-bold" id="driver-greeting">Xin chào!</h2>
+                <p class="text-xs text-gray-500" id="driver-stats-text">0 đơn hôm nay</p>
+            </div>
+            <button onclick="driverLogout()" class="text-red-400 text-sm font-semibold">
+                <i class="fa-solid fa-right-from-bracket mr-1"></i> Đăng xuất
+            </button>
+        </div>
+        
+        <!-- Stats -->
+        <div class="grid grid-cols-3 gap-2 mb-4">
+            <div class="stat-chip">
+                <div class="value" id="stat-today">0</div>
+                <div class="label">Hôm nay</div>
+            </div>
+            <div class="stat-chip">
+                <div class="value" id="stat-earnings">0đ</div>
+                <div class="label">Thu nhập</div>
+            </div>
+            <div class="stat-chip">
+                <div class="value" id="stat-rating">5.0</div>
+                <div class="label">Đánh giá</div>
+            </div>
+        </div>
+        
+        <!-- Online/Offline Toggle -->
+        <div class="status-toggle mb-4">
+            <button class="online active" id="btn-online" onclick="setDriverStatus(true)">
+                <i class="fa-solid fa-signal mr-1"></i> Online
+            </button>
+            <button class="offline" id="btn-offline" onclick="setDriverStatus(false)">
+                <i class="fa-solid fa-moon mr-1"></i> Offline
+            </button>
+        </div>
+        
+        <!-- Assigned Orders -->
+        <h3 class="font-bold text-sm text-gray-400 mb-3"><i class="fa-solid fa-list-check mr-1"></i> Đơn cần giao</h3>
+        <div id="driver-orders">
+            <p class="text-center text-gray-600 text-sm py-6">Chưa có đơn nào.</p>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/driver.js"></script>
+</body>
+</html>

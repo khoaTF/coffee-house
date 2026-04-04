@@ -1,0 +1,349 @@
+// =============================================
+// DRIVER.JS — Shipper Mobile Interface
+// =============================================
+
+let driverData = null;
+let driverMap = null;
+let locationWatchId = null;
+let ordersChannel = null;
+let currentOrders = [];
+
+// --- Init ---
+document.addEventListener('DOMContentLoaded', () => {
+    const savedId = localStorage.getItem('nohope_driver_id');
+    if (savedId) {
+        loginWithId(savedId);
+    }
+});
+
+// --- Login ---
+window.driverLogin = async function() {
+    const code = document.getElementById('driver-code').value.trim().toUpperCase();
+    if (!code) return;
+    
+    const errEl = document.getElementById('login-error');
+    errEl.classList.add('hidden');
+    
+    try {
+        const { data, error } = await supabase
+            .from('delivery_drivers')
+            .select('*')
+            .eq('driver_code', code)
+            .eq('is_active', true)
+            .maybeSingle();
+        
+        if (error) throw error;
+        if (!data) {
+            errEl.textContent = 'Mã shipper không hợp lệ hoặc tài khoản bị khóa.';
+            errEl.classList.remove('hidden');
+            return;
+        }
+        
+        localStorage.setItem('nohope_driver_id', data.id);
+        driverData = data;
+        showDriverUI();
+        
+    } catch(e) {
+        errEl.textContent = 'Lỗi đăng nhập. Vui lòng thử lại.';
+        errEl.classList.remove('hidden');
+    }
+};
+
+async function loginWithId(id) {
+    try {
+        const { data, error } = await supabase
+            .from('delivery_drivers')
+            .select('*')
+            .eq('id', id)
+            .eq('is_active', true)
+            .maybeSingle();
+        
+        if (!data) {
+            localStorage.removeItem('nohope_driver_id');
+            return;
+        }
+        
+        driverData = data;
+        showDriverUI();
+    } catch(e) {
+        localStorage.removeItem('nohope_driver_id');
+    }
+}
+
+window.driverLogout = function() {
+    if (locationWatchId) navigator.geolocation.clearWatch(locationWatchId);
+    if (ordersChannel) supabase.removeChannel(ordersChannel);
+    localStorage.removeItem('nohope_driver_id');
+    driverData = null;
+    document.getElementById('driver-main').classList.add('hidden');
+    document.getElementById('driver-login').style.display = 'flex';
+};
+
+// --- Main UI ---
+function showDriverUI() {
+    document.getElementById('driver-login').style.display = 'none';
+    document.getElementById('driver-main').classList.remove('hidden');
+    
+    document.getElementById('driver-greeting').textContent = `Xin chào, ${driverData.name || 'Shipper'}!`;
+    
+    initDriverMap();
+    startLocationTracking();
+    loadAssignedOrders();
+    setupOrdersRealtime();
+    loadTodayStats();
+}
+
+// --- Map ---
+function initDriverMap() {
+    const lat = driverData.current_lat || 10.7769;
+    const lng = driverData.current_lng || 106.7009;
+    
+    driverMap = L.map('driver-map', { zoomControl: false }).setView([lat, lng], 15);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OSM',
+        maxZoom: 19
+    }).addTo(driverMap);
+}
+
+// --- GPS Tracking ---
+function startLocationTracking() {
+    if (!navigator.geolocation) {
+        console.warn('Geolocation not supported');
+        return;
+    }
+    
+    locationWatchId = navigator.geolocation.watchPosition(
+        async (pos) => {
+            const { latitude, longitude } = pos.coords;
+            
+            // Update map view
+            if (driverMap) {
+                driverMap.setView([latitude, longitude], driverMap.getZoom());
+            }
+            
+            // Update DB every position change
+            try {
+                await supabase
+                    .from('delivery_drivers')
+                    .update({
+                        current_lat: latitude,
+                        current_lng: longitude,
+                        last_location_update: new Date().toISOString()
+                    })
+                    .eq('id', driverData.id);
+            } catch(e) {
+                console.warn('Failed to update location:', e);
+            }
+        },
+        (err) => {
+            console.warn('GPS error:', err);
+        },
+        {
+            enableHighAccuracy: true,
+            maximumAge: 5000,
+            timeout: 15000
+        }
+    );
+}
+
+// --- Load Orders ---
+async function loadAssignedOrders() {
+    try {
+        const { data, error } = await supabase
+            .from('orders')
+            .select('*')
+            .eq('assigned_driver_id', driverData.id)
+            .in('delivery_status', ['Ready', 'Delivering'])
+            .order('created_at', { ascending: true });
+        
+        if (error) throw error;
+        currentOrders = data || [];
+        renderOrders();
+        renderOrderMarkers();
+    } catch(e) {
+        console.error('Error loading orders:', e);
+    }
+}
+
+function renderOrders() {
+    const container = document.getElementById('driver-orders');
+    
+    if (currentOrders.length === 0) {
+        container.innerHTML = '<p class="text-center text-gray-600 text-sm py-6">Chưa có đơn nào.</p>';
+        return;
+    }
+    
+    container.innerHTML = currentOrders.map(order => {
+        const items = order.items || [];
+        const itemsText = items.map(i => `${i.quantity}x ${i.name}`).join(', ');
+        const displayId = String(order.id).slice(-6).toUpperCase();
+        const isDelivering = order.delivery_status === 'Delivering';
+        
+        return `
+        <div class="order-card" style="border-left-color: ${isDelivering ? '#22C55E' : '#FF7A00'}">
+            <div class="flex justify-between items-start mb-2">
+                <div>
+                    <span class="text-xs font-bold px-2 py-0.5 rounded-full ${isDelivering ? 'bg-green-500/20 text-green-400' : 'bg-[#FF7A00]/20 text-[#FF7A00]'}">${isDelivering ? 'ĐANG GIAO' : 'SẴN SÀNG'}</span>
+                    <h4 class="font-bold mt-1">#${displayId}</h4>
+                </div>
+                <span class="text-xs text-gray-500">${new Date(order.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</span>
+            </div>
+            
+            <p class="text-sm text-gray-400 mb-2 truncate">${itemsText}</p>
+            
+            <div class="flex items-center gap-2 text-sm mb-3">
+                <i class="fa-solid fa-map-pin text-[#FF7A00]"></i>
+                <span class="text-gray-300 truncate">${order.delivery_address || '---'}</span>
+            </div>
+            
+            <div class="flex items-center gap-2 text-sm mb-3">
+                <i class="fa-solid fa-phone text-green-400"></i>
+                <a href="tel:${order.delivery_phone}" class="text-white font-semibold">${order.delivery_phone || '---'}</a>
+                <span class="text-gray-500">• ${order.delivery_name || ''}</span>
+            </div>
+            
+            <div class="flex items-center justify-between mb-3">
+                <span class="font-bold text-[#FF7A00]">${formatVND(order.total_price)}</span>
+                <span class="text-xs text-gray-500">${order.payment_method === 'cash' ? '💵 COD' : '📱 Đã CK'}</span>
+            </div>
+            
+            <div class="flex gap-2">
+                ${isDelivering ? `
+                    <button class="action-btn success flex-1" onclick="completeDelivery('${order.id}')">
+                        <i class="fa-solid fa-check-double"></i> Đã giao
+                    </button>
+                ` : `
+                    <button class="action-btn primary flex-1" onclick="startDelivery('${order.id}')">
+                        <i class="fa-solid fa-motorcycle"></i> Bắt đầu giao
+                    </button>
+                `}
+                <a href="https://www.google.com/maps/dir/?api=1&destination=${order.delivery_lat},${order.delivery_lng}" target="_blank" class="action-btn" style="background:#3B82F6;color:white">
+                    <i class="fa-solid fa-location-arrow"></i>
+                </a>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function renderOrderMarkers() {
+    if (!driverMap) return;
+    
+    currentOrders.forEach(order => {
+        if (order.delivery_lat && order.delivery_lng) {
+            const icon = L.divIcon({
+                html: `<div style="background:#FF7A00;color:white;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3)"><i class="fa-solid fa-box"></i></div>`,
+                iconSize: [28, 28],
+                iconAnchor: [14, 14],
+                className: ''
+            });
+            L.marker([order.delivery_lat, order.delivery_lng], { icon })
+                .addTo(driverMap)
+                .bindPopup(`<b>#${String(order.id).slice(-6)}</b><br>${order.delivery_address || ''}`);
+        }
+    });
+}
+
+// --- Actions ---
+window.startDelivery = async function(orderId) {
+    try {
+        await supabase
+            .from('orders')
+            .update({ delivery_status: 'Delivering' })
+            .eq('id', orderId);
+        
+        // Refresh
+        await loadAssignedOrders();
+    } catch(e) {
+        alert('Lỗi: ' + e.message);
+    }
+};
+
+window.completeDelivery = async function(orderId) {
+    if (!confirm('Xác nhận đã giao thành công?')) return;
+    
+    try {
+        await supabase
+            .from('orders')
+            .update({
+                delivery_status: 'Completed',
+                status: 'Completed'
+            })
+            .eq('id', orderId);
+        
+        // Refresh
+        await loadAssignedOrders();
+        await loadTodayStats();
+    } catch(e) {
+        alert('Lỗi: ' + e.message);
+    }
+};
+
+// --- Online/Offline ---
+window.setDriverStatus = async function(online) {
+    try {
+        await supabase
+            .from('delivery_drivers')
+            .update({ status: online ? 'available' : 'offline' })
+            .eq('id', driverData.id);
+        
+        document.getElementById('btn-online').classList.toggle('active', online);
+        document.getElementById('btn-offline').classList.toggle('active', !online);
+        
+        if (!online && locationWatchId) {
+            navigator.geolocation.clearWatch(locationWatchId);
+            locationWatchId = null;
+        } else if (online && !locationWatchId) {
+            startLocationTracking();
+        }
+    } catch(e) {}
+};
+
+// --- Stats ---
+async function loadTodayStats() {
+    try {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const { data } = await supabase
+            .from('orders')
+            .select('total_price, delivery_fee')
+            .eq('assigned_driver_id', driverData.id)
+            .eq('delivery_status', 'Completed')
+            .gte('created_at', today.toISOString());
+        
+        const count = data ? data.length : 0;
+        const earnings = data ? data.reduce((s, o) => s + (o.delivery_fee || 0), 0) : 0;
+        
+        document.getElementById('stat-today').textContent = count;
+        document.getElementById('stat-earnings').textContent = formatVND(earnings);
+        document.getElementById('driver-stats-text').textContent = `${count} đơn hôm nay`;
+    } catch(e) {}
+}
+
+// --- Realtime ---
+function setupOrdersRealtime() {
+    ordersChannel = supabase
+        .channel(`driver-orders-${driverData.id}`)
+        .on('postgres_changes', {
+            event: '*',
+            schema: 'public',
+            table: 'orders',
+            filter: `assigned_driver_id=eq.${driverData.id}`
+        }, () => {
+            loadAssignedOrders();
+        })
+        .subscribe();
+}
+
+// --- Cleanup ---
+window.addEventListener('beforeunload', () => {
+    if (locationWatchId) navigator.geolocation.clearWatch(locationWatchId);
+    if (ordersChannel) supabase.removeChannel(ordersChannel);
+});
+
+// --- Helper ---
+function formatVND(amount) {
+    if (!amount && amount !== 0) return '0đ';
+    return Number(amount).toLocaleString('vi-VN') + 'đ';
+}
