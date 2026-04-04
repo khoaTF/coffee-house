@@ -1077,7 +1077,8 @@ function attachEventListeners() {
             checkoutCashBtn.disabled = true;
             checkoutCashBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...';
             if (checkoutTransferBtn) checkoutTransferBtn.disabled = true;
-            placeOrder('cash');
+            // Yield to browser so spinner paints before heavy async work
+            requestAnimationFrame(() => setTimeout(() => placeOrder('cash'), 0));
         });
     }
     
@@ -1086,7 +1087,8 @@ function attachEventListeners() {
             checkoutTransferBtn.disabled = true;
             checkoutTransferBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang tạo mã QR...';
             if (checkoutCashBtn) checkoutCashBtn.disabled = true;
-            placeOrder('transfer');
+            // Yield to browser so spinner paints before heavy async work
+            requestAnimationFrame(() => setTimeout(() => placeOrder('transfer'), 0));
         });
     }
 
