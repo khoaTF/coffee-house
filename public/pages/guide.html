@@ -60,15 +60,101 @@
             <ul class="list-disc">
                 <li><strong>Backend (Dữ liệu & Serverless API):</strong> Sử dụng <strong>Supabase</strong> (dựa trên PostgreSQL). Lưu trữ vĩnh viễn hình ảnh qua <em>Supabase Storage</em>, đảm bảo dữ liệu toàn vẹn và bảo mật cao.</li>
                 <li><strong>WebSocket & Real-time:</strong> Sử dụng Supabase Realtime Channel. Các bảng (tables) quan trọng được theo dõi liên tục. Khi một thay đổi xảy ra trên Database, nó được đẩy xuống mọi thiết bị chỉ trong milliseconds mà không cần bấm nút (refresh) tải lại trang.</li>
-                <li><strong>Phân luồng thông tin (Routing):</strong>
-                    <ul class="list-none mt-2 space-y-2">
-                        <li class="flex items-center gap-2"><code class="flex-1">/index.html?table=X</code> Dành cho App của Khách Hàng đặt tại trải nghiệm bàn.</li>
-                        <li class="flex items-center gap-2"><code class="flex-1">/kitchen.html</code> Mở khoá dành riêng cho thiết bị của bộ phận Bếp.</li>
-                        <li class="flex items-center gap-2"><code class="flex-1">/staff.html</code> Giao diện dành cho nhân viên phục vụ, sơ đồ bàn trực quan.</li>
-                        <li class="flex items-center gap-2"><code class="flex-1">/admin.html</code> Giao diện Đầy đủ quyền quản trị cơ sở dữ liệu cho chủ quán.</li>
-                    </ul>
-                </li>
+                <li><strong>Phân luồng thông tin (Routing):</strong> Xem phần <em>Bản đồ các trang hệ thống</em> bên dưới.</li>
             </ul>
+        </div>
+
+        <div class="guide-section border-t-4 border-t-secondary">
+            <h2 class="mt-0"><i class="fa-solid fa-sitemap text-secondary mr-2"></i>BẢN ĐỒ CÁC TRANG HỆ THỐNG</h2>
+            <p>Hệ thống bao gồm nhiều giao diện chuyên biệt dành cho từng vai trò. Dưới đây là tất cả các trang có sẵn:</p>
+
+            <h3><div class="icon-box"><i class="fa-solid fa-users"></i></div> Dành cho Khách hàng</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:180px">URL</th>
+                        <th>Chức năng</th>
+                        <th style="width:200px">Cách truy cập</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>/</code> hoặc <code>/?table=5</code></td>
+                        <td><strong>Menu khách hàng (Tại quán)</strong> — Xem thực đơn, chọn món, đặt hàng qua QR tại bàn. Tham số <code>?table=X</code> giúp hệ thống biết khách đang ngồi bàn nào.</td>
+                        <td>Quét mã QR trên bàn</td>
+                    </tr>
+                    <tr>
+                        <td><code>/delivery</code></td>
+                        <td><strong>Đặt hàng giao tận nơi</strong> — Chọn món → Nhập địa chỉ & chọn vị trí trên bản đồ → Xác nhận & thanh toán. Hệ thống tự tính phí ship theo khoảng cách (Haversine).</td>
+                        <td>Chia sẻ link cho khách</td>
+                    </tr>
+                    <tr>
+                        <td><code>/tracking</code></td>
+                        <td><strong>Theo dõi đơn giao hàng</strong> — Nhập mã tracking 8 ký tự để xem trạng thái đơn + vị trí shipper trên bản đồ real-time.</td>
+                        <td>Khách nhận mã sau khi đặt hàng</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3 class="mt-6"><div class="icon-box"><i class="fa-solid fa-user-tie"></i></div> Dành cho Nhân viên</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:180px">URL</th>
+                        <th>Chức năng</th>
+                        <th style="width:200px">Quyền truy cập</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>/kitchen</code></td>
+                        <td><strong>Bếp (Kitchen Display)</strong> — Nhận đơn real-time, chuyển trạng thái (Đang làm → Xong), gộp món, xem đơn giao hàng với badge 🛵.</td>
+                        <td>Đăng nhập vai trò Bếp</td>
+                    </tr>
+                    <tr>
+                        <td><code>/staff</code></td>
+                        <td><strong>Nhân viên phục vụ</strong> — Sơ đồ bàn trực quan, xem trạng thái đơn, bưng bê, hỗ trợ thanh toán.</td>
+                        <td>Đăng nhập vai trò Staff</td>
+                    </tr>
+                    <tr>
+                        <td><code>/driver</code></td>
+                        <td><strong>Giao diện Shipper</strong> — Đăng nhập bằng mã shipper, nhận đơn giao, bắt đầu giao, GPS tự động cập nhật vị trí liên tục.</td>
+                        <td>Mã shipper (do Admin tạo)</td>
+                    </tr>
+                    <tr>
+                        <td><code>/tv</code></td>
+                        <td><strong>Màn hình TV</strong> — Hiển thị trên TV tại quán, thông báo đơn sẵn sàng phục vụ cho khách.</td>
+                        <td>Mở trên TV/Tablet tại quán</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3 class="mt-6"><div class="icon-box"><i class="fa-solid fa-shield-halved"></i></div> Dành cho Quản lý</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:180px">URL</th>
+                        <th>Chức năng</th>
+                        <th style="width:200px">Quyền truy cập</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>/admin</code></td>
+                        <td><strong>Dashboard Quản trị</strong> — Toàn bộ hệ thống quản lý: Dashboard, POS bán hàng, Thực đơn, Tồn kho, Nhập hàng, Khuyến mãi, Đơn hàng, Ca làm việc, <strong>Giao hàng</strong>, Báo cáo, Sổ quỹ, Bàn, Khách hàng, Nhân viên, Nhật ký HĐ, Mã QR, Cài đặt.</td>
+                        <td>Admin / Manager đăng nhập</td>
+                    </tr>
+                    <tr>
+                        <td><code>/login</code></td>
+                        <td><strong>Trang đăng nhập</strong> — Xác thực tài khoản qua Supabase Auth + mã PIN nhân viên.</td>
+                        <td>Công khai</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="bg-blue-50 border border-blue-200 rounded-2xl p-4 mt-6">
+                <p class="mb-0 text-sm"><i class="fa-solid fa-circle-info text-blue-500 mr-2"></i><strong>Lưu ý:</strong> Tất cả URL trên đều sử dụng tên miền chính của quán. Ví dụ: <code>https://tenmien.vercel.app/delivery</code></p>
+            </div>
         </div>
 
         <div class="guide-section">
@@ -124,8 +210,43 @@
             </ul>
         </div>
         
+        <div class="guide-section">
+            <h2 class="mt-0"><i class="fa-solid fa-motorcycle text-secondary mr-2"></i>4. GIAO H&Agrave;NG &amp; GPS TRACKING</h2>
+
+            <h3><div class="icon-box"><i class="fa-solid fa-route"></i></div> 4.1 Lu&#7891;ng ho&#7841;t &#273;&#7897;ng &#273;&#417;n giao h&agrave;ng</h3>
+            <ol class="list-decimal font-medium space-y-3">
+                <li><strong class="text-orange-500">Kh&aacute;ch &#273;&#7863;t h&agrave;ng</strong> tr&ecirc;n <code>/delivery</code> &rarr; Ch&#7885;n m&oacute;n &rarr; Nh&#7853;p &#273;&#7883;a ch&#7881; + ch&#7885;n v&#7883; tr&iacute; tr&ecirc;n b&#7843;n &#273;&#7891; &rarr; H&#7879; th&#7889;ng t&iacute;nh ph&iacute; ship t&#7921; &#273;&#7897;ng &rarr; X&aacute;c nh&#7853;n.</li>
+                <li><strong class="text-blue-500">B&#7871;p nh&#7853;n &#273;&#417;n</strong> qua <code>/kitchen</code> &mdash; Hi&#7875;n th&#7883; badge &#128693; Giao h&agrave;ng k&egrave;m &#273;&#7883;a ch&#7881; + S&#272;T kh&aacute;ch.</li>
+                <li><strong class="text-purple-500">Admin g&aacute;n shipper</strong> trong tab Giao h&agrave;ng c&#7911;a <code>/admin</code> &rarr; Ch&#7885;n shipper online &rarr; G&aacute;n v&agrave;o &#273;&#417;n.</li>
+                <li><strong class="text-indigo-500">Shipper nh&#7853;n &#273;&#417;n</strong> tr&ecirc;n <code>/driver</code> &rarr; &#272;&aacute;ng nh&#7853;p b&#7857;ng m&atilde; &rarr; B&#7845;m &ldquo;B&#7855;t &#273;&#7847;u giao&rdquo; &rarr; GPS t&#7921; c&#7853;p nh&#7853;t m&#7895;i 5 gi&acirc;y.</li>
+                <li><strong class="text-green-500">Kh&aacute;ch theo d&otilde;i</strong> tr&ecirc;n <code>/tracking</code> &rarr; Nh&#7853;p m&atilde; tracking &rarr; Xem v&#7883; tr&iacute; shipper real-time.</li>
+            </ol>
+
+            <h3><div class="icon-box"><i class="fa-solid fa-calculator"></i></div> 4.2 Ph&iacute; giao h&agrave;ng</h3>
+            <ul class="list-disc">
+                <li><strong>C&ocirc;ng th&#7913;c:</strong> <code>Ph&iacute; ship = Ph&iacute; c&#417; b&#7843;n + (km x Ph&iacute;/km)</code></li>
+                <li><strong>Kho&#7843;ng c&aacute;ch:</strong> Haversine (t&#7885;a &#273;&#7897; qu&aacute;n &rarr; t&#7885;a &#273;&#7897; kh&aacute;ch)</li>
+                <li><strong>B&aacute;n k&iacute;nh:</strong> M&#7863;c &#273;&#7883;nh 3km (admin t&ugrave;y ch&#7881;nh)</li>
+                <li><strong>&#272;&#417;n t&#7889;i thi&#7875;u:</strong> M&#7863;c &#273;&#7883;nh 30.000&#273; (admin t&ugrave;y ch&#7881;nh)</li>
+            </ul>
+
+            <h3><div class="icon-box"><i class="fa-solid fa-gear"></i></div> 4.3 C&#7845;u h&igrave;nh Admin</h3>
+            <p>V&agrave;o <strong>Admin &rarr; Tab Giao h&agrave;ng &rarr; C&agrave;i &#273;&#7863;t Ship</strong>:</p>
+            <ul class="list-disc">
+                <li>B&#7853;t/t&#7855;t giao h&agrave;ng</li>
+                <li>B&aacute;n k&iacute;nh ph&#7909;c v&#7909; (km)</li>
+                <li>Ph&iacute; c&#417; b&#7843;n &amp; ph&iacute;/km</li>
+                <li>Gi&aacute; tr&#7883; &#273;&#417;n t&#7889;i thi&#7875;u</li>
+                <li>T&#7885;a &#273;&#7897; qu&aacute;n (lat/lng) &mdash; <strong>B&#7855;t bu&#7897;c</strong></li>
+            </ul>
+
+            <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 mt-4">
+                <p class="mb-0 text-sm"><i class="fa-solid fa-triangle-exclamation text-amber-500 mr-2"></i><strong>Quan tr&#7885;ng:</strong> Admin ph&#7843;i nh&#7853;p Latitude/Longitude trong C&agrave;i &#273;&#7863;t Ship tr&#432;&#7899;c khi b&#7853;t t&iacute;nh n&#259;ng giao h&agrave;ng.</p>
+            </div>
+        </div>
+
         <div class="text-center text-sm font-bold text-on-surface-variant/50 mt-12 pb-8">
-            Hệ thống bán hàng Urban Brew (Nohope Coffee) v2.0 - Developed with <i class="fa-solid fa-heart text-error/60"></i> & Modern JS
+            Urban Brew (Nohope Coffee) v3.0 &mdash; Delivery &amp; GPS Tracking &mdash; <i class="fa-solid fa-heart text-error/60"></i> Modern JS
         </div>
 
     </div>
