@@ -36,31 +36,19 @@ const translations = {
         add_to_cart: "Thêm vào giỏ",
         options_label: "Tùy chọn",
         your_order: "Đơn hàng của bạn",
-        // Gacha
         gacha_title: "🎰 Túi Mù",
         gacha_subtitle: "Thanh toán trước, mở túi sau! Lời hay lỗ — hên xui!",
         gacha_add_btn: "Thêm vào giỏ",
         gacha_limited: "✦ Giới hạn ✦",
         gacha_added_toast: "🎰 Đã thêm Túi Mù vào giỏ! Thanh toán để mở túi.",
         gacha_wait_toast: "Đợi đơn hiện tại hoàn thành trước nhé!",
-        gacha_win: "LỜI RỒI!",
-        gacha_even: "Hoà!",
-        gacha_lose: "Lỗ nhẹ!",
-        gacha_save: "🔥 Tiết kiệm",
-        gacha_exact: "➡️ Giá vừa đúng!",
-        gacha_diff: "📉 Chênh",
-        gacha_original_price: "Giá gốc:",
-        gacha_you_paid: "Bạn trả:",
-        // Categories
-        filter_milk_tea: "Trà sữa",
-        filter_smoothie: "Đá xay",
-        filter_fruit_tea: "Trà trái cây",
-        filter_pastry: "Bánh ngọt",
-        // Delivery
-        delivery_btn: "Đặt món trực tuyến",
-        delivery_address: "Địa chỉ giao hàng",
-        delivery_phone: "Số điện thoại",
-        delivery_note: "Ghi chú giao hàng"
+        gacha_win: "LỜI RỒI!", gacha_even: "Hoà!", gacha_lose: "Lỗ nhẹ!",
+        gacha_save: "🔥 Tiết kiệm", gacha_exact: "➡️ Giá vừa đúng!",
+        gacha_diff: "📉 Chênh", gacha_original_price: "Giá gốc:", gacha_you_paid: "Bạn trả:",
+        filter_milk_tea: "Trà sữa", filter_smoothie: "Đá xay",
+        filter_fruit_tea: "Trà trái cây", filter_pastry: "Bánh ngọt",
+        delivery_btn: "Đặt món trực tuyến", delivery_address: "Địa chỉ giao hàng",
+        delivery_phone: "Số điện thoại", delivery_note: "Ghi chú giao hàng"
     },
     en: {
         app_title: "Nohope Coffee",
@@ -99,152 +87,149 @@ const translations = {
         add_to_cart: "Add to Cart",
         options_label: "Options",
         your_order: "Your Order",
-        // Gacha
         gacha_title: "🎰 Mystery Box",
         gacha_subtitle: "Pay first, reveal after! Win or lose — it's a gamble!",
         gacha_add_btn: "Add to Cart",
         gacha_limited: "✦ Limited ✦",
         gacha_added_toast: "🎰 Mystery Box added! Checkout to reveal.",
         gacha_wait_toast: "Wait for your current order to complete first!",
-        gacha_win: "YOU WON!",
-        gacha_even: "Even!",
-        gacha_lose: "Slight loss!",
-        gacha_save: "🔥 You saved",
-        gacha_exact: "➡️ Exact price!",
-        gacha_diff: "📉 Diff",
-        gacha_original_price: "Original:",
-        gacha_you_paid: "You paid:",
-        // Categories
-        filter_milk_tea: "Milk Tea",
-        filter_smoothie: "Smoothie",
-        filter_fruit_tea: "Fruit Tea",
-        filter_pastry: "Pastry",
-        // Delivery
-        delivery_btn: "Order Online",
-        delivery_address: "Delivery Address",
-        delivery_phone: "Phone Number",
-        delivery_note: "Delivery Note"
+        gacha_win: "YOU WON!", gacha_even: "Even!", gacha_lose: "Slight loss!",
+        gacha_save: "🔥 You saved", gacha_exact: "➡️ Exact price!",
+        gacha_diff: "📉 Diff", gacha_original_price: "Original:", gacha_you_paid: "You paid:",
+        filter_milk_tea: "Milk Tea", filter_smoothie: "Smoothie",
+        filter_fruit_tea: "Fruit Tea", filter_pastry: "Pastry",
+        delivery_btn: "Order Online", delivery_address: "Delivery Address",
+        delivery_phone: "Phone Number", delivery_note: "Delivery Note"
     }
 };
 
+// ─── State ───────────────────────────────────────────────────────────────────
 let currentLang = localStorage.getItem('lang') || 'vi';
 
-/**
- * Exposed globally so customer.js can call t() for dynamic text.
- * Usage: window.t('add_to_cart') → "Thêm vào giỏ" or "Add to Cart"
- */
+// ─── Global helpers ───────────────────────────────────────────────────────────
+/** Translate a key. Usage: window.t('add_to_cart') */
 window.t = function(key) {
     return (translations[currentLang] && translations[currentLang][key]) || key;
 };
 
+/** Toggle VI ↔ EN. Called by onclick in HTML. */
 window.toggleLanguage = function() {
     currentLang = currentLang === 'vi' ? 'en' : 'vi';
     localStorage.setItem('lang', currentLang);
     applyLanguage();
 };
 
-function applyLanguage() {
-    const t = translations[currentLang];
+/** Get current lang code externally */
+window.getCurrentLang = function() { return currentLang; };
 
-    // --- 1. Update <html lang=""> ---
+// ─── Apply all translations to DOM ───────────────────────────────────────────
+function applyLanguage() {
+    const tr = translations[currentLang];
+    if (!tr) return;
+
+    // 1. html[lang]
     document.documentElement.lang = currentLang;
 
-    // --- 2. Update lang toggle button (preserve icon) ---
-    const langBtn = document.getElementById('lang-toggle');
-    if (langBtn) {
-        // Keep the material icon span, only swap the text span
-        const textSpan = langBtn.querySelector('span:not(.material-symbols-outlined)');
+    // 2. Lang toggle button — only update the non-icon text span
+    safeUpdate('#lang-toggle', btn => {
+        const textSpan = btn.querySelector('span:not(.material-symbols-outlined)');
         if (textSpan) {
             textSpan.textContent = currentLang === 'vi' ? 'EN / VI' : 'VI / EN';
-        } else {
-            langBtn.textContent = currentLang === 'vi' ? 'EN' : 'VI';
         }
-    }
-
-    // --- 3. Static element map (selectors → update type) ---
-    const map = {
-        '[data-i18n="app_title"]': { html: `<i class="fa-solid fa-mug-hot"></i> ${t.app_title}` },
-        '[data-i18n="my_orders"]': { html: t.my_orders },
-        // Search inputs (both desktop and mobile)
-        '#menu-search':         { placeholder: t.search_placeholder },
-        '#menu-search-desktop': { placeholder: t.search_placeholder },
-        '#menu-search-mobile':  { placeholder: t.search_placeholder },
-        // Banner
-        '.banner-title': { html: `<i class="fa-solid fa-clock pulse-icon text-primary me-2"></i> ${t.order_status}` },
-        // Staff service buttons — match by onclick attribute
-        [`button[onclick*="requestStaffService('staff')"]`]:    { html: `<i class="fa-solid fa-bell text-primary"></i> ${t.call_staff}` },
-        [`button[onclick*="requestStaffService('water')"]`]:    { html: `<i class="fa-solid fa-glass-water text-primary"></i> ${t.water}` },
-        [`button[onclick*="requestStaffService('checkout')"]`]: { html: `<i class="fa-solid fa-money-bill text-danger"></i> ${t.checkout}` },
-        // Cart/checkout
-        '#checkout-cash-btn':     { html: `<i class="fa-solid fa-money-bill-wave"></i> ${t.btn_cash}` },
-        '#checkout-transfer-btn': { html: `<i class="fa-solid fa-qrcode"></i> ${t.btn_transfer}` },
-        '#confirm-payment-btn':   { html: `<i class="fa-solid fa-check-circle"></i> ${t.payment_done}` },
-        '#confirm-options-btn':   { text: t.confirm_options },
-        // Modal titles
-        '#payment-modal h2':        { text: t.modal_checkout_title },
-        '#order-history-modal h2':  { text: t.modal_history_title },
-        '#options-modal-title':     { text: t.options_title },
-        '#options-modal h2':        { text: t.options_title },
-        // Confirm modal
-        '#confirmModalTitle':  { html: `<i class="fa-solid fa-triangle-exclamation text-accent me-2"></i>${t.modal_confirm_title}` },
-        '#confirmModalCancel': { text: t.btn_cancel },
-        '#confirmModalOk':     { text: t.btn_confirm },
-        // Misc
-        'label[for="order-note"]': { text: t.cart_note },
-        '.empty-cart':             { text: t.cart_empty },
-    };
-
-    for (const selector in map) {
-        document.querySelectorAll(selector).forEach(el => {
-            const cfg = map[selector];
-            if (cfg.html !== undefined)         el.innerHTML = cfg.html;
-            else if (cfg.text !== undefined)    el.textContent = cfg.text;
-            else if (cfg.placeholder !== undefined) el.placeholder = cfg.placeholder;
-        });
-    }
-
-    // --- 4. Fine-grained replacements that need extra care ---
-
-    // History empty state
-    const historyEmpty = document.querySelector('#history-items-container .empty-cart');
-    if (historyEmpty) historyEmpty.textContent = t.history_empty;
-
-    // Payment modal QR prompt
-    const qrScanPrompt = document.querySelector('#payment-modal .cart-modal-body p');
-    if (qrScanPrompt) qrScanPrompt.innerHTML = t.qr_scan_prompt;
-
-    // Cart total label
-    const cartTotalLabel = document.querySelector('.cart-modal-footer .flex-between.mb-2 span:first-child, .cart-modal-footer span.font-bold.text-lg');
-    if (cartTotalLabel && !cartTotalLabel.id) cartTotalLabel.textContent = t.cart_total;
-
-    // Cart modal title
-    const cartModalTitle = document.querySelector('#cart-modal h2');
-    if (cartModalTitle) cartModalTitle.textContent = t.your_order;
-
-
-    // --- 5. Patch card button text in-place (no full re-render) ---
-    // Only update the text node inside "Add to Cart" / "Options" buttons
-    // that were built dynamically by customer.js — avoids a costly full DOM rebuild.
-    document.querySelectorAll('article[data-product-id] .action-btn-container > button:not(.w-10)').forEach(btn => {
-        const icon = btn.querySelector('i');
-        if (!icon) return;
-        const isOptions = icon.classList.contains('fa-sliders');
-        // Clear all child nodes after the icon, then append translated text
-        Array.from(btn.childNodes).forEach(node => {
-            if (node.nodeType === Node.TEXT_NODE) node.remove();
-        });
-        btn.append(document.createTextNode(' ' + (isOptions ? t.options_label : t.add_to_cart)));
     });
 
-    // --- 6. Dispatch custom event so other modules can react ---
-    document.dispatchEvent(new CustomEvent('langchange', { detail: { lang: currentLang, t } }));
+    // 3. data-i18n attributes (simplest approach — always works)
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (!tr[key]) return;
+        if (el.tagName === 'INPUT') el.placeholder = tr[key];
+        else el.innerHTML = tr[key];
+    });
+
+    // 4. Specific selectors — each wrapped individually so one failure won't block others
+    const updates = [
+        ['[data-i18n="app_title"]',       el => el.innerHTML = `<i class="fa-solid fa-mug-hot"></i> ${tr.app_title}`],
+        ['[data-i18n="my_orders"]',        el => el.innerHTML = tr.my_orders],
+        ['#menu-search',                   el => el.placeholder = tr.search_placeholder],
+        ['#menu-search-desktop',           el => el.placeholder = tr.search_placeholder],
+        ['#menu-search-mobile',            el => el.placeholder = tr.search_placeholder],
+        ['.banner-title',                  el => el.innerHTML = `<i class="fa-solid fa-clock pulse-icon text-primary me-2"></i> ${tr.order_status}`],
+        ['#checkout-cash-btn',             el => el.innerHTML = `<i class="fa-solid fa-money-bill-wave"></i> ${tr.btn_cash}`],
+        ['#checkout-transfer-btn',         el => el.innerHTML = `<i class="fa-solid fa-qrcode"></i> ${tr.btn_transfer}`],
+        ['#confirm-payment-btn',           el => el.innerHTML = `<i class="fa-solid fa-check-circle"></i> ${tr.payment_done}`],
+        ['#confirm-options-btn',           el => el.textContent = tr.confirm_options],
+        ['#payment-modal h2',              el => el.textContent = tr.modal_checkout_title],
+        ['#order-history-modal h2',        el => el.textContent = tr.modal_history_title],
+        ['#options-modal-title',           el => el.textContent = tr.options_title],
+        ['#options-modal h2',              el => el.textContent = tr.options_title],
+        ['#confirmModalTitle',             el => el.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-accent me-2"></i>${tr.modal_confirm_title}`],
+        ['#confirmModalCancel',            el => el.textContent = tr.btn_cancel],
+        ['#confirmModalOk',                el => el.textContent = tr.btn_confirm],
+        ['label[for="order-note"]',        el => el.textContent = tr.cart_note],
+        ['.empty-cart',                    el => el.textContent = tr.cart_empty],
+        ['#cart-modal h2',                 el => el.textContent = tr.your_order],
+    ];
+
+    updates.forEach(([selector, fn]) => {
+        try {
+            document.querySelectorAll(selector).forEach(fn);
+        } catch(e) {
+            console.warn('[i18n] selector failed:', selector, e.message);
+        }
+    });
+
+    // 5. Staff buttons — find by data attribute to avoid fragile onclick selectors
+    document.querySelectorAll('[data-service]').forEach(btn => {
+        const svc = btn.getAttribute('data-service');
+        const icon = btn.querySelector('i') ? btn.querySelector('i').outerHTML : '';
+        if (svc === 'staff')    btn.innerHTML = `<i class="fa-solid fa-bell text-primary"></i> ${tr.call_staff}`;
+        else if (svc === 'water')    btn.innerHTML = `<i class="fa-solid fa-glass-water text-primary"></i> ${tr.water}`;
+        else if (svc === 'checkout') btn.innerHTML = `<i class="fa-solid fa-money-bill text-danger"></i> ${tr.checkout}`;
+    });
+
+    // 6. Fine-grained
+    try {
+        const historyEmpty = document.querySelector('#history-items-container .empty-cart');
+        if (historyEmpty) historyEmpty.textContent = tr.history_empty;
+
+        const qrPrompt = document.querySelector('#payment-modal .cart-modal-body p');
+        if (qrPrompt) qrPrompt.innerHTML = tr.qr_scan_prompt;
+
+        const cartTotal = document.querySelector('.cart-modal-footer .flex-between.mb-2 span:first-child');
+        if (cartTotal) cartTotal.textContent = tr.cart_total;
+    } catch(e) {
+        console.warn('[i18n] fine-grained update failed:', e.message);
+    }
+
+    // 7. Patch card buttons in-place (no full menu re-render)
+    try {
+        document.querySelectorAll('article[data-product-id] .action-btn-container > button:not(.w-10)').forEach(btn => {
+            const icon = btn.querySelector('i');
+            if (!icon) return;
+            const isOptions = icon.classList.contains('fa-sliders');
+            Array.from(btn.childNodes).forEach(node => {
+                if (node.nodeType === Node.TEXT_NODE) node.remove();
+            });
+            btn.append(document.createTextNode(' ' + (isOptions ? tr.options_label : tr.add_to_cart)));
+        });
+    } catch(e) {
+        console.warn('[i18n] card patch failed:', e.message);
+    }
+
+    // 8. Notify other modules
+    document.dispatchEvent(new CustomEvent('langchange', { detail: { lang: currentLang, t: tr } }));
 }
 
-/** Utility: get the current translation object (for use in other JS files) */
-window.getCurrentTranslations = function() {
-    return translations[currentLang];
-};
+// Helper: safely update a single element by selector
+function safeUpdate(selector, fn) {
+    try {
+        const el = document.querySelector(selector);
+        if (el) fn(el);
+    } catch(e) {
+        console.warn('[i18n] safeUpdate failed for:', selector, e.message);
+    }
+}
 
-document.addEventListener('DOMContentLoaded', () => {
-    applyLanguage();
-});
+window.getCurrentTranslations = function() { return translations[currentLang]; };
+
+document.addEventListener('DOMContentLoaded', () => { applyLanguage(); });
