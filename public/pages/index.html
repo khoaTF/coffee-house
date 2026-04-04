@@ -43,7 +43,7 @@
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .no-tap-highlight { -webkit-tap-highlight-color: transparent; }
 
-        /* === GACHA / Mystery Box v2 — Slot Machine === */
+        /* === GACHA / Mystery Box v3 — CS:GO Case Opening === */
         .gacha-star {
             position: absolute; color: rgba(255,200,100,0.6); font-size: 14px;
             animation: gacha-twinkle 2s ease-in-out infinite;
@@ -72,64 +72,94 @@
         .active-scale { transition: transform 0.15s; }
         .active-scale:active { transform: scale(0.95); }
 
-        /* Slot Machine Reel */
+        /* CS:GO Case Opening Modal */
         #gacha-slot-modal {
             display: none; position: fixed; inset: 0; z-index: 2100;
-            background: rgba(0,0,0,0.65); backdrop-filter: blur(6px);
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
             align-items: center; justify-content: center;
+            flex-direction: column;
         }
         #gacha-slot-modal.active { display: flex; }
         .gacha-slot-card {
-            background: var(--surface-color, #fff); border-radius: 28px;
-            width: min(92vw, 400px); max-height: 90vh; overflow: hidden;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            border-radius: 16px; width: min(96vw, 520px);
+            overflow: hidden; position: relative;
+            box-shadow: 0 20px 80px rgba(0,0,0,0.6), 0 0 40px rgba(255,122,0,0.15);
+            border: 1px solid rgba(255,255,255,0.08);
             animation: gacha-pop 0.3s ease both;
         }
         .gacha-reel-container {
-            position: relative; height: 200px; overflow: hidden;
-            margin: 0 20px; border-radius: 16px;
-            background: linear-gradient(135deg, #1B1C1B, #2A1A14);
-            border: 2px solid rgba(255,122,0,0.3);
+            position: relative; height: 120px; overflow: hidden;
+            margin: 0; background: linear-gradient(180deg, #0d1117 0%, #161b22 100%);
+            border-top: 1px solid rgba(255,255,255,0.06);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
         }
         .gacha-reel-container::before,
         .gacha-reel-container::after {
-            content: ''; position: absolute; left: 0; right: 0; height: 60px;
+            content: ''; position: absolute; top: 0; bottom: 0; width: 60px;
             z-index: 5; pointer-events: none;
         }
         .gacha-reel-container::before {
-            top: 0;
-            background: linear-gradient(to bottom, #1B1C1B, transparent);
+            left: 0; background: linear-gradient(to right, #0d1117, transparent);
         }
         .gacha-reel-container::after {
-            bottom: 0;
-            background: linear-gradient(to top, #1B1C1B, transparent);
+            right: 0; background: linear-gradient(to left, #0d1117, transparent);
         }
-        /* Center line indicator */
-        .gacha-reel-center-line {
-            position: absolute; top: 50%; left: 10px; right: 10px;
-            height: 64px; transform: translateY(-50%); z-index: 4;
-            border: 2px solid #FF7A00; border-radius: 12px;
-            background: rgba(255,122,0,0.08);
-            box-shadow: 0 0 20px rgba(255,122,0,0.2);
+        .gacha-reel-indicator {
+            position: absolute; top: 0; bottom: 0;
+            left: 50%; transform: translateX(-50%); z-index: 10;
+            width: 3px; background: #FF7A00;
+            box-shadow: 0 0 12px rgba(255,122,0,0.6), 0 0 30px rgba(255,122,0,0.3);
+        }
+        .gacha-reel-indicator::before {
+            content: ''; position: absolute; top: -1px; left: 50%;
+            transform: translateX(-50%);
+            border-left: 8px solid transparent; border-right: 8px solid transparent;
+            border-top: 10px solid #FF7A00;
+            filter: drop-shadow(0 2px 4px rgba(255,122,0,0.5));
+        }
+        .gacha-reel-indicator::after {
+            content: ''; position: absolute; bottom: -1px; left: 50%;
+            transform: translateX(-50%);
+            border-left: 8px solid transparent; border-right: 8px solid transparent;
+            border-bottom: 10px solid #FF7A00;
+            filter: drop-shadow(0 -2px 4px rgba(255,122,0,0.5));
         }
         .gacha-reel {
-            display: flex; flex-direction: column;
+            display: flex; flex-direction: row;
+            position: absolute; top: 0; height: 100%;
         }
         .gacha-reel-item {
-            height: 64px; display: flex; align-items: center;
-            justify-content: space-between; padding: 0 20px;
-            flex-shrink: 0;
+            width: 120px; height: 100%; flex-shrink: 0;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 8px 4px; position: relative;
+            border-right: 1px solid rgba(255,255,255,0.04);
+            background: linear-gradient(180deg, rgba(255,255,255,0.02) 0%, transparent 100%);
         }
+        .gacha-reel-item::after {
+            content: ''; position: absolute; bottom: 0; left: 8px; right: 8px;
+            height: 3px; border-radius: 3px 3px 0 0;
+            background: var(--rarity-color, #4B69FF);
+        }
+        .gacha-reel-item .item-emoji { font-size: 1.8rem; margin-bottom: 4px; }
         .gacha-reel-name {
-            font-weight: 700; font-size: 0.95rem;
-            color: rgba(255,255,255,0.7);
+            font-weight: 700; font-size: 0.65rem; line-height: 1.2;
+            color: rgba(255,255,255,0.8); text-align: center;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-            max-width: 60%;
+            max-width: 100px;
         }
-        .gacha-winner-name { color: #FF7A00 !important; font-weight: 900; }
         .gacha-reel-price {
-            font-size: 0.8rem; color: rgba(255,255,255,0.4);
-            font-weight: 600;
+            font-size: 0.6rem; color: var(--rarity-color, #4B69FF);
+            font-weight: 700; margin-top: 2px;
+        }
+        .rarity-common { --rarity-color: #4B69FF; }
+        .rarity-uncommon { --rarity-color: #8847FF; }
+        .rarity-rare { --rarity-color: #D32CE6; }
+        .rarity-legendary { --rarity-color: #EB4B4B; }
+        .rarity-winner {
+            --rarity-color: #FFD700;
+            background: linear-gradient(180deg, rgba(255,215,0,0.08) 0%, rgba(255,215,0,0.02) 100%) !important;
         }
     </style>
 
@@ -739,18 +769,18 @@
     </div>
 </div>
 
-<!-- Modal: Gacha Slot Machine (Reveals AFTER payment) -->
+<!-- Modal: CS:GO Case Opening (Reveals AFTER payment) -->
 <div id="gacha-slot-modal">
     <div class="gacha-slot-card">
         <!-- Header -->
-        <div style="padding:20px 20px 10px;text-align:center;">
-            <h2 style="font-size:1.4rem;font-weight:900;color:var(--text-main,#1b1c1b);font-family:'Plus Jakarta Sans',sans-serif;">🎰 Mở Túi Mù</h2>
-            <p style="font-size:0.8rem;color:var(--text-muted,#888);margin-top:4px;">Đang bốc món cho bạn...</p>
+        <div style="padding:20px 20px 12px;text-align:center;">
+            <h2 style="font-size:1.3rem;font-weight:900;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;text-transform:uppercase;letter-spacing:1px;">🎰 Mở Túi Mù</h2>
+            <p id="gacha-slot-subtitle" style="font-size:0.75rem;color:rgba(255,255,255,0.4);margin-top:4px;">Đang bốc món cho bạn...</p>
         </div>
 
-        <!-- Reel Container -->
+        <!-- CS:GO Horizontal Reel -->
         <div id="gacha-reel-container" class="gacha-reel-container">
-            <div class="gacha-reel-center-line"></div>
+            <div class="gacha-reel-indicator"></div>
             <div id="gacha-reel" class="gacha-reel"></div>
         </div>
 
@@ -758,10 +788,10 @@
         <div id="gacha-slot-result" class="hidden" style="padding:0 20px;"></div>
 
         <!-- Confetti -->
-        <div id="gacha-slot-confetti" style="position:absolute;inset:0;pointer-events:none;overflow:hidden;border-radius:28px;"></div>
+        <div id="gacha-slot-confetti" style="position:absolute;inset:0;pointer-events:none;overflow:hidden;border-radius:16px;"></div>
 
         <!-- Footer spacing -->
-        <div style="height:24px;"></div>
+        <div style="height:20px;"></div>
     </div>
 </div>
 
