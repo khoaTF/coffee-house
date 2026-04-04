@@ -160,13 +160,14 @@ function buildDeliveryTabHTML() {
                             <label class="form-label text-slate-500 font-bold text-xs uppercase">Đơn tối thiểu (VNĐ)</label>
                             <input type="number" id="ds-min-order" class="form-control bg-slate-100 border-slate-200 rounded-xl" value="30000" step="5000">
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label text-slate-500 font-bold text-xs uppercase"><i class="fa-solid fa-map-pin me-1"></i> Vĩ độ quán (Latitude)</label>
-                            <input type="number" id="ds-store-lat" class="form-control bg-slate-100 border-slate-200 rounded-xl" step="0.0001">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label text-slate-500 font-bold text-xs uppercase"><i class="fa-solid fa-map-pin me-1"></i> Kinh độ quán (Longitude)</label>
-                            <input type="number" id="ds-store-lng" class="form-control bg-slate-100 border-slate-200 rounded-xl" step="0.0001">
+                        <div class="col-md-12">
+                            <label class="form-label text-slate-500 font-bold text-xs uppercase"><i class="fa-solid fa-map-location-dot me-1"></i> Tọa độ quán (Google Maps format)</label>
+                            <div class="input-group">
+                                <input type="text" id="ds-store-coords" class="form-control bg-slate-100 border-slate-200 rounded-start-xl" placeholder="VD: 10.776, 106.700">
+                                <button type="button" class="btn btn-outline-primary rounded-end-xl" onclick="autoDetectStoreLocation()">
+                                    <i class="fa-solid fa-crosshairs me-1"></i> Tự định vị
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <button type="button" class="btn mt-4 font-bold rounded-xl" style="background-color: #C0A062; color: #1A1814;" onclick="saveDeliverySettings()">
@@ -495,24 +496,57 @@ async function loadDeliverySettingsForm() {
             if (el('ds-base-fee')) el('ds-base-fee').value = data.delivery_base_fee || 15000;
             if (el('ds-fee-per-km')) el('ds-fee-per-km').value = data.delivery_fee_per_km || 5000;
             if (el('ds-min-order')) el('ds-min-order').value = data.delivery_min_order || 30000;
-            if (el('ds-store-lat')) el('ds-store-lat').value = data.store_lat || '';
-            if (el('ds-store-lng')) el('ds-store-lng').value = data.store_lng || '';
+            if (el('ds-store-coords')) {
+                if (data.store_lat && data.store_lng) {
+                    el('ds-store-coords').value = `${data.store_lat}, ${data.store_lng}`;
+                } else {
+                    el('ds-store-coords').value = '';
+                }
+            }
         }
     } catch(e) {
         console.error('Error loading delivery settings:', e);
     }
 }
 
+window.autoDetectStoreLocation = function() {
+    if (!navigator.geolocation) {
+        showAdminToast('Trình duyệt không hỗ trợ định vị.', 'error');
+        return;
+    }
+    const btn = document.querySelector('button[onclick="autoDetectStoreLocation()"]');
+    if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Đang tìm...';
+    
+    navigator.geolocation.getCurrentPosition((pos) => {
+        document.getElementById('ds-store-coords').value = `${pos.coords.latitude}, ${pos.coords.longitude}`;
+        if (btn) btn.innerHTML = '<i class="fa-solid fa-crosshairs me-1"></i> Tự định vị';
+        showAdminToast('Đã lấy vị trí hiện tại!', 'success');
+    }, (err) => {
+        if (btn) btn.innerHTML = '<i class="fa-solid fa-crosshairs me-1"></i> Tự định vị';
+        let msg = 'Không thể lấy vị trí.';
+        if (err.code === 1) msg = 'Vui lòng cấp quyền vị trí cho trình duyệt.';
+        showAdminToast(msg, 'error');
+    });
+};
+
 window.saveDeliverySettings = async function() {
     try {
+        let lat = null, lng = null;
+        const coordsStr = document.getElementById('ds-store-coords').value;
+        if (coordsStr && coordsStr.includes(',')) {
+            const parts = coordsStr.split(',');
+            lat = parseFloat(parts[0].trim()) || null;
+            lng = parseFloat(parts[1].trim()) || null;
+        }
+
         const update = {
             delivery_enabled: document.getElementById('ds-enabled').value === 'true',
             delivery_radius_km: parseFloat(document.getElementById('ds-radius').value) || 3,
             delivery_base_fee: parseInt(document.getElementById('ds-base-fee').value) || 15000,
             delivery_fee_per_km: parseInt(document.getElementById('ds-fee-per-km').value) || 5000,
             delivery_min_order: parseInt(document.getElementById('ds-min-order').value) || 30000,
-            store_lat: parseFloat(document.getElementById('ds-store-lat').value) || null,
-            store_lng: parseFloat(document.getElementById('ds-store-lng').value) || null
+            store_lat: lat,
+            store_lng: lng
         };
 
         const { error } = await supabase.from('store_settings').update(update).eq('id', 1);
