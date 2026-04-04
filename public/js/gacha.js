@@ -243,12 +243,10 @@ function injectGachaCard() {
     const available = menuItems.filter(i => i.price > 0);
     if (available.length < 3) return;
 
-    const disableGacha = activeOrderId !== null;
-
     const card = document.createElement('article');
     card.id = 'gacha-mystery-card';
     card.className = 'rounded-[24px] overflow-hidden group cursor-pointer active:scale-[0.98] transition-all col-span-2 sm:col-span-2 lg:col-span-2';
-    card.onclick = () => { if (!disableGacha) addMysteryBoxToCart(); };
+    card.onclick = () => addMysteryBoxToCart();
 
     card.innerHTML = `
         <div class="gacha-card-inner relative overflow-hidden rounded-[24px]" style="background:linear-gradient(135deg,#1B1C1B 0%,#2A1A14 40%,#994700 100%);min-height:130px;">
@@ -272,7 +270,7 @@ function injectGachaCard() {
                     </p>
                     <div class="flex items-center gap-3">
                         <span style="font-size:1.1rem;font-weight:900;color:#FF7A00;">${GACHA_PRICE.toLocaleString('vi-VN')}đ</span>
-                        <button style="background:linear-gradient(135deg,#FF7A00,#F59E0B);color:white;padding:8px 20px;border-radius:9999px;font-size:0.8rem;font-weight:700;border:none;cursor:pointer;box-shadow:0 4px 12px rgba(255,122,0,0.4);" ${disableGacha ? 'disabled style="opacity:0.4;"' : ''} class="active-scale">
+                        <button style="background:linear-gradient(135deg,#FF7A00,#F59E0B);color:white;padding:8px 20px;border-radius:9999px;font-size:0.8rem;font-weight:700;border:none;cursor:pointer;box-shadow:0 4px 12px rgba(255,122,0,0.4);" class="active-scale">
                             Thêm vào giỏ
                         </button>
                     </div>
