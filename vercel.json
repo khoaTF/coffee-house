@@ -1,46 +1,45 @@
 {
   "version": 2,
-  "cleanUrls": true,
-  "rewrites": [
+  "routes": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api"
+      "src": "/api/(.*)",
+      "dest": "/api"
     },
     {
-      "source": "/",
-      "destination": "/pages/index.html"
+      "src": "^/$",
+      "dest": "/pages/index.html"
     },
     {
-      "source": "/login",
-      "destination": "/pages/login.html"
+      "src": "^/login$",
+      "dest": "/pages/login.html"
     },
     {
-      "source": "/admin",
-      "destination": "/pages/admin.html"
+      "src": "^/admin$",
+      "dest": "/pages/admin.html"
     },
     {
-      "source": "/kitchen",
-      "destination": "/pages/kitchen.html"
+      "src": "^/kitchen$",
+      "dest": "/pages/kitchen.html"
     },
     {
-      "source": "/staff",
-      "destination": "/pages/staff.html"
+      "src": "^/staff$",
+      "dest": "/pages/staff.html"
     },
     {
-      "source": "/tv",
-      "destination": "/pages/tv.html"
+      "src": "^/tv$",
+      "dest": "/pages/tv.html"
     },
     {
-      "source": "/delivery",
-      "destination": "/pages/delivery.html"
+      "src": "^/delivery$",
+      "dest": "/pages/delivery.html"
     },
     {
-      "source": "/tracking",
-      "destination": "/pages/tracking.html"
+      "src": "^/tracking$",
+      "dest": "/pages/tracking.html"
     },
     {
-      "source": "/driver",
-      "destination": "/pages/driver.html"
+      "src": "^/driver$",
+      "dest": "/pages/driver.html"
     }
   ]
 }
