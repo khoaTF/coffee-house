@@ -4,6 +4,8 @@
 
 let driverData = null;
 let driverMap = null;
+let driverMarker = null;
+let accuracyCircle = null;
 let locationWatchId = null;
 let ordersChannel = null;
 let currentOrders = [];
@@ -86,6 +88,9 @@ function showDriverUI() {
     
     document.getElementById('driver-greeting').textContent = `Xin chào, ${driverData.name || 'Shipper'}!`;
     
+    // Auto set online on login
+    setDriverStatus(true);
+    
     initDriverMap();
     startLocationTracking();
     loadAssignedOrders();
@@ -113,16 +118,45 @@ function startLocationTracking() {
         return;
     }
     
+    const driverIcon = L.divIcon({
+        html: `<div style="background:linear-gradient(135deg,#22C55E,#16A34A);color:white;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;border:3px solid white;box-shadow:0 2px 12px rgba(0,0,0,0.4)"><i class="fa-solid fa-motorcycle"></i></div>`,
+        iconSize: [36, 36],
+        iconAnchor: [18, 18],
+        className: ''
+    });
+    
     locationWatchId = navigator.geolocation.watchPosition(
         async (pos) => {
-            const { latitude, longitude } = pos.coords;
+            const { latitude, longitude, accuracy } = pos.coords;
             
-            // Update map view
+            // Update or create marker
+            if (driverMarker) {
+                driverMarker.setLatLng([latitude, longitude]);
+            } else {
+                driverMarker = L.marker([latitude, longitude], { icon: driverIcon })
+                    .addTo(driverMap)
+                    .bindPopup(`<b>${driverData.name}</b><br>Vị trí hiện tại`);
+            }
+            
+            // Accuracy circle
+            if (accuracyCircle) {
+                accuracyCircle.setLatLng([latitude, longitude]).setRadius(accuracy);
+            } else {
+                accuracyCircle = L.circle([latitude, longitude], {
+                    radius: accuracy,
+                    color: '#22C55E',
+                    fillColor: '#22C55E',
+                    fillOpacity: 0.1,
+                    weight: 1
+                }).addTo(driverMap);
+            }
+            
+            // Center map
             if (driverMap) {
                 driverMap.setView([latitude, longitude], driverMap.getZoom());
             }
             
-            // Update DB every position change
+            // Update DB
             try {
                 await supabase
                     .from('delivery_drivers')
@@ -340,6 +374,10 @@ function setupOrdersRealtime() {
 window.addEventListener('beforeunload', () => {
     if (locationWatchId) navigator.geolocation.clearWatch(locationWatchId);
     if (ordersChannel) supabase.removeChannel(ordersChannel);
+    // Set offline when leaving
+    if (driverData) {
+        supabase.from('delivery_drivers').update({ status: 'offline' }).eq('id', driverData.id);
+    }
 });
 
 // --- Helper ---

@@ -115,11 +115,12 @@ function buildDeliveryTabHTML() {
                                 <th class="border-0 font-semibold py-3 px-4">SĐT</th>
                                 <th class="border-0 font-semibold py-3 px-4">Mã đăng nhập</th>
                                 <th class="border-0 font-semibold py-3 px-4">Trạng thái</th>
+                                <th class="border-0 font-semibold py-3 px-4">Vị trí GPS</th>
                                 <th class="border-0 font-semibold py-3 px-4 text-end">Hành động</th>
                             </tr>
                         </thead>
                         <tbody id="delivery-drivers-body" class="border-transparent">
-                            <tr><td colspan="5" class="text-center py-6 text-slate-500">Đang tải...</td></tr>
+                            <tr><td colspan="6" class="text-center py-6 text-slate-500">Đang tải...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -325,22 +326,30 @@ function renderDeliveryDrivers() {
     if (!body) return;
 
     if (deliveryDrivers.length === 0) {
-        body.innerHTML = '<tr><td colspan="5" class="text-center py-6 text-slate-500">Chưa có shipper nào.</td></tr>';
+        body.innerHTML = '<tr><td colspan="6" class="text-center py-6 text-slate-500">Chưa có shipper nào.</td></tr>';
         return;
     }
 
     const statusMap = {
-        'available': '<span class="px-2 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-bold">Online</span>',
-        'busy': '<span class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-lg text-xs font-bold">Đang giao</span>',
-        'offline': '<span class="px-2 py-1 bg-slate-100 text-slate-500 rounded-lg text-xs font-bold">Offline</span>'
+        'available': '<span class="px-2 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-bold"><i class="fa-solid fa-circle text-green-500 me-1" style="font-size:6px;vertical-align:middle"></i>Online</span>',
+        'busy': '<span class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-lg text-xs font-bold"><i class="fa-solid fa-circle text-yellow-500 me-1" style="font-size:6px;vertical-align:middle"></i>Đang giao</span>',
+        'offline': '<span class="px-2 py-1 bg-slate-100 text-slate-500 rounded-lg text-xs font-bold"><i class="fa-solid fa-circle text-slate-400 me-1" style="font-size:6px;vertical-align:middle"></i>Offline</span>'
     };
 
-    body.innerHTML = deliveryDrivers.map(d => `
+    body.innerHTML = deliveryDrivers.map(d => {
+        const lastUpdate = d.last_location_update ? new Date(d.last_location_update).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }) : '';
+        const hasGPS = d.current_lat && d.current_lng;
+        const gpsInfo = hasGPS
+            ? `<a href="https://www.google.com/maps?q=${d.current_lat},${d.current_lng}" target="_blank" class="text-xs text-blue-500 font-semibold hover:underline"><i class="fa-solid fa-location-dot me-1"></i>${Number(d.current_lat).toFixed(5)}, ${Number(d.current_lng).toFixed(5)}</a><div class="text-xs text-slate-400 mt-0.5">${lastUpdate ? '<i class="fa-regular fa-clock me-1"></i>' + lastUpdate : ''}</div>`
+            : '<span class="text-xs text-slate-400">Chưa có vị trí</span>';
+
+        return `
         <tr>
             <td class="px-4 py-3 font-semibold">${escapeH(d.name)}</td>
             <td class="px-4 py-3">${escapeH(d.phone || '---')}</td>
             <td class="px-4 py-3"><code class="bg-slate-100 px-2 py-1 rounded text-sm">${escapeH(d.driver_code)}</code></td>
             <td class="px-4 py-3">${statusMap[d.status] || statusMap['offline']}</td>
+            <td class="px-4 py-3">${gpsInfo}</td>
             <td class="px-4 py-3 text-end">
                 <button class="btn btn-sm btn-outline-warning rounded-lg me-1" onclick="toggleDriverActive('${d.id}', ${!d.is_active})">
                     ${d.is_active ? '<i class="fa-solid fa-ban"></i> Khóa' : '<i class="fa-solid fa-check"></i> Mở'}
@@ -350,7 +359,8 @@ function renderDeliveryDrivers() {
                 </button>
             </td>
         </tr>
-    `).join('');
+    `;
+    }).join('');
 }
 
 // --- Assign Driver Modal ---
@@ -516,9 +526,14 @@ window.saveDeliverySettings = async function() {
 };
 
 // --- Realtime ---
+let deliveryDriversChannel = null;
+
 function setupDeliveryRealtime() {
     if (deliveryRealtimeChannel) {
         supabase.removeChannel(deliveryRealtimeChannel);
+    }
+    if (deliveryDriversChannel) {
+        supabase.removeChannel(deliveryDriversChannel);
     }
 
     deliveryRealtimeChannel = supabase
@@ -530,6 +545,18 @@ function setupDeliveryRealtime() {
             filter: 'order_type=eq.delivery'
         }, () => {
             loadDeliveryOrders();
+        })
+        .subscribe();
+
+    // Realtime sync for driver status & GPS
+    deliveryDriversChannel = supabase
+        .channel('admin-delivery-drivers')
+        .on('postgres_changes', {
+            event: '*',
+            schema: 'public',
+            table: 'delivery_drivers'
+        }, () => {
+            loadDeliveryDrivers();
         })
         .subscribe();
 }
