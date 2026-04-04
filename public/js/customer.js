@@ -1030,8 +1030,7 @@ function attachEventListeners() {
     if (sDesktop) sDesktop.addEventListener('input', searchHandler);
     if (sMobile) sMobile.addEventListener('input', searchHandler);
 
-    // Language Toggle
-    document.getElementById('lang-toggle').addEventListener('click', toggleLanguage);
+    // Language Toggle — handled via onclick="toggleLanguage()" in HTML (defined in i18n.js)
     
     confirmOptionsBtn.addEventListener('click', () => {
         if (!currentOptionsItem) return;
@@ -2232,36 +2231,7 @@ function showThankYouCelebration(callback) {
     setTimeout(() => { if (document.getElementById('thank-you-overlay')) { closeEl(); setTimeout(callback, 400); } }, 8000);
 }
 
-// --- Language Support ---
-function toggleLanguage() {
-    currentLang = currentLang === 'VI' ? 'EN' : 'VI';
-    document.getElementById('lang-toggle').innerText = currentLang === 'VI' ? 'EN' : 'VI';
-    applyTranslations();
-}
-
-
-function applyTranslations() {
-    const t = translations[currentLang];
-    document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        if (t[key]) {
-            if (el.tagName === 'INPUT') el.placeholder = t[key];
-            else el.innerHTML = t[key];
-        }
-    });
-
-    // Update search placeholder manually
-    const searchEl = document.getElementById('menu-search');
-    if (searchEl) searchEl.placeholder = t.search_placeholder;
-    const searchDesktop = document.getElementById('menu-search-desktop');
-    if (searchDesktop) searchDesktop.placeholder = t.search_placeholder;
-    const searchMobile = document.getElementById('menu-search-mobile');
-    if (searchMobile) searchMobile.placeholder = t.search_placeholder;
-    
-    // Refresh menu to update dynamic labels
-    const activeCategory = getActiveCategory();
-    renderMenu(activeCategory);
-}
+// Language support is handled entirely by i18n.js (window.toggleLanguage, window.t)
 
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
