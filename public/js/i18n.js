@@ -32,7 +32,32 @@ const translations = {
         btn_cancel: "Không",
         btn_confirm: "Có, xác nhận",
         payment_done: "Tôi đã chuyển khoản xong",
-        qr_transfer_memo: "Nội dung CK bắt buộc:"
+        qr_transfer_memo: "Nội dung CK bắt buộc:",
+        // Gacha
+        gacha_title: "🎰 Túi Mù",
+        gacha_subtitle: "Thanh toán trước, mở túi sau! Lời hay lỗ — hên xui!",
+        gacha_add_btn: "Thêm vào giỏ",
+        gacha_limited: "✦ Giới hạn ✦",
+        gacha_added_toast: "🎰 Đã thêm Túi Mù vào giỏ! Thanh toán để mở túi.",
+        gacha_wait_toast: "Đợi đơn hiện tại hoàn thành trước nhé!",
+        gacha_win: "LỜI RỒI!",
+        gacha_even: "Hoà!",
+        gacha_lose: "Lỗ nhẹ!",
+        gacha_save: "🔥 Tiết kiệm",
+        gacha_exact: "➡️ Giá vừa đúng!",
+        gacha_diff: "📉 Chênh",
+        gacha_original_price: "Giá gốc:",
+        gacha_you_paid: "Bạn trả:",
+        // Categories
+        filter_milk_tea: "Trà sữa",
+        filter_smoothie: "Đá xay",
+        filter_fruit_tea: "Trà trái cây",
+        filter_pastry: "Bánh ngọt",
+        // Delivery
+        delivery_btn: "Đặt món trực tuyến",
+        delivery_address: "Địa chỉ giao hàng",
+        delivery_phone: "Số điện thoại",
+        delivery_note: "Ghi chú giao hàng"
     },
     en: {
         app_title: "Nohope Coffee",
@@ -67,7 +92,32 @@ const translations = {
         btn_cancel: "No",
         btn_confirm: "Yes, confirm",
         payment_done: "I have completed the transfer",
-        qr_transfer_memo: "Mandatory Transfer Memo:"
+        qr_transfer_memo: "Mandatory Transfer Memo:",
+        // Gacha
+        gacha_title: "🎰 Mystery Box",
+        gacha_subtitle: "Pay first, reveal after! Win or lose — it's a gamble!",
+        gacha_add_btn: "Add to Cart",
+        gacha_limited: "✦ Limited ✦",
+        gacha_added_toast: "🎰 Mystery Box added! Checkout to reveal.",
+        gacha_wait_toast: "Wait for your current order to complete first!",
+        gacha_win: "YOU WON!",
+        gacha_even: "Even!",
+        gacha_lose: "Slight loss!",
+        gacha_save: "🔥 You saved",
+        gacha_exact: "➡️ Exact price!",
+        gacha_diff: "📉 Diff",
+        gacha_original_price: "Original:",
+        gacha_you_paid: "You paid:",
+        // Categories
+        filter_milk_tea: "Milk Tea",
+        filter_smoothie: "Smoothie",
+        filter_fruit_tea: "Fruit Tea",
+        filter_pastry: "Pastry",
+        // Delivery
+        delivery_btn: "Order Online",
+        delivery_address: "Delivery Address",
+        delivery_phone: "Phone Number",
+        delivery_note: "Delivery Note"
     }
 };
 
