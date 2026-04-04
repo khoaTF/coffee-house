@@ -34,9 +34,25 @@ function cartHasGacha() {
     return cart.some(i => i.isGacha);
 }
 
+// --- Weighted random: expensive items are rarer ---
+function weightedRandomItem(items) {
+    // Weight: <=GACHA_PRICE → 3x, <=1.5x → 2x, >1.5x → 1x
+    const weighted = items.map(item => ({
+        item,
+        weight: item.price <= GACHA_PRICE ? 3
+              : item.price <= GACHA_PRICE * 1.5 ? 2
+              : 1
+    }));
+    const totalWeight = weighted.reduce((sum, w) => sum + w.weight, 0);
+    let roll = Math.random() * totalWeight;
+    for (const w of weighted) {
+        roll -= w.weight;
+        if (roll <= 0) return w.item;
+    }
+    return weighted[weighted.length - 1].item;
+}
+
 // --- Resolve gacha items BEFORE order placement ---
-// Replaces mystery box entries in cart with actual random items (keeping gacha price)
-// Returns array of { gachaCartKey, resolvedItem } for animation later
 function resolveGachaInCart() {
     const available = menuItems.filter(i => i.price > 0 && !i.isGacha);
     if (available.length === 0) return [];
@@ -46,7 +62,7 @@ function resolveGachaInCart() {
     cart.forEach(item => {
         if (!item.isGacha) return;
 
-        const randomItem = available[Math.floor(Math.random() * available.length)];
+        const randomItem = weightedRandomItem(available);
 
         results.push({
             cartKey: item.cartKey,
@@ -118,7 +134,7 @@ function renderSlotMachine(allNames, result, onComplete) {
     reelContainer.classList.remove('hidden');
 
     // Create reel items: many random names, then the winning name at the end
-    const REEL_COUNT = 25;
+    const REEL_COUNT = 35;
     const shuffled = [...allNames].sort(() => Math.random() - 0.5);
     const reelItems = [];
 
@@ -156,14 +172,14 @@ function renderSlotMachine(allNames, result, onComplete) {
 
     // Animate
     requestAnimationFrame(() => {
-        reel.style.transition = `transform 3.5s cubic-bezier(0.10, 0.80, 0.05, 1.00)`;
+        reel.style.transition = `transform 5s cubic-bezier(0.10, 0.80, 0.05, 1.00)`;
         reel.style.transform = `translateY(-${targetOffset}px)`;
     });
 
     // Vibrate during scroll
     if (navigator.vibrate) {
         setTimeout(() => navigator.vibrate([30, 20, 30, 20, 30]), 200);
-        setTimeout(() => navigator.vibrate(100), 3000);
+        setTimeout(() => navigator.vibrate(100), 4500);
     }
 
     // Show result after animation
@@ -204,7 +220,7 @@ function renderSlotMachine(allNames, result, onComplete) {
 
         // Auto-close after delay
         setTimeout(onComplete, 3500);
-    }, 3800);
+    }, 5300);
 }
 
 // --- Confetti ---
