@@ -690,6 +690,11 @@ function renderMenu(category) {
 
         menuContainer.appendChild(card);
     });
+
+    // Inject Mystery Box gacha card at top (only on "All" category, no search)
+    if (typeof injectGachaCard === 'function' && !searchQuery && (category === 'All')) {
+        injectGachaCard();
+    }
 };
 
 function updateMenuCardsUI() {
