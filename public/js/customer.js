@@ -187,7 +187,7 @@ function renderCategories(activeCategory = 'All') {
         const isActive = cat === activeCategory;
         if (isDesktop) {
             return `
-                <a href="#" data-category="${cat}" class="category-pill flex items-center space-x-3 px-6 py-3 rounded-xl transition-all ${isActive ? 'bg-white shadow-[0_4px_20px_rgba(88,66,53,0.08)] text-[#994700] font-bold' : 'text-[#1B1C1C]/60 hover:text-[#1B1C1C] hover:bg-[#1B1C1C]/5 font-medium'}">
+                <a href="#" data-category="${cat}" class="category-pill flex items-center space-x-3 px-6 py-3 rounded-xl transition-all ${isActive ? 'bg-white shadow-[0_4px_20px_rgba(88,66,53,0.12)] text-[#994700] font-bold' : 'text-white/70 hover:text-white hover:bg-white/10 font-medium'}">
                     <span>${cat === 'All' ? 'Tất cả' : cat}</span>
                 </a>
             `;
