@@ -122,6 +122,36 @@ window.toggleLanguage = function() {
 /** Get current lang code externally */
 window.getCurrentLang = function() { return currentLang; };
 
+// Map of DB category names (any language) → translations
+const categoryMap = {
+    'All':          { vi: 'Tất cả',       en: 'All' },
+    'Tất cả':      { vi: 'Tất cả',       en: 'All' },
+    'Cà phê':      { vi: 'Cà phê',       en: 'Coffee' },
+    'Coffee':      { vi: 'Cà phê',       en: 'Coffee' },
+    'Trà':         { vi: 'Trà',          en: 'Tea' },
+    'Tea':         { vi: 'Trà',          en: 'Tea' },
+    'Trà sữa':     { vi: 'Trà sữa',      en: 'Milk Tea' },
+    'Milk Tea':    { vi: 'Trà sữa',      en: 'Milk Tea' },
+    'Đá xay':      { vi: 'Đá xay',       en: 'Smoothie' },
+    'Smoothie':    { vi: 'Đá xay',       en: 'Smoothie' },
+    'Sinh tố':     { vi: 'Sinh tố',      en: 'Smoothie' },
+    'Trà trái cây':{ vi: 'Trà trái cây', en: 'Fruit Tea' },
+    'Fruit Tea':   { vi: 'Trà trái cây', en: 'Fruit Tea' },
+    'Bánh ngọt':   { vi: 'Bánh ngọt',    en: 'Pastry' },
+    'Pastry':      { vi: 'Bánh ngọt',    en: 'Pastry' },
+    'Đồ ăn':       { vi: 'Đồ ăn',        en: 'Food' },
+    'Food':        { vi: 'Đồ ăn',        en: 'Food' },
+};
+
+/**
+ * Translates a database category name to the current language.
+ * Usage in renderCategories: window.translateCategory(cat)
+ */
+window.translateCategory = function(cat) {
+    const entry = categoryMap[cat];
+    return entry ? (entry[currentLang] || cat) : cat;
+};
+
 // ─── Apply all translations to DOM ───────────────────────────────────────────
 function applyLanguage() {
     const tr = translations[currentLang];
@@ -216,7 +246,30 @@ function applyLanguage() {
         console.warn('[i18n] card patch failed:', e.message);
     }
 
-    // 8. Notify other modules
+    // 9. Patch category pills in-place (no re-render needed)
+    try {
+        document.querySelectorAll('[data-category]').forEach(el => {
+            const raw = el.getAttribute('data-category');
+            const entry = categoryMap[raw];
+            if (!entry) return;
+            const textNode = el.querySelector('span:not(.material-symbols-outlined)') || el;
+            const target = textNode.tagName === 'SPAN' ? textNode : null;
+            if (target) {
+                target.textContent = entry[currentLang] || raw;
+            } else {
+                // button without span — set textContent directly
+                el.childNodes.forEach(node => {
+                    if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
+                        node.textContent = ' ' + (entry[currentLang] || raw) + ' ';
+                    }
+                });
+            }
+        });
+    } catch(e) {
+        console.warn('[i18n] category pill patch failed:', e.message);
+    }
+
+    // 10. Notify other modules
     document.dispatchEvent(new CustomEvent('langchange', { detail: { lang: currentLang, t: tr } }));
 }
 
