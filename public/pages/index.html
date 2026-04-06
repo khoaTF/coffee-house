@@ -193,12 +193,12 @@
             <!-- Notifications badge here if needed -->
         </button>
         
-        <div class="mt-6 flex flex-col space-y-4">
-            <button onclick="requestStaffService('staff'); return false;" class="text-[#1B1C1C]/70 pl-4 py-2 hover:text-[#994700] flex items-center space-x-3 text-sm bg-transparent border-0">
+        <div class="mt-6 flex flex-col space-y-1">
+            <button data-service="staff" onclick="requestStaffService('staff'); return false;" class="text-white/70 pl-4 py-2.5 hover:text-white hover:bg-white/10 rounded-xl flex items-center space-x-3 text-sm bg-transparent border-0 outline-none w-full transition-all">
                 <span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
                 <span>Gọi Nhân Viên</span>
             </button>
-            <button id="lang-toggle" onclick="toggleLanguage()" class="text-start text-[#1B1C1C]/70 pl-4 py-2 hover:text-[#994700] flex items-center space-x-3 text-sm bg-transparent border-0">
+            <button id="lang-toggle" onclick="toggleLanguage()" class="text-white/70 pl-4 py-2.5 hover:text-white hover:bg-white/10 rounded-xl flex items-center space-x-3 text-sm bg-transparent border-0 outline-none w-full transition-all">
                 <span class="material-symbols-outlined" data-icon="language">language</span>
                 <span>EN / VI</span>
             </button>

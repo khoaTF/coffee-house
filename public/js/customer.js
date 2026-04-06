@@ -174,6 +174,8 @@ function getActiveCategory() {
     const node = activeDesktopNode || activeMobileNode;
     return node && node.dataset ? node.dataset.category : 'All';
 }
+// Expose for i18n.js
+window.getActiveCategory = getActiveCategory;
 
 function renderCategories(activeCategory = 'All') {
     const categories = ['All', ...new Set(menuItems.map(item => item.category).filter(Boolean))];
@@ -185,14 +187,14 @@ function renderCategories(activeCategory = 'All') {
         const isActive = cat === activeCategory;
         if (isDesktop) {
             return `
-                <a href="#" data-category="${cat}" class="category-pill flex items-center space-x-3 px-6 py-3 rounded-xl transition-all ${isActive ? 'bg-white shadow-[0_4px_20px_rgba(88,66,53,0.08)] text-[#994700] font-bold' : 'text-[#1B1C1C]/60 hover:text-[#1B1C1C] hover:bg-[#1B1C1C]/5 font-medium'}">
-                    <span>${cat === 'All' ? 'Tất cả' : cat}</span>
+                <a href="#" data-category="${cat}" class="category-pill flex items-center space-x-3 px-6 py-3 rounded-xl transition-all ${isActive ? 'bg-white shadow-[0_4px_20px_rgba(88,66,53,0.12)] text-[#994700] font-bold' : 'text-white/70 hover:text-white hover:bg-white/10 font-medium'}">
+                    <span>${window.translateCategory ? window.translateCategory(cat) : cat}</span>
                 </a>
             `;
         } else {
             return `
                 <button data-category="${cat}" class="category-pill whitespace-nowrap px-5 py-2.5 rounded-2xl text-sm transition-all ${isActive ? 'bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white font-bold shadow-md shadow-[#FF7A00]/20' : 'bg-[#FCF9F8] dark:bg-[#1B1C1C] text-on-surface-variant font-medium border border-outline-variant/20'}">
-                    ${cat === 'All' ? 'Tất cả' : cat}
+                    ${window.translateCategory ? window.translateCategory(cat) : cat}
                 </button>
             `;
         }
@@ -577,7 +579,7 @@ function getAvailableToAdd(product) {
     return additionalAllowed === Infinity ? 999 : additionalAllowed;
 }
 
-// Render Menu
+// Render Menu (also exposed on window for i18n re-render)
 function renderMenu(category) {
     menuContainer.innerHTML = '';
     const sqDesktop = document.getElementById('menu-search-desktop')?.value || '';
@@ -665,10 +667,10 @@ function renderMenu(category) {
                       </button>
                     </div>
                     ` : `
-                    <button class="w-full bg-[#1b1c1b] dark:bg-[#F0EDEC] text-white dark:text-[#1b1c1b] font-bold py-2.5 rounded-full hover:bg-black active:scale-95 transition-transform flex items-center justify-center gap-2" 
-                        onclick="event.stopPropagation(); updateCart('${item._id}', 1)" ${disableAddBtn ? "disabled style='opacity:0.5;background:#888;cursor:not-allowed;color:white;'" : ""}>
+                    <button class="w-full bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white font-bold py-2.5 rounded-full hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 shadow-sm" 
+                        onclick="event.stopPropagation(); updateCart('${item._id}', 1)" ${disableAddBtn ? "disabled style='opacity:0.45;cursor:not-allowed;'" : ""}>
                       <i class="fa-solid ${hasOptions ? 'fa-sliders' : 'fa-plus'} text-[16px]"></i>
-                      ${hasOptions ? 'Tùy chọn' : 'Thêm vào giỏ'}
+                      ${hasOptions ? (window.t ? window.t('options_label') : 'Tùy chọn') : (window.t ? window.t('add_to_cart') : 'Thêm vào giỏ')}
                     </button>
                     `}
                 </div>
@@ -695,7 +697,9 @@ function renderMenu(category) {
     if (typeof injectGachaCard === 'function' && !searchQuery && (category === 'All')) {
         injectGachaCard();
     }
-};
+}
+// Expose for i18n.js re-render on language toggle
+window.renderMenu = renderMenu;
 
 function updateMenuCardsUI() {
     const cards = document.querySelectorAll('article[data-product-id]');
@@ -760,10 +764,10 @@ function updateMenuCardsUI() {
                 `;
             } else {
                 actionBtnContainer.innerHTML = `
-                    <button class="w-full bg-[#1b1c1b] dark:bg-[#F0EDEC] text-white dark:text-[#1b1c1b] font-bold py-2.5 rounded-full hover:bg-black active:scale-95 transition-transform flex items-center justify-center gap-2" 
-                        onclick="event.stopPropagation(); updateCart('${item._id}', 1)" ${disableAddBtn ? "disabled style='opacity:0.5;background:#888;cursor:not-allowed;color:white;'" : ""}>
+                    <button class="w-full bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white font-bold py-2.5 rounded-full hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 shadow-sm" 
+                        onclick="event.stopPropagation(); updateCart('${item._id}', 1)" ${disableAddBtn ? "disabled style='opacity:0.45;cursor:not-allowed;'" : ""}>
                       <i class="fa-solid ${hasOptions ? 'fa-sliders' : 'fa-plus'} text-[16px]"></i>
-                      ${hasOptions ? 'Tùy chọn' : 'Thêm vào giỏ'}
+                      ${hasOptions ? (window.t ? window.t('options_label') : 'T\u00f9y ch\u1ecdn') : (window.t ? window.t('add_to_cart') : 'Th\u00eam v\u00e0o gi\u1ecf')}
                     </button>
                 `;
             }
@@ -1026,8 +1030,7 @@ function attachEventListeners() {
     if (sDesktop) sDesktop.addEventListener('input', searchHandler);
     if (sMobile) sMobile.addEventListener('input', searchHandler);
 
-    // Language Toggle
-    document.getElementById('lang-toggle').addEventListener('click', toggleLanguage);
+    // Language Toggle — handled via onclick="toggleLanguage()" in HTML (defined in i18n.js)
     
     confirmOptionsBtn.addEventListener('click', () => {
         if (!currentOptionsItem) return;
@@ -2228,36 +2231,7 @@ function showThankYouCelebration(callback) {
     setTimeout(() => { if (document.getElementById('thank-you-overlay')) { closeEl(); setTimeout(callback, 400); } }, 8000);
 }
 
-// --- Language Support ---
-function toggleLanguage() {
-    currentLang = currentLang === 'VI' ? 'EN' : 'VI';
-    document.getElementById('lang-toggle').innerText = currentLang === 'VI' ? 'EN' : 'VI';
-    applyTranslations();
-}
-
-
-function applyTranslations() {
-    const t = translations[currentLang];
-    document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        if (t[key]) {
-            if (el.tagName === 'INPUT') el.placeholder = t[key];
-            else el.innerHTML = t[key];
-        }
-    });
-
-    // Update search placeholder manually
-    const searchEl = document.getElementById('menu-search');
-    if (searchEl) searchEl.placeholder = t.search_placeholder;
-    const searchDesktop = document.getElementById('menu-search-desktop');
-    if (searchDesktop) searchDesktop.placeholder = t.search_placeholder;
-    const searchMobile = document.getElementById('menu-search-mobile');
-    if (searchMobile) searchMobile.placeholder = t.search_placeholder;
-    
-    // Refresh menu to update dynamic labels
-    const activeCategory = getActiveCategory();
-    renderMenu(activeCategory);
-}
+// Language support is handled entirely by i18n.js (window.toggleLanguage, window.t)
 
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
