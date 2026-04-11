@@ -101,6 +101,44 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    const confirmUpdateCmdBtn = document.getElementById('confirm-update-tenant-btn');
+    if (confirmUpdateCmdBtn) {
+        confirmUpdateCmdBtn.addEventListener('click', async () => {
+            const tenantId = document.getElementById('manage-tenant-id').value;
+            const newStatus = document.getElementById('manage-tenant-status').value;
+            
+            confirmUpdateCmdBtn.disabled = true;
+            confirmUpdateCmdBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Saving...';
+
+            try {
+                const { data, error } = await supabase.rpc('update_tenant_status', {
+                    target_tenant_id: tenantId,
+                    new_status: newStatus,
+                    owner_secret: ownerSecret
+                });
+
+                if(error) throw error;
+
+                showToast('Tenant status updated successfully', 'success');
+                
+                // Close modal
+                const modalEl = document.getElementById('manageTenantModal');
+                const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                modal.hide();
+                
+                // Refresh dashboard
+                await fetchAndRenderTenants();
+
+            } catch (err) {
+                console.error(err);
+                showToast(err.message, 'danger');
+            } finally {
+                confirmUpdateCmdBtn.disabled = false;
+                confirmUpdateCmdBtn.innerHTML = 'Save Changes';
+            }
+        });
+    }
 });
 
 async function showDashboard(preloadedData = null) {
@@ -156,11 +194,27 @@ function renderTenants(tenants) {
             hour: '2-digit', minute: '2-digit'
         });
         
+        let statusColor = 'success';
+        let statusText = 'Active';
+        if (t.status === 'suspended') {
+            statusColor = 'danger';
+            statusText = 'Suspended';
+        }
+
+        const safeObjStr = JSON.stringify({
+            id: t.id,
+            name: t.name,
+            status: t.status || 'active'
+        }).replace(/"/g, '&quot;');
+
         html += `
-            <div class="tenant-card">
+            <div class="tenant-card border-${statusColor} border-opacity-25">
                 <div class="tenant-header">
                     <div>
-                        <h3 class="tenant-name">${escapeHtml(t.name)}</h3>
+                        <h3 class="tenant-name d-flex align-items-center">
+                            ${escapeHtml(t.name)}
+                            <span class="badge bg-${statusColor} bg-opacity-25 text-${statusColor} ms-2 px-2 py-1 border border-${statusColor} border-opacity-25" style="font-size: 0.6rem; vertical-align: middle;">${statusText}</span>
+                        </h3>
                         <div class="tenant-id" onclick="copyTenantId('${t.id}')" style="cursor:pointer" title="Click to copy">${t.id}</div>
                     </div>
                 </div>
@@ -180,7 +234,7 @@ function renderTenants(tenants) {
                     <button class="action-btn" onclick="copyTenantId('${t.id}')" title="Copy Tenant ID">
                         <i class="fa-regular fa-copy"></i> Copy ID
                     </button>
-                    <button class="action-btn" title="Tenant Settings (Coming Soon)" disabled style="opacity:0.3">
+                    <button class="action-btn text-primary border-primary border-opacity-25 bg-primary bg-opacity-10" title="Tenant Settings" onclick="openManageModal(this)" data-tenant="${safeObjStr}">
                         <i class="fa-solid fa-gear"></i> Manage
                     </button>
                 </div>
@@ -205,6 +259,25 @@ function copyTenantId(id) {
     navigator.clipboard.writeText(id).then(() => {
         showToast('Tenant ID copied to clipboard!', 'success');
     });
+}
+
+function openManageModal(btnEl) {
+    try {
+        const tenantDataStr = btnEl.getAttribute('data-tenant');
+        if (!tenantDataStr) return;
+        const t = JSON.parse(tenantDataStr);
+        
+        document.getElementById('manage-tenant-id').value = t.id;
+        document.getElementById('manage-tenant-id-display').value = t.id;
+        document.getElementById('manage-tenant-name-display').innerText = t.name;
+        document.getElementById('manage-tenant-status').value = t.status || 'active';
+        
+        const modalEl = document.getElementById('manageTenantModal');
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+    } catch(e) {
+        console.error("Error opening manage modal:", e);
+    }
 }
 
 function showToast(message, type = 'success') {
