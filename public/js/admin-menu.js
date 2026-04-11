@@ -6,7 +6,7 @@
 
 async function fetchProducts() {
     try {
-        const { data, error } = await supabase.from('products').select('*').order('name');
+        const { data, error } = await supabase.from('products').select('*').eq('tenant_id', window.AdminState.tenantId).order('name');
         if (error) throw error;
 
         products = data.map(p => ({
@@ -500,10 +500,11 @@ async function saveProduct() {
 
     try {
         if (id) {
-            const { error } = await supabase.from('products').update(productData).eq('id', id);
+            const { error } = await supabase.from('products').update(productData).eq('id', id).eq('tenant_id', window.AdminState.tenantId);
             if (error) throw error;
             logAudit('Cập nhật món', `ID: ${id}, Tên: ${productData.name}`);
         } else {
+            productData.tenant_id = window.AdminState.tenantId;
             const { error } = await supabase.from('products').insert([productData]);
             if (error) throw error;
             logAudit('Thêm món mới', `Tên: ${productData.name}`);
@@ -568,7 +569,7 @@ async function saveQuickPromo() {
     };
 
     try {
-        const { error } = await supabase.from('products').update(promoData).eq('id', id);
+        const { error } = await supabase.from('products').update(promoData).eq('id', id).eq('tenant_id', window.AdminState.tenantId);
         if (error) throw error;
         logAudit('Cập nhật Quick Promo', `ID món: ${id}, Giá mới: ${priceStr}`);
 
@@ -585,7 +586,7 @@ async function deleteProduct(id) {
     if (!confirmed) return;
 
     try {
-        const { error } = await supabase.from('products').update({ is_available: false }).eq('id', id);
+        const { error } = await supabase.from('products').update({ is_available: false }).eq('id', id).eq('tenant_id', window.AdminState.tenantId);
         if (error) throw error;
         fetchProducts();
     } catch (e) {
@@ -599,7 +600,7 @@ async function restoreProduct(id) {
     if (!confirmed) return;
 
     try {
-        const { error } = await supabase.from('products').update({ is_available: true }).eq('id', id);
+        const { error } = await supabase.from('products').update({ is_available: true }).eq('id', id).eq('tenant_id', window.AdminState.tenantId);
         if (error) throw error;
         fetchProducts();
     } catch (e) {

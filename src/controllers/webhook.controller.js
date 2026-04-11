@@ -1,6 +1,10 @@
 const supabase = require('../config/supabase');
 
 const handlePaymentWebhook = async (req, res) => {
+    if (!supabase) {
+        return res.status(500).json({ error: 'Server misconfiguration: Database not connected' });
+    }
+
     const webhookSecret = process.env.WEBHOOK_SECRET;
     if (!webhookSecret) {
         console.error('❌ FATAL: WEBHOOK_SECRET is not set. Payment webhook is disabled for security.');

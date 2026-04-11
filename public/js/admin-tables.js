@@ -8,13 +8,14 @@ async function fetchTablesStatus() {
         // C2: Fetch table_count from store_settings dynamically
         let maxTable = 15;
         try {
-            const { data: settings } = await supabase.from('store_settings').select('table_count').eq('id', 1).maybeSingle();
+            const { data: settings } = await supabase.from('store_settings').select('table_count').eq('tenant_id', window.AdminState.tenantId).maybeSingle();
             if (settings && settings.table_count > 0) maxTable = settings.table_count;
         } catch(_) {}
 
         const { data, error } = await supabase
             .from('orders')
             .select('*')
+            .eq('tenant_id', window.AdminState.tenantId)
             .or('status.in.(Pending,Preparing,Ready),and(status.eq.Completed,is_paid.eq.false)');
 
         if (error) throw error;
@@ -135,6 +136,7 @@ window.showTableActions = async (tableNum, tableOrders) => {
             const { error: ordErr } = await supabase
                 .from('orders')
                 .update({ table_number: newTable.toString() })
+                .eq('tenant_id', window.AdminState.tenantId)
                 .eq('table_number', tableNum.toString());
             if (ordErr) throw ordErr;
 
@@ -142,6 +144,7 @@ window.showTableActions = async (tableNum, tableOrders) => {
             const { error: sessErr } = await supabase
                 .from('table_sessions')
                 .update({ table_number: newTable.toString(), last_seen: new Date().toISOString() })
+                .eq('tenant_id', window.AdminState.tenantId)
                 .eq('table_number', tableNum.toString());
             if (sessErr) console.warn('Session transfer warning:', sessErr.message);
 
@@ -171,7 +174,7 @@ window.showTableActions = async (tableNum, tableOrders) => {
         try {
             const unpaidOrders = tableOrders.filter(o => !o.is_paid);
             for (const ord of unpaidOrders) {
-                await supabase.from('orders').update({ is_paid: true, payment_status: 'paid' }).eq('id', ord._id);
+                await supabase.from('orders').update({ is_paid: true, payment_status: 'paid' }).eq('id', ord._id).eq('tenant_id', window.AdminState.tenantId);
 
                 // Ghi sổ quỹ
                 const amount = ord.total_price || ord.totalPrice || 0;
@@ -179,6 +182,7 @@ window.showTableActions = async (tableNum, tableOrders) => {
                     const orderIdShort = String(ord._id).substring(0, 8);
                     const staffName = sessionStorage.getItem('nohope_staff_name') || localStorage.getItem('nohope_staff_name') || 'Admin';
                     await supabase.from('cash_transactions').insert({
+                        tenant_id: window.AdminState.tenantId,
                         type: 'income',
                         amount: amount,
                         description: `Thu tiền bàn ${tableNum} đơn #${orderIdShort}`,
@@ -214,7 +218,7 @@ window.showTableActions = async (tableNum, tableOrders) => {
         );
         if (!confirmed) return;
         try {
-            await supabase.from('table_sessions').delete().eq('table_number', tableNum.toString());
+            await supabase.from('table_sessions').delete().eq('tenant_id', window.AdminState.tenantId).eq('table_number', tableNum.toString());
             logAudit('Dọn bàn', `Bàn ${tableNum}`);
             showAdminToast(`Bàn ${tableNum} đã dọn xong — sẵn sàng cho khách mới`, 'success');
             fetchTablesStatus();

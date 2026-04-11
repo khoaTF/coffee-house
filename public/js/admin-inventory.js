@@ -6,7 +6,7 @@
 
 async function fetchIngredients() {
     try {
-        const { data, error } = await supabase.from('ingredients').select('*').order('name');
+        const { data, error } = await supabase.from('ingredients').select('*').eq('tenant_id', window.AdminState.tenantId).order('name');
         if (error) throw error;
 
         ingredients = data.map(i => ({
@@ -196,13 +196,14 @@ async function saveIngredient() {
 
     try {
         if (id) {
-            const { error } = await supabase.from('ingredients').update(payload).eq('id', id);
+            const { error } = await supabase.from('ingredients').update(payload).eq('id', id).eq('tenant_id', window.AdminState.tenantId);
             if (error) throw error;
 
             if (stock !== oldStock) {
                 const diff = stock - oldStock;
                 const changeType = diff > 0 ? 'restock' : 'adjustment';
                 await supabase.from('inventory_logs').insert([{
+                    tenant_id: window.AdminState.tenantId,
                     ingredient_id: id,
                     change_type: changeType,
                     amount: Math.abs(diff),
@@ -212,11 +213,13 @@ async function saveIngredient() {
                 }]);
             }
         } else {
+            payload.tenant_id = window.AdminState.tenantId;
             const { data, error } = await supabase.from('ingredients').insert([payload]).select();
             if (error) throw error;
 
             if (stock > 0 && data && data.length > 0) {
                 await supabase.from('inventory_logs').insert([{
+                    tenant_id: window.AdminState.tenantId,
                     ingredient_id: data[0].id,
                     change_type: 'restock',
                     amount: stock,
@@ -243,7 +246,7 @@ async function deleteIngredient(id, stock) {
     const confirmed = await customConfirm(msg, title);
     if (!confirmed) return;
     try {
-        const { error } = await supabase.from('ingredients').delete().eq('id', id);
+        const { error } = await supabase.from('ingredients').delete().eq('id', id).eq('tenant_id', window.AdminState.tenantId);
         if (error) throw error;
         fetchIngredients();
     } catch (e) {
@@ -261,6 +264,7 @@ async function loadRestockLogs() {
 
         const { data, error } = await supabase.from('inventory_logs')
             .select('*, ingredients(name, unit)')
+            .eq('tenant_id', window.AdminState.tenantId)
             .eq('change_type', 'restock')
             .order('created_at', { ascending: false })
             .limit(100);
@@ -463,8 +467,9 @@ async function submitRestockTicket() {
 
         for (const item of restockItems) {
             const newStock = item.current_stock + item.amount;
-            updates.push(supabase.from('ingredients').update({ stock: newStock }).eq('id', item.ingredient_id));
+            updates.push(supabase.from('ingredients').update({ stock: newStock }).eq('id', item.ingredient_id).eq('tenant_id', window.AdminState.tenantId));
             logs.push({
+                tenant_id: window.AdminState.tenantId,
                 ingredient_id: item.ingredient_id,
                 change_type: 'restock',
                 amount: item.amount,
@@ -499,7 +504,7 @@ async function submitRestockTicket() {
 
 // --- Export Inventory CSV ---
 window.exportInventoryToCSV = async function() {
-    const { data } = await supabase.from('ingredients').select('*').order('name');
+    const { data } = await supabase.from('ingredients').select('*').eq('tenant_id', window.AdminState.tenantId).order('name');
     if (!data || data.length === 0) return showAdminToast('Không có dữ liệu kho!', 'warning');
 
     const columns = [
@@ -525,6 +530,7 @@ async function checkLowStock() {
         const { data } = await supabase
             .from('ingredients')
             .select('name, stock, min_stock')
+            .eq('tenant_id', window.AdminState.tenantId)
             .gt('min_stock', 0);
 
         if (!data) return;
@@ -553,6 +559,7 @@ async function exportInventoryLogsToCSV() {
     try {
         const { data: logs, error } = await supabase.from('inventory_logs')
             .select('*, ingredients(name, unit)')
+            .eq('tenant_id', window.AdminState.tenantId)
             .order('created_at', { ascending: false });
 
         if (error) throw error;

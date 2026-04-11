@@ -195,7 +195,7 @@ let currentDeliveryFilter = 'all';
 
 async function loadDeliveryOrders() {
     try {
-        let query = supabase.from('orders').select('*').eq('order_type', 'delivery').order('created_at', { ascending: false }).limit(100);
+        let query = supabase.from('orders').select('*').eq('tenant_id', window.AdminState.tenantId).eq('order_type', 'delivery').order('created_at', { ascending: false }).limit(100);
 
         if (currentDeliveryFilter !== 'all') {
             query = query.eq('delivery_status', currentDeliveryFilter);
@@ -313,7 +313,7 @@ function updateDeliveryKPIs() {
 // --- Load Drivers ---
 async function loadDeliveryDrivers() {
     try {
-        const { data, error } = await supabase.from('delivery_drivers').select('*').order('name');
+        const { data, error } = await supabase.from('delivery_drivers').select('*').eq('tenant_id', window.AdminState.tenantId).order('name');
         if (error) throw error;
         deliveryDrivers = data || [];
         renderDeliveryDrivers();
@@ -388,8 +388,8 @@ window.openAssignDriverModal = async function (orderId) {
         if (!select) return;
         const driverId = select.value;
         try {
-            await supabase.from('orders').update({ assigned_driver_id: driverId, delivery_status: 'Ready' }).eq('id', orderId);
-            await supabase.from('delivery_drivers').update({ status: 'busy' }).eq('id', driverId);
+            await supabase.from('orders').update({ assigned_driver_id: driverId, delivery_status: 'Ready' }).eq('tenant_id', window.AdminState.tenantId).eq('id', orderId);
+            await supabase.from('delivery_drivers').update({ status: 'busy' }).eq('tenant_id', window.AdminState.tenantId).eq('id', driverId);
             showAdminToast('Đã gán shipper thành công!', 'success');
             loadDeliveryOrders();
         } catch (e) {
@@ -403,7 +403,7 @@ window.adminUpdateDeliveryStatus = async function (orderId, status) {
     try {
         const updates = { delivery_status: status };
         if (status === 'Completed') updates.status = 'Completed';
-        await supabase.from('orders').update(updates).eq('id', orderId);
+        await supabase.from('orders').update(updates).eq('tenant_id', window.AdminState.tenantId).eq('id', orderId);
         showAdminToast('Cập nhật trạng thái thành công!', 'success');
         loadDeliveryOrders();
     } catch (e) {
@@ -415,7 +415,7 @@ window.adminCancelDelivery = async function (orderId) {
     const confirmed = await customConfirm('Bạn có chắc muốn hủy đơn giao hàng này?');
     if (!confirmed) return;
     try {
-        await supabase.from('orders').update({ delivery_status: 'Cancelled', status: 'Cancelled' }).eq('id', orderId);
+        await supabase.from('orders').update({ delivery_status: 'Cancelled', status: 'Cancelled' }).eq('tenant_id', window.AdminState.tenantId).eq('id', orderId);
         showAdminToast('Đã hủy đơn giao hàng.', 'warning');
         loadDeliveryOrders();
     } catch (e) {
@@ -452,7 +452,7 @@ window.openDriverModal = async function () {
 
         try {
             const { error } = await supabase.from('delivery_drivers').insert([{
-                name, phone, driver_code: code, status: 'offline', is_active: true
+                tenant_id: window.AdminState.tenantId, name, phone, driver_code: code, status: 'offline', is_active: true
             }]);
             if (error) throw error;
             showAdminToast('Thêm shipper thành công!', 'success');
@@ -465,7 +465,7 @@ window.openDriverModal = async function () {
 
 window.toggleDriverActive = async function (id, active) {
     try {
-        await supabase.from('delivery_drivers').update({ is_active: active }).eq('id', id);
+        await supabase.from('delivery_drivers').update({ is_active: active }).eq('tenant_id', window.AdminState.tenantId).eq('id', id);
         showAdminToast(active ? 'Đã mở khóa shipper.' : 'Đã khóa shipper.', 'success');
         loadDeliveryDrivers();
     } catch (e) {
@@ -477,7 +477,7 @@ window.deleteDriver = async function (id) {
     const confirmed = await customConfirm('Xóa shipper này? Hành động không thể hoàn tác.');
     if (!confirmed) return;
     try {
-        await supabase.from('delivery_drivers').delete().eq('id', id);
+        await supabase.from('delivery_drivers').delete().eq('tenant_id', window.AdminState.tenantId).eq('id', id);
         showAdminToast('Đã xóa shipper.', 'warning');
         loadDeliveryDrivers();
     } catch (e) {
@@ -488,7 +488,7 @@ window.deleteDriver = async function (id) {
 // --- Settings ---
 async function loadDeliverySettingsForm() {
     try {
-        const { data } = await supabase.from('store_settings').select('*').eq('id', 1).maybeSingle();
+        const { data } = await supabase.from('store_settings').select('*').eq('tenant_id', window.AdminState.tenantId).maybeSingle();
         if (data) {
             const el = id => document.getElementById(id);
             if (el('ds-enabled')) el('ds-enabled').value = String(data.delivery_enabled !== false);
@@ -553,7 +553,7 @@ window.saveDeliverySettings = async function () {
             store_lng: lng
         };
 
-        const { error } = await supabase.from('store_settings').update(update).eq('id', 1);
+        const { error } = await supabase.from('store_settings').update(update).eq('tenant_id', window.AdminState.tenantId);
         if (error) throw error;
 
         showAdminToast('Đã lưu cài đặt giao hàng!', 'success');
@@ -580,7 +580,7 @@ function setupDeliveryRealtime() {
             event: '*',
             schema: 'public',
             table: 'orders',
-            filter: 'order_type=eq.delivery'
+            filter: 'order_type=eq.delivery,tenant_id=eq.' + window.AdminState.tenantId
         }, () => {
             loadDeliveryOrders();
         })
@@ -592,7 +592,8 @@ function setupDeliveryRealtime() {
         .on('postgres_changes', {
             event: '*',
             schema: 'public',
-            table: 'delivery_drivers'
+            table: 'delivery_drivers',
+            filter: 'tenant_id=eq.' + window.AdminState.tenantId
         }, () => {
             loadDeliveryDrivers();
         })

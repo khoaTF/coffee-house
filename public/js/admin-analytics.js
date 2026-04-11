@@ -149,7 +149,7 @@ function renderAnalytics() {
 // --- Feedback Stats ---
 async function fetchFeedbackStats() {
     try {
-        const { data, error } = await supabase.from('feedback').select('*').order('created_at', { ascending: false });
+        const { data, error } = await supabase.from('feedback').select('*').eq('tenant_id', window.AdminState.tenantId).order('created_at', { ascending: false });
         if (error) throw error;
 
         let total = 0;
@@ -241,11 +241,13 @@ async function renderDashboardStats() {
         const { data: todayOrders } = await supabase
             .from('orders')
             .select('status, total_price, payment_status')
+            .eq('tenant_id', window.AdminState.tenantId)
             .gte('created_at', todayStart.toISOString());
 
         const { data: tablesData } = await supabase
             .from('tables')
-            .select('status');
+            .select('status')
+            .eq('tenant_id', window.AdminState.tenantId);
 
         const total = todayOrders?.length || 0;
         const pending = todayOrders?.filter(o => o.status === 'Pending' || o.status === 'Preparing').length || 0;
@@ -306,10 +308,10 @@ async function loadDashboard() {
         const weekStart = new Date(); weekStart.setDate(weekStart.getDate() - 6); weekStart.setHours(0,0,0,0);
 
         const [{ data: todayOrders }, { data: weekOrders }, { data: lowStock }, { data: pendingOrders }] = await Promise.all([
-            supabase.from('orders').select('*').gte('created_at', todayStart.toISOString()).lte('created_at', todayEnd.toISOString()),
-            supabase.from('orders').select('*').gte('created_at', weekStart.toISOString()).eq('payment_status', 'paid').neq('status', 'Cancelled'),
-            supabase.from('ingredients').select('name, stock, low_stock_threshold').lt('stock', supabase.raw ? 1 : Number.MAX_SAFE_INTEGER),
-            supabase.from('orders').select('id').in('status', ['Pending', 'Preparing'])
+            supabase.from('orders').select('*').eq('tenant_id', window.AdminState.tenantId).gte('created_at', todayStart.toISOString()).lte('created_at', todayEnd.toISOString()),
+            supabase.from('orders').select('*').eq('tenant_id', window.AdminState.tenantId).gte('created_at', weekStart.toISOString()).eq('payment_status', 'paid').neq('status', 'Cancelled'),
+            supabase.from('ingredients').select('name, stock, low_stock_threshold').eq('tenant_id', window.AdminState.tenantId).lt('stock', supabase.raw ? 1 : Number.MAX_SAFE_INTEGER),
+            supabase.from('orders').select('id').eq('tenant_id', window.AdminState.tenantId).in('status', ['Pending', 'Preparing'])
         ]);
 
         const revenueOrdersToday = (todayOrders || []).filter(o => o.payment_status === 'paid' && o.status !== 'Cancelled');
