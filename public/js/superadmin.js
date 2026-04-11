@@ -57,6 +57,43 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const searchInput = document.getElementById('tenant-search');
+    if (searchInput) {
+        searchInput.addEventListener('input', applyFilters);
+    }
+    const statusSelect = document.getElementById('status-filter');
+    if (statusSelect) {
+        statusSelect.addEventListener('change', applyFilters);
+    }
+
+    const manageTierSelect = document.getElementById('manage-tenant-tier');
+    if (manageTierSelect) {
+        manageTierSelect.addEventListener('change', (e) => {
+            const val = e.target.value;
+            if(!val) return;
+            const expiryInput = document.getElementById('manage-tenant-expiry');
+            const maxStaffInput = document.getElementById('manage-tenant-max-staff');
+            const maxItemsInput = document.getElementById('manage-tenant-max-items');
+            
+            let daysToLoc = new Date();
+            if (val === 'trial') {
+                daysToLoc.setDate(daysToLoc.getDate() + 7);
+                maxStaffInput.value = 5;
+                maxItemsInput.value = 50;
+            } else if (val === 'basic') {
+                daysToLoc.setDate(daysToLoc.getDate() + 30);
+                maxStaffInput.value = 10;
+                maxItemsInput.value = 200;
+            } else if (val === 'premium') {
+                daysToLoc.setDate(daysToLoc.getDate() + 365);
+                maxStaffInput.value = 50;
+                maxItemsInput.value = 9999;
+            }
+            daysToLoc.setMinutes(daysToLoc.getMinutes() - daysToLoc.getTimezoneOffset());
+            expiryInput.value = daysToLoc.toISOString().slice(0, 16);
+        });
+    }
+
     const confirmCreateBtn = document.getElementById('confirm-create-btn');
     if (confirmCreateBtn) {
         confirmCreateBtn.addEventListener('click', async () => {
@@ -82,6 +119,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(error) throw error;
 
                 showToast(data.message, 'success');
+                
+                // Immediately apply tier if chosen
+                const tier = document.getElementById('new-client-tier').value;
+                if(tier !== 'trial') {
+                    // Fetch tenants to find the new one (as we don't have its ID returned directly)
+                    const { data: newTenants, error: fetchErr } = await supabase.rpc('get_all_tenants', { owner_secret: ownerSecret });
+                    if(!fetchErr && newTenants && newTenants.length > 0) {
+                        // The newest tenant is the first one because order is created_at DESC
+                        const newestTenant = newTenants[newTenants.findIndex(t => t.name === clientName)];
+                        if(newestTenant) {
+                            let daysToAdd = tier === 'basic' ? 30 : 365;
+                            let newExp = new Date();
+                            newExp.setDate(newExp.getDate() + daysToAdd);
+                            await supabase.rpc('update_tenant_subscription', {
+                                p_tenant_id: newestTenant.id,
+                                p_end_date: newExp.toISOString(),
+                                p_max_staff: tier === 'basic' ? 10 : 50,
+                                p_max_items: tier === 'basic' ? 200 : 9999,
+                                owner_secret: ownerSecret
+                            });
+                        }
+                    }
+                }
                 
                 // Close modal
                 bootstrap.Modal.getInstance(document.getElementById('createTenantModal')).hide();
@@ -214,11 +274,45 @@ async function fetchAndRenderTenants() {
             }
             throw error;
         }
-        renderTenants(data);
+        window.allTenants = data || [];
+        applyFilters();
     } catch (err) {
         console.error(err);
         showToast('Failed to fetch tenants', 'danger');
     }
+}
+
+function applyFilters() {
+    if (!window.allTenants) return;
+    
+    const searchTerm = (document.getElementById('tenant-search')?.value || '').toLowerCase();
+    const statusVal = document.getElementById('status-filter')?.value || 'all';
+    
+    const filtered = window.allTenants.filter(t => {
+        const matchesSearch = t.name?.toLowerCase().includes(searchTerm) || (t.custom_domain && t.custom_domain.toLowerCase().includes(searchTerm)) || t.id.includes(searchTerm);
+        
+        let matchesStatus = true;
+        if (statusVal !== 'all') {
+            const isExpired = t.subscription_end_date ? new Date(t.subscription_end_date) < new Date() : false;
+            
+            // Check expiring within 7 days
+            let isExpiringSoon = false;
+            if (!isExpired && t.subscription_end_date) {
+                const diffTime = new Date(t.subscription_end_date) - new Date();
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                if (diffDays <= 7) isExpiringSoon = true;
+            }
+
+            if (statusVal === 'active' && t.status !== 'active') matchesStatus = false;
+            if (statusVal === 'suspended' && t.status !== 'suspended') matchesStatus = false;
+            if (statusVal === 'expiring' && !isExpiringSoon) matchesStatus = false;
+            if (statusVal === 'expired' && !isExpired) matchesStatus = false;
+        }
+        
+        return matchesSearch && matchesStatus;
+    });
+    
+    renderTenants(filtered);
 }
 
 function renderTenants(tenants) {
@@ -255,6 +349,13 @@ function renderTenants(tenants) {
 
         const expiryDateStr = t.subscription_end_date ? new Date(t.subscription_end_date).toLocaleDateString('vi-VN') : 'N/A';
         const isExpired = t.subscription_end_date ? new Date(t.subscription_end_date) < new Date() : false;
+        
+        let isExpiringSoon = false;
+        if (!isExpired && t.subscription_end_date) {
+            const diffTime = new Date(t.subscription_end_date) - new Date();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            if (diffDays <= 7) isExpiringSoon = true;
+        }
 
         const safeObjStr = JSON.stringify({
             id: t.id,
@@ -272,7 +373,7 @@ function renderTenants(tenants) {
                         <h3 class="tenant-name d-flex align-items-center">
                             ${escapeHtml(t.name)}
                             <span class="badge bg-${statusColor} bg-opacity-25 text-${statusColor} ms-2 px-2 py-1 border border-${statusColor} border-opacity-25" style="font-size: 0.6rem; vertical-align: middle;">${statusText}</span>
-                            ${isExpired ? '<span class="badge bg-warning text-dark ms-1" style="font-size:0.6rem;">EXPIRED</span>' : ''}
+                            ${isExpired ? '<span class="badge bg-warning text-dark ms-1" style="font-size:0.6rem;">EXPIRED</span>' : (isExpiringSoon ? '<span class="badge bg-info text-dark ms-1" style="font-size:0.6rem;">EXPIRING SOON</span>' : '')}
                         </h3>
                         <div class="tenant-id" onclick="copyTenantId('${t.id}')" style="cursor:pointer" title="Click to copy">${t.id}</div>
                     </div>
@@ -403,6 +504,45 @@ async function resetTenantPin() {
         showToast(err.message, 'danger');
     }
 }
+
+async function deleteTenant() {
+    const tenantId = document.getElementById('manage-tenant-id').value;
+    const tenantName = document.getElementById('manage-tenant-name-display').innerText;
+
+    const userInput = prompt(`DANGER ZONE: This will permanently delete all data (settings, menus, staff, orders) for "${tenantName}".\nType "${tenantName}" exactly to confirm deletion:`);
+    if (userInput !== tenantName) {
+        return showToast("Name mismatch. Deletion cancelled.", "warning");
+    }
+
+    const btn = document.getElementById('btn-delete-tenant');
+    const oldText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Deleting...';
+
+    try {
+        const { error } = await supabase.rpc('delete_tenant', {
+            owner_secret: ownerSecret,
+            p_tenant_id: tenantId
+        });
+        if (error) throw error;
+
+        showToast('Tenant permanently deleted.', 'success');
+        
+        // Hide Modal
+        const modalEl = document.getElementById('manageTenantModal');
+        const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+        modal.hide();
+
+        await fetchAndRenderTenants();
+    } catch(err) {
+        console.error(err);
+        showToast(err.message, 'danger');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = oldText;
+    }
+}
+
 
 function showToast(message, type = 'success') {
     const toastEl = document.getElementById('actionToast');
