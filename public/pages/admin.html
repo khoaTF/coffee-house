@@ -861,6 +861,53 @@
                                 </form>
                             </div>
                         </div>
+
+                        <!-- Store Branding -->
+                        <div class="card bg-white border border-slate-200 rounded-2xl shadow-soft h-100 col-span-full md:col-span-2">
+                            <div class="card-header border-b border-slate-200 bg-transparent p-4">
+                                <h5 class="mb-0 font-noto font-bold text-slate-800"><i class="fa-solid fa-palette me-2 text-[#C0A062]"></i> Giao diện & Thương hiệu (Cá nhân hóa)</h5>
+                            </div>
+                            <div class="card-body p-4">
+                                <form id="settings-branding-form">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <!-- Logo & Cover -->
+                                        <div>
+                                            <div class="mb-3">
+                                                <label class="form-label text-slate-500 font-bold text-xs uppercase mb-1">Logo cửa hàng URL</label>
+                                                <input type="text" id="setting-brand-logo" class="form-control bg-slate-100 border-slate-200 text-slate-800 rounded-xl" placeholder="https://example.com/logo.png">
+                                                <small class="text-slate-500 mt-1 d-block" style="font-size: 11px;">Link ảnh logo (tỉ lệ 1:1, dạng tròn/vuông).</small>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label text-slate-500 font-bold text-xs uppercase mb-1">Banner/Cover URL</label>
+                                                <input type="text" id="setting-brand-banner" class="form-control bg-slate-100 border-slate-200 text-slate-800 rounded-xl" placeholder="https://example.com/cover.jpg">
+                                                <small class="text-slate-500 mt-1 d-block" style="font-size: 11px;">Ảnh bìa tỷ lệ ngang 16:9 dùng trên Menu khách.</small>
+                                            </div>
+                                        </div>
+                                        <!-- Colors -->
+                                        <div>
+                                            <div class="mb-3">
+                                                <label class="form-label text-slate-500 font-bold text-xs uppercase mb-1">Màu chủ đạo (Primary Color)</label>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <input type="color" id="setting-brand-primary" class="form-control form-control-color bg-slate-100 border-slate-200 rounded-xl p-1 h-10" value="#C0A062" style="width: 50px;">
+                                                    <input type="text" id="setting-brand-primary-text" class="form-control bg-slate-100 border-slate-200 text-slate-800 rounded-xl uppercase flex-1" value="#C0A062">
+                                                </div>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label text-slate-500 font-bold text-xs uppercase mb-1">Màu nút/Nhấn (Accent Color)</label>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <input type="color" id="setting-brand-accent" class="form-control form-control-color bg-slate-100 border-slate-200 rounded-xl p-1 h-10" value="#FF7A00" style="width: 50px;">
+                                                    <input type="text" id="setting-brand-accent-text" class="form-control bg-slate-100 border-slate-200 text-slate-800 rounded-xl uppercase flex-1" value="#FF7A00">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-4 text-end">
+                                        <button type="button" class="btn font-bold rounded-xl px-4 needs-settings-manage" style="background-color: #C0A062; color: #1e293b;" onclick="saveStoreBranding()">Lưu Giao Diện</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
                     </div>
                 </section>
             </div> <!-- End Main Content Scrollable Area -->

@@ -668,6 +668,35 @@ window.saveStoreSettings = async function(type) {
     }
 };
 
+}
+
+// Branding specific
+window.saveStoreBranding = async function() {
+    const updates = {
+        logo: document.getElementById('setting-brand-logo').value,
+        banner: document.getElementById('setting-brand-banner').value,
+        primary_color: document.getElementById('setting-brand-primary').value,
+        accent_color: document.getElementById('setting-brand-accent').value
+    };
+
+    try {
+        if (typeof supabase !== 'undefined') {
+            const { error } = await supabase.from('tenants').update({ branding: updates }).eq('id', AdminState.tenantId);
+            if (error) throw error;
+        }
+
+        const existing = JSON.parse(localStorage.getItem('store_branding') || '{}');
+        const newBranding = { ...existing, ...updates };
+        localStorage.setItem('store_branding', JSON.stringify(newBranding));
+
+        if(typeof logAudit === 'function') logAudit('Cập nhật cài đặt', 'Thương hiệu & Giao diện');
+        showAdminToast('Đã lưu cấu hình thương hiệu thành công! Áp dụng ngay trên trang khách.', 'success');
+    } catch (e) {
+        console.error('Lỗi lưu branding:', e);
+        showAdminToast(`Lỗi khi lưu: ${e.message || 'Không xác định'}`, 'error');
+    }
+};
+
 window.loadStoreSettings = async function() {
     let settings = {};
     try {
@@ -698,4 +727,42 @@ window.loadStoreSettings = async function() {
         const ov = settings.is_open_override;
         document.getElementById('setting-open-override').value = ov === true ? 'open' : ov === false ? 'closed' : 'auto';
     }
+
+    // Load Branding
+    let branding = {};
+    try {
+        if (typeof supabase !== 'undefined') {
+            const { data, error } = await supabase.from('tenants').select('branding').eq('id', AdminState.tenantId).single();
+            if (data && data.branding) branding = data.branding;
+        }
+    } catch(e) {
+        branding = JSON.parse(localStorage.getItem('store_branding') || '{}');
+    }
+
+    if (document.getElementById('setting-brand-logo')) document.getElementById('setting-brand-logo').value = branding.logo || '';
+    if (document.getElementById('setting-brand-banner')) document.getElementById('setting-brand-banner').value = branding.banner || '';
+    if (document.getElementById('setting-brand-primary')) {
+        document.getElementById('setting-brand-primary').value = branding.primary_color || '#C0A062';
+        document.getElementById('setting-brand-primary-text').value = branding.primary_color || '#C0A062';
+    }
+    if (document.getElementById('setting-brand-accent')) {
+        document.getElementById('setting-brand-accent').value = branding.accent_color || '#FF7A00';
+        document.getElementById('setting-brand-accent-text').value = branding.accent_color || '#FF7A00';
+    }
 };
+
+// Auto-sync color inputs (Color picker <-> text input)
+document.addEventListener('DOMContentLoaded', () => {
+    const bindColorSync = (pickerId, txtId) => {
+        const p = document.getElementById(pickerId);
+        const t = document.getElementById(txtId);
+        if(!p || !t) return;
+        p.addEventListener('input', (e) => t.value = e.target.value.toUpperCase());
+        t.addEventListener('input', (e) => {
+            const v = e.target.value;
+            if (/^#[0-9A-Fa-f]{6}$/i.test(v)) p.value = v;
+        });
+    };
+    bindColorSync('setting-brand-primary', 'setting-brand-primary-text');
+    bindColorSync('setting-brand-accent', 'setting-brand-accent-text');
+});

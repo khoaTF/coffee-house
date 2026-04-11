@@ -23,13 +23,14 @@ export async function initTenant() {
     try {
         const { data, error } = await supabase
             .from('tenants')
-            .select('id')
+            .select('id, name, branding')
             .eq('slug', STORE_SLUG)
             .eq('status', 'active')
             .maybeSingle();
 
         if (data && data.id) {
             state.tenantId = data.id;
+            applyBranding(data);
             return true;
         } else {
             dom.loader.innerHTML = `
@@ -48,6 +49,56 @@ export async function initTenant() {
     } catch (e) {
         console.error('Tenant Init Error:', e);
         return false;
+    }
+}
+
+function applyBranding(tenantData) {
+    if (!tenantData) return;
+
+    // Apply Store Name
+    if (tenantData.name) {
+        // Find existing text elements
+        const html = document.documentElement.innerHTML;
+        const mainTitles = document.querySelectorAll('h3.font-headline');
+        mainTitles.forEach(el => {
+            if (el.textContent.includes('Nohope Coffee')) {
+                el.textContent = tenantData.name;
+            }
+        });
+        
+        const sidebarTitle = document.querySelector('h1.tracking-tight');
+        if (sidebarTitle && sidebarTitle.textContent === 'Nohope') {
+            sidebarTitle.textContent = tenantData.name.split(' ')[0] || tenantData.name;
+        }
+        
+        document.title = `${tenantData.name} - Thực đơn & Đặt món QR`;
+    }
+
+    if (tenantData.branding) {
+        const root = document.documentElement;
+        // Colors
+        if (tenantData.branding.primary_color) {
+            root.style.setProperty('--primary', tenantData.branding.primary_color);
+        }
+        if (tenantData.branding.accent_color) {
+            root.style.setProperty('--accent', tenantData.branding.accent_color);
+        }
+
+        // Images
+        if (tenantData.branding.logo) {
+            document.querySelectorAll('img[src*="bunny_logo.png"]').forEach(img => {
+                img.src = tenantData.branding.logo;
+            });
+            const favicons = document.querySelectorAll('link[rel="icon"], link[rel="apple-touch-icon"]');
+            favicons.forEach(link => { link.href = tenantData.branding.logo; });
+        }
+        
+        if (tenantData.branding.banner) {
+            const heroImg = document.getElementById('hero-banner-image');
+            if (heroImg) {
+                heroImg.src = tenantData.branding.banner;
+            }
+        }
     }
 }
 
