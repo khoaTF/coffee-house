@@ -155,6 +155,54 @@
       'driver.no_orders': 'Chưa có đơn nào.',
       'driver.online': 'Online',
       'driver.offline': 'Offline',
+
+      // ── Superadmin ────────────────────────────────────────────
+      'superadmin.title': 'Trung Tâm Điều Hành SaaS',
+      'superadmin.login_title': 'Nhập Khóa Chủ (Owner Secret)',
+      'superadmin.owner_secret': 'Khóa Chủ',
+      'superadmin.unlock_btn': 'Mở Khóa Hệ Thống',
+      'superadmin.system_online': 'Trạng Thái Hệ Thống: Online',
+      'superadmin.stat_tenants': 'Chi Nhánh Kích Hoạt',
+      'superadmin.stat_revenue': 'Tổng Doanh Thu',
+      'superadmin.stat_subs': 'Gói Cước Đang Chạy',
+      'superadmin.stat_users': 'Tổng Người Dùng',
+      'superadmin.search': 'Tìm theo tên hoặc miền...',
+      'superadmin.filter_all': 'Tất cả trạng thái',
+      'superadmin.filter_active': 'Đang hoạt động',
+      'superadmin.filter_suspended': 'Đình chỉ',
+      'superadmin.filter_expiring': 'Sắp hết hạn',
+      'superadmin.filter_expired': 'Đã hết hạn',
+      'superadmin.onboard': 'Tạo Mới',
+      'superadmin.col_id': 'Mã',
+      'superadmin.col_name': 'Tên Chi Nhánh',
+      'superadmin.col_domain': 'Tên Miền',
+      'superadmin.col_status': 'Trạng Thái',
+      'superadmin.col_expires': 'Hết Hạn',
+      'superadmin.col_limits': 'Giới Hạn',
+      'superadmin.col_actions': 'Thao Tác',
+      'superadmin.btn_manage': 'Quản lý',
+      'superadmin.sidebar_doc': 'Tài Liệu Superadmin',
+      'superadmin.sidebar_api': 'Trạng Thái API',
+      'superadmin.create_title': 'Tạo Chi Nhánh Mới',
+      'superadmin.client_name': 'Tên Hiển Thị',
+      'superadmin.subdomain': 'Tên Miền Mong Muốn',
+      'superadmin.tier': 'Gói Cước',
+      'superadmin.tier_default': '-- Tự chọn cấu hình --',
+      'superadmin.tier_trial': 'Dùng thử (7 ngày, 5 NV, 50 món)',
+      'superadmin.tier_basic': 'Cơ bản (30 ngày, 10 NV, 200 món)',
+      'superadmin.tier_premium': 'Cao cấp (365 ngày, 50 NV, 9999 món)',
+      'superadmin.admin_pin': 'Mã PIN Admin',
+      'superadmin.admin_password': 'Mật Khẩu Admin',
+      'superadmin.create_btn': 'Tạo Không Gian Mới',
+      'superadmin.manage_title': 'Quản Lý Chi Nhánh',
+      'superadmin.btn_impersonate': 'Đăng Nhập Admin',
+      'superadmin.btn_reset_pin': 'Đổi PIN',
+      'superadmin.btn_delete': 'Xóa Bỏ',
+      'superadmin.quick_plan': 'Chọn Nhanh Gói Cước',
+      'superadmin.expiry_date': 'Ngày Hết Hạn Gói Cước',
+      'superadmin.max_staff': 'Giới Hạn Nhân Viên',
+      'superadmin.max_items': 'Giới Hạn Món Ăn',
+      'superadmin.save_btn': 'Lưu Thông Tin',
     },
 
     en: {
@@ -305,6 +353,54 @@
       'driver.no_orders': 'No orders assigned.',
       'driver.online': 'Online',
       'driver.offline': 'Offline',
+
+      // ── Superadmin ────────────────────────────────────────────
+      'superadmin.title': 'SaaS Command Center',
+      'superadmin.login_title': 'Enter Owner Secret Key',
+      'superadmin.owner_secret': 'Owner Secret',
+      'superadmin.unlock_btn': 'Unlock System',
+      'superadmin.system_online': 'System Status: Online',
+      'superadmin.stat_tenants': 'Active Tenants',
+      'superadmin.stat_revenue': 'Estimated Value',
+      'superadmin.stat_subs': 'Active Subscriptions',
+      'superadmin.stat_users': 'Total Users',
+      'superadmin.search': 'Search by name or domain...',
+      'superadmin.filter_all': 'All Statuses',
+      'superadmin.filter_active': 'Active',
+      'superadmin.filter_suspended': 'Suspended',
+      'superadmin.filter_expiring': 'Expiring Soon',
+      'superadmin.filter_expired': 'Expired',
+      'superadmin.onboard': 'Onboard New',
+      'superadmin.col_id': 'ID',
+      'superadmin.col_name': 'Tenant Name',
+      'superadmin.col_domain': 'Subdomain',
+      'superadmin.col_status': 'Status',
+      'superadmin.col_expires': 'Expires At',
+      'superadmin.col_limits': 'Limits',
+      'superadmin.col_actions': 'Actions',
+      'superadmin.btn_manage': 'Manage',
+      'superadmin.sidebar_doc': 'Superadmin Documentation',
+      'superadmin.sidebar_api': 'API Status',
+      'superadmin.create_title': 'Create New Tenant',
+      'superadmin.client_name': 'Client Display Name',
+      'superadmin.subdomain': 'Subdomain Preference',
+      'superadmin.tier': 'Subscription Tier',
+      'superadmin.tier_default': '-- Custom Settings --',
+      'superadmin.tier_trial': 'Trial (7 days, 5 staff, 50 items)',
+      'superadmin.tier_basic': 'Basic (30 days, 10 staff, 200 items)',
+      'superadmin.tier_premium': 'Premium (365 days, 50 staff, 9999 items)',
+      'superadmin.admin_pin': 'Admin PIN',
+      'superadmin.admin_password': 'Admin Password',
+      'superadmin.create_btn': 'Create Workspace',
+      'superadmin.manage_title': 'Manage Workspace',
+      'superadmin.btn_impersonate': 'Login As Admin',
+      'superadmin.btn_reset_pin': 'Reset PIN',
+      'superadmin.btn_delete': 'Delete',
+      'superadmin.quick_plan': 'Quick Set Plan',
+      'superadmin.expiry_date': 'Subscription Expiry Date',
+      'superadmin.max_staff': 'Max Staff Accounts',
+      'superadmin.max_items': 'Max Menu Items',
+      'superadmin.save_btn': 'Save Tenant Info',
     }
   };
 
@@ -383,6 +479,7 @@
     else if (path.includes('/tracking')) patchTrackingPage();
     else if (path.includes('/tv')) patchTVPage();
     else if (path.includes('/driver')) patchDriverPage();
+    else if (path.includes('/superadmin')) patchSuperadminPage();
   }
 
   function patchLoginPage() {
@@ -476,6 +573,124 @@
       if (historyTitle) historyTitle.innerHTML = `<i class="fa-solid fa-clock-rotate-left mr-2 text-[#D97531]"></i> ${t('kitchen.history_modal_title')}`;
       const closeBtn = document.querySelector('#kitchenHistoryModal .modal-footer button');
       if (closeBtn) closeBtn.textContent = t('common.close');
+    } catch (_) {}
+  }
+
+  function patchSuperadminPage() {
+    try {
+      // Titles and Stats
+      patch('.auth-title', 'superadmin.title');
+      patch('#auth-screen h4', 'superadmin.login_title');
+      
+      const ownerSecretLabel = document.querySelector('#auth-screen label');
+      if (ownerSecretLabel) ownerSecretLabel.textContent = t('superadmin.owner_secret');
+      
+      patch('#auth-screen input[type="password"]', 'superadmin.owner_secret', 'placeholder');
+      
+      const unlockBtn = document.querySelector('#auth-screen button');
+      if (unlockBtn) unlockBtn.innerHTML = `<i class="fa-solid fa-key me-2"></i>${t('superadmin.unlock_btn')}`;
+      
+      const systemOnline = document.querySelector('.mt-4.text-secondary i');
+      if (systemOnline) systemOnline.parentNode.innerHTML = `<i class="fa-solid fa-server me-2"></i> ${t('superadmin.system_online')}`;
+
+      // Dashboard Stats
+      const statLabels = document.querySelectorAll('.stat-card .text-muted');
+      if (statLabels[0]) statLabels[0].textContent = t('superadmin.stat_tenants');
+      if (statLabels[1]) statLabels[1].textContent = t('superadmin.stat_revenue');
+      if (statLabels[2]) statLabels[2].textContent = t('superadmin.stat_subs');
+      if (statLabels[3]) statLabels[3].textContent = t('superadmin.stat_users');
+
+      // Grid header
+      patch('#tenant-search', 'superadmin.search', 'placeholder');
+      
+      const filterSelect = document.getElementById('tenant-status-filter');
+      if (filterSelect) {
+        filterSelect.options[0].textContent = t('superadmin.filter_all');
+        filterSelect.options[1].textContent = `🟢 ${t('superadmin.filter_active')}`;
+        filterSelect.options[2].textContent = `🔴 ${t('superadmin.filter_suspended')}`;
+        filterSelect.options[3].textContent = `🟠 ${t('superadmin.filter_expiring')}`;
+        filterSelect.options[4].textContent = `⚪ ${t('superadmin.filter_expired')}`;
+      }
+      
+      const onboardBtn = document.querySelector('button[data-bs-target="#createTenantModal"]');
+      if (onboardBtn) onboardBtn.innerHTML = `<i class="fa-solid fa-plus me-2"></i>${t('superadmin.onboard')}`;
+
+      // Table mapping
+      const ths = document.querySelectorAll('thead th');
+      if (ths[0]) ths[0].textContent = t('superadmin.col_id');
+      if (ths[1]) ths[1].textContent = t('superadmin.col_name');
+      if (ths[2]) ths[2].textContent = t('superadmin.col_domain');
+      if (ths[3]) ths[3].textContent = t('superadmin.col_status');
+      if (ths[4]) ths[4].textContent = t('superadmin.col_expires');
+      if (ths[5]) ths[5].textContent = t('superadmin.col_limits');
+      if (ths[6]) ths[6].textContent = t('superadmin.col_actions');
+
+      // Modals - Create
+      const createTitle = document.querySelector('#createTenantModal .modal-title');
+      if (createTitle) createTitle.innerHTML = `<i class="fa-solid fa-plus-circle me-2 text-primary"></i> ${t('superadmin.create_title')}`;
+      
+      const createLabels = document.querySelectorAll('#createTenantModal label');
+      if (createLabels[0]) createLabels[0].textContent = t('superadmin.client_name');
+      if (createLabels[1]) createLabels[1].textContent = t('superadmin.subdomain');
+      if (createLabels[2]) createLabels[2].textContent = t('superadmin.tier');
+      if (createLabels[3]) createLabels[3].textContent = t('superadmin.admin_pin');
+      if (createLabels[4]) createLabels[4].textContent = t('superadmin.admin_password');
+
+      const createTierSelect = document.getElementById('new-client-tier');
+      if (createTierSelect) {
+        createTierSelect.options[0].textContent = t('superadmin.tier_default');
+        createTierSelect.options[1].textContent = t('superadmin.tier_trial');
+        createTierSelect.options[2].textContent = t('superadmin.tier_basic');
+        createTierSelect.options[3].textContent = t('superadmin.tier_premium');
+      }
+
+      const createBtn = document.getElementById('btn-create-tenant');
+      if (createBtn) createBtn.textContent = t('superadmin.create_btn');
+
+      // Modals - Manage
+      const manageTitle = document.querySelector('#manageTenantModal .modal-title');
+      if (manageTitle) manageTitle.innerHTML = `<i class="fa-solid fa-gear me-2 text-info"></i> ${t('superadmin.manage_title')}`;
+
+      const btnImpersonate = document.getElementById('btn-impersonate');
+      if (btnImpersonate) btnImpersonate.innerHTML = `<i class="fa-solid fa-masks-theater me-2"></i>${t('superadmin.btn_impersonate')}`;
+      
+      const btnResetPin = document.getElementById('btn-reset-pin');
+      if (btnResetPin) btnResetPin.innerHTML = `<i class="fa-solid fa-key me-2"></i>${t('superadmin.btn_reset_pin')}`;
+      
+      const btnDelete = document.getElementById('btn-delete-tenant');
+      if (btnDelete) btnDelete.innerHTML = `<i class="fa-solid fa-trash me-2"></i>${t('superadmin.btn_delete')}`;
+
+      const manageLabels = document.querySelectorAll('#manageTenantModal label');
+      if (manageLabels[0]) manageLabels[0].textContent = t('superadmin.col_id'); // Client ID
+      if (manageLabels[1]) manageLabels[1].textContent = t('superadmin.col_status'); // Status
+      if (manageLabels[2]) manageLabels[2].textContent = t('superadmin.quick_plan'); // Quick Set Plan
+      if (manageLabels[3]) manageLabels[3].textContent = t('superadmin.expiry_date'); // Expiry Date
+      if (manageLabels[4]) manageLabels[4].textContent = t('superadmin.max_staff'); // Max Staff Accounts
+      if (manageLabels[5]) manageLabels[5].textContent = t('superadmin.max_items'); // Max Menu Items
+
+      const manageTierSelect = document.getElementById('manage-tenant-tier');
+      if (manageTierSelect) {
+        manageTierSelect.options[0].textContent = t('superadmin.tier_default');
+        manageTierSelect.options[1].textContent = t('superadmin.tier_trial');
+        manageTierSelect.options[2].textContent = t('superadmin.tier_basic');
+        manageTierSelect.options[3].textContent = t('superadmin.tier_premium');
+      }
+
+      const manageStatusSelect = document.getElementById('manage-tenant-status');
+      if (manageStatusSelect) {
+        manageStatusSelect.options[0].textContent = `🟢 ${t('superadmin.filter_active')}`;
+        manageStatusSelect.options[1].textContent = `🔴 ${t('superadmin.filter_suspended')}`;
+      }
+
+      const saveBtn = document.getElementById('confirm-update-tenant-btn');
+      if (saveBtn) saveBtn.textContent = t('superadmin.save_btn');
+
+      // Sidebar
+      const sidebarDocContainer = document.querySelector('.fa-book');
+      if (sidebarDocContainer) sidebarDocContainer.parentNode.innerHTML = `<i class="fa-solid fa-book w-5"></i> ${t('superadmin.sidebar_doc')}`;
+      
+      const sidebarAPIContainer = document.querySelector('.fa-server');
+      if (sidebarAPIContainer) sidebarAPIContainer.parentNode.innerHTML = `<i class="fa-solid fa-server w-5 text-success"></i> ${t('superadmin.sidebar_api')} <span class="badge bg-success ms-auto">OK</span>`;
     } catch (_) {}
   }
 
