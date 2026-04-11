@@ -470,6 +470,24 @@
                 </div>
             </div>
 
+            <div class="row mb-4 g-3">
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <span class="input-group-text bg-dark border-secondary text-muted"><i class="fa-solid fa-search"></i></span>
+                        <input type="text" id="tenant-search" class="form-control bg-dark text-white border-secondary" placeholder="Search by name or domain...">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <select id="status-filter" class="form-select bg-dark text-white border-secondary">
+                        <option value="all">All Statuses</option>
+                        <option value="active">Active</option>
+                        <option value="suspended">Suspended</option>
+                        <option value="expiring">Expiring Soon</option>
+                        <option value="expired">Expired</option>
+                    </select>
+                </div>
+            </div>
+
             <div class="tenants-grid" id="tenants-grid">
                 <!-- Data populated by JS -->
                 <div class="text-center w-100 py-5 text-muted">
@@ -490,9 +508,17 @@
                 </div>
                 <div class="modal-body">
                     <form id="create-tenant-form">
-                        <div class="mb-4">
+                        <div class="mb-3">
                             <label class="form-label">Client / Brand Name</label>
                             <input type="text" id="new-client-name" class="form-control" placeholder="e.g. Phúc Long Coffee" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Subscription Tier</label>
+                            <select id="new-client-tier" class="form-select bg-dark text-white border-secondary">
+                                <option value="trial">Trial (7 days, 5 staff, 50 items)</option>
+                                <option value="basic">Basic (30 days, 10 staff, 200 items)</option>
+                                <option value="premium">Premium (365 days, 50 staff, unlimited items)</option>
+                            </select>
                         </div>
                         <div class="mb-2">
                             <label class="form-label">Default Admin PIN</label>
@@ -528,7 +554,8 @@
                     <!-- Actions -->
                     <div class="d-flex gap-2 mb-4">
                         <button class="btn btn-sm btn-outline-info flex-fill" id="btn-impersonate" onclick="impersonateTenant()"><i class="fa-solid fa-masks-theater me-2"></i>Login As Admin</button>
-                        <button class="btn btn-sm btn-outline-danger flex-fill" id="btn-reset-pin" onclick="resetTenantPin()"><i class="fa-solid fa-key me-2"></i>Reset Admin PIN</button>
+                        <button class="btn btn-sm btn-outline-warning flex-fill" id="btn-reset-pin" onclick="resetTenantPin()"><i class="fa-solid fa-key me-2"></i>Reset PIN</button>
+                        <button class="btn btn-sm btn-outline-danger flex-fill" id="btn-delete-tenant" onclick="deleteTenant()"><i class="fa-solid fa-trash me-2"></i>Delete</button>
                     </div>
 
                     <div class="row g-3 mb-3">
@@ -544,6 +571,17 @@
                             </select>
                         </div>
                     </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-warning">Quick Set Plan</label>
+                        <select id="manage-tenant-tier" class="form-select bg-dark border-warning text-white">
+                            <option value="">-- Select a predefined tier to autofill --</option>
+                            <option value="trial">Trial (7 days, 5 staff, 50 items)</option>
+                            <option value="basic">Basic (30 days, 10 staff, 200 items)</option>
+                            <option value="premium">Premium (365 days, 50 staff, 9999 items)</option>
+                        </select>
+                    </div>
+                    
                     <div class="mb-3">
                         <label class="form-label text-warning">Subscription Expiry Date</label>
                         <input type="datetime-local" id="manage-tenant-expiry" class="form-control border-warning text-warning font-bold">
