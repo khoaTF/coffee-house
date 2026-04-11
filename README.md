@@ -38,6 +38,11 @@
 - **Băng Rôn Quảng Cáo** — Banner trang chủ & popup khuyến mãi
 - **Xuất CSV** — Xuất dữ liệu để phân tích bên ngoài
 
+### 🌍 Siêu Quản Trị Hệ Thống (Superadmin / SaaS)
+- **Kiến Trúc Đa Cửa Hàng (Multi-tenant)** — Một CSDL, nhiều cửa hàng độc lập với nhau
+- **Quản Lý Các Gói Thuê Bao (Subscriptions)** — Khởi tạo cửa hàng, giới hạn nhân sự (`max_staff`) và menu (`max_items`)
+- **Đóng/Mở & Thu Hồi Dữ Liệu** — Đình chỉ (Suspend) và Xóa Vĩnh Viễn (Hard-Delete/Cascade) toàn bộ Cửa Hàng.
+
 ---
 
 ## 🛠 Công Nghệ Sử Dụng
@@ -147,7 +152,8 @@ Tính năng gacha đặc biệt dành cho khách hàng:
 
 | Vai Trò | Quyền Hạn |
 |---------|-----------|
-| **Admin** | Toàn quyền hệ thống |
+| **Super Admin** | Toàn quyền kiểm soát Cấu trúc SaaS, giới hạn Tenant, xoá Tenant |
+| **Admin** | Toàn quyền hệ thống theo từng chi nhánh cụ thể |
 | **Nhân Viên (Staff)** | Xử lý thanh toán, huỷ đơn, quản lý ca |
 | **Bếp (Kitchen)** | Xem & cập nhật trạng thái đơn |
 | **Khách Hàng** | Đặt món, theo dõi đơn, tích điểm |

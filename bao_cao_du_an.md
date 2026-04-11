@@ -50,6 +50,12 @@ Hệ thống cung cấp trải nghiệm chuyên biệt cho 4 nhóm đối tượ
 - **Sổ Quỹ (Cashflow):** Đối soát mọi dòng tiền (Thu từ đơn lẻ, chi trả nhập ngũ cốc, chi lương thưởng thủ công). Phân tích hiệu suất doanh thu bằng biểu đồ.
 - **Phân quyền Nhân sự:** Quyền hạn Granular chi tiết (Quyền tạo ca, thao tác bếp, thao tác quỹ) và bật tắt ngay lập tức. Cấp quyền qua Email/Mật khẩu.
 
+### 2.5 Nền tảng SaaS (Superadmin Dashboard)
+- **Quản lý Đa thực thể (Multi-tenant):** Cấp phép và khởi tạo cho các chuỗi / cửa hàng tách biệt (Tenants) hoạt động cùng trên một mã nguồn. 
+- **Quản trị Gói Dịch vụ (Subscription Tiers):** Giới hạn định mức số lượng nhân viên (`max_staff`), số lượng sản phẩm (`max_items`) theo các gói: *Trial*, *Basic*, *Premium*. Tính năng khóa tự động hoặc đánh dấu Expired (Hết hạn).
+- **Hard-Delete & Cascade:** Thu hồi không gian lưu trữ và dọn dẹp sạch sẽ tài khoản Auth, Dữ liệu giao dịch của các chi nhánh rác.
+- **Tiêu chuẩn Quốc tế (Bilingual):** Toàn bộ giao diện Superadmin hỗ trợ xem chéo ngôn ngữ Anh-Việt (100% i18n coverage).
+
 ---
 
 ## 3. SƠ ĐỒ LUỒNG NGHIỆP VỤ BIỂU DIỄN 
