@@ -91,13 +91,14 @@ CREATE OR REPLACE FUNCTION public.hash_pin()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public, extensions
 AS $$
 BEGIN
     -- Chỉ hash nếu pin thay đổi và chưa phải bcrypt format
     IF NEW.pin IS NOT NULL AND NEW.pin != '' THEN
         -- Kiểm tra nếu pin là plain text (không bắt đầu bằng $2)
         IF NEW.pin NOT LIKE '$2%' THEN
-            NEW.pin_hash := crypt(NEW.pin, gen_salt('bf', 8));
+            NEW.pin_hash := extensions.crypt(NEW.pin, extensions.gen_salt('bf'::text, 8));
         END IF;
     END IF;
     RETURN NEW;
