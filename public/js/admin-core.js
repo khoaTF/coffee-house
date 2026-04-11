@@ -3,7 +3,19 @@
 // =============================================
 
 // --- Shared State (Global) ---
+window.AdminState = {
+    tenantId: sessionStorage.getItem('tenant_id') || localStorage.getItem('tenant_id') || null
+};
+
+if (!window.AdminState.tenantId) {
+    console.error("Missing tenantId in admin panel! Redirecting to login.");
+    if (!window.location.pathname.includes('/login')) {
+        window.location.href = '/login.html';
+    }
+}
+
 let products = [];
+
 let orderHistory = [];
 let ingredients = [];
 let discounts = [];
@@ -97,6 +109,7 @@ async function logAudit(action, details) {
     const staffName = sessionStorage.getItem('nohope_staff_name') || localStorage.getItem('nohope_staff_name') || 'Ẩn danh';
     try {
         await supabase.from('audit_logs').insert([{
+            tenant_id: window.AdminState.tenantId,
             admin_identifier: `${staffName} (${adminRole})`,
             action: action,
             details: details
@@ -208,7 +221,9 @@ function switchTab(tabId) {
 // --- Staff Requests (Floating Alerts) ---
 async function fetchActiveStaffRequests() {
     try {
-        const { data, error } = await supabase.from('staff_requests').select('*').eq('status', 'pending');
+        const { data, error } = await supabase.from('staff_requests').select('*')
+            .eq('tenant_id', window.AdminState.tenantId)
+            .eq('status', 'pending');
         if (error) throw error;
         data.forEach(req => renderStaffRequest(req));
     } catch (e) { console.error("Error fetching staff requests:", e); }
@@ -269,7 +284,9 @@ function removeStaffRequestUI(id) {
 window.clearStaffRequest = async (id, btn) => {
     btn.disabled = true;
     try {
-        await supabase.from('staff_requests').update({ status: 'completed' }).eq('id', id);
+        await supabase.from('staff_requests').update({ status: 'completed' })
+            .eq('tenant_id', window.AdminState.tenantId)
+            .eq('id', id);
         removeStaffRequestUI(id);
     } catch(e) {
         console.error(e);
@@ -297,7 +314,7 @@ function playAdminAudio() {
 
 // --- Realtime Subscriptions ---
 supabase.channel('admin-orders')
-  .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, payload => {
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'orders', filter: `tenant_id=eq.${window.AdminState.tenantId}` }, payload => {
       if (document.getElementById('section-history').classList.contains('active') || 
           document.getElementById('section-analytics').classList.contains('active')) {
           clearTimeout(historyDebounceTimer);
@@ -317,10 +334,10 @@ supabase.channel('admin-orders')
           if (typeof loadDashboard === 'function') setTimeout(() => loadDashboard(), 400);
       }
   })
-  .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'staff_requests' }, payload => {
+  .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'staff_requests', filter: `tenant_id=eq.${window.AdminState.tenantId}` }, payload => {
       if(payload.new.status === 'pending') renderStaffRequest(payload.new);
   })
-  .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'staff_requests' }, payload => {
+  .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'staff_requests', filter: `tenant_id=eq.${window.AdminState.tenantId}` }, payload => {
       if(payload.new.status === 'completed') removeStaffRequestUI(payload.new.id);
   })
   .subscribe((status, err) => {
@@ -328,7 +345,7 @@ supabase.channel('admin-orders')
   });
 
 supabase.channel('admin-ingredients')
-  .on('postgres_changes', { event: '*', schema: 'public', table: 'ingredients' }, () => {
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'ingredients', filter: `tenant_id=eq.${window.AdminState.tenantId}` }, () => {
       if (document.getElementById('section-inventory')?.classList.contains('active')) {
           clearTimeout(inventoryDebounceTimer);
           inventoryDebounceTimer = setTimeout(() => fetchIngredients(), 400);
@@ -337,7 +354,7 @@ supabase.channel('admin-ingredients')
   .subscribe();
 
 supabase.channel('admin-cashflow')
-  .on('postgres_changes', { event: '*', schema: 'public', table: 'cash_transactions' }, () => {
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'cash_transactions', filter: `tenant_id=eq.${window.AdminState.tenantId}` }, () => {
       if (typeof renderDashboardStats === 'function') {
           setTimeout(() => renderDashboardStats(), 400);
       }
@@ -389,7 +406,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Refresh avatar and sync permissions from DB seamlessly
     if (staffName && staffName !== 'Administrator' && staffName !== 'Nhân viên') {
-        supabase.from('users').select('avatar_url, permissions, role').eq('name', staffName).maybeSingle().then(({data}) => {
+        supabase.from('users').select('avatar_url, permissions, role')
+            .eq('tenant_id', window.AdminState.tenantId)
+            .eq('name', staffName).maybeSingle().then(({data}) => {
             if (data && data.avatar_url) {
                 sessionStorage.setItem('nohope_staff_avatar', data.avatar_url);
                 if (desktopAvatarEl) {
@@ -418,7 +437,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Listen for realtime permission/role changes
         supabase.channel('admin-user-channel')
-            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'users' }, payload => {
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'users', filter: `tenant_id=eq.${window.AdminState.tenantId}` }, payload => {
                 if (payload.new.name === staffName) {
                     const newPerms = payload.new.permissions || [];
                     const newRole = payload.new.role;
@@ -578,7 +597,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function subscribeOrdersBadge() {
         const updateBadge = async () => {
             try {
-                const { count } = await supabase.from('orders').select('id', { count: 'exact', head: true }).in('status', ['Pending', 'Preparing']);
+                const { count } = await supabase.from('orders').select('id', { count: 'exact', head: true })
+                    .eq('tenant_id', window.AdminState.tenantId)
+                    .in('status', ['Pending', 'Preparing']);
                 const badge = document.getElementById('orders-pending-badge');
                 if (!badge) return;
                 if (count > 0) {
@@ -591,7 +612,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         updateBadge();
         supabase.channel('orders-badge-channel')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, updateBadge)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'orders', filter: `tenant_id=eq.${window.AdminState.tenantId}` }, updateBadge)
             .subscribe();
     }
     subscribeOrdersBadge();

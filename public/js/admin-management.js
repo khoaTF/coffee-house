@@ -19,7 +19,7 @@ async function fetchStaff() {
     const tbody = document.getElementById('staff-table-body');
     if (!tbody) return;
     try {
-        const { data, error } = await supabase.from('users').select('*').order('created_at', { ascending: false });
+        const { data, error } = await supabase.from('users').select('*').eq('tenant_id', AdminState.tenantId).order('created_at', { ascending: false });
         if (error) throw error;
         staffList = data || [];
         renderStaff(staffList);
@@ -59,7 +59,7 @@ function renderStaff(data) {
             <td class="px-4">${avatarHtml}</td>
             <td class="font-bold text-slate-800">${window.escapeHTML(s.name)}</td>
             <td><span class="badge ${badgeClass} text-dark rounded-xl px-2 py-1">${roleLabel}</span></td>
-            <td class="font-mono text-warning font-bold tracking-widest">${s.pin || '---'}</td>
+            <td class="font-mono text-warning font-bold tracking-widest">${s.pin ? '••••' : '---'}</td>
             <td class="text-end">
                 <button class="action-btn text-info" title="Sửa" onclick="openStaffModal('${s.id}')"><i class="fa-solid fa-pen"></i></button>
                 <button class="action-btn delete" title="Xóa" onclick="deleteStaff('${s.id}')"><i class="fa-solid fa-trash"></i></button>
@@ -166,7 +166,7 @@ async function saveStaff() {
 
     try {
         if (id) {
-            const { data, error } = await supabase.from('users').update(payload).eq('id', id).select();
+            const { data, error } = await supabase.from('users').update(payload).eq('id', id).eq('tenant_id', AdminState.tenantId).select();
             if (error) throw error;
             if (!data || data.length === 0) {
                 throw new Error("Không thể cập nhật dữ liệu. Có thể do lỗi phân quyền (RLS) hoặc nhân viên không tồn tại.");
@@ -185,7 +185,7 @@ async function saveStaff() {
                 }
             }
         } else {
-            const { error } = await supabase.from('users').insert([payload]);
+            const { error } = await supabase.from('users').insert([{...payload, tenant_id: AdminState.tenantId}]);
             if (error) throw error;
         }
         if (window.staffModalInstance) {
@@ -332,7 +332,7 @@ async function deleteStaff(id) {
     if (!confirmed) return;
 
     try {
-        const { error } = await supabase.from('users').delete().eq('id', id);
+        const { error } = await supabase.from('users').delete().eq('id', id).eq('tenant_id', AdminState.tenantId);
         if (error) throw error;
         fetchStaff();
     } catch (e) {
@@ -344,7 +344,7 @@ async function deleteStaff(id) {
 // --- Customer Management ---
 async function fetchCustomers() {
     try {
-        const { data, error } = await supabase.from('customers').select('*').order('created_at', { ascending: false });
+        const { data, error } = await supabase.from('customers').select('*').eq('tenant_id', AdminState.tenantId).order('created_at', { ascending: false });
         if (error) throw error;
         customersList = data;
         renderCustomersTable();
@@ -409,7 +409,7 @@ async function saveCustomer() {
     const id = document.getElementById('customerId').value;
     const points = parseInt(document.getElementById('customerPoints').value) || 0;
     try {
-        const { error } = await supabase.from('customers').update({ current_points: points }).eq('id', id);
+        const { error } = await supabase.from('customers').update({ current_points: points }).eq('id', id).eq('tenant_id', AdminState.tenantId);
         if (error) throw error;
         logAudit('Sửa điểm KH', `ID: ${id}, Điểm cập nhật: ${points}`);
         customerModalInstance.hide();
@@ -425,7 +425,7 @@ async function fetchDiscounts() {
     const tbody = document.getElementById('promo-table-body');
     if (!tbody) return;
     try {
-        const { data, error } = await supabase.from('discounts').select('*').order('created_at', { ascending: false });
+        const { data, error } = await supabase.from('discounts').select('*').eq('tenant_id', AdminState.tenantId).order('created_at', { ascending: false });
         if (error) throw error;
         discounts = data;
         renderDiscountsTable(data);
@@ -500,11 +500,11 @@ async function savePromo() {
 
     try {
         if (id) {
-            const { error } = await supabase.from('discounts').update(data).eq('id', id);
+            const { error } = await supabase.from('discounts').update(data).eq('id', id).eq('tenant_id', AdminState.tenantId);
             if(error) throw error;
             logAudit('Cập nhật mã KM', `Mã: ${data.code}`);
         } else {
-            const { error } = await supabase.from('discounts').insert([data]);
+            const { error } = await supabase.from('discounts').insert([{...data, tenant_id: AdminState.tenantId}]);
             if(error) throw error;
             logAudit('Thêm mã KM mới', `Mã: ${data.code}`);
         }
@@ -520,7 +520,7 @@ async function togglePromoStatus(id, currentlyActive) {
     const conf = await customConfirm(`Bạn muốn ${currentlyActive ? 'ngưng' : 'bật lại'} mã này?`, "Xác nhận");
     if(!conf) return;
     try {
-        const { error } = await supabase.from('discounts').update({ active: !currentlyActive }).eq('id', id);
+        const { error } = await supabase.from('discounts').update({ active: currentlyActive === false }).eq('id', id).eq('tenant_id', AdminState.tenantId);
         if(error) throw error;
         logAudit(currentlyActive ? 'Ngưng mã KM' : 'Bật mã KM', `ID: ${id}`);
         fetchDiscounts();
@@ -535,6 +535,7 @@ async function fetchAuditLogs() {
     try {
         const { data, error } = await supabase.from('audit_logs')
             .select('*')
+            .eq('tenant_id', AdminState.tenantId)
             .order('created_at', { ascending: false })
             .limit(100);
 
@@ -651,7 +652,7 @@ window.saveStoreSettings = async function(type) {
 
     try {
         if (typeof supabase !== 'undefined') {
-            const { error } = await supabase.from('store_settings').upsert({ id: 1, ...updates });
+            const { error } = await supabase.from('store_settings').upsert({ id: 1, tenant_id: AdminState.tenantId, ...updates });
             if (error) throw error;
         }
 
@@ -671,7 +672,7 @@ window.loadStoreSettings = async function() {
     let settings = {};
     try {
         if (typeof supabase !== 'undefined') {
-            const { data, error } = await supabase.from('store_settings').select('*').eq('id', 1).single();
+            const { data, error } = await supabase.from('store_settings').select('*').eq('id', 1).eq('tenant_id', AdminState.tenantId).single();
             if (data) settings = data;
             else throw new Error("No table");
         } else {

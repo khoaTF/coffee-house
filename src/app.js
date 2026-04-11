@@ -1,17 +1,47 @@
 const express = require('express');
 const path = require('path');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const apiRoutes = require('./routes/api.routes');
 
 const app = express();
 
-// Security Middleware
-app.use((req, res, next) => {
-    res.setHeader('Content-Security-Policy', "default-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://*.supabase.co; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://*.supabase.co; connect-src 'self' https://*.supabase.co wss://*.supabase.co;");
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('X-Frame-Options', 'DENY');
-    res.setHeader('X-XSS-Protection', '1; mode=block');
-    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-    next();
+// Security Middleware — helmet handles most headers automatically
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com", "https://*.supabase.co"],
+            imgSrc: ["'self'", "data:", "https:"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
+            fontSrc: ["'self'", "data:", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com", "https://*.supabase.co"],
+            connectSrc: ["'self'", "https://*.supabase.co", "wss://*.supabase.co"]
+        }
+    },
+    crossOriginEmbedderPolicy: false
+}));
+
+// Global Rate Limiter — 100 requests per 15 minutes per IP
+app.use(rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many requests, please try again later.' }
+}));
+
+// Stricter rate limiter for auth endpoints
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 5,
+    message: { error: 'Too many login attempts, please try again after 15 minutes.' }
+});
+
+// Rate limiter for webhook endpoint
+const webhookLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000,
+    max: 30,
+    message: { error: 'Webhook rate limit exceeded.' }
 });
 
 // JSON parsing
@@ -35,7 +65,10 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/pages/index.html'));
 });
 
-// API Routes mounting
+// API Routes mounting — apply specific rate limiters
+app.use('/api/login', authLimiter);
+app.use('/api/webhook', webhookLimiter);
 app.use('/api', apiRoutes);
 
 module.exports = app;
+

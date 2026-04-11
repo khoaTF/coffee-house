@@ -34,6 +34,7 @@ async function saveCashTransaction() {
     try {
         const staffName = sessionStorage.getItem('nohope_staff_name') || localStorage.getItem('nohope_staff_name') || 'Admin';
         const { error } = await supabase.from('cash_transactions').insert([{
+            tenant_id: window.AdminState.tenantId,
             type: type,
             amount: parseFloat(amountInput),
             category: 'manual',
@@ -90,6 +91,7 @@ async function fetchCashflowData() {
         const { data: manualData, error: manualErr } = await supabase
             .from('cash_transactions')
             .select('*')
+            .eq('tenant_id', window.AdminState.tenantId)
             .eq('category', 'manual')
             .gte('created_at', startISO)
             .lte('created_at', endISO)
@@ -100,6 +102,7 @@ async function fetchCashflowData() {
         const { data: ordersData, error: ordersErr } = await supabase
             .from('orders')
             .select('*')
+            .eq('tenant_id', window.AdminState.tenantId)
             .in('payment_status', ['paid', 'refunded'])
             .gte('created_at', startISO)
             .lte('created_at', endISO);
@@ -109,6 +112,7 @@ async function fetchCashflowData() {
         const { data: restockData, error: restockErr } = await supabase
             .from('inventory_logs')
             .select('*, ingredients(name, unit)')
+            .eq('tenant_id', window.AdminState.tenantId)
             .eq('change_type', 'restock')
             .gte('created_at', startISO)
             .lte('created_at', endISO);
@@ -185,7 +189,7 @@ async function fetchCashflowData() {
 
     } catch (e) {
         console.error(e);
-        if(tbody) tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">Lỗi: ${e.message}</td></tr>`;
+        if(tbody) tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">Lỗi: ${window.escapeHTML(e.message)}</td></tr>`;
     }
 }
 

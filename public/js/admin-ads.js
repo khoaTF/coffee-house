@@ -17,6 +17,7 @@ async function autoAssignBestSellers() {
         const { data: recentOrders, error: orderError } = await supabase
             .from('orders')
             .select(`*`)
+            .eq('tenant_id', window.AdminState.tenantId)
             .gte('created_at', thirtyDaysAgo.toISOString())
             .eq('payment_status', 'paid')
             .neq('status', 'Cancelled');
@@ -64,11 +65,12 @@ async function autoAssignBestSellers() {
 
         // 4. Update database
         // Bỏ is_best_seller của tất cả sản phẩm
-        await supabase.from('products').update({ is_best_seller: false }).neq('id', 'dummy'); 
+        await supabase.from('products').update({ is_best_seller: false }).eq('tenant_id', window.AdminState.tenantId).neq('id', 'dummy'); 
         // Gán is_best_seller cho top 4
         const { error: updateError } = await supabase
             .from('products')
             .update({ is_best_seller: true })
+            .eq('tenant_id', window.AdminState.tenantId)
             .in('id', topProductIds);
 
         if (updateError) throw updateError;
@@ -107,6 +109,7 @@ async function loadBanners() {
         const { data, error } = await supabase
             .from('promotion_banners')
             .select('*')
+            .eq('tenant_id', window.AdminState.tenantId)
             .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -114,7 +117,7 @@ async function loadBanners() {
         renderBannersTable();
     } catch (err) {
         console.error('Error loading banners:', err);
-        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-red-500">Lỗi: ${err.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-red-500">Lỗi: ${window.escapeHTML(err.message)}</td></tr>`;
     }
 }
 
@@ -175,6 +178,7 @@ async function saveAdBanner() {
 
     try {
         const payload = {
+            tenant_id: window.AdminState.tenantId,
             title,
             image_url: imageUrl,
             target_url: targetUrl || null,
@@ -198,7 +202,7 @@ async function saveAdBanner() {
 
 async function toggleBannerStatus(id, isActive) {
     try {
-        const { error } = await supabase.from('promotion_banners').update({ is_active: isActive }).eq('id', id);
+        const { error } = await supabase.from('promotion_banners').update({ is_active: isActive }).eq('tenant_id', window.AdminState.tenantId).eq('id', id);
         if (error) throw error;
         
         const banner = bannersList.find(b => b.id === id);
@@ -216,7 +220,7 @@ async function deleteBanner(id) {
     if (!confirm('Bạn có chắc chắn muốn xóa banner này? Hành động này không thể hoàn tác.')) return;
     
     try {
-        const { error } = await supabase.from('promotion_banners').delete().eq('id', id);
+        const { error } = await supabase.from('promotion_banners').delete().eq('tenant_id', window.AdminState.tenantId).eq('id', id);
         if (error) throw error;
         
         showToast('Đã xóa banner.', 'success');

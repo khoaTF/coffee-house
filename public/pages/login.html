@@ -34,37 +34,13 @@
             </a>
             <p class="subtitle">Đăng nhập vào hệ thống quản lý</p>
 
-            <div class="login-tabs">
-                <button type="button" class="login-tab active" id="tab-account"><i class="fa-solid fa-user-lock me-2"></i>Tài khoản</button>
-                <button type="button" class="login-tab" id="tab-pin"><i class="fa-solid fa-key me-2"></i>Mã PIN</button>
-            </div>
-
             <form id="login-form">
-                <!-- Account Section -->
-                <div id="account-section">
-                    <div class="form-group">
-                        <label>Tên đăng nhập</label>
-                        <div class="input-icon-wrapper">
-                            <input type="text" id="username" placeholder="Nhập Tài Khoản..." autocomplete="username">
-                            <i class="fa-solid fa-user"></i>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Mật khẩu</label>
-                        <div class="input-icon-wrapper">
-                            <input type="password" id="password" placeholder="Nhập mật khẩu..." autocomplete="current-password">
-                            <i class="fa-solid fa-lock"></i>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- PIN Section -->
-                <div id="pin-section" class="hidden">
+                <div id="pin-section">
                     <div class="form-group">
                         <label class="login-pin-label">Mã PIN Bí mật</label>
                         <div class="input-icon-wrapper">
-                            <input type="password" id="staff-pin" placeholder="••••••" inputmode="numeric" autocomplete="off" class="login-pin-input">
+                            <input type="password" id="staff-pin" placeholder="••••••" inputmode="numeric" autocomplete="off" class="login-pin-input" autofocus>
                             <i class="fa-solid fa-key login-pin-icon"></i>
                         </div>
                     </div>
@@ -75,7 +51,7 @@
                 </button>
                 
                 <div class="error-msg" id="error-msg">
-                    <i class="fa-solid fa-circle-exclamation me-1"></i> <span id="error-text">Tài khoản hoặc mật khẩu không đúng!</span>
+                    <i class="fa-solid fa-circle-exclamation me-1"></i> <span id="error-text">Mã PIN không hợp lệ!</span>
                 </div>
             </form>
 
@@ -89,27 +65,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/js/supabase-config.js"></script>
     <script>
-        let currentMode = 'account';
-
-        // Tab Switching
-        document.getElementById('tab-account').addEventListener('click', () => {
-            currentMode = 'account';
-            document.getElementById('tab-account').classList.add('active');
-            document.getElementById('tab-pin').classList.remove('active');
-            document.getElementById('account-section').classList.remove('hidden');
-            document.getElementById('pin-section').classList.add('hidden');
-            document.getElementById('error-msg').style.display = 'none';
-        });
-
-        document.getElementById('tab-pin').addEventListener('click', () => {
-            currentMode = 'pin';
-            document.getElementById('tab-pin').classList.add('active');
-            document.getElementById('tab-account').classList.remove('active');
-            document.getElementById('pin-section').classList.remove('hidden');
-            document.getElementById('account-section').classList.add('hidden');
-            document.getElementById('error-msg').style.display = 'none';
-            document.getElementById('staff-pin').focus();
-        });
+        let currentMode = 'pin';
 
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -122,117 +78,47 @@
             errorMsg.style.display = 'none';
 
             try {
-                if (currentMode === 'account') {
-                    const user = document.getElementById('username')?.value?.trim() || '';
-                    const pass = document.getElementById('password')?.value?.trim() || '';
-                    if (!user || !pass) throw new Error("Vui lòng nhập đủ Tên đăng nhập và Mật khẩu.");
+                const typedPin = document.getElementById('staff-pin')?.value || '';
+                if (!typedPin) throw new Error("Vui lòng nhập Mã PIN.");
 
-                    const { data, error } = await supabase
-                        .rpc('verify_credentials', { p_username: user, p_password: pass })
-                        .single();
+                const { data, error } = await supabase
+                    .rpc('verify_pin', { pin_code: typedPin })
+                    .single();
 
-                    if (error) {
-                        if (error.code === 'PGRST116') throw new Error("Tài khoản hoặc mật khẩu không đúng!");
-                        else throw new Error("Lỗi hệ thống: " + error.message);
-                    }
-                    if (!data) throw new Error("Tài khoản hoặc mật khẩu không đúng!");
+                if (error || !data) throw new Error("Mã PIN không hợp lệ (sai mã)!");
 
-                    let authEmail = '';
-                    let authPass = '';
-                    if (data.role === 'kitchen') {
-                        authEmail = 'kitchen@nohope.cafe';
-                        authPass = 'SharedKitchenPwd#123';
-                    } else if (data.role === 'staff') {
-                        authEmail = 'staff@nohope.cafe';
-                        authPass = 'SharedStaffPwd#123';
-                    } else if (data.role === 'admin' || data.role === 'manager') {
-                        authEmail = 'admin@nohope.cafe';
-                        authPass = 'AdminPassword!2024';
-                    } else {
-                        throw new Error('Vai trò không hợp lệ');
-                    }
+                // Phase 6 SaaS: Dynamic Individual Auth using UUID and typed PIN
+                const authEmail = 'staff_' + data.id + '@nohope.cafe';
+                const authPass = typedPin; // The typed PIN is mapped as the Supabase Auth password!
+                
+                const authRes = await supabase.auth.signInWithPassword({
+                    email: authEmail,
+                    password: authPass
+                });
 
-                    const authRes = await supabase.auth.signInWithPassword({
-                        email: authEmail,
-                        password: authPass
-                    });
+                if (authRes.error) throw new Error("Lỗi xác thực hệ thống SaaS: " + authRes.error.message);
 
-                    if (authRes.error) throw new Error("Lỗi xác thực hệ thống: " + authRes.error.message);
-
-                    sessionStorage.setItem('cafe_role', data.role);
-                    sessionStorage.setItem('nohope_staff_auth', 'true');
-                    sessionStorage.setItem('nohope_staff_name', data.name || user);
-                    sessionStorage.setItem('nohope_permissions', JSON.stringify(data.permissions || []));
-                    sessionStorage.setItem('nohope_staff_avatar', data.avatar_url || '');
-                    
-                    localStorage.removeItem('cafe_token');
-                    localStorage.removeItem('cafe_role');
-                    localStorage.removeItem('nohope_staff_auth');
-                    localStorage.removeItem('nohope_staff_name');
-                    
-                    let role = data.role;
-
-                    btn.innerHTML = '<i class="fa-solid fa-check me-2"></i>Thành công!';
-                    btn.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
-
-                    setTimeout(() => {
-                        if (role === 'admin' || role === 'manager') window.location.href = '/admin';
-                        else if (role === 'kitchen') window.location.href = '/kitchen';
-                        else window.location.href = '/staff';
-                    }, 500);
-                } else {
-                    // PIN Mode via Supabase RPC mapped to Auth
-                    const pin = document.getElementById('staff-pin')?.value || '';
-                    if (!pin) throw new Error("Vui lòng nhập Mã PIN.");
-
-                    const { data, error } = await supabase
-                        .rpc('verify_pin', { pin_code: pin })
-                        .single();
-
-                    if (error || !data) throw new Error("Mã PIN không hợp lệ (sai mã)!");
-
-                    // Map role to silent Supabase Auth login
-                    let authEmail = '';
-                    let authPass = '';
-                    if (data.role === 'kitchen') {
-                        authEmail = 'kitchen@nohope.cafe';
-                        authPass = 'SharedKitchenPwd#123';
-                    } else if (data.role === 'staff') {
-                        authEmail = 'staff@nohope.cafe';
-                        authPass = 'SharedStaffPwd#123';
-                    } else if (data.role === 'admin' || data.role === 'manager') {
-                        authEmail = 'admin@nohope.cafe';
-                        authPass = 'AdminPassword!2024';
-                    } else {
-                        throw new Error('Vai trò không hợp lệ');
-                    }
-
-                    const authRes = await supabase.auth.signInWithPassword({
-                        email: authEmail,
-                        password: authPass
-                    });
-
-                    if (authRes.error) throw new Error("Lỗi xác thực hệ thống: " + authRes.error.message);
-
-                    sessionStorage.setItem('cafe_role', data.role);
-                    sessionStorage.setItem('nohope_staff_auth', 'true');
-                    sessionStorage.setItem('nohope_staff_name', data.name || 'Nhân viên');
-                    sessionStorage.setItem('nohope_permissions', JSON.stringify(data.permissions || []));
-                    sessionStorage.setItem('nohope_staff_avatar', data.avatar_url || '');
-                    
-                    localStorage.removeItem('cafe_role');
-                    localStorage.removeItem('nohope_staff_auth');
-                    localStorage.removeItem('nohope_staff_name');
-
-                    btn.innerHTML = '<i class="fa-solid fa-check me-2"></i>Thành công!';
-                    btn.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
-
-                    setTimeout(() => {
-                        if (data.role === 'admin' || data.role === 'manager') window.location.href = '/admin';
-                        else if (data.role === 'kitchen') window.location.href = '/kitchen';
-                        else window.location.href = '/staff';
-                    }, 500);
+                sessionStorage.setItem('cafe_role', data.role);
+                sessionStorage.setItem('nohope_staff_auth', 'true');
+                sessionStorage.setItem('nohope_staff_name', data.name || 'Nhân viên');
+                sessionStorage.setItem('nohope_permissions', JSON.stringify(data.permissions || []));
+                sessionStorage.setItem('nohope_staff_avatar', data.avatar_url || '');
+                if (data.tenant_id) {
+                    sessionStorage.setItem('tenant_id', data.tenant_id);
                 }
+                
+                localStorage.removeItem('cafe_role');
+                localStorage.removeItem('nohope_staff_auth');
+                localStorage.removeItem('nohope_staff_name');
+
+                btn.innerHTML = '<i class="fa-solid fa-check me-2"></i>Thành công!';
+                btn.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
+
+                setTimeout(() => {
+                    if (data.role === 'admin' || data.role === 'manager') window.location.href = '/admin';
+                    else if (data.role === 'kitchen') window.location.href = '/kitchen';
+                    else window.location.href = '/staff';
+                }, 500);
             } catch (err) {
                 errorText.innerText = err.message || "Lỗi kết nối đến máy chủ.";
                 errorMsg.style.display = 'block';

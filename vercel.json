@@ -40,6 +40,10 @@
     {
       "src": "^/driver$",
       "dest": "/pages/driver.html"
+    },
+    {
+      "src": "^/guide$",
+      "dest": "/pages/guide.html"
     }
   ]
 }

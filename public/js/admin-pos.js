@@ -25,10 +25,10 @@ window.initPOS = async function() {
             
             <div class="flex items-center gap-2 bg-slate-100 px-4 py-2 rounded-xl border border-slate-200 shadow-soft">
                 <div id="pos-header-avatar" class="w-8 h-8 rounded-full border border-[#C0A062] flex items-center justify-center overflow-hidden bg-white">
-                    ${sessionStorage.getItem('nohope_staff_avatar') ? `<img src="${sessionStorage.getItem('nohope_staff_avatar')}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-user text-[#C0A062] text-xs"></i>`}
+                    ${sessionStorage.getItem('nohope_staff_avatar') ? `<img src="${(window.escapeHTML||String)(sessionStorage.getItem('nohope_staff_avatar'))}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-user text-[#C0A062] text-xs"></i>`}
                 </div>
                 <div class="flex flex-col justify-center">
-                    <span class="text-slate-800 text-sm font-bold leading-none">${sessionStorage.getItem('nohope_staff_name') || 'Cashier'}</span>
+                    <span class="text-slate-800 text-sm font-bold leading-none">${(window.escapeHTML||String)(sessionStorage.getItem('nohope_staff_name') || 'Cashier')}</span>
                     <span class="text-slate-500 text-[10px] leading-tight font-semibold mt-1 uppercase tracking-wider">Thu ngân v2.0</span>
                 </div>
             </div>
@@ -123,8 +123,8 @@ window.initPOS = async function() {
 async function posLoadProducts() {
     try {
         const [prodRes, stockRes] = await Promise.all([
-            supabase.from('products').select('*').eq('is_available', true).order('category'),
-            supabase.from('ingredients').select('id, stock')
+            supabase.from('products').select('*').eq('tenant_id', window.AdminState.tenantId).eq('is_available', true).order('category'),
+            supabase.from('ingredients').select('id, stock').eq('tenant_id', window.AdminState.tenantId)
         ]);
         if (prodRes.error) throw prodRes.error;
         if (stockRes.error) console.error('POS load stock error:', stockRes.error);
@@ -528,7 +528,11 @@ window.posSubmitOrder = async function() {
         // ✅ STOCK PRE-CHECK
         const ingredientIds = Object.keys(reductions);
         if (ingredientIds.length > 0) {
-            const { data: freshStock, error: stockErr } = await supabase.from('ingredients').select('id, name, stock').in('id', ingredientIds);
+            const { data: freshStock, error: stockErr } = await supabase.from('ingredients')
+                .select('id, name, stock')
+                .in('id', ingredientIds)
+                .eq('tenant_id', window.AdminState.tenantId);
+                
             if (!stockErr && freshStock && freshStock.length > 0) {
                 const stockMap = {};
                 freshStock.forEach(i => stockMap[i.id] = i.stock);
@@ -549,6 +553,7 @@ window.posSubmitOrder = async function() {
         }
 
         const orderPayload = {
+            tenant_id: window.AdminState.tenantId,
             table_number: String(posSelectedTable),
             session_id: 'POS_' + Date.now(), // Fixed: Missing NOT NULL column `session_id`
             items: items,
@@ -567,7 +572,11 @@ window.posSubmitOrder = async function() {
         }
         
         // POS orders are immediately paid (RPC doesn't set is_paid directly):
-        const { error: updateErr } = await supabase.from('orders').update({ is_paid: true, payment_status: 'paid' }).eq('id', newOrderId);
+        const { error: updateErr } = await supabase.from('orders')
+            .update({ is_paid: true, payment_status: 'paid' })
+            .eq('id', newOrderId)
+            .eq('tenant_id', window.AdminState.tenantId);
+            
         if (updateErr) console.warn("Lỗi cập nhật trạng thái thanh toán POS:", updateErr);
 
         logAudit('POS Đặt hàng', `Bàn ${posSelectedTable} — ${posCart.length} món — ${totalPrice.toLocaleString('vi-VN')}đ bởi ${staffName}`);

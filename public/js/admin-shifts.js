@@ -118,6 +118,7 @@ async function loadShiftsHistory() {
         const { data, error } = await supabase
             .from('shifts')
             .select('*')
+            .eq('tenant_id', window.AdminState.tenantId)
             .order('opened_at', { ascending: false })
             .limit(30);
 
@@ -161,6 +162,7 @@ async function checkCurrentShift() {
         const { data, error } = await supabase
             .from('shifts')
             .select('*')
+            .eq('tenant_id', window.AdminState.tenantId)
             .eq('status', 'open')
             .order('opened_at', { ascending: false })
             .limit(1);
@@ -265,6 +267,7 @@ async function submitStartShift() {
         const { data, error } = await supabase
             .from('shifts')
             .insert([{
+                tenant_id: window.AdminState.tenantId,
                 opened_by: staffName,
                 start_balance: startBalance,
                 notes: notes,
@@ -297,6 +300,7 @@ async function openCloseShiftModal() {
         const { data: allOrders, error } = await supabase
             .from('orders')
             .select('*')
+            .eq('tenant_id', window.AdminState.tenantId)
             .gte('created_at', currentShift.opened_at);
 
         if (error) throw error;
@@ -435,7 +439,8 @@ async function submitCloseShift() {
                 closed_by: closedBy,
                 notes: notes
             })
-            .eq('id', currentShift.id);
+            .eq('id', currentShift.id)
+            .eq('tenant_id', window.AdminState.tenantId);
 
         if (error) throw error;
 

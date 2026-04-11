@@ -9,6 +9,7 @@ async function fetchHistory() {
         const { data, error } = await supabase
             .from('orders')
             .select('*')
+            .eq('tenant_id', AdminState.tenantId)
             .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -201,9 +202,9 @@ async function restoreInventoryOnCancel(items) {
                 const ingrId = ingr.ingredient_id || ingr.ingredientId || ingr.id;
                 const restoreAmt = (ingr.amount || ingr.quantity || 0) * qty;
                 if (restoreAmt <= 0) continue;
-                const { data: cur } = await supabase.from('ingredients').select('stock').eq('id', ingrId).maybeSingle();
+                const { data: cur } = await supabase.from('ingredients').select('stock').eq('id', ingrId).eq('tenant_id', AdminState.tenantId).maybeSingle();
                 if (cur) {
-                    await supabase.from('ingredients').update({ stock: (cur.stock || 0) + restoreAmt }).eq('id', ingrId);
+                    await supabase.from('ingredients').update({ stock: (cur.stock || 0) + restoreAmt }).eq('id', ingrId).eq('tenant_id', AdminState.tenantId);
                 }
             }
         }
@@ -226,7 +227,7 @@ window.cancelOrder = async (orderId) => {
             updatePayload.payment_status = 'refunded';
         }
 
-        const { error } = await supabase.from('orders').update(updatePayload).eq('id', orderId);
+        const { error } = await supabase.from('orders').update(updatePayload).eq('id', orderId).eq('tenant_id', AdminState.tenantId);
         if (error) throw error;
         // Hoàn kho tự động
         if (order && order.items) await restoreInventoryOnCancel(order.items);
@@ -251,7 +252,8 @@ window.markOrderPaid = async (orderId) => {
         const { error: updateErr } = await supabase
             .from('orders')
             .update({ is_paid: true, payment_status: 'paid' })
-            .eq('id', orderId);
+            .eq('id', orderId)
+            .eq('tenant_id', AdminState.tenantId);
         if (updateErr) throw updateErr;
 
         logAudit('Xác nhận thanh toán', `Đơn #${String(orderId).substring(0,8)} - ${(order.totalPrice||0).toLocaleString('vi-VN')}đ`);
@@ -273,7 +275,7 @@ window.printInvoice = async (orderId) => {
     // Load store_settings
     let storeSettings = {};
     try {
-        const { data } = await supabase.from('store_settings').select('*').eq('id', 1).maybeSingle();
+        const { data } = await supabase.from('store_settings').select('*').eq('id', 1).eq('tenant_id', AdminState.tenantId).maybeSingle();
         storeSettings = data || JSON.parse(localStorage.getItem('store_settings') || '{}');
     } catch(e) {
         storeSettings = JSON.parse(localStorage.getItem('store_settings') || '{}');
@@ -295,13 +297,14 @@ window.printInvoice = async (orderId) => {
     const payStatusBg = order.paymentStatus === 'paid' ? '#16a34a' : '#dc2626';
     const payStatusText = order.paymentStatus === 'paid' ? '✅ Đã Thanh Toán' : '⏳ Chưa Thanh Toán';
 
+    const esc = window.escapeHTML || (s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'));
     const itemsHtml = (order.items || []).map(i => {
         const opts = i.selectedOptions && i.selectedOptions.length > 0
-            ? `<div style="font-size:11px;color:#666;padding-left:12px;">↳ ${i.selectedOptions.map(o => o.choiceName).join(', ')}</div>` : '';
+            ? `<div style="font-size:11px;color:#666;padding-left:12px;">↳ ${i.selectedOptions.map(o => esc(o.choiceName)).join(', ')}</div>` : '';
         return `
             <tr>
                 <td style="padding:5px 4px;border-bottom:1px dashed #e2e8f0;vertical-align:top;">
-                    <div style="font-weight:600;">${i.quantity}× ${window.escapeHTML ? window.escapeHTML(i.name) : i.name}</div>
+                    <div style="font-weight:600;">${i.quantity}× ${esc(i.name)}</div>
                     ${opts}
                 </td>
                 <td style="padding:5px 4px;border-bottom:1px dashed #e2e8f0;text-align:right;white-space:nowrap;vertical-align:top;">${((i.price || 0) * (i.quantity || 1)).toLocaleString('vi-VN')} đ</td>
@@ -336,13 +339,13 @@ window.printInvoice = async (orderId) => {
         </style>
     </head><body>
         <div class="logo-row">
-            <div class="store-name">${storeName}</div>
-            ${storeAddress ? `<div class="store-sub">${storeAddress}</div>` : ''}
+            <div class="store-name">${esc(storeName)}</div>
+            ${storeAddress ? `<div class="store-sub">${esc(storeAddress)}</div>` : ''}
             <div class="store-sub">HÓA ĐƠN BÁN HÀNG</div>
         </div>
         <hr class="divider-solid">
         <div class="meta-row"><span>Mã đơn:</span><span><b>#${orderIdShort}</b></span></div>
-        <div class="meta-row"><span>Bàn số:</span><span><b>Bàn ${order.tableNumber}</b></span></div>
+        <div class="meta-row"><span>Bàn số:</span><span><b>Bàn ${esc(order.tableNumber)}</b></span></div>
         <div class="meta-row"><span>Thời gian:</span><span>${timeStr}</span></div>
         ${payMethod ? `<div class="meta-row"><span>Thanh toán:</span><span>${payMethod}</span></div>` : ''}
         <hr class="divider-dash">
@@ -353,14 +356,14 @@ window.printInvoice = async (orderId) => {
                 <div class="total-row"><span>Tạm tính:</span><span>${(subtotal + discount).toLocaleString('vi-VN')} đ</span></div>
                 <div class="total-row" style="color:#dc2626;"><span>Giảm giá:</span><span>-${discount.toLocaleString('vi-VN')} đ</span></div>
             ` : ''}
-            ${order.orderNote ? `<div class="total-row" style="color:#666;font-style:italic;"><span>Ghi chú:</span><span style="text-align:right;max-width:55%;">${order.orderNote}</span></div>` : ''}
+            ${order.orderNote ? `<div class="total-row" style="color:#666;font-style:italic;"><span>Ghi chú:</span><span style="text-align:right;max-width:55%;">${esc(order.orderNote)}</span></div>` : ''}
             <div class="grand-total"><span>TỔNG CỘNG</span><span>${finalTotal.toLocaleString('vi-VN')} đ</span></div>
         </div>
         <div class="pay-status">${payStatusText}</div>
         ${qrUrl ? `<img src="${qrUrl}" class="qr-img" alt="QR Thanh toán">` : ''}
         <hr class="divider-solid">
         <div class="footer">
-            ${wifiName ? `<div>📶 WiFi: <b>${wifiName}</b>${wifiPass ? ` / ${wifiPass}` : ''}</div>` : ''}
+            ${wifiName ? `<div>📶 WiFi: <b>${esc(wifiName)}</b>${wifiPass ? ` / ${esc(wifiPass)}` : ''}</div>` : ''}
             <div style="margin-top:6px;font-size:12px;font-weight:700;">Cảm ơn quý khách!</div>
             <div>Hẹn gặp lại lần sau 🙏</div>
         </div>
