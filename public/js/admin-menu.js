@@ -498,6 +498,17 @@ async function saveProduct() {
         return;
     }
 
+    if (!id) {
+        const maxItemsStr = sessionStorage.getItem('max_items');
+        if (maxItemsStr) {
+            const maxItems = parseInt(maxItemsStr);
+            if (products.length >= maxItems) {
+                showAdminToast(`Hệ thống từ chối: Gói cước của bạn giới hạn tối đa ${maxItems} món!`, 'error');
+                return;
+            }
+        }
+    }
+
     try {
         if (id) {
             const { error } = await supabase.from('products').update(productData).eq('id', id).eq('tenant_id', window.AdminState.tenantId);

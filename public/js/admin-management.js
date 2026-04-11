@@ -144,6 +144,17 @@ async function saveStaff() {
         return;
     }
 
+    if (!id) {
+        const maxStaffStr = sessionStorage.getItem('max_staff');
+        if (maxStaffStr) {
+            const maxStaff = parseInt(maxStaffStr);
+            if (staffList.length >= maxStaff) {
+                showAdminToast(`Hệ thống từ chối: Gói cước của bạn giới hạn tối đa ${maxStaff} nhân viên!`, 'error');
+                return;
+            }
+        }
+    }
+
     const permissions = [];
     if (role !== 'admin') {
         document.querySelectorAll('.perm-cb:checked').forEach(cb => {

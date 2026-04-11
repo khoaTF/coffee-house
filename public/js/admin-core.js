@@ -344,6 +344,16 @@ supabase.channel('admin-orders')
       if (err) console.error('ADMIN REALTIME ERROR:', err);
   });
 
+// SaaS Broadcast Listener
+supabase.channel('global-broadcasts')
+  .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'broadcast_messages' }, payload => {
+      if (typeof showAdminToast === 'function') {
+          showAdminToast(`📢 THÔNG BÁO TỪ HỆ THỐNG:\n${payload.new.message}`, 'info', 10000);
+          if (typeof playAdminAudio === 'function') playAdminAudio();
+      }
+  })
+  .subscribe();
+
 supabase.channel('admin-ingredients')
   .on('postgres_changes', { event: '*', schema: 'public', table: 'ingredients', filter: `tenant_id=eq.${window.AdminState.tenantId}` }, () => {
       if (document.getElementById('section-inventory')?.classList.contains('active')) {
@@ -367,6 +377,26 @@ supabase.channel('admin-cashflow')
 
 // --- Init on DOMContentLoaded ---
 document.addEventListener('DOMContentLoaded', () => {
+    // SaaS Subscription Lock Check
+    const expireDateStr = sessionStorage.getItem('subscription_end_date');
+    if (expireDateStr) {
+        const expireDate = new Date(expireDateStr);
+        if (new Date() > expireDate) {
+            const overlay = document.createElement('div');
+            overlay.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;text-align:center;padding:2rem;';
+            overlay.innerHTML = `
+                <i class="fa-solid fa-lock text-[#ef4444] text-7xl mb-6"></i>
+                <h1 class="text-3xl font-bold mb-3">Tài khoản đã hết hạn</h1>
+                <p class="text-lg text-gray-300 max-w-lg mb-6">Gói phần mềm của bạn đã hết hạn bảo trì vào ngày ${expireDate.toLocaleDateString('vi-VN')}. Vui lòng liên hệ Super Admin Nohope để gia hạn ngay lập tức.</p>
+                <button onclick="window.location.href='/login.html'" class="px-6 py-2 bg-[#C0A062] rounded-lg text-white font-medium hover:bg-[#A08042] transition-colors">Quay lại Đăng nhập</button>
+            `;
+            document.body.appendChild(overlay);
+            const mainW = document.querySelector('.main-wrapper');
+            if (mainW) mainW.style.display = 'none';
+            return; // Halt further visual init if expired
+        }
+    }
+
     productsTableBody = document.getElementById('products-table-body');
     historyTableBody = document.getElementById('history-table-body');
     inventoryTableBody = document.getElementById('inventory-table-body');
@@ -396,6 +426,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const mobileNameEl = document.getElementById('mobile-staff-name');
     if (desktopNameEl) desktopNameEl.textContent = staffName;
     if (mobileNameEl) mobileNameEl.textContent = staffName;
+
+    const tenantName = sessionStorage.getItem('tenant_name') || 'Nohope Coffee';
+    const desktopTenantEl = document.getElementById('desktop-tenant-name');
+    const mobileTenantEl = document.getElementById('mobile-tenant-name');
+    if (desktopTenantEl) desktopTenantEl.textContent = tenantName;
+    if (mobileTenantEl) mobileTenantEl.textContent = tenantName;
 
     // Display avatar in sidebar
     const desktopAvatarEl = document.getElementById('desktop-staff-avatar');

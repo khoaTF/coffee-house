@@ -431,17 +431,43 @@
             <div class="controls">
                 <div class="stats">
                     <div class="stat-item">
+                        <span class="stat-value text-success" id="total-revenue-count">0đ</span>
+                        <span class="stat-label">Platform Revenue</span>
+                    </div>
+                    <div class="stat-item">
                         <span class="stat-value" id="total-tenants-count">0</span>
                         <span class="stat-label">Active Tenants</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-value" id="total-users-count">0</span>
-                        <span class="stat-label">Total Authenticated Staff</span>
+                        <span class="stat-label">Staff Accounts</span>
                     </div>
                 </div>
                 <button class="primary-btn" style="width: auto; padding: 0.8rem 1.5rem;" data-bs-toggle="modal" data-bs-target="#createTenantModal">
-                    <i class="fa-solid fa-plus me-2"></i> Onboard New Client
+                    <i class="fa-solid fa-plus me-2"></i> Onboard New
                 </button>
+            </div>
+
+            <!-- Broadcast Section -->
+            <div class="card bg-dark border-secondary mb-4" style="border-radius: 16px;">
+                <div class="card-body p-4">
+                    <h5 class="mb-3 font-noto font-bold"><i class="fa-solid fa-bullhorn text-warning me-2"></i> Global Broadcast</h5>
+                    <div class="row g-2">
+                        <div class="col-md-7">
+                            <input type="text" id="broadcast-message" class="form-control bg-black text-white border-secondary" placeholder="Enter system announcement...">
+                        </div>
+                        <div class="col-md-3">
+                            <select id="broadcast-type" class="form-control bg-black text-white border-secondary">
+                                <option value="info">Info (Blue)</option>
+                                <option value="warning">Warning (Yellow)</option>
+                                <option value="danger">Danger (Red)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button id="send-broadcast-btn" class="btn btn-warning w-100 font-bold" style="border-radius: 10px;">Send Alert</button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="tenants-grid" id="tenants-grid">
@@ -498,26 +524,45 @@
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="manage-tenant-id">
-                    <div class="mb-3">
-                        <label class="form-label">Client ID</label>
-                        <input type="text" id="manage-tenant-id-display" class="form-control" readonly disabled style="opacity: 0.7;">
+
+                    <!-- Actions -->
+                    <div class="d-flex gap-2 mb-4">
+                        <button class="btn btn-sm btn-outline-info flex-fill" id="btn-impersonate" onclick="impersonateTenant()"><i class="fa-solid fa-masks-theater me-2"></i>Login As Admin</button>
+                        <button class="btn btn-sm btn-outline-danger flex-fill" id="btn-reset-pin" onclick="resetTenantPin()"><i class="fa-solid fa-key me-2"></i>Reset Admin PIN</button>
                     </div>
-                    <div class="mb-4">
-                        <label class="form-label">Operating Status</label>
-                        <select id="manage-tenant-status" class="form-control" style="appearance: auto; background-color: rgba(0,0,0,0.5);">
-                            <option value="active">🟢 Active (Normal Operation)</option>
-                            <option value="suspended">🔴 Suspended (Access Revoked)</option>
-                        </select>
-                        <div class="form-text text-muted mt-2" style="font-size: 0.8rem;">
-                            <i class="fa-solid fa-circle-info me-1"></i>
-                            Suspending a tenant will immediately block login access for all their staff accounts. Database records are preserved.
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Client ID</label>
+                            <input type="text" id="manage-tenant-id-display" class="form-control" readonly disabled style="opacity: 0.7; font-size: 0.8rem">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Status</label>
+                            <select id="manage-tenant-status" class="form-control" style="appearance: auto;">
+                                <option value="active">🟢 Active</option>
+                                <option value="suspended">🔴 Suspended</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-warning">Subscription Expiry Date</label>
+                        <input type="datetime-local" id="manage-tenant-expiry" class="form-control border-warning text-warning font-bold">
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="form-label">Max Staff Accounts</label>
+                            <input type="number" id="manage-tenant-max-staff" class="form-control" value="5">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Max Menu Items</label>
+                            <input type="number" id="manage-tenant-max-items" class="form-control" value="50">
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="primary-btn rounded-pill px-4 m-0" style="width: auto;" id="confirm-update-tenant-btn">
-                        Save Changes
+                    <button type="button" class="primary-btn rounded-pill px-4 m-0 bg-success text-white" style="width: auto;" id="confirm-update-tenant-btn">
+                        Save Tenant Info
                     </button>
                 </div>
             </div>

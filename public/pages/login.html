@@ -106,6 +106,18 @@
                 if (data.tenant_id) {
                     sessionStorage.setItem('tenant_id', data.tenant_id);
                 }
+                if (data.tenant_name) {
+                    sessionStorage.setItem('tenant_name', data.tenant_name);
+                }
+                if (data.subscription_end_date) {
+                    sessionStorage.setItem('subscription_end_date', data.subscription_end_date);
+                }
+                if (data.max_staff !== undefined) {
+                    sessionStorage.setItem('max_staff', data.max_staff);
+                }
+                if (data.max_items !== undefined) {
+                    sessionStorage.setItem('max_items', data.max_items);
+                }
                 
                 localStorage.removeItem('cafe_role');
                 localStorage.removeItem('nohope_staff_auth');
