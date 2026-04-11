@@ -44,6 +44,10 @@
     {
       "src": "^/guide$",
       "dest": "/pages/guide.html"
+    },
+    {
+      "src": "^/superadmin$",
+      "dest": "/superadmin.html"
     }
   ]
 }
