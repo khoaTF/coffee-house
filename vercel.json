@@ -47,7 +47,7 @@
     },
     {
       "src": "^/superadmin$",
-      "dest": "/superadmin.html"
+      "dest": "/pages/superadmin.html"
     }
   ]
 }
