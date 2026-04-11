@@ -8,6 +8,11 @@ BEGIN;
 DROP FUNCTION IF EXISTS public.verify_pin(TEXT);
 DROP FUNCTION IF EXISTS public.verify_credentials(TEXT, TEXT);
 
+-- 1b. DROP old SUPERADMIN RPCs if they exist with different signatures
+DROP FUNCTION IF EXISTS public.get_all_tenants(TEXT);
+DROP FUNCTION IF EXISTS public.create_new_client(TEXT, TEXT, TEXT);
+DROP FUNCTION IF EXISTS public.update_tenant_status(UUID, TEXT, TEXT);
+
 -- 2. Re-create verify_pin with tenant_id returned
 CREATE OR REPLACE FUNCTION public.verify_pin(pin_code TEXT)
 RETURNS TABLE(
