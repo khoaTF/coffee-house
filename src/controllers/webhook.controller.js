@@ -33,10 +33,16 @@ const handlePaymentWebhook = async (req, res) => {
             if (match) {
                 const shortId = match[0].toLowerCase();
                 // Fetch unpaid orders and filter in JS (PostgreSQL UUID ilike throws error)
-                const { data: unpaidOrders, error: fetchErr } = await supabase
+                let query = supabase
                     .from('orders')
                     .select('id, total_price, is_paid')
                     .eq('is_paid', false);
+                
+                if (req.query.tenant_id) {
+                    query = query.eq('tenant_id', req.query.tenant_id);
+                }
+                
+                const { data: unpaidOrders, error: fetchErr } = await query;
                     
                 if (!fetchErr && unpaidOrders && unpaidOrders.length > 0) {
                     const order = unpaidOrders.find(o => o.id.toLowerCase().startsWith(shortId));
