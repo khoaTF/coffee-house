@@ -14,8 +14,35 @@ let selectedLng = null;
 let calculatedFee = 0;
 let calculatedDistance = 0;
 
+let tenantId = null;
+
 // --- Init ---
 document.addEventListener('DOMContentLoaded', async () => {
+    // Determine tenant from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const storeSlug = urlParams.get('store') || 'legacy';
+    try {
+        const { data: tenant } = await supabase.from('tenants').select('id, store_name, branding').eq('slug', storeSlug).single();
+        if (tenant) {
+            tenantId = tenant.id;
+            // Apply branding briefly
+            if (tenant.branding) {
+                if (tenant.branding.primaryColor) {
+                    document.documentElement.style.setProperty('--color-primary', tenant.branding.primaryColor);
+                }
+                if (tenant.branding.storeName) {
+                    document.title = `${tenant.branding.storeName} - Đặt Giao Hàng`;
+                }
+            }
+        } else {
+            document.body.innerHTML = '<div style="padding:50px;text-align:center;font-family:sans-serif;"><h1>Quán không tồn tại</h1><p>Đường dẫn cửa hàng không hợp lệ.</p></div>';
+            return;
+        }
+    } catch(e) {
+        console.error("Error fetching tenant", e);
+        return;
+    }
+
     await loadStoreConfig();
     await loadMenu();
     
@@ -27,12 +54,33 @@ document.addEventListener('DOMContentLoaded', async () => {
             renderCart();
         }
     } catch(e) {}
+
+    // Realtime Store Config Update
+    supabase.channel('delivery-store-config-' + tenantId)
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'store_settings', filter: `tenant_id=eq.${tenantId}` }, payload => {
+            storeConfig = payload.new;
+            checkStoreHours(storeConfig);
+            
+            if (!storeConfig.delivery_enabled) {
+                document.getElementById('delivery-status-badge').textContent = 'Tạm ngừng';
+                document.getElementById('delivery-status-badge').closest('.flex').querySelector('.bg-green-400')?.classList.replace('bg-green-400', 'bg-red-400');
+                renderMenu();
+            } else {
+                document.getElementById('delivery-status-badge').textContent = 'Đang nhận đơn';
+                document.getElementById('delivery-status-badge').closest('.flex').querySelector('.bg-red-400')?.classList.replace('bg-red-400', 'bg-green-400');
+                renderMenu();
+            }
+            if (storeConfig.delivery_base_fee) {
+                document.getElementById('base-fee-display').textContent = formatVND(storeConfig.delivery_base_fee);
+            }
+        })
+        .subscribe();
 });
 
 // --- Load Store Config ---
 async function loadStoreConfig() {
     try {
-        const { data } = await supabase.from('store_settings').select('*').eq('id', 1).maybeSingle();
+        const { data } = await supabase.from('store_settings').select('*').eq('tenant_id', tenantId).maybeSingle();
         if (data) {
             storeConfig = data;
             
@@ -114,26 +162,7 @@ function removeClosedOverlay() {
     if (el) el.remove();
 }
 
-// Realtime Store Config Update
-supabase.channel('delivery-store-config')
-    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'store_settings' }, payload => {
-        storeConfig = payload.new;
-        checkStoreHours(storeConfig);
-        
-        if (!storeConfig.delivery_enabled) {
-            document.getElementById('delivery-status-badge').textContent = 'Tạm ngừng';
-            document.getElementById('delivery-status-badge').closest('.flex').querySelector('.bg-green-400')?.classList.replace('bg-green-400', 'bg-red-400');
-            renderMenu();
-        } else {
-            document.getElementById('delivery-status-badge').textContent = 'Đang nhận đơn';
-            document.getElementById('delivery-status-badge').closest('.flex').querySelector('.bg-red-400')?.classList.replace('bg-red-400', 'bg-green-400');
-            renderMenu();
-        }
-        if (storeConfig.delivery_base_fee) {
-            document.getElementById('base-fee-display').textContent = formatVND(storeConfig.delivery_base_fee);
-        }
-    })
-    .subscribe();
+// Realtime listener moved to Init
 
 // --- Load Menu ---
 async function loadMenu() {
@@ -141,6 +170,7 @@ async function loadMenu() {
         const { data, error } = await supabase
             .from('products')
             .select('*')
+            .eq('tenant_id', tenantId)
             .eq('is_available', true)
             .order('category')
             .order('name');
@@ -583,7 +613,7 @@ function renderConfirmation() {
 window.placeDeliveryOrder = async function() {
     // Re-fetch store config to ensure delivery isn't recently disabled
     try {
-        const { data } = await supabase.from('store_settings').select('*').eq('id', 1).maybeSingle();
+        const { data } = await supabase.from('store_settings').select('*').eq('tenant_id', tenantId).maybeSingle();
         if (data) {
             storeConfig = data;
         }
@@ -653,6 +683,7 @@ window.placeDeliveryOrder = async function() {
         }
         
         const payload = {
+            tenant_id: tenantId,
             delivery_name: document.getElementById('d-name').value.trim(),
             delivery_phone: document.getElementById('d-phone').value.trim(),
             delivery_address: document.getElementById('d-address').value.trim(),

@@ -9,7 +9,7 @@ const GACHA_PRODUCT_ID = '__mystery_box__';
 // --- Rarity tier based on price ---
 function getRarityClass(price) {
     if (price <= GACHA_PRICE) return 'rarity-common';        // Blue: ≤29k
-    if (price <= GACHA_PRICE * 1.4) return 'rarity-uncommon'; // Purple: ≤40.6k
+    if (price <= GACHA_PRICE * 1.4) return 'rarity-uncommon'; // Teal: ≤40.6k
     if (price <= GACHA_PRICE * 1.75) return 'rarity-rare';    // Pink: ≤50.75k  
     return 'rarity-legendary';                                // Red: >50.75k
 }
@@ -278,7 +278,7 @@ function launchGachaConfetti() {
     if (!container) return;
     container.innerHTML = '';
 
-    const colors = ['#FF7A00', '#22C55E', '#3B82F6', '#EF4444', '#F59E0B', '#EC4899', '#8B5CF6', '#FFD700'];
+    const colors = ['#FF7A00', '#22C55E', '#3B82F6', '#EF4444', '#F59E0B', '#EC4899', '#14B8A6', '#FFD700'];
 
     for (let i = 0; i < 50; i++) {
         const piece = document.createElement('div');

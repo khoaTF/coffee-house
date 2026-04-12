@@ -14,7 +14,7 @@ const STATUS_MAP = {
     'Pending': { label: 'Chờ xác nhận', color: '#F59E0B', bg: '#FEF3C7', step: 0 },
     'Confirmed': { label: 'Đã xác nhận', color: '#3B82F6', bg: '#DBEAFE', step: 0 },
     'Preparing': { label: 'Đang chế biến', color: '#994700', bg: '#FFF4E8', step: 1 },
-    'Ready': { label: 'Sẵn sàng giao', color: '#8B5CF6', bg: '#EDE9FE', step: 2 },
+    'Ready': { label: 'Sẵn sàng giao', color: '#14B8A6', bg: '#CCFBF1', step: 2 },
     'Delivering': { label: 'Đang giao hàng', color: '#FF7A00', bg: '#FFF4E8', step: 3 },
     'Completed': { label: 'Đã giao', color: '#22C55E', bg: '#DCFCE7', step: 4 },
     'Cancelled': { label: 'Đã hủy', color: '#EF4444', bg: '#FEE2E2', step: -1 }
@@ -172,12 +172,12 @@ function initTrackingMap(order) {
     customerMarker.bindPopup('<b>Địa chỉ giao hàng</b>');
     
     // Try to add store marker
-    loadStoreLocation();
+    loadStoreLocation(order);
 }
 
-async function loadStoreLocation() {
+async function loadStoreLocation(order) {
     try {
-        const { data } = await supabase.from('store_settings').select('store_lat, store_lng, name').eq('id', 1).maybeSingle();
+        const { data } = await supabase.from('store_settings').select('store_lat, store_lng, name').eq('tenant_id', order.tenant_id).maybeSingle();
         if (data && data.store_lat && data.store_lng) {
             const storeIcon = L.divIcon({
                 html: '<div style="background:#994700;color:white;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);"><i class="fa-solid fa-store"></i></div>',
