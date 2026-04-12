@@ -13,9 +13,9 @@ let driverChannel = null;
 const STATUS_MAP = {
     'Pending': { label: 'Chờ xác nhận', color: '#F59E0B', bg: '#FEF3C7', step: 0 },
     'Confirmed': { label: 'Đã xác nhận', color: '#3B82F6', bg: '#DBEAFE', step: 0 },
-    'Preparing': { label: 'Đang chế biến', color: '#994700', bg: '#FFF4E8', step: 1 },
+    'Preparing': { label: 'Đang chế biến', color: 'var(--primary)', bg: '#FFF4E8', step: 1 },
     'Ready': { label: 'Sẵn sàng giao', color: '#14B8A6', bg: '#CCFBF1', step: 2 },
-    'Delivering': { label: 'Đang giao hàng', color: '#FF7A00', bg: '#FFF4E8', step: 3 },
+    'Delivering': { label: 'Đang giao hàng', color: 'var(--accent)', bg: '#FFF4E8', step: 3 },
     'Completed': { label: 'Đã giao', color: '#22C55E', bg: '#DCFCE7', step: 4 },
     'Cancelled': { label: 'Đã hủy', color: '#EF4444', bg: '#FEE2E2', step: -1 }
 };
@@ -49,6 +49,23 @@ async function loadOrder(token) {
         }
         
         orderData = data;
+        
+        // Fetch Tenant Branding
+        if (data.tenant_id) {
+            const { data: tenant } = await supabase.from('tenants').select('name, branding, primary_color').eq('id', data.tenant_id).single();
+            if (tenant) {
+                const pColor = tenant.primary_color || (tenant.branding && tenant.branding.primaryColor) || '#994700';
+                const aColor = (tenant.branding && tenant.branding.accent_color) || '#FF7A00';
+                document.documentElement.style.setProperty('--primary', pColor);
+                document.documentElement.style.setProperty('--accent', aColor);
+                if (tenant.branding && tenant.branding.storeName) {
+                    document.title = `${tenant.branding.storeName} - Theo dõi đơn`;
+                }
+            }
+        }
+        
+        if (window.initI18n) window.initI18n();
+        
         renderOrder(data);
         setupRealtime(data.id, data.assigned_driver_id);
         
@@ -98,7 +115,7 @@ function renderOrder(order) {
     const items = order.items || [];
     document.getElementById('t-order-items').innerHTML = items.map(item => `
         <div class="flex justify-between items-center text-sm">
-            <span><span class="font-bold text-[#FF7A00]">${item.quantity}x</span> ${item.name || 'Món'}</span>
+            <span><span class="font-bold" style="color: var(--accent);">${item.quantity}x</span> ${item.name || 'Món'}</span>
             <span class="font-semibold">${formatVND(item.price * item.quantity)}</span>
         </div>
     `).join('');
@@ -163,7 +180,7 @@ function initTrackingMap(order) {
     
     // Customer marker
     const custIcon = L.divIcon({
-        html: '<div style="background:#FF7A00;color:white;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);"><i class="fa-solid fa-house"></i></div>',
+        html: '<div style="background:var(--accent);color:white;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);"><i class="fa-solid fa-house"></i></div>',
         iconSize: [32, 32],
         iconAnchor: [16, 16],
         className: ''
@@ -180,13 +197,13 @@ async function loadStoreLocation(order) {
         const { data } = await supabase.from('store_settings').select('store_lat, store_lng, name').eq('tenant_id', order.tenant_id).maybeSingle();
         if (data && data.store_lat && data.store_lng) {
             const storeIcon = L.divIcon({
-                html: '<div style="background:#994700;color:white;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);"><i class="fa-solid fa-store"></i></div>',
+                html: '<div style="background:var(--primary);color:white;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);"><i class="fa-solid fa-store"></i></div>',
                 iconSize: [32, 32],
                 iconAnchor: [16, 16],
                 className: ''
             });
             storeMarker = L.marker([data.store_lat, data.store_lng], { icon: storeIcon }).addTo(trackingMap);
-            storeMarker.bindPopup(`<b>${data.name || 'Nohope Coffee'}</b>`);
+            storeMarker.bindPopup(`<b>${data.name || 'Store'}</b>`);
             
             // Fit bounds
             if (customerMarker) {

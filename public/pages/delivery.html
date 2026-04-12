@@ -25,7 +25,7 @@
         .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24; }
         
         .delivery-hero {
-            background: linear-gradient(135deg, #994700 0%, #FF7A00 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
             position: relative;
             overflow: hidden;
         }
@@ -76,7 +76,7 @@
             transition: background 0.3s;
         }
         .step-indicator .step.active {
-            background: linear-gradient(90deg, #994700, #FF7A00);
+            background: linear-gradient(90deg, var(--primary), var(--accent));
         }
         
         .delivery-form-section {
@@ -112,7 +112,7 @@
             transition: all 0.2s;
         }
         .third-party-card:hover {
-            border-color: #FF7A00;
+            border-color: var(--accent);
             transform: translateY(-2px);
         }
         
@@ -140,18 +140,18 @@
         <div class="flex items-center justify-between mb-6">
             <a href="/" class="flex items-center gap-2 text-white/80 hover:text-white transition-colors">
                 <i class="fa-solid fa-arrow-left"></i>
-                <span class="text-sm font-medium">Về trang chủ</span>
+                <span class="text-sm font-medium" data-i18n="delivery.back_home">Về trang chủ</span>
             </a>
             <div class="flex items-center gap-2 bg-white/15 backdrop-blur-md px-3 py-1.5 rounded-full">
                 <span class="relative flex h-2 w-2">
                     <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                     <span class="relative inline-flex rounded-full h-2 w-2 bg-green-400"></span>
                 </span>
-                <span class="text-xs font-semibold" id="delivery-status-badge">Đang nhận đơn</span>
+                <span class="text-xs font-semibold" id="delivery-status-badge" data-i18n="delivery.status_accepting">Đang nhận đơn</span>
             </div>
         </div>
-        <h1 class="text-3xl font-black tracking-tight mb-2">🛵 Giao hàng tận nơi</h1>
-        <p class="text-white/80 text-sm">Giao nhanh trong bán kính <strong>3km</strong> • Phí ship từ <strong id="base-fee-display">15.000đ</strong></p>
+        <h1 class="text-3xl font-black tracking-tight mb-2" data-i18n="delivery.hero_title">🛵 Giao hàng tận nơi</h1>
+        <p class="text-white/80 text-sm"><span data-i18n="delivery.hero_desc">Giao nhanh trong bán kính <strong>3km</strong> • Phí ship từ </span><strong id="base-fee-display">15.000đ</strong></p>
     </div>
 </header>
 
@@ -169,10 +169,10 @@
     <section class="delivery-form-section active" id="step-1">
         <div class="bg-white dark:bg-[#2A2B2B] rounded-2xl shadow-sm p-4 mb-4">
             <div class="flex items-center justify-between mb-3">
-                <h2 class="text-lg font-bold">Chọn món</h2>
+                <h2 class="text-lg font-bold" data-i18n="delivery.step_menu">Chọn món</h2>
                 <div class="relative">
-                    <input type="text" id="delivery-search" placeholder="Tìm kiếm..." class="bg-[#F6F3F2] dark:bg-[#1B1C1C] rounded-full py-2 px-4 pr-10 text-sm w-48 focus:ring-2 focus:ring-[#994700]/20 focus:outline-none">
-                    <i class="fa-solid fa-search absolute right-3 top-2.5 text-[#994700]/50 text-sm"></i>
+                    <input type="text" id="delivery-search" data-i18n="delivery.search_placeholder" data-i18n-attr="placeholder" placeholder="Tìm kiếm..." class="bg-[#F6F3F2] dark:bg-[#1B1C1C] rounded-full py-2 px-4 pr-10 text-sm w-48 focus:ring-2 focus:ring-[var(--primary)]/20 focus:outline-none">
+                    <i class="fa-solid fa-search absolute right-3 top-2.5 text-[var(--primary)]/50 text-sm"></i>
                 </div>
             </div>
             
@@ -183,9 +183,9 @@
             
             <!-- Menu Items -->
             <div class="grid grid-cols-1 gap-3" id="delivery-menu">
-                <div class="text-center py-8 text-[#994700]/50">
+                <div class="text-center py-8 text-[var(--primary)]/50">
                     <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2"></i>
-                    <p class="text-sm">Đang tải thực đơn...</p>
+                    <p class="text-sm" data-i18n="delivery.loading_menu">Đang tải thực đơn...</p>
                 </div>
             </div>
         </div>
@@ -193,54 +193,54 @@
         <!-- Cart Summary (bottom of step 1) -->
         <div class="bg-white dark:bg-[#2A2B2B] rounded-2xl shadow-sm p-4 mb-4" id="delivery-cart-preview" style="display:none">
             <div class="flex items-center justify-between mb-3">
-                <h3 class="font-bold text-base"><i class="fa-solid fa-shopping-bag text-[#FF7A00] mr-2"></i>Giỏ hàng</h3>
-                <span class="text-sm font-bold text-[#994700]" id="cart-count-badge">0 món</span>
+                <h3 class="font-bold text-base"><i class="fa-solid fa-shopping-bag text-[var(--accent)] mr-2"></i><span data-i18n="delivery.cart_title">Giỏ hàng</span></h3>
+                <span class="text-sm font-bold text-[var(--primary)]" id="cart-count-badge">0 món</span>
             </div>
             <div id="delivery-cart-items" class="space-y-2 mb-3"></div>
             <div class="flex justify-between items-center pt-3 border-t border-[#F0EDEC] dark:border-[#3a3a3a]">
-                <span class="font-bold">Tạm tính:</span>
-                <span class="font-black text-xl text-[#FF7A00]" id="delivery-subtotal">0đ</span>
+                <span class="font-bold" data-i18n="delivery.subtotal">Tạm tính:</span>
+                <span class="font-black text-xl text-[var(--accent)]" id="delivery-subtotal">0đ</span>
             </div>
         </div>
         
-        <button onclick="goToStep(2)" class="w-full bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white py-4 rounded-2xl font-bold shadow-lg shadow-[#FF7A00]/20 active:scale-[0.98] transition-transform flex items-center justify-center gap-2 disabled:opacity-50" id="btn-next-step2" disabled>
-            Tiếp: Thông tin giao hàng <i class="fa-solid fa-arrow-right"></i>
+        <button onclick="goToStep(2)" class="w-full bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] text-white py-4 rounded-2xl font-bold shadow-lg shadow-[var(--accent)]/20 active:scale-[0.98] transition-transform flex items-center justify-center gap-2 disabled:opacity-50" id="btn-next-step2" disabled>
+            <span data-i18n="delivery.continue">Tiếp tục</span> <i class="fa-solid fa-arrow-right"></i>
         </button>
     </section>
 
     <!-- STEP 2: Delivery Info -->
     <section class="delivery-form-section" id="step-2">
-        <button onclick="goToStep(1)" class="flex items-center gap-2 text-[#994700] font-semibold text-sm mb-4 hover:underline">
-            <i class="fa-solid fa-arrow-left"></i> Quay lại chọn món
+        <button onclick="goToStep(1)" class="flex items-center gap-2 text-[var(--primary)] font-semibold text-sm mb-4 hover:underline">
+            <i class="fa-solid fa-arrow-left"></i> <span data-i18n="delivery.go_back">Quay lại</span>
         </button>
         
         <div class="bg-white dark:bg-[#2A2B2B] rounded-2xl shadow-sm p-5 mb-4">
-            <h2 class="text-lg font-bold mb-4"><i class="fa-solid fa-user mr-2 text-[#FF7A00]"></i>Thông tin người nhận</h2>
+            <h2 class="text-lg font-bold mb-4"><i class="fa-solid fa-user mr-2 text-[var(--accent)]"></i><span data-i18n="delivery.step_info">Thông tin giao hàng</span></h2>
             <div class="space-y-3">
                 <div>
-                    <label class="text-sm font-semibold text-[#584235] dark:text-[#E0C0AF] mb-1 block">Họ tên *</label>
-                    <input type="text" id="d-name" placeholder="Nguyễn Văn A" class="w-full bg-[#F6F3F2] dark:bg-[#1B1C1C] rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#994700]/20 focus:outline-none">
+                    <label class="text-sm font-semibold text-[#584235] dark:text-[#E0C0AF] mb-1 block" data-i18n="delivery.receiver_name">Họ tên *</label>
+                    <input type="text" id="d-name" placeholder="Nguyễn Văn A" class="w-full bg-[#F6F3F2] dark:bg-[#1B1C1C] rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[var(--primary)]/20 focus:outline-none">
                 </div>
                 <div>
-                    <label class="text-sm font-semibold text-[#584235] dark:text-[#E0C0AF] mb-1 block">Số điện thoại *</label>
-                    <input type="tel" id="d-phone" placeholder="0901234567" class="w-full bg-[#F6F3F2] dark:bg-[#1B1C1C] rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#994700]/20 focus:outline-none">
+                    <label class="text-sm font-semibold text-[#584235] dark:text-[#E0C0AF] mb-1 block" data-i18n="delivery.phone">Số điện thoại *</label>
+                    <input type="tel" id="d-phone" placeholder="0901234567" class="w-full bg-[#F6F3F2] dark:bg-[#1B1C1C] rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[var(--primary)]/20 focus:outline-none">
                 </div>
                 <div>
-                    <label class="text-sm font-semibold text-[#584235] dark:text-[#E0C0AF] mb-1 block">Ghi chú giao hàng</label>
-                    <textarea id="d-note" placeholder="Vd: Giao tầng 3, gọi điện trước..." rows="2" class="w-full bg-[#F6F3F2] dark:bg-[#1B1C1C] rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#994700]/20 focus:outline-none resize-none"></textarea>
+                    <label class="text-sm font-semibold text-[#584235] dark:text-[#E0C0AF] mb-1 block" data-i18n="delivery.notes">Ghi chú giao hàng</label>
+                    <textarea id="d-note" placeholder="Vd: Giao tầng 3, gọi điện trước..." rows="2" class="w-full bg-[#F6F3F2] dark:bg-[#1B1C1C] rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[var(--primary)]/20 focus:outline-none resize-none"></textarea>
                 </div>
             </div>
         </div>
         
         <div class="bg-white dark:bg-[#2A2B2B] rounded-2xl shadow-sm p-5 mb-4">
-            <h2 class="text-lg font-bold mb-3"><i class="fa-solid fa-map-location-dot mr-2 text-[#FF7A00]"></i>Địa chỉ giao hàng</h2>
+            <h2 class="text-lg font-bold mb-3"><i class="fa-solid fa-map-location-dot mr-2 text-[var(--accent)]"></i><span data-i18n="delivery.address">Địa chỉ giao hàng</span></h2>
             <div class="mb-3">
-                <input type="text" id="d-address" placeholder="Nhập địa chỉ hoặc chọn trên bản đồ..." class="w-full bg-[#F6F3F2] dark:bg-[#1B1C1C] rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#994700]/20 focus:outline-none">
+                <input type="text" id="d-address" placeholder="Nhập địa chỉ hoặc chọn trên bản đồ..." class="w-full bg-[#F6F3F2] dark:bg-[#1B1C1C] rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[var(--primary)]/20 focus:outline-none">
             </div>
             <div id="delivery-map"></div>
             <div class="flex items-center gap-2 mt-3">
-                <button onclick="useMyLocation()" class="flex-1 bg-[#F6F3F2] dark:bg-[#1B1C1C] text-[#994700] py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 active:scale-[0.97] transition-transform">
-                    <i class="fa-solid fa-crosshairs"></i> Vị trí hiện tại
+                <button onclick="useMyLocation()" class="flex-1 bg-[#F6F3F2] dark:bg-[#1B1C1C] text-[var(--primary)] py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 active:scale-[0.97] transition-transform">
+                    <i class="fa-solid fa-crosshairs"></i> <span data-i18n="delivery.find_location">Vị trí hiện tại</span>
                 </button>
             </div>
             <div id="distance-info" class="mt-3 text-sm text-[#584235] dark:text-[#E0C0AF] hidden">
@@ -251,7 +251,7 @@
                     </div>
                     <div class="flex justify-between">
                         <span>Phí giao hàng:</span>
-                        <span class="font-bold text-[#FF7A00]" id="d-fee">0đ</span>
+                        <span class="font-bold text-[var(--accent)]" id="d-fee">0đ</span>
                     </div>
                 </div>
             </div>
@@ -261,19 +261,19 @@
             </div>
         </div>
         
-        <button onclick="goToStep(3)" class="w-full bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white py-4 rounded-2xl font-bold shadow-lg shadow-[#FF7A00]/20 active:scale-[0.98] transition-transform flex items-center justify-center gap-2 disabled:opacity-50" id="btn-next-step3" disabled>
-            Tiếp: Xác nhận đơn hàng <i class="fa-solid fa-arrow-right"></i>
+        <button onclick="goToStep(3)" class="w-full bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] text-white py-4 rounded-2xl font-bold shadow-lg shadow-[var(--accent)]/20 active:scale-[0.98] transition-transform flex items-center justify-center gap-2 disabled:opacity-50" id="btn-next-step3" disabled>
+            <span data-i18n="delivery.confirm_pay">Xác nhận đơn hàng</span> <i class="fa-solid fa-arrow-right"></i>
         </button>
     </section>
 
     <!-- STEP 3: Order Confirmation -->
     <section class="delivery-form-section" id="step-3">
-        <button onclick="goToStep(2)" class="flex items-center gap-2 text-[#994700] font-semibold text-sm mb-4 hover:underline">
-            <i class="fa-solid fa-arrow-left"></i> Quay lại thông tin giao
+        <button onclick="goToStep(2)" class="flex items-center gap-2 text-[var(--primary)] font-semibold text-sm mb-4 hover:underline">
+            <i class="fa-solid fa-arrow-left"></i> <span data-i18n="delivery.go_back">Quay lại thông tin giao</span>
         </button>
         
         <div class="bg-white dark:bg-[#2A2B2B] rounded-2xl shadow-sm p-5 mb-4">
-            <h2 class="text-lg font-bold mb-4"><i class="fa-solid fa-clipboard-check mr-2 text-[#FF7A00]"></i>Xác nhận đơn hàng</h2>
+            <h2 class="text-lg font-bold mb-4"><i class="fa-solid fa-clipboard-check mr-2 text-[var(--accent)]"></i><span data-i18n="delivery.confirm_pay">Xác nhận đơn hàng</span></h2>
             
             <!-- Order summary -->
             <div class="space-y-2 mb-4 pb-4 border-b border-[#F0EDEC] dark:border-[#3a3a3a]" id="confirm-items-list"></div>
@@ -281,23 +281,23 @@
             <!-- Delivery info summary -->
             <div class="space-y-2 mb-4 pb-4 border-b border-[#F0EDEC] dark:border-[#3a3a3a]">
                 <div class="flex items-start gap-2">
-                    <i class="fa-solid fa-user text-[#994700] mt-0.5"></i>
+                    <i class="fa-solid fa-user text-[var(--primary)] mt-0.5"></i>
                     <div>
-                        <span class="text-xs text-[#584235]/60 dark:text-[#E0C0AF]/60">Người nhận</span>
+                        <span class="text-xs text-[#584235]/60 dark:text-[#E0C0AF]/60" data-i18n="delivery.receiver_name">Người nhận</span>
                         <p class="font-semibold text-sm" id="confirm-name">-</p>
                     </div>
                 </div>
                 <div class="flex items-start gap-2">
-                    <i class="fa-solid fa-phone text-[#994700] mt-0.5"></i>
+                    <i class="fa-solid fa-phone text-[var(--primary)] mt-0.5"></i>
                     <div>
-                        <span class="text-xs text-[#584235]/60 dark:text-[#E0C0AF]/60">Điện thoại</span>
+                        <span class="text-xs text-[#584235]/60 dark:text-[#E0C0AF]/60" data-i18n="delivery.phone">Điện thoại</span>
                         <p class="font-semibold text-sm" id="confirm-phone">-</p>
                     </div>
                 </div>
                 <div class="flex items-start gap-2">
-                    <i class="fa-solid fa-map-pin text-[#994700] mt-0.5"></i>
+                    <i class="fa-solid fa-map-pin text-[var(--primary)] mt-0.5"></i>
                     <div>
-                        <span class="text-xs text-[#584235]/60 dark:text-[#E0C0AF]/60">Địa chỉ</span>
+                        <span class="text-xs text-[#584235]/60 dark:text-[#E0C0AF]/60" data-i18n="delivery.address">Địa chỉ</span>
                         <p class="font-semibold text-sm" id="confirm-address">-</p>
                     </div>
                 </div>
@@ -306,45 +306,45 @@
             <!-- Price breakdown -->
             <div class="space-y-2">
                 <div class="flex justify-between text-sm">
-                    <span class="text-[#584235]/70 dark:text-[#E0C0AF]/70">Tạm tính</span>
+                    <span class="text-[#584235]/70 dark:text-[#E0C0AF]/70" data-i18n="tracking.subtotal">Tạm tính</span>
                     <span class="font-semibold" id="confirm-subtotal">0đ</span>
                 </div>
                 <div class="flex justify-between text-sm">
-                    <span class="text-[#584235]/70 dark:text-[#E0C0AF]/70">Phí giao hàng</span>
-                    <span class="font-semibold text-[#FF7A00]" id="confirm-fee">0đ</span>
+                    <span class="text-[#584235]/70 dark:text-[#E0C0AF]/70" data-i18n="tracking.fee">Phí giao hàng</span>
+                    <span class="font-semibold text-[var(--accent)]" id="confirm-fee">0đ</span>
                 </div>
                 <div class="flex justify-between pt-3 border-t border-[#F0EDEC] dark:border-[#3a3a3a]">
-                    <span class="font-bold text-lg">Tổng cộng</span>
-                    <span class="font-black text-2xl text-[#FF7A00]" id="confirm-total">0đ</span>
+                    <span class="font-bold text-lg" data-i18n="tracking.total">Tổng cộng</span>
+                    <span class="font-black text-2xl text-[var(--accent)]" id="confirm-total">0đ</span>
                 </div>
             </div>
         </div>
         
         <!-- Payment Method -->
         <div class="bg-white dark:bg-[#2A2B2B] rounded-2xl shadow-sm p-5 mb-4">
-            <h3 class="font-bold mb-3"><i class="fa-solid fa-wallet mr-2 text-[#FF7A00]"></i>Phương thức thanh toán</h3>
+            <h3 class="font-bold mb-3"><i class="fa-solid fa-wallet mr-2 text-[var(--accent)]"></i><span data-i18n="delivery.step_payment">Phương thức thanh toán</span></h3>
             <div class="space-y-2">
-                <label class="flex items-center gap-3 p-3 bg-[#F6F3F2] dark:bg-[#1B1C1C] rounded-xl cursor-pointer border-2 border-transparent has-[:checked]:border-[#FF7A00] transition-colors">
-                    <input type="radio" name="payment" value="cash" checked class="accent-[#FF7A00]">
+                <label class="flex items-center gap-3 p-3 bg-[#F6F3F2] dark:bg-[#1B1C1C] rounded-xl cursor-pointer border-2 border-transparent has-[:checked]:border-[var(--accent)] transition-colors">
+                    <input type="radio" name="payment" value="cash" checked class="accent-[var(--accent)]">
                     <i class="fa-solid fa-money-bill-wave text-green-600"></i>
                     <span class="font-semibold text-sm">Tiền mặt (COD)</span>
                 </label>
-                <label class="flex items-center gap-3 p-3 bg-[#F6F3F2] dark:bg-[#1B1C1C] rounded-xl cursor-pointer border-2 border-transparent has-[:checked]:border-[#FF7A00] transition-colors">
-                    <input type="radio" name="payment" value="transfer" class="accent-[#FF7A00]">
+                <label class="flex items-center gap-3 p-3 bg-[#F6F3F2] dark:bg-[#1B1C1C] rounded-xl cursor-pointer border-2 border-transparent has-[:checked]:border-[var(--accent)] transition-colors">
+                    <input type="radio" name="payment" value="transfer" class="accent-[var(--accent)]">
                     <i class="fa-solid fa-qrcode text-blue-600"></i>
                     <span class="font-semibold text-sm">Chuyển khoản</span>
                 </label>
             </div>
         </div>
         
-        <button onclick="placeDeliveryOrder()" class="w-full bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white py-4 rounded-2xl font-bold shadow-lg shadow-[#FF7A00]/20 active:scale-[0.98] transition-transform flex items-center justify-center gap-2 text-lg" id="btn-place-order">
-            <i class="fa-solid fa-paper-plane"></i> Đặt giao hàng
+        <button onclick="placeDeliveryOrder()" class="w-full bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] text-white py-4 rounded-2xl font-bold shadow-lg shadow-[var(--accent)]/20 active:scale-[0.98] transition-transform flex items-center justify-center gap-2 text-lg" id="btn-place-order">
+            <i class="fa-solid fa-paper-plane"></i> <span data-i18n="delivery.confirm_pay">Đặt giao hàng</span>
         </button>
     </section>
 
     <!-- Third Party Section -->
     <div class="bg-white dark:bg-[#2A2B2B] rounded-2xl shadow-sm p-5 mt-6">
-        <h3 class="font-bold mb-3 text-base"><i class="fa-solid fa-store mr-2 text-[#FF7A00]"></i>Đặt qua ứng dụng khác</h3>
+        <h3 class="font-bold mb-3 text-base"><i class="fa-solid fa-store mr-2 text-[var(--accent)]"></i><span data-i18n="delivery.third_party">Đặt qua ứng dụng khác</span></h3>
         <div class="grid grid-cols-2 gap-3">
             <a href="https://grabfood.grab.com" target="_blank" class="third-party-card bg-[#F6F3F2] dark:bg-[#1B1C1C] rounded-xl p-4 flex flex-col items-center gap-2">
                 <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center text-white text-xl font-black">G</div>
@@ -360,7 +360,7 @@
 
 <!-- Toast container -->
 <div id="delivery-toast" class="fixed top-4 right-4 z-[9999] hidden">
-    <div class="bg-white dark:bg-[#2A2B2B] shadow-xl rounded-xl px-5 py-3 border border-[#FF7A00]/30 text-sm font-semibold flex items-center gap-2">
+    <div class="bg-white dark:bg-[#2A2B2B] shadow-xl rounded-xl px-5 py-3 border border-[var(--accent)]/30 text-sm font-semibold flex items-center gap-2">
         <i class="fa-solid fa-circle-check text-green-500"></i>
         <span id="delivery-toast-text"></span>
     </div>

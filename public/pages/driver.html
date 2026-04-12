@@ -63,7 +63,7 @@
             border-radius: 16px;
             padding: 16px;
             margin-bottom: 12px;
-            border-left: 4px solid #FF7A00;
+            border-left: 4px solid var(--accent);
             transition: transform 0.2s;
         }
         .order-card:active { transform: scale(0.98); }
@@ -83,7 +83,7 @@
         }
         .action-btn:active { transform: scale(0.95); }
         .action-btn.primary {
-            background: linear-gradient(135deg, #FF7A00, #FF9A40);
+            background: linear-gradient(135deg, var(--accent), #FF9A40);
             color: white;
             box-shadow: 0 4px 12px rgba(255,122,0,0.3);
         }
@@ -121,7 +121,7 @@
         .stat-chip .value {
             font-size: 24px;
             font-weight: 800;
-            color: #FF7A00;
+            color: var(--accent);
         }
         .stat-chip .label {
             font-size: 11px;
@@ -140,15 +140,15 @@
 <div id="driver-login" class="login-screen">
     <div class="login-card">
         <div class="text-center mb-6">
-            <div class="w-16 h-16 mx-auto mb-4 bg-[#FF7A00]/20 rounded-full flex items-center justify-center">
-                <i class="fa-solid fa-motorcycle text-[#FF7A00] text-2xl"></i>
+            <div class="w-16 h-16 mx-auto mb-4 bg-[var(--accent)]/20 rounded-full flex items-center justify-center">
+                <i class="fa-solid fa-motorcycle text-[var(--accent)] text-2xl"></i>
             </div>
-            <h1 class="text-2xl font-black">Shipper Login</h1>
-            <p class="text-sm text-gray-500 mt-1">Đăng nhập bằng mã shipper</p>
+            <h1 class="text-2xl font-black" data-i18n="driver.login_title">Shipper Login</h1>
+            <p class="text-sm text-gray-500 mt-1" data-i18n="driver.login_desc">Đăng nhập bằng mã shipper</p>
         </div>
-        <input type="text" id="driver-code" placeholder="Nhập mã shipper" class="w-full bg-[#1B1C1C] rounded-xl px-4 py-3 text-center font-bold text-lg uppercase tracking-widest mb-3 focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 text-white">
+        <input type="text" id="driver-code" data-i18n-placeholder="driver.login_placeholder" placeholder="Nhập mã shipper" class="w-full bg-[#1B1C1C] rounded-xl px-4 py-3 text-center font-bold text-lg uppercase tracking-widest mb-3 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20 text-white">
         <button onclick="driverLogin()" class="action-btn primary w-full">
-            <i class="fa-solid fa-right-to-bracket"></i> Đăng nhập
+            <i class="fa-solid fa-right-to-bracket"></i> <span data-i18n="driver.login_btn">Đăng nhập</span>
         </button>
         <p id="login-error" class="text-red-500 text-sm text-center mt-3 hidden"></p>
     </div>
@@ -168,11 +168,11 @@
         <!-- Header -->
         <div class="flex items-center justify-between mb-4">
             <div>
-                <h2 class="text-lg font-bold" id="driver-greeting">Xin chào!</h2>
+                <h2 class="text-lg font-bold" id="driver-greeting" data-i18n="driver.greeting">Xin chào!</h2>
                 <p class="text-xs text-gray-500" id="driver-stats-text">0 đơn hôm nay</p>
             </div>
             <button onclick="driverLogout()" class="text-red-400 text-sm font-semibold">
-                <i class="fa-solid fa-right-from-bracket mr-1"></i> Đăng xuất
+                <i class="fa-solid fa-right-from-bracket mr-1"></i> <span data-i18n="driver.logout">Đăng xuất</span>
             </button>
         </div>
         
@@ -180,32 +180,32 @@
         <div class="grid grid-cols-3 gap-2 mb-4">
             <div class="stat-chip">
                 <div class="value" id="stat-today">0</div>
-                <div class="label">Hôm nay</div>
+                <div class="label" data-i18n="driver.stat_today">Hôm nay</div>
             </div>
             <div class="stat-chip">
                 <div class="value" id="stat-earnings">0đ</div>
-                <div class="label">Thu nhập</div>
+                <div class="label" data-i18n="driver.stat_earnings">Thu nhập</div>
             </div>
             <div class="stat-chip">
                 <div class="value" id="stat-rating">5.0</div>
-                <div class="label">Đánh giá</div>
+                <div class="label" data-i18n="driver.stat_rating">Đánh giá</div>
             </div>
         </div>
         
         <!-- Online/Offline Toggle -->
         <div class="status-toggle mb-4">
             <button class="online active" id="btn-online" onclick="setDriverStatus(true)">
-                <i class="fa-solid fa-signal mr-1"></i> Online
+                <i class="fa-solid fa-signal mr-1"></i> <span data-i18n="driver.online">Online</span>
             </button>
             <button class="offline" id="btn-offline" onclick="setDriverStatus(false)">
-                <i class="fa-solid fa-moon mr-1"></i> Offline
+                <i class="fa-solid fa-moon mr-1"></i> <span data-i18n="driver.offline">Offline</span>
             </button>
         </div>
         
         <!-- Assigned Orders -->
-        <h3 class="font-bold text-sm text-gray-400 mb-3"><i class="fa-solid fa-list-check mr-1"></i> Đơn cần giao</h3>
+        <h3 class="font-bold text-sm text-gray-400 mb-3"><i class="fa-solid fa-list-check mr-1"></i> <span data-i18n="driver.assigned_orders">Đơn cần giao</span></h3>
         <div id="driver-orders">
-            <p class="text-center text-gray-600 text-sm py-6">Chưa có đơn nào.</p>
+            <p class="text-center text-gray-600 text-sm py-6" data-i18n="driver.no_orders">Chưa có đơn nào.</p>
         </div>
     </div>
 </div>

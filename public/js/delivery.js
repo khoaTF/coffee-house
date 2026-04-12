@@ -22,17 +22,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const storeSlug = urlParams.get('store') || 'legacy';
     try {
-        const { data: tenant } = await supabase.from('tenants').select('id, name, branding').eq('slug', storeSlug).single();
+        const { data: tenant } = await supabase.from('tenants').select('id, name, branding, primary_color').eq('slug', storeSlug).single();
         if (tenant) {
             tenantId = tenant.id;
-            // Apply branding briefly
-            if (tenant.branding) {
-                if (tenant.branding.primaryColor) {
-                    document.documentElement.style.setProperty('--color-primary', tenant.branding.primaryColor);
-                }
-                if (tenant.branding.storeName) {
-                    document.title = `${tenant.branding.storeName} - Đặt Giao Hàng`;
-                }
+            // Apply branding
+            const pColor = tenant.primary_color || (tenant.branding && tenant.branding.primaryColor) || '#994700';
+            const aColor = (tenant.branding && tenant.branding.accent_color) || '#FF7A00';
+            
+            document.documentElement.style.setProperty('--primary', pColor);
+            document.documentElement.style.setProperty('--accent', aColor);
+            
+            if (tenant.branding && tenant.branding.storeName) {
+                document.title = `${tenant.branding.storeName} - Đặt Giao Hàng`;
+            } else if (tenant.name) {
+                document.title = `${tenant.name} - Đặt Giao Hàng`;
             }
         } else {
             document.body.innerHTML = '<div style="padding:50px;text-align:center;font-family:sans-serif;"><h1>Quán không tồn tại</h1><p>Đường dẫn cửa hàng không hợp lệ.</p></div>';
@@ -41,6 +44,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch(e) {
         console.error("Error fetching tenant", e);
         return;
+    }
+
+    if (window.initI18n) {
+        window.initI18n();
     }
 
     await loadStoreConfig();
