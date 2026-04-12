@@ -203,6 +203,15 @@
       'superadmin.max_staff': 'Giới Hạn Nhân Viên',
       'superadmin.max_items': 'Giới Hạn Món Ăn',
       'superadmin.save_btn': 'Lưu Thông Tin',
+      'superadmin.card_rev': 'Doanh thu',
+      'superadmin.card_staff': 'Nhân viên',
+      'superadmin.card_expired': 'HẾT HẠN',
+      'superadmin.card_expiring': 'SẮP HẾT HẠN',
+      'superadmin.card_copy_id': 'Sao chép ID',
+      'superadmin.card_no_tenants': 'Chưa có chi nhánh nào được đăng ký.',
+      'superadmin.broadcast_title': 'Thông báo Toàn hệ thống',
+      'superadmin.broadcast_placeholder': 'Nhập thông báo...',
+      'superadmin.broadcast_btn': 'Gửi Thông báo',
     },
 
     en: {
@@ -401,6 +410,15 @@
       'superadmin.max_staff': 'Max Staff Accounts',
       'superadmin.max_items': 'Max Menu Items',
       'superadmin.save_btn': 'Save Tenant Info',
+      'superadmin.card_rev': 'Rev',
+      'superadmin.card_staff': 'Staff',
+      'superadmin.card_expired': 'EXPIRED',
+      'superadmin.card_expiring': 'EXPIRING SOON',
+      'superadmin.card_copy_id': 'Copy ID',
+      'superadmin.card_no_tenants': 'No tenants registered yet.',
+      'superadmin.broadcast_title': 'Global Broadcast',
+      'superadmin.broadcast_placeholder': 'Enter system announcement...',
+      'superadmin.broadcast_btn': 'Send Alert',
     }
   };
 
@@ -580,30 +598,34 @@
     try {
       // Titles and Stats
       patch('.auth-title', 'superadmin.title');
-      patch('#auth-screen h4', 'superadmin.login_title');
-      
-      const ownerSecretLabel = document.querySelector('#auth-screen label');
-      if (ownerSecretLabel) ownerSecretLabel.textContent = t('superadmin.owner_secret');
+      patch('.auth-subtitle', 'superadmin.login_title');
       
       patch('#auth-screen input[type="password"]', 'superadmin.owner_secret', 'placeholder');
       
       const unlockBtn = document.querySelector('#auth-screen button');
-      if (unlockBtn) unlockBtn.innerHTML = `<i class="fa-solid fa-key me-2"></i>${t('superadmin.unlock_btn')}`;
+      if (unlockBtn) unlockBtn.innerHTML = `<i class="fa-solid fa-lock-open me-2"></i>${t('superadmin.unlock_btn')}`;
       
-      const systemOnline = document.querySelector('.mt-4.text-secondary i');
-      if (systemOnline) systemOnline.parentNode.innerHTML = `<i class="fa-solid fa-server me-2"></i> ${t('superadmin.system_online')}`;
+      patch('.brand-text h1', 'superadmin.title');
+      const logoutBtn = document.getElementById('logout-btn');
+      if (logoutBtn) logoutBtn.innerHTML = `<i class="fa-solid fa-power-off me-2"></i>${t('common.logout')}`;
+
+      // Broadcast section
+      patch('.fa-bullhorn', 'superadmin.broadcast_title');
+      const broadcastTitle = document.querySelector('h5.mb-3.font-noto');
+      if (broadcastTitle) broadcastTitle.innerHTML = `<i class="fa-solid fa-bullhorn text-warning me-2"></i> ${t('superadmin.broadcast_title')}`;
+      patch('#broadcast-message', 'superadmin.broadcast_placeholder', 'placeholder');
+      patch('#send-broadcast-btn', 'superadmin.broadcast_btn');
 
       // Dashboard Stats
-      const statLabels = document.querySelectorAll('.stat-card .text-muted');
-      if (statLabels[0]) statLabels[0].textContent = t('superadmin.stat_tenants');
-      if (statLabels[1]) statLabels[1].textContent = t('superadmin.stat_revenue');
-      if (statLabels[2]) statLabels[2].textContent = t('superadmin.stat_subs');
-      if (statLabels[3]) statLabels[3].textContent = t('superadmin.stat_users');
+      const statLabels = document.querySelectorAll('.stat-label');
+      if (statLabels[0]) statLabels[0].textContent = t('superadmin.stat_revenue');
+      if (statLabels[1]) statLabels[1].textContent = t('superadmin.stat_tenants');
+      if (statLabels[2]) statLabels[2].textContent = t('superadmin.stat_users');
 
       // Grid header
       patch('#tenant-search', 'superadmin.search', 'placeholder');
       
-      const filterSelect = document.getElementById('tenant-status-filter');
+      const filterSelect = document.getElementById('status-filter');
       if (filterSelect) {
         filterSelect.options[0].textContent = t('superadmin.filter_all');
         filterSelect.options[1].textContent = `🟢 ${t('superadmin.filter_active')}`;
@@ -614,16 +636,6 @@
       
       const onboardBtn = document.querySelector('button[data-bs-target="#createTenantModal"]');
       if (onboardBtn) onboardBtn.innerHTML = `<i class="fa-solid fa-plus me-2"></i>${t('superadmin.onboard')}`;
-
-      // Table mapping
-      const ths = document.querySelectorAll('thead th');
-      if (ths[0]) ths[0].textContent = t('superadmin.col_id');
-      if (ths[1]) ths[1].textContent = t('superadmin.col_name');
-      if (ths[2]) ths[2].textContent = t('superadmin.col_domain');
-      if (ths[3]) ths[3].textContent = t('superadmin.col_status');
-      if (ths[4]) ths[4].textContent = t('superadmin.col_expires');
-      if (ths[5]) ths[5].textContent = t('superadmin.col_limits');
-      if (ths[6]) ths[6].textContent = t('superadmin.col_actions');
 
       // Modals - Create
       const createTitle = document.querySelector('#createTenantModal .modal-title');

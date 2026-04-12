@@ -19,6 +19,7 @@ window.initPOS = async function() {
             <div>
                 <h2 class="font-noto text-2xl font-bold text-[#F2E8D5] mb-1 flex items-center gap-2">
                     <i class="fa-solid fa-cash-register text-[#C0A062]"></i> POS Bán hàng
+                    <span id="pos-offline-badge" class="${navigator.onLine ? 'hidden' : ''} bg-warning text-dark text-xs px-2 py-1 rounded ms-2 font-bold"><i class="fa-solid fa-wifi-slash"></i> OFFLINE</span>
                 </h2>
                 <p class="text-sm text-slate-500 mb-0">Đặt hàng nhanh thay khách từ quầy thu ngân.</p>
             </div>
@@ -465,6 +466,76 @@ function posRenderCart() {
     }).join('');
 }
 
+const dbName = "NohopePOSOfflineDB";
+const storeName = "OfflineOrders";
+let idb = null;
+
+function initIndexedDB() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(dbName, 1);
+        request.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains(storeName)) {
+                db.createObjectStore(storeName, { keyPath: "id", autoIncrement: true });
+            }
+        };
+        request.onsuccess = (e) => {
+            idb = e.target.result;
+            resolve(idb);
+            syncOfflineOrders(); // try to sync if online
+        };
+        request.onerror = (e) => reject(e.target.error);
+    });
+}
+
+initIndexedDB();
+window.addEventListener('online', () => {
+    document.getElementById('pos-offline-badge')?.classList.add('hidden');
+    syncOfflineOrders();
+});
+window.addEventListener('offline', () => {
+    document.getElementById('pos-offline-badge')?.classList.remove('hidden');
+    showAdminToast('Mất kết nối mạng! Chuyển sang chế độ Chờ đồng bộ (Offline).', 'warning');
+});
+
+async function saveOrderToIDB(orderPayload) {
+    if (!idb) await initIndexedDB();
+    return new Promise((resolve, reject) => {
+        const tx = idb.transaction(storeName, "readwrite");
+        const store = tx.objectStore(storeName);
+        store.add({ payload: orderPayload, timestamp: Date.now() });
+        tx.oncomplete = () => resolve();
+        tx.onerror = (e) => reject(e.target.error);
+    });
+}
+
+async function syncOfflineOrders() {
+    if (!idb || !navigator.onLine) return;
+    const tx = idb.transaction(storeName, "readwrite");
+    const store = tx.objectStore(storeName);
+    const request = store.getAll();
+    request.onsuccess = async () => {
+        const offlineOrders = request.result;
+        if (offlineOrders.length > 0) {
+            showAdminToast(`Đang đồng bộ ${offlineOrders.length} đơn hàng Offline...`, 'info');
+            for (const order of offlineOrders) {
+                try {
+                    const { data: newOrderId, error } = await supabase.rpc('place_order_and_deduct_inventory', { payload: order.payload });
+                    if (!error) {
+                        await supabase.from('orders').update({ is_paid: true, payment_status: 'paid' }).eq('id', newOrderId);
+                        // delete from IDB
+                        const delTx = idb.transaction(storeName, "readwrite");
+                        delTx.objectStore(storeName).delete(order.id);
+                    }
+                } catch(e) {
+                    console.error("Sync error:", e);
+                }
+            }
+            showAdminToast('Đồng bộ dữ liệu Offline hoàn tất!', 'success');
+        }
+    };
+}
+
 window.posSubmitOrder = async function() {
     if (posCart.length === 0) {
         showAdminToast('Giỏ hàng trống!', 'warning');
@@ -525,29 +596,31 @@ window.posSubmitOrder = async function() {
     }
 
     try {
-        // ✅ STOCK PRE-CHECK
-        const ingredientIds = Object.keys(reductions);
-        if (ingredientIds.length > 0) {
-            const { data: freshStock, error: stockErr } = await supabase.from('ingredients')
-                .select('id, name, stock')
-                .in('id', ingredientIds)
-                .eq('tenant_id', window.AdminState.tenantId);
-                
-            if (!stockErr && freshStock && freshStock.length > 0) {
-                const stockMap = {};
-                freshStock.forEach(i => stockMap[i.id] = i.stock);
-                
-                const outOfStockNames = [];
-                for (const iId of ingredientIds) {
-                    if ((stockMap[iId] || 0) < reductions[iId]) {
-                        const ingInfo = freshStock.find(i => i.id === iId);
-                        outOfStockNames.push(ingInfo ? ingInfo.name : 'Vật tư');
+        // Only run stock pre-check if we are online!
+        if (navigator.onLine) {
+            const ingredientIds = Object.keys(reductions);
+            if (ingredientIds.length > 0) {
+                const { data: freshStock, error: stockErr } = await supabase.from('ingredients')
+                    .select('id, name, stock')
+                    .in('id', ingredientIds)
+                    .eq('tenant_id', window.AdminState.tenantId);
+                    
+                if (!stockErr && freshStock && freshStock.length > 0) {
+                    const stockMap = {};
+                    freshStock.forEach(i => stockMap[i.id] = i.stock);
+                    
+                    const outOfStockNames = [];
+                    for (const iId of ingredientIds) {
+                        if ((stockMap[iId] || 0) < reductions[iId]) {
+                            const ingInfo = freshStock.find(i => i.id === iId);
+                            outOfStockNames.push(ingInfo ? ingInfo.name : 'Vật tư');
+                        }
                     }
-                }
-                if (outOfStockNames.length > 0) {
-                    showAdminToast(`Hết nguyên liệu: ${outOfStockNames.join(', ')}`, 'error');
-                    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Gửi đơn hàng'; }
-                    return;
+                    if (outOfStockNames.length > 0) {
+                        showAdminToast(`Hết nguyên liệu: ${outOfStockNames.join(', ')}`, 'error');
+                        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Gửi đơn hàng'; }
+                        return;
+                    }
                 }
             }
         }
@@ -565,26 +638,37 @@ window.posSubmitOrder = async function() {
             payment_status: 'paid'   // POS orders default to paid
         };
 
-        const { data: newOrderId, error } = await supabase.rpc('place_order_and_deduct_inventory', { payload: orderPayload });
-        if (error) {
-            console.error("RPC Error Details:", error);
-            throw new Error(error.message || 'Lỗi gửi đơn (Database)');
+        if (navigator.onLine) {
+            const { data: newOrderId, error } = await supabase.rpc('place_order_and_deduct_inventory', { payload: orderPayload });
+            if (error) {
+                console.error("RPC Error Details:", error);
+                // Fallback to offline if there was a server connection issue
+                if (error.message && error.message.includes("Failed to fetch")) {
+                    await saveOrderToIDB(orderPayload);
+                    showAdminToast(`Lỗi mạng. Đã lưu Offline đơn bàn ${posSelectedTable}! (Sẽ đồng bộ sau) 🟡`, 'warning');
+                } else {
+                    throw new Error(error.message || 'Lỗi gửi đơn (Database)');
+                }
+            } else {
+                // POS orders are immediately paid (RPC doesn't set is_paid directly):
+                const { error: updateErr } = await supabase.from('orders')
+                    .update({ is_paid: true, payment_status: 'paid' })
+                    .eq('id', newOrderId)
+                    .eq('tenant_id', window.AdminState.tenantId);
+                    
+                if (updateErr) console.warn("Lỗi cập nhật trạng thái thanh toán POS:", updateErr);
+                logAudit('POS Đặt hàng', `Bàn ${posSelectedTable} — ${posCart.length} món — ${totalPrice.toLocaleString('vi-VN')}đ bởi ${staffName}`);
+                showAdminToast(`Đã gửi đơn bàn ${posSelectedTable} thành công! 🎉`, 'success');
+            }
+        } else {
+            // Navigator is offline
+            await saveOrderToIDB(orderPayload);
+            showAdminToast(`Mạng ngoại tuyến. LƯU OFFLINE đơn bàn ${posSelectedTable}! (Sẽ đồng bộ sau) 🟡`, 'warning');
         }
         
-        // POS orders are immediately paid (RPC doesn't set is_paid directly):
-        const { error: updateErr } = await supabase.from('orders')
-            .update({ is_paid: true, payment_status: 'paid' })
-            .eq('id', newOrderId)
-            .eq('tenant_id', window.AdminState.tenantId);
-            
-        if (updateErr) console.warn("Lỗi cập nhật trạng thái thanh toán POS:", updateErr);
-
-        logAudit('POS Đặt hàng', `Bàn ${posSelectedTable} — ${posCart.length} món — ${totalPrice.toLocaleString('vi-VN')}đ bởi ${staffName}`);
+        // Print bill popup - happens online or offline!
+        posPrintBill({ id: 'OFFLINE_PENDING_' + Date.now(), table_number: posSelectedTable, items: items, total_price: totalPrice, order_note: note });
         
-        // Print bill popup
-        posPrintBill({ id: newOrderId, table_number: posSelectedTable, items: items, total_price: totalPrice, order_note: note });
-        
-        showAdminToast(`Đã gửi đơn bàn ${posSelectedTable} thành công! 🎉`, 'success');
         posCart = [];
         posRenderCart();
         if (document.getElementById('pos-order-note')) document.getElementById('pos-order-note').value = '';

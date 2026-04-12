@@ -19,27 +19,70 @@ async function initShiftsModule() {
             <div class="text-center text-slate-500"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang kiểm tra ca...</div>
         </div>
 
-        <!-- Shift history -->
-        <div class="card bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden">
-            <div class="card-body p-0">
-                <div class="p-4 border-b border-slate-200">
-                    <h5 class="font-bold text-[#F2E8D5] mb-0"><i class="fa-solid fa-history me-2 text-[#C0A062]"></i>Lịch sử ca</h5>
+        <!-- Timesheets Quick Actions -->
+        <div class="card bg-white border border-slate-200 rounded-2xl shadow-soft p-6 mb-6">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div>
+                    <h5 class="font-bold text-[#F2E8D5] mb-1 flex items-center gap-2">
+                        <i class="fa-solid fa-user-clock text-[#C0A062]"></i> Chấm công cá nhân
+                    </h5>
+                    <p class="text-sm text-slate-500 mb-0" id="timesheet-status-text">Kiểm tra trạng thái chấm công của bạn.</p>
                 </div>
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0 border-0">
-                        <thead class="bg-[#e2e8f0] text-[#b45309]">
-                            <tr>
-                                <th class="border-0 py-3 px-4">Người mở</th>
-                                <th class="border-0 py-3 px-4">Mở lúc</th>
-                                <th class="border-0 py-3 px-4">Đóng lúc</th>
-                                <th class="border-0 py-3 px-4">Doanh thu</th>
-                                <th class="border-0 py-3 px-4">Trạng thái</th>
-                            </tr>
-                        </thead>
-                        <tbody id="shifts-history-body">
-                            <tr><td colspan="5" class="text-center py-4 text-slate-500"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tải...</td></tr>
-                        </tbody>
-                    </table>
+                <div id="timesheet-action-btn">
+                    <button class="btn btn-secondary rounded-xl font-bold py-2 px-5 text-sm" disabled><i class="fa-solid fa-spinner fa-spin"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-6">
+                <!-- Shift history -->
+                <div class="card bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden h-100">
+                    <div class="card-body p-0">
+                        <div class="p-4 border-b border-slate-200">
+                            <h5 class="font-bold text-[#F2E8D5] mb-0"><i class="fa-solid fa-history me-2 text-[#C0A062]"></i>Lịch sử ca</h5>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0 border-0">
+                                <thead class="bg-[#e2e8f0] text-[#b45309]">
+                                    <tr>
+                                        <th class="border-0 py-3 px-4">Người mở</th>
+                                        <th class="border-0 py-3 px-4">Mở lúc</th>
+                                        <th class="border-0 py-3 px-4">Đóng lúc</th>
+                                        <th class="border-0 py-3 px-4">Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="shifts-history-body">
+                                    <tr><td colspan="4" class="text-center py-4 text-slate-500"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tải...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-6">
+                <!-- Timesheet history -->
+                <div class="card bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden h-100">
+                    <div class="card-body p-0">
+                        <div class="p-4 border-b border-slate-200">
+                            <h5 class="font-bold text-[#F2E8D5] mb-0"><i class="fa-solid fa-users text-[#C0A062]"></i>Lịch sử Chấm công</h5>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0 border-0">
+                                <thead class="bg-[#e2e8f0] text-[#b45309]">
+                                    <tr>
+                                        <th class="border-0 py-3 px-4">Nhân sự</th>
+                                        <th class="border-0 py-3 px-4">Giờ vào</th>
+                                        <th class="border-0 py-3 px-4">Giờ ra</th>
+                                        <th class="border-0 py-3 px-4 w-24 text-end">Tổng (h)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="timesheets-history-body">
+                                    <tr><td colspan="4" class="text-center py-4 text-slate-500"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tải...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -47,6 +90,17 @@ async function initShiftsModule() {
 
     await renderShiftStatusCard();
     await loadShiftsHistory();
+    
+    // Timesheet
+    if (window.AdminState.staffId) {
+        await checkTimesheetStatus();
+        await loadTimesheetsHistory();
+    } else {
+        const tAction = document.getElementById('timesheet-action-btn');
+        const tText = document.getElementById('timesheet-status-text');
+        if (tAction) tAction.innerHTML = '<span class="text-danger text-sm">Lỗi: Không tìm thấy ID nhân viên.</span>';
+        if (tText) tText.innerHTML = 'Vui lòng đăng nhập lại.';
+    }
 }
 
 async function renderShiftStatusCard() {
@@ -456,5 +510,136 @@ async function submitCloseShift() {
     } finally {
         btn.disabled = false;
         btn.innerText = 'Xác nhận Kết ca';
+    }
+}
+
+/* ==============================================================
+   TIMESHEET LOGIC
+   ============================================================== */
+
+let currentTimesheet = null;
+
+async function checkTimesheetStatus() {
+    const tAction = document.getElementById('timesheet-action-btn');
+    const tText = document.getElementById('timesheet-status-text');
+    if (!tAction || !tText) return;
+
+    try {
+        const { data, error } = await supabase
+            .from('staff_timesheets')
+            .select('*')
+            .eq('tenant_id', window.AdminState.tenantId)
+            .eq('staff_id', window.AdminState.staffId)
+            .is('check_out', null)
+            .order('check_in', { ascending: false })
+            .limit(1);
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+            currentTimesheet = data[0];
+            const checkInTime = new Date(currentTimesheet.check_in).toLocaleTimeString('vi-VN', {hour:'2-digit',minute:'2-digit'});
+            tText.innerHTML = `Bạn đã VÀO CA lúc <strong class="text-green-500">${checkInTime}</strong>. Đừng quên ra ca khi xong việc.`;
+            tAction.innerHTML = `<button class="btn rounded-xl font-bold py-2 px-5 text-sm text-white shadow-soft" style="background:#ef4444;" onclick="submitCheckOut()"><i class="fa-solid fa-sign-out-alt me-2"></i>Ra ca (Check-out)</button>`;
+        } else {
+            currentTimesheet = null;
+            tText.innerHTML = `Bạn chưa chấm công vào ca. Hãy bắt đầu ngay!`;
+            tAction.innerHTML = `<button class="btn rounded-xl font-bold py-2 px-5 text-sm shadow-soft" style="background:#10b981;color:#fff;" onclick="submitCheckIn()"><i class="fa-solid fa-sign-in-alt me-2"></i>Vào ca (Check-in)</button>`;
+        }
+    } catch(e) {
+        console.error('Timesheet status error:', e);
+        tText.innerHTML = '<span class="text-danger">Lỗi tải trạng thái chấm công.</span>';
+        tAction.innerHTML = '';
+    }
+}
+
+async function submitCheckIn() {
+    if (!window.AdminState.staffId) return;
+    try {
+        const { data, error } = await supabase.rpc('staff_check_in', {
+            p_staff_id: window.AdminState.staffId,
+            p_tenant_id: window.AdminState.tenantId
+        });
+        
+        if (error) throw error;
+        
+        if (data) {
+            showAdminToast('Chấm công VÀO CA thành công!', 'success');
+        } else {
+            showAdminToast('Bạn đã vào ca trước đó rồi!', 'warning');
+        }
+        
+        await checkTimesheetStatus();
+        await loadTimesheetsHistory();
+    } catch(e) {
+        console.error('Check-in error:', e);
+        showAdminToast('Lỗi chấm công vào ca!', 'error');
+    }
+}
+
+async function submitCheckOut() {
+    if (!window.AdminState.staffId) return;
+    try {
+        const { data, error } = await supabase.rpc('staff_check_out', {
+            p_staff_id: window.AdminState.staffId,
+            p_tenant_id: window.AdminState.tenantId
+        });
+        
+        if (error) throw error;
+        
+        if (data) {
+            showAdminToast('Chấm công RA CA thành công!', 'success');
+        } else {
+            showAdminToast('Bạn chưa có ca làm việc nào đang mở!', 'warning');
+        }
+        
+        await checkTimesheetStatus();
+        await loadTimesheetsHistory();
+    } catch(e) {
+        console.error('Check-out error:', e);
+        showAdminToast('Lỗi chấm công ra ca!', 'error');
+    }
+}
+
+async function loadTimesheetsHistory() {
+    const tbody = document.getElementById('timesheets-history-body');
+    if (!tbody) return;
+
+    try {
+        const { data, error } = await supabase
+            .from('vw_staff_timesheets')
+            .select('*')
+            .eq('tenant_id', window.AdminState.tenantId)
+            .order('check_in', { ascending: false })
+            .limit(30);
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-slate-500">Chưa có dữ liệu chấm công.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = data.map(t => {
+            const isWorking = !t.check_out;
+            const inTime = new Date(t.check_in).toLocaleString('vi-VN', {hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit'});
+            const outTime = isWorking ? '—' : new Date(t.check_out).toLocaleString('vi-VN', {hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit'});
+            const hours = isWorking ? '<span class="badge bg-success">Đang làm</span>' : (t.hours_worked || 0).toFixed(2);
+            
+            return `
+                <tr>
+                    <td>
+                        <div class="font-bold text-slate-800">${window.escapeHTML(t.staff_name || 'Nhân viên')}</div>
+                        <div class="text-[10px] uppercase text-slate-400 font-bold">${window.escapeHTML(t.staff_role || '')}</div>
+                    </td>
+                    <td class="text-slate-500 text-sm whitespace-nowrap">${inTime}</td>
+                    <td class="text-slate-500 text-sm whitespace-nowrap">${outTime}</td>
+                    <td class="text-end font-bold text-[#b45309]">${hours}</td>
+                </tr>
+            `;
+        }).join('');
+    } catch(e) {
+        console.error('loadTimesheetsHistory error:', e);
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Lỗi tải dữ liệu.</td></tr>';
     }
 }

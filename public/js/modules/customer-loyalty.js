@@ -65,8 +65,13 @@ export async function verifyCustomerPhone(showLoading = true) {
                 msg.style.display = 'block';
             }
 
-            if (window.currentCustomerPoints >= 100 && !window.loyaltyDiscountApplied) {
+            if (window.currentCustomerPoints >= 10 && !window.loyaltyDiscountApplied) {
                 discountBtn.style.display = 'block';
+                const slider = document.getElementById('loyalty-points-slider');
+                if (slider) {
+                    slider.value = 0;
+                    if (typeof window.updateLoyaltySlider === 'function') window.updateLoyaltySlider(0);
+                }
             } else {
                 discountBtn.style.display = 'none';
             }
@@ -90,14 +95,37 @@ export async function verifyCustomerPhone(showLoading = true) {
 }
 window.verifyCustomerPhone = verifyCustomerPhone;
 
+window.updateLoyaltySlider = function(val) {
+    const pts = parseInt(val) || 0;
+    const valEl = document.getElementById('loyalty-slider-val');
+    const discountEl = document.getElementById('loyalty-discount-val');
+    const btn = document.getElementById('loyalty-apply-btn');
+    
+    if(valEl) valEl.textContent = pts + ' điểm';
+    if(discountEl) discountEl.textContent = (pts * 100).toLocaleString('vi-VN');
+    
+    if(btn) {
+        if(pts > 0) {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+        } else {
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+        }
+    }
+}
+
 window.applyLoyaltyPoints = function() {
-    if (window.currentCustomerPoints >= 100 && !window.loyaltyDiscountApplied) {
-        window.currentCustomerPoints -= 100;
+    const slider = document.getElementById('loyalty-points-slider');
+    const pts = parseInt(slider?.value) || 0;
+
+    if (window.currentCustomerPoints >= pts && pts > 0 && !window.loyaltyDiscountApplied) {
+        window.currentCustomerPoints -= pts;
         window.loyaltyDiscountApplied = true;
         document.getElementById('loyalty-discount-btn').style.display = 'none';
-        document.getElementById('loyalty-message').innerHTML = '<i class="fa-solid fa-check-circle"></i> Đã dùng 100 điểm để đổi Voucher Giảm 10.000đ!';
+        document.getElementById('loyalty-message').innerHTML = `<i class="fa-solid fa-check-circle"></i> Đã dùng ${pts} điểm để đổi Giảm ${(pts*100).toLocaleString('vi-VN')} đ!`;
         
-        state.appliedPromo = { code: 'LOYALTY_100', discountType: 'FIXED', value: 10000 };
+        state.appliedPromo = { code: 'LOYALTY_PTS', discountType: 'FIXED', value: pts * 100, originalPointsUsed: pts };
         updateCartUI(); 
     }
 }

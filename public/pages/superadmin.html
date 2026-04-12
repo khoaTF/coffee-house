@@ -605,6 +605,30 @@
                             <input type="number" id="manage-tenant-max-items" class="form-control" value="50">
                         </div>
                     </div>
+                    
+                    <h6 class="mt-4 mb-3 text-info border-bottom border-secondary pb-2"><i class="fa-solid fa-paint-roller me-2"></i> Branding & Infrastructure</h6>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Custom Domain</label>
+                        <input type="text" id="manage-tenant-domain" class="form-control" placeholder="e.g. order.mycafe.com" value="">
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-8">
+                            <label class="form-label">Logo URL</label>
+                            <input type="text" id="manage-tenant-logo" class="form-control" placeholder="/images/bunny_logo.png">
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label">Primary Color</label>
+                            <input type="color" id="manage-tenant-color" class="form-control form-control-color w-100" value="#c084fc" style="height: 44px;">
+                        </div>
+                    </div>
+                    
+                    <h6 class="mt-4 mb-3 text-success border-bottom border-secondary pb-2"><i class="fa-solid fa-plug me-2"></i> Integrations</h6>
+                    <div class="mb-3">
+                        <label class="form-label">Zalo ZNS / Webhook URL</label>
+                        <input type="text" id="manage-tenant-zns" class="form-control" placeholder="https://api.yourzns.com/webhook..." value="">
+                        <div class="form-text text-muted" style="font-size: 0.8rem;">Leave blank to disable ZNS marketing automations.</div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
