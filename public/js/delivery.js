@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const storeSlug = urlParams.get('store') || 'legacy';
     try {
-        const { data: tenant } = await supabase.from('tenants').select('id, store_name, branding').eq('slug', storeSlug).single();
+        const { data: tenant } = await supabase.from('tenants').select('id, name, branding').eq('slug', storeSlug).single();
         if (tenant) {
             tenantId = tenant.id;
             // Apply branding briefly
