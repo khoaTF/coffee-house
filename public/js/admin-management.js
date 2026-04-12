@@ -581,7 +581,7 @@ function renderAuditLogs(logs) {
 }
 
 // --- QR Code Management ---
-window.generateQRCodes = function() {
+window.generateQRCodes = async function() {
     const countInput = document.getElementById('qr-table-count');
     const count = parseInt(countInput.value);
     if (!count || isNaN(count) || count <= 0) {
@@ -594,9 +594,21 @@ window.generateQRCodes = function() {
     printArea.innerHTML = '';
 
     const baseUrl = window.location.origin;
+    let tenantSlug = 'legacy';
+
+    if (window.AdminState && window.AdminState.tenantId) {
+        try {
+            const { data: tenant } = await supabase.from('tenants').select('slug').eq('id', window.AdminState.tenantId).maybeSingle();
+            if (tenant && tenant.slug) {
+                tenantSlug = tenant.slug;
+            }
+        } catch (e) {
+            console.error('Error fetching tenant slug for QR:', e);
+        }
+    }
 
     for (let i = 1; i <= count; i++) {
-        const tableUrl = `${baseUrl}/?table=${i}`;
+        const tableUrl = `${baseUrl}/?table=${i}&store=${tenantSlug}`;
 
         const wrapper = document.createElement('div');
         wrapper.className = 'qr-card bg-white border border-slate-200 rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-soft relative';
@@ -678,8 +690,6 @@ window.saveStoreSettings = async function(type) {
         showAdminToast(`Lỗi khi lưu: ${e.message || 'Không xác định'}`, 'error');
     }
 };
-
-}
 
 // Branding specific
 window.saveStoreBranding = async function() {
