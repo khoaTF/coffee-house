@@ -12,7 +12,7 @@ WITH customer_stats AS (
         c.current_points,
         c.created_at,
         COUNT(o.id) AS total_orders,
-        COALESCE(SUM(o.total), 0) AS total_spent,
+        COALESCE(SUM(o.total_price), 0) AS total_spent,
         MAX(o.created_at) AS last_order_date
     FROM public.customers c
     LEFT JOIN public.orders o ON o.customer_phone = c.phone AND o.tenant_id = c.tenant_id AND o.status != 'cancelled'
