@@ -139,7 +139,7 @@ function renderBannersTable() {
             </td>
             <td class="py-3 px-4 font-medium text-slate-800">${escapeHTML(banner.title)}</td>
             <td class="py-3 px-4">
-                ${banner.is_popup ? '<span class="badge bg-purple-100 text-purple-700 px-2.5 py-1 rounded-lg">Pop-up</span>' : '<span class="badge bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-lg">Slider Đầu Trang</span>'}
+                ${banner.is_popup ? '<span class="badge bg-teal-100 text-teal-700 px-2.5 py-1 rounded-lg">Pop-up</span>' : '<span class="badge bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-lg">Slider Đầu Trang</span>'}
             </td>
             <td class="py-3 px-4 text-slate-500 text-sm max-w-xs truncate" title="${banner.target_url || ''}">
                 ${banner.target_url ? `<a href="${banner.target_url}" target="_blank" class="text-indigo-500 hover:underline"><i class="fa-solid fa-link me-1"></i>Link</a>` : 'Không có'}

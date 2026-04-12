@@ -722,7 +722,7 @@ window.loadStoreSettings = async function() {
     let settings = {};
     try {
         if (typeof supabase !== 'undefined') {
-            const { data, error } = await supabase.from('store_settings').select('*').eq('id', 1).eq('tenant_id', AdminState.tenantId).single();
+            const { data, error } = await supabase.from('store_settings').select('*').eq('tenant_id', AdminState.tenantId).single();
             if (data) settings = data;
             else throw new Error("No table");
         } else {

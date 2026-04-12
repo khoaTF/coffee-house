@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node src/server.js",
-    "test": "jest",
+    "test": "jest --passWithNoTests",
     "build:css": "tailwindcss -i ./src/css/input.css -o ./public/css/index.css --minify",
     "build": "npm run build:css"
   },

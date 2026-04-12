@@ -266,10 +266,10 @@ function buildOrderCard(order, isAssigned) {
     }
 
     return `
-    <div class="order-card" style="border-left-color: ${!isAssigned ? '#8B5CF6' : (isDelivering ? '#22C55E' : '#FF7A00')}">
+    <div class="order-card" style="border-left-color: ${!isAssigned ? '#14B8A6' : (isDelivering ? '#22C55E' : '#FF7A00')}">
         <div class="flex justify-between items-start mb-2">
             <div>
-                <span class="text-xs font-bold px-2 py-0.5 rounded-full ${!isAssigned ? 'bg-purple-500/20 text-purple-400' : (isDelivering ? 'bg-green-500/20 text-green-400' : 'bg-[#FF7A00]/20 text-[#FF7A00]')}">${!isAssigned ? 'ĐƠN MỚI' : (isDelivering ? 'ĐANG GIAO' : 'SẴN SÀNG')}</span>
+                <span class="text-xs font-bold px-2 py-0.5 rounded-full ${!isAssigned ? 'bg-teal-500/20 text-teal-400' : (isDelivering ? 'bg-green-500/20 text-green-400' : 'bg-[#FF7A00]/20 text-[#FF7A00]')}">${!isAssigned ? 'ĐƠN MỚI' : (isDelivering ? 'ĐANG GIAO' : 'SẴN SÀNG')}</span>
                 <h4 class="font-bold mt-1">#${displayId}</h4>
             </div>
             <span class="text-xs text-gray-500">${new Date(order.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</span>
@@ -360,7 +360,7 @@ function renderOrderMarkers() {
             bounds.push(L.latLng(destLatLng));
             
             const icon = L.divIcon({
-                html: `<div style="background:#8B5CF6;color:white;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;border:3px solid white;box-shadow:0 2px 10px rgba(0,0,0,0.4)">!</div>`,
+                html: `<div style="background:#14B8A6;color:white;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;border:3px solid white;box-shadow:0 2px 10px rgba(0,0,0,0.4)">!</div>`,
                 iconSize: [32, 32],
                 iconAnchor: [16, 16],
                 className: ''

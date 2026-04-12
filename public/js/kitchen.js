@@ -2,6 +2,7 @@
 let orders = [];
 let audioEnabled = true;
 let isGroupedView = false;
+let tenantId = null;
 
 // DOM Elements
 const ordersContainer = document.getElementById('orders-container');
@@ -10,6 +11,14 @@ let connStatus; // Global for realtime status updates
 
 // Initialize
 function init() {
+    tenantId = new URLSearchParams(window.location.search).get('store') || localStorage.getItem('tenant_id');
+    if (!tenantId) {
+        alert("Không tìm thấy thông tin cửa hàng. Vui lòng đăng nhập lại.");
+        window.location.href = '/auth.html';
+        return;
+    }
+    localStorage.setItem('tenant_id', tenantId);
+    
     connStatus = document.getElementById('connection-status');
 
     // Check if we are on the history page or if elements exist
@@ -37,6 +46,7 @@ async function fetchActiveOrders() {
         const { data, error } = await supabase
             .from('orders')
             .select('*')
+            .eq('tenant_id', tenantId)
             .in('status', ['Pending', 'Preparing', 'Ready'])
             .order('created_at', { ascending: true });
 
@@ -179,7 +189,7 @@ function renderOrders() {
                     ${order.status === 'Pending' ? `<button class="w-full py-3 mb-3 bg-[#D97531] hover:bg-[#b05f28] text-white rounded-xl font-bold transition-all shadow-sm hover:shadow active:scale-95 flex justify-center items-center gap-2" onclick="updateOrderStatus('${order._id}', 'Preparing', this)"><i class="fa-solid fa-fire"></i> Nhận đơn & Chế biến</button>` : ''}
                     ${order.status === 'Preparing' ? `<button class="w-full py-3 mb-3 bg-[#994700] hover:bg-[#7a3900] text-white rounded-xl font-bold transition-all shadow-sm hover:shadow active:scale-95 flex justify-center items-center gap-2" onclick="updateOrderStatus('${order._id}', 'Ready', this)"><i class="fa-solid fa-bell-concierge"></i> Đã làm xong (Báo TV)</button>` : ''}
                     ${order.status === 'Ready' && !isDelivery ? `<button class="w-full py-3 mb-3 bg-gray-800 hover:bg-black dark:bg-gray-100 dark:hover:bg-white dark:text-[#1B1C1C] text-white rounded-xl font-bold transition-all shadow-sm hover:shadow active:scale-95 flex justify-center items-center gap-2" onclick="updateOrderStatus('${order._id}', 'Completed', this)"><i class="fa-solid fa-check-circle"></i> Đã Giao Khách (Xóa màn TV)</button>` : ''}
-                    ${order.status === 'Ready' && isDelivery ? `<div class="w-full py-3 mb-3 bg-[#EDE9FE] dark:bg-[#8B5CF6]/20 text-[#8B5CF6] dark:text-[#A78BFA] border border-[#8B5CF6]/30 rounded-xl font-bold text-center flex justify-center items-center gap-2"><i class="fa-solid fa-motorcycle"></i> Chờ Shipper...</div>` : ''}
+                    ${order.status === 'Ready' && isDelivery ? `<div class="w-full py-3 mb-3 bg-[#CCFBF1] dark:bg-[#14b8a6]/20 text-[#14b8a6] dark:text-[#5eead4] border border-[#14b8a6]/30 rounded-xl font-bold text-center flex justify-center items-center gap-2"><i class="fa-solid fa-motorcycle"></i> Chờ Shipper...</div>` : ''}
                     <div class="flex gap-3">
                         <button class="flex-1 py-2.5 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl font-semibold transition-colors flex justify-center items-center gap-2 text-sm" onclick="printReceipt('${order._id}')">
                             <i class="fa-solid fa-print"></i> In Bill
@@ -527,8 +537,8 @@ function playDing() {
 // --- Supabase Realtime Listeners ---
 function setupRealtimeSubscription() {
     supabase
-        .channel('kitchen-orders')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, payload => {
+        .channel(`kitchen-orders-${tenantId}`)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders', filter: `tenant_id=eq.${tenantId}` }, payload => {
             console.log('NEW ORDER RECEIVED via REALTIME:', payload.new);
             const newOrder = {
                 ...payload.new,
@@ -554,7 +564,7 @@ function setupRealtimeSubscription() {
                 }
             }
         })
-        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders' }, payload => {
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders', filter: `tenant_id=eq.${tenantId}` }, payload => {
             const updatedOrder = { ...payload.new, _id: payload.new.id, createdAt: payload.new.created_at, tableNumber: payload.new.table_number, orderNote: payload.new.order_note, orderType: payload.new.order_type, totalPrice: payload.new.total_price };
             const orderIndex = orders.findIndex(o => o._id === updatedOrder._id);
 
@@ -609,12 +619,12 @@ function setupRealtimeSubscription() {
                 }
             }
         })
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'staff_requests' }, payload => {
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'staff_requests', filter: `tenant_id=eq.${tenantId}` }, payload => {
             if (payload.new.status === 'pending') {
                 renderStaffRequest(payload.new);
             }
         })
-        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'staff_requests' }, payload => {
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'staff_requests', filter: `tenant_id=eq.${tenantId}` }, payload => {
             if (payload.new.status === 'completed') {
                 removeStaffRequestUI(payload.new.id);
             }
@@ -645,6 +655,7 @@ async function fetchActiveStaffRequests() {
         const { data, error } = await supabase
             .from('staff_requests')
             .select('*')
+            .eq('tenant_id', tenantId)
             .eq('status', 'pending');
         if (error) throw error;
         data.forEach(req => renderStaffRequest(req));

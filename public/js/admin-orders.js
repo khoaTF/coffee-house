@@ -275,7 +275,7 @@ window.printInvoice = async (orderId) => {
     // Load store_settings
     let storeSettings = {};
     try {
-        const { data } = await supabase.from('store_settings').select('*').eq('id', 1).eq('tenant_id', AdminState.tenantId).maybeSingle();
+        const { data } = await supabase.from('store_settings').select('*').eq('tenant_id', AdminState.tenantId).maybeSingle();
         storeSettings = data || JSON.parse(localStorage.getItem('store_settings') || '{}');
     } catch(e) {
         storeSettings = JSON.parse(localStorage.getItem('store_settings') || '{}');

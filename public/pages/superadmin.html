@@ -15,7 +15,7 @@
             --bg-color: #050505;
             --surface-color: #121212;
             --surface-hover: #1e1e1e;
-            --primary: #c084fc;
+            --primary: #14b8a6;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
             --border-color: rgba(255, 255, 255, 0.08);
@@ -41,7 +41,7 @@
             left: -10vw;
             width: 50vw;
             height: 50vh;
-            background: radial-gradient(circle, rgba(192, 132, 252, 0.15) 0%, transparent 60%);
+            background: radial-gradient(circle, rgba(20, 184, 166, 0.15) 0%, transparent 60%);
             z-index: 0;
             pointer-events: none;
         }
@@ -130,11 +130,20 @@
         .auth-input:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(192, 132, 252, 0.2);
+            box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.2);
+        }
+
+        .card-stats.active {
+            background: linear-gradient(135deg, #14b8a6, #0f766e);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 1rem;
+            width: 100%;
         }
 
         .primary-btn {
-            background: linear-gradient(135deg, #a855f7, #7e22ce);
+            background: linear-gradient(135deg, #14b8a6, #0f766e);
             color: white;
             border: none;
             border-radius: 12px;
@@ -148,7 +157,7 @@
 
         .primary-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px -10px rgba(168, 85, 247, 0.5);
+            box-shadow: 0 10px 20px -10px rgba(20, 184, 166, 0.5);
         }
         
         .primary-btn:disabled {
@@ -371,7 +380,7 @@
         }
 
         .form-control:focus {
-            box-shadow: 0 0 0 3px rgba(192, 132, 252, 0.2) !important;
+            box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.2) !important;
             border-color: var(--primary) !important;
         }
 

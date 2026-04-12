@@ -2,9 +2,18 @@
 let preparingOrders = [];
 let readyOrders = [];
 let previousReadyIds = new Set();
+let tenantId = null;
 
 // Start TV Mode (Fullscreen + Audio Perms)
 function startTVMode() {
+    tenantId = new URLSearchParams(window.location.search).get('store') || localStorage.getItem('tenant_id');
+    if (!tenantId) {
+        alert("Không tìm thấy thông tin cửa hàng. Vui lòng đăng nhập lại.");
+        window.location.href = '/auth.html';
+        return;
+    }
+    localStorage.setItem('tenant_id', tenantId);
+
     document.getElementById('setup-prompt').style.display = 'none';
     
     // Request fullscreen viewing
@@ -39,6 +48,7 @@ async function fetchActiveOrders() {
         const { data, error } = await supabase
             .from('orders')
             .select('id, table_number, status, created_at')
+            .eq('tenant_id', tenantId)
             .in('status', ['Preparing', 'Ready'])
             .order('created_at', { ascending: true }); // Mới nhất ở dưới, cũ nhất ở trên
 
@@ -108,8 +118,8 @@ function renderLists() {
 
 // Supabase Real-time Sync
 function setupRealtimeSubscription() {
-    supabase.channel('tv-screen-orders')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, payload => {
+    supabase.channel(`tv-screen-orders-${tenantId}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'orders', filter: `tenant_id=eq.${tenantId}` }, payload => {
             const eventType = payload.eventType;
             const newRecord = payload.new;
             const oldRecord = payload.old;
