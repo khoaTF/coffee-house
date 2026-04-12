@@ -23,7 +23,7 @@ export async function initTenant() {
     try {
         const { data, error } = await supabase
             .from('tenants')
-            .select('id, name, branding')
+            .select('id, name, branding, primary_color, logo_url, custom_domain')
             .eq('slug', STORE_SLUG)
             .eq('status', 'active')
             .maybeSingle();
@@ -74,30 +74,29 @@ function applyBranding(tenantData) {
         document.title = `${tenantData.name} - Thực đơn & Đặt món QR`;
     }
 
-    if (tenantData.branding) {
+    if (tenantData.primary_color || tenantData.branding?.primary_color) {
         const root = document.documentElement;
-        // Colors
-        if (tenantData.branding.primary_color) {
-            root.style.setProperty('--primary', tenantData.branding.primary_color);
-        }
-        if (tenantData.branding.accent_color) {
-            root.style.setProperty('--accent', tenantData.branding.accent_color);
-        }
+        const color = tenantData.primary_color || tenantData.branding.primary_color;
+        root.style.setProperty('--primary', color);
+    }
+    if (tenantData.branding && tenantData.branding.accent_color) {
+        document.documentElement.style.setProperty('--accent', tenantData.branding.accent_color);
+    }
 
-        // Images
-        if (tenantData.branding.logo) {
-            document.querySelectorAll('img[src*="bunny_logo.png"]').forEach(img => {
-                img.src = tenantData.branding.logo;
-            });
-            const favicons = document.querySelectorAll('link[rel="icon"], link[rel="apple-touch-icon"]');
-            favicons.forEach(link => { link.href = tenantData.branding.logo; });
-        }
-        
-        if (tenantData.branding.banner) {
-            const heroImg = document.getElementById('hero-banner-image');
-            if (heroImg) {
-                heroImg.src = tenantData.branding.banner;
-            }
+    // Images
+    const logoSrc = tenantData.logo_url || tenantData.branding?.logo;
+    if (logoSrc) {
+        document.querySelectorAll('img[src*="bunny_logo.png"]').forEach(img => {
+            img.src = logoSrc;
+        });
+        const favicons = document.querySelectorAll('link[rel="icon"], link[rel="apple-touch-icon"]');
+        favicons.forEach(link => { link.href = logoSrc; });
+    }
+    
+    if (tenantData.branding && tenantData.branding.banner) {
+        const heroImg = document.getElementById('hero-banner-image');
+        if (heroImg) {
+            heroImg.src = tenantData.branding.banner;
         }
     }
 }

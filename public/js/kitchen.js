@@ -119,7 +119,24 @@ function renderOrders() {
             let borderClass = 'border-gray-200 dark:border-gray-800';
             let pulseClass = '';
 
+            let timeRemainingText = '';
+            let timeRemainingClass = '';
+
             if (order.status === 'Pending' || order.status === 'Preparing') {
+                const slaMinutes = 10;
+                const remaining = slaMinutes - diffInMinutes;
+
+                if (remaining > 0) {
+                    timeRemainingText = `⏱ Còn ${remaining} phút (SLA)`;
+                    timeRemainingClass = remaining <= 5 ? 'text-yellow-600' : 'text-green-500';
+                } else if (remaining === 0) {
+                    timeRemainingText = `⏱ Hết giờ!`;
+                    timeRemainingClass = 'text-red-500';
+                } else {
+                    timeRemainingText = `⚠️ Quá hạn ${Math.abs(remaining)} phút`;
+                    timeRemainingClass = 'text-red-600 font-extrabold';
+                }
+
                 if (diffInMinutes >= 10) {
                     bgClass = 'bg-red-50 dark:bg-red-900/20';
                     borderClass = 'border-red-500 dark:border-red-700';
@@ -128,6 +145,9 @@ function renderOrders() {
                     bgClass = 'bg-yellow-50 dark:bg-yellow-900/20';
                     borderClass = 'border-yellow-500 dark:border-yellow-700';
                 }
+            } else {
+                timeRemainingText = diffInMinutes > 0 ? `${diffInMinutes} phút trước` : 'Vừa xong';
+                timeRemainingClass = 'text-stone-500 dark:text-stone-400';
             }
 
             const card = document.createElement('div');
@@ -162,14 +182,14 @@ function renderOrders() {
                             <div>
                                 ${headerTitle}
                                 ${order.customer_phone ? `<div class="text-xs font-normal mt-0.5 flex items-center gap-1.5"><span class="text-amber-500 font-bold"><i class="fa-solid fa-crown"></i> VIP</span><span class="text-gray-500 dark:text-gray-400">${window.escapeHTML(order.customer_phone)}</span></div>` : ''}
-                                <span class="text-stone-500 dark:text-stone-400 ml-2 font-medium text-sm">(Đơn #${window.escapeHTML(String(order.orderId))})</span>
+                                <span class="text-stone-500 dark:text-stone-400 ml-2 font-medium text-sm">(Đơn #${window.escapeHTML(String(order._id).substring(0, 8))})</span>
                             </div>
                         </div>
                         <div class="flex flex-col items-end">
                             <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 font-medium bg-gray-50 dark:bg-gray-800/50 px-3 py-1.5 rounded-lg">
                                 <i class="fa-regular fa-clock"></i> ${timeStr}
                             </div>
-                            ${diffInMinutes > 0 ? `<div class="text-xs font-bold mt-1 ${diffInMinutes >= 10 ? 'text-red-500' : diffInMinutes >= 5 ? 'text-yellow-600' : 'text-green-500'}">${diffInMinutes} phút trước</div>` : ''}
+                            <div class="text-xs mt-1 ${timeRemainingClass}">${timeRemainingText}</div>
                         </div>
                     </div>
                     ${deliveryInfoHtml}

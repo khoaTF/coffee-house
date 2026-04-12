@@ -9,10 +9,29 @@ async function fetchIngredients() {
         const { data, error } = await supabase.from('ingredients').select('*').eq('tenant_id', window.AdminState.tenantId).order('name');
         if (error) throw error;
 
+        // Calculate Burn Rate over the last 7 days
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        const { data: logsData } = await supabase
+            .from('inventory_logs')
+            .select('ingredient_id, amount')
+            .eq('tenant_id', window.AdminState.tenantId)
+            .eq('change_type', 'deduction')
+            .gte('created_at', sevenDaysAgo.toISOString());
+            
+        const burnMap = {};
+        if (logsData) {
+            logsData.forEach(log => {
+                if (!burnMap[log.ingredient_id]) burnMap[log.ingredient_id] = 0;
+                burnMap[log.ingredient_id] += Math.abs(log.amount);
+            });
+        }
+
         ingredients = data.map(i => ({
             ...i,
             _id: i.id,
-            lowStockThreshold: i.low_stock_threshold
+            lowStockThreshold: i.low_stock_threshold,
+            dailyBurnRate: burnMap[i.id] ? (burnMap[i.id] / 7) : 0
         }));
         renderIngredients();
     } catch (error) {
@@ -58,8 +77,19 @@ function renderIngredients() {
             }
 
             const tdStock = document.createElement('td');
-            if (isLow) tdStock.className = 'text-danger font-bold';
-            tdStock.textContent = i.stock;
+            tdStock.className = isLow ? 'text-danger font-bold align-middle' : 'align-middle';
+            
+            let stockHtml = `<span>${i.stock}</span>`;
+            if (i.dailyBurnRate > 0) {
+                const daysLeft = Math.floor(i.stock / i.dailyBurnRate);
+                let colorClass = 'text-green-600 dark:text-green-500';
+                if (daysLeft < 3) colorClass = 'text-red-600 dark:text-red-500 font-extrabold';
+                else if (daysLeft <= 7) colorClass = 'text-yellow-600 dark:text-yellow-500';
+                stockHtml += `<div class="text-xs mt-1.5 p-1.5 rounded-md bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 w-max"><i class="fa-solid fa-fire text-[#D97531] mr-1"></i>Tiêu dùng ~${i.dailyBurnRate.toFixed(1)}/ngày<br><span class="${colorClass} ml-4">&rarr; Dự kiến còn <b>${daysLeft}</b> ngày</span></div>`;
+            } else {
+                stockHtml += `<div class="text-[0.65rem] text-stone-400 mt-1 italic w-max px-1.5 py-0.5 border border-dashed border-stone-200 dark:border-stone-700 rounded">Không đủ DL tiêu thụ 7 ngày qua</div>`;
+            }
+            tdStock.innerHTML = stockHtml;
 
             const tdUnit = document.createElement('td');
             tdUnit.textContent = i.unit;

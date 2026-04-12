@@ -163,6 +163,21 @@ export function updateCartUI() {
         return sum + ((item.price + itemOptionsPrice) * item.quantity);
     }, 0);
 
+    // Update loyalty slider max based on subtotal
+    const slider = document.getElementById('loyalty-points-slider');
+    if (slider && !window.loyaltyDiscountApplied && window.currentCustomerPoints > 0) {
+        const maxPointsFromPrice = Math.floor(totalPrice / 100); // 1 point = 100 VND
+        const maxSliderValue = Math.min(window.currentCustomerPoints, maxPointsFromPrice);
+        slider.max = maxSliderValue;
+        
+        if (parseInt(slider.value) > maxSliderValue) {
+            slider.value = maxSliderValue;
+            if (typeof window.updateLoyaltySlider === 'function') {
+                window.updateLoyaltySlider(maxSliderValue);
+            }
+        }
+    }
+
     if (dom.topCartCount) {
         if (totalQty > 0) {
             dom.topCartCount.textContent = totalQty;
@@ -260,6 +275,58 @@ export function renderModalCart() {
     }
 
     dom.checkoutTotal.textContent = total.toLocaleString('vi-VN') + ' đ';
+    
     if(dom.checkoutCashBtn) dom.checkoutCashBtn.disabled = false;
     if(dom.checkoutTransferBtn) dom.checkoutTransferBtn.disabled = false;
+
+    renderCartUpsells();
+}
+
+function renderCartUpsells() {
+    const container = document.getElementById('cart-upsell-container');
+    const itemsContainer = document.getElementById('cart-upsell-items');
+    if (!container || !itemsContainer) return;
+    
+    if (state.cart.length === 0) {
+        container.classList.add('hidden');
+        return;
+    }
+    
+    // Exclude items already in cart, filter for price <= 35000 and available
+    const cartIds = state.cart.map(c => c._id);
+    const availableUpsells = state.menuItems.filter(i => !cartIds.includes(i._id) && i.price <= 35000 && getAvailableToAdd(i) > 0);
+    
+    if (availableUpsells.length === 0) {
+        container.classList.add('hidden');
+        return;
+    }
+    
+    // Pick exactly 3 stable random items (using simple logic based on order total to keep it pseudo-stable during one session)
+    const baseNum = state.cart.reduce((s,i) => s + i.price, 0);
+    const shuffled = availableUpsells.sort((a,b) => {
+        return (a.name.charCodeAt(0) + baseNum % 10) - (b.name.charCodeAt(0) + baseNum % 10);
+    });
+    const selected = shuffled.slice(0, 3);
+    
+    itemsContainer.innerHTML = '';
+    selected.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'upsell-item shrink-0 w-[110px] bg-white dark:bg-[#1B1C1B] rounded-xl overflow-hidden border border-outline-variant/30 active:scale-95 transition-transform flex flex-col shadow-sm cursor-pointer';
+        div.onclick = () => window.updateCart(item._id, 1);
+        div.innerHTML = `
+            <div class="h-[70px] bg-gray-200 dark:bg-gray-800 relative">
+                <img src="${item.imageUrl || ''}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/300x300?text=Food'">
+                <div class="absolute bottom-1 right-1 w-6 h-6 bg-[#FF7A00] text-white rounded-full flex items-center justify-center shadow-md">
+                    <i class="fa-solid fa-plus text-xs"></i>
+                </div>
+            </div>
+            <div class="p-2 flex-1 flex flex-col justify-between">
+                <div class="text-[0.7rem] font-bold leading-tight line-clamp-2 text-[#1b1c1b] dark:text-[#fcf9f8]">${window.escapeHTML(item.name)}</div>
+                <div class="text-[#994700] text-xs font-black mt-1">${item.price.toLocaleString('vi-VN')}đ</div>
+            </div>
+        `;
+        itemsContainer.appendChild(div);
+    });
+    
+    container.classList.remove('hidden');
 }

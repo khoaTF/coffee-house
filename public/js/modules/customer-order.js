@@ -187,14 +187,15 @@ export async function placeOrder(method = 'cash') {
         
         // Deduct loyalty points
         if (window.loyaltyDiscountApplied && window.currentCustomerPhone) {
+            const ptsUsed = state.appliedPromo && state.appliedPromo.originalPointsUsed ? state.appliedPromo.originalPointsUsed : 100;
             supabase.from('customers').select('id, current_points').eq('tenant_id', state.tenantId).eq('phone', window.currentCustomerPhone).maybeSingle().then(({data: cust}) => {
                 if (cust) {
-                    supabase.from('customers').update({ current_points: Math.max(0, cust.current_points - 100) }).eq('tenant_id', state.tenantId).eq('id', cust.id).then(() => {
+                    supabase.from('customers').update({ current_points: Math.max(0, cust.current_points - ptsUsed) }).eq('tenant_id', state.tenantId).eq('id', cust.id).then(() => {
                         supabase.from('point_logs').insert([{
                             tenant_id: state.tenantId,
                             customer_id: cust.id,
-                            amount: -100,
-                            reason: 'Đổi 100 điểm lấy 10.000đ giảm giá cho đơn ' + savedOrder._id.substring(0,8)
+                            amount: -ptsUsed,
+                            reason: `Đổi ${ptsUsed} điểm lấy ${(ptsUsed*100).toLocaleString('vi-VN')}đ giảm giá cho đơn ` + savedOrder._id.substring(0,8)
                         }]).then();
                     });
                 }

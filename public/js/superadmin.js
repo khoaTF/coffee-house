@@ -195,6 +195,28 @@ document.addEventListener('DOMContentLoaded', () => {
                     if(err2) throw err2;
                 }
 
+                // Update Branding & Integrations
+                const newDomain = document.getElementById('manage-tenant-domain').value.trim();
+                const newLogo = document.getElementById('manage-tenant-logo').value.trim();
+                const newColor = document.getElementById('manage-tenant-color').value.trim();
+                const newZnsUrl = document.getElementById('manage-tenant-zns').value.trim();
+                
+                let integrations = {};
+                if(newZnsUrl) {
+                    integrations.zns_webhook = newZnsUrl;
+                }
+
+                const { error: errBrand } = await supabase.rpc('update_tenant_brand', {
+                    owner_secret: ownerSecret,
+                    p_tenant_id: tenantId,
+                    p_custom_domain: newDomain || null,
+                    p_primary_color: newColor || '#c084fc',
+                    p_logo_url: newLogo || '/images/bunny_logo.png',
+                    p_integrations: integrations
+                });
+                
+                if(errBrand) throw errBrand;
+
                 showToast('Tenant updated successfully', 'success');
                 
                 // Close modal
@@ -325,7 +347,7 @@ function renderTenants(tenants) {
         grid.innerHTML = `
             <div class="text-center w-100 py-5 text-muted col-12">
                 <i class="fa-solid fa-building-user fa-3x mb-3 opacity-50"></i>
-                <p>No tenants registered yet.</p>
+                <p>${window.t ? window.t('superadmin.card_no_tenants') : 'No tenants registered yet.'}</p>
             </div>
         `;
         document.getElementById('total-users-count').innerText = "0";
@@ -341,10 +363,10 @@ function renderTenants(tenants) {
         });
         
         let statusColor = 'success';
-        let statusText = 'Active';
+        let statusText = window.t ? window.t('superadmin.filter_active') : 'Active';
         if (t.status === 'suspended') {
             statusColor = 'danger';
-            statusText = 'Suspended';
+            statusText = window.t ? window.t('superadmin.filter_suspended') : 'Suspended';
         }
 
         const expiryDateStr = t.subscription_end_date ? new Date(t.subscription_end_date).toLocaleDateString('vi-VN') : 'N/A';
@@ -363,7 +385,11 @@ function renderTenants(tenants) {
             status: t.status || 'active',
             expiry: t.subscription_end_date || '',
             max_staff: t.max_staff || 5,
-            max_items: t.max_items || 50
+            max_items: t.max_items || 50,
+            custom_domain: t.custom_domain || '',
+            primary_color: t.primary_color || '#c084fc',
+            logo_url: t.logo_url || '',
+            integrations: t.integrations || {}
         }).replace(/"/g, '&quot;');
 
         html += `
@@ -373,7 +399,7 @@ function renderTenants(tenants) {
                         <h3 class="tenant-name d-flex align-items-center">
                             ${escapeHtml(t.name)}
                             <span class="badge bg-${statusColor} bg-opacity-25 text-${statusColor} ms-2 px-2 py-1 border border-${statusColor} border-opacity-25" style="font-size: 0.6rem; vertical-align: middle;">${statusText}</span>
-                            ${isExpired ? '<span class="badge bg-warning text-dark ms-1" style="font-size:0.6rem;">EXPIRED</span>' : (isExpiringSoon ? '<span class="badge bg-info text-dark ms-1" style="font-size:0.6rem;">EXPIRING SOON</span>' : '')}
+                            ${isExpired ? `<span class="badge bg-warning text-dark ms-1" style="font-size:0.6rem;">${window.t ? window.t('superadmin.card_expired') : 'EXPIRED'}</span>` : (isExpiringSoon ? `<span class="badge bg-info text-dark ms-1" style="font-size:0.6rem;">${window.t ? window.t('superadmin.card_expiring') : 'EXPIRING SOON'}</span>` : '')}
                         </h3>
                         <div class="tenant-id" onclick="copyTenantId('${t.id}')" style="cursor:pointer" title="Click to copy">${t.id}</div>
                     </div>
@@ -382,11 +408,11 @@ function renderTenants(tenants) {
                 <div class="tenant-metrics flex-wrap">
                     <div class="metric w-100 mb-1 text-success font-bold">
                         <i class="fa-solid fa-money-bill-wave"></i>
-                        <span>${new Intl.NumberFormat('vi-VN').format(t.total_revenue || 0)}đ Rev</span>
+                        <span>${new Intl.NumberFormat('vi-VN').format(t.total_revenue || 0)}đ ${window.t ? window.t('superadmin.card_rev') : 'Rev'}</span>
                     </div>
                     <div class="metric" style="width: 45%;">
                         <i class="fa-solid fa-users"></i>
-                        <span>${t.staff_count || 0}/${t.max_staff || 5} Staff</span>
+                        <span>${t.staff_count || 0}/${t.max_staff || 5} ${window.t ? window.t('superadmin.card_staff') : 'Staff'}</span>
                     </div>
                     <div class="metric" style="width: 45%;">
                         <i class="fa-solid fa-hourglass-end ${isExpired ? 'text-danger' : ''}"></i>
@@ -396,10 +422,10 @@ function renderTenants(tenants) {
                 
                 <div class="tenant-actions">
                     <button class="action-btn" onclick="copyTenantId('${t.id}')" title="Copy Tenant ID">
-                        <i class="fa-regular fa-copy"></i> Copy ID
+                        <i class="fa-regular fa-copy"></i> ${window.t ? window.t('superadmin.card_copy_id') : 'Copy ID'}
                     </button>
                     <button class="action-btn text-primary border-primary border-opacity-25 bg-primary bg-opacity-10" title="Tenant Settings" onclick="openManageModal(this)" data-tenant="${safeObjStr}">
-                        <i class="fa-solid fa-gear"></i> Manage
+                        <i class="fa-solid fa-gear"></i> ${window.t ? window.t('superadmin.btn_manage') : 'Manage'}
                     </button>
                 </div>
             </div>
@@ -446,6 +472,11 @@ function openManageModal(btnEl) {
         }
         document.getElementById('manage-tenant-max-staff').value = t.max_staff;
         document.getElementById('manage-tenant-max-items').value = t.max_items;
+
+        document.getElementById('manage-tenant-domain').value = t.custom_domain || '';
+        document.getElementById('manage-tenant-color').value = t.primary_color || '#c084fc';
+        document.getElementById('manage-tenant-logo').value = t.logo_url || '';
+        document.getElementById('manage-tenant-zns').value = t.integrations?.zns_webhook || '';
         
         const modalEl = document.getElementById('manageTenantModal');
         const modal = new bootstrap.Modal(modalEl);
