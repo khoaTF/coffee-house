@@ -286,7 +286,7 @@ window.cancelOrder = async (orderId) => {
             if (!Array.isArray(recipe) || recipe.length === 0) continue;
             const qty = item.quantity || 1;
             for (const ingr of recipe) {
-                const ingrId = ingr.ingredient_id || ingr.id;
+                const ingrId = ingr.ingredientId || ingr.ingredient_id || ingr.id;
                 if (!ingrId) continue;
                 const restoreAmt = (ingr.amount || ingr.quantity || 0) * qty;
                 if (restoreAmt <= 0) continue;
