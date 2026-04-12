@@ -3,6 +3,22 @@ let orders = [];
 let audioEnabled = true;
 let isGroupedView = false;
 let tenantId = null;
+let currentKdsStation = 'all';
+
+window.changeKdsStation = () => {
+    currentKdsStation = document.getElementById('kdsStationSelect')?.value || 'all';
+    renderOrders();
+};
+
+function isItemForStation(item) {
+    if (currentKdsStation === 'all') return true;
+    const cat = (item.category || '').toLowerCase();
+    const isDrink = cat.includes('coffee') || cat.includes('tea') || cat.includes('cà phê') || cat.includes('trà') || cat.includes('sinh tố') || cat.includes('nước') || cat.includes('soda') || cat.includes('freeze') || cat.includes('đồ uống') || cat.includes('drink');
+    
+    if (currentKdsStation === 'drinks') return isDrink;
+    if (currentKdsStation === 'food') return !isDrink;
+    return true;
+}
 
 // DOM Elements
 const ordersContainer = document.getElementById('orders-container');
@@ -100,7 +116,12 @@ function renderOrders() {
             }
 
             // Build items list
-            const items = Array.isArray(order.items) ? order.items : [];
+            const allItems = Array.isArray(order.items) ? order.items : [];
+            const items = allItems.filter(isItemForStation);
+            
+            // Skip order entirely if it has no items for this station
+            if (items.length === 0) return;
+
             const itemsHtml = items.map(item => {
                 const optionsHtml = item.selectedOptions && item.selectedOptions.length > 0
                     ? `<div class="ml-4 text-gray-500 dark:text-gray-400 text-sm mt-1 border-l-2 border-[#D97531] pl-2">+ ${item.selectedOptions.map(o => window.escapeHTML(o.choiceName)).join(', ')}</div>`
@@ -250,7 +271,8 @@ function renderGroupedOrders() {
 
     const groupMap = {};
     activeOrders.forEach(order => {
-        order.items.forEach(item => {
+        const items = order.items ? order.items.filter(isItemForStation) : [];
+        items.forEach(item => {
             // Include options in the grouping key to separate differently customized items
             let optKey = '';
             if (item.selectedOptions && item.selectedOptions.length > 0) {
@@ -319,7 +341,8 @@ function renderBatchSidebar() {
     const groupMap = {};
     activeOrders.forEach(order => {
         if (!order.items) return;
-        order.items.forEach(item => {
+        const items = order.items.filter(isItemForStation);
+        items.forEach(item => {
             let optKey = '';
             if (item.selectedOptions && item.selectedOptions.length > 0) {
                 optKey = item.selectedOptions.map(o => o.choiceName).sort().join(' + ');

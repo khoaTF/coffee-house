@@ -293,7 +293,7 @@ function renderCartUpsells() {
     }
     
     // Exclude items already in cart, filter for price <= 35000 and available
-    const cartIds = state.cart.map(c => c._id);
+    const cartIds = state.cart.map(c => c._id || c.id);
     const availableUpsells = state.menuItems.filter(i => !cartIds.includes(i._id) && i.price <= 35000 && getAvailableToAdd(i) > 0);
     
     if (availableUpsells.length === 0) {
@@ -301,12 +301,34 @@ function renderCartUpsells() {
         return;
     }
     
-    // Pick exactly 3 stable random items (using simple logic based on order total to keep it pseudo-stable during one session)
+    // --- Personalized Upsell Logic ---
+    // Tally purchase history
+    const itemFreqs = {};
+    if (state.customerHistoryOrders && state.customerHistoryOrders.length > 0) {
+        state.customerHistoryOrders.forEach(order => {
+            (order.items || []).forEach(item => {
+                const id = item._id || item.productId || item.id;
+                if (id) {
+                    if (!itemFreqs[id]) itemFreqs[id] = 0;
+                    itemFreqs[id] += (item.quantity || 1);
+                }
+            });
+        });
+    }
+
+    // Sort available upsells. Prioritize items in history (by freq desc), then fallback to pseudo-random
     const baseNum = state.cart.reduce((s,i) => s + i.price, 0);
-    const shuffled = availableUpsells.sort((a,b) => {
+    const sortedUpsells = availableUpsells.sort((a, b) => {
+        const freqA = itemFreqs[a._id] || 0;
+        const freqB = itemFreqs[b._id] || 0;
+        if (freqA !== freqB) {
+            return freqB - freqA; // descending frequency
+        }
+        // Fallback: pseudo-stable random
         return (a.name.charCodeAt(0) + baseNum % 10) - (b.name.charCodeAt(0) + baseNum % 10);
     });
-    const selected = shuffled.slice(0, 3);
+    
+    const selected = sortedUpsells.slice(0, 3);
     
     itemsContainer.innerHTML = '';
     selected.forEach(item => {
