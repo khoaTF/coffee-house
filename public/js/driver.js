@@ -11,6 +11,23 @@ let locationWatchId = null;
 let ordersChannel = null;
 let currentOrders = [];
 let availableOrders = []; // Add array for unassigned orders
+let lastDbUpdate = 0; // Throttle state for GPS
+
+async function fetchTenantBranding(tenantId) {
+    if (!tenantId) return;
+    try {
+        const { data: tenant } = await supabase.from('tenants').select('name, branding, primary_color').eq('id', tenantId).single();
+        if (tenant) {
+            const pColor = tenant.primary_color || (tenant.branding && tenant.branding.primaryColor) || '#994700';
+            const aColor = (tenant.branding && tenant.branding.accent_color) || '#FF7A00';
+            document.documentElement.style.setProperty('--primary', pColor);
+            document.documentElement.style.setProperty('--accent', aColor);
+            if (tenant.branding && tenant.branding.storeName) {
+                document.title = `${tenant.branding.storeName} - Shipper`;
+            }
+        }
+    } catch(e) {}
+}
 
 // --- Init ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -90,6 +107,13 @@ function showDriverUI() {
 
     document.getElementById('driver-greeting').textContent = `Xin chào, ${driverData.name || 'Shipper'}!`;
 
+    // Fetch branding if part of a tenant
+    if (driverData.tenant_id) {
+        fetchTenantBranding(driverData.tenant_id);
+    }
+    
+    if (window.initI18n) window.initI18n();
+
     // Auto set online on login
     setDriverStatus(true);
 
@@ -158,7 +182,11 @@ function startLocationTracking() {
                 driverMap.setView([latitude, longitude], driverMap.getZoom());
             }
 
-            // Update DB
+            // Update DB (Throttled to 15s to save costs)
+            const now = Date.now();
+            if (now - lastDbUpdate < 15000) return;
+            lastDbUpdate = now;
+
             try {
                 await supabase
                     .from('delivery_drivers')

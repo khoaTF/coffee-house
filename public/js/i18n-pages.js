@@ -155,6 +155,60 @@
       'driver.no_orders': 'Chưa có đơn nào.',
       'driver.online': 'Online',
       'driver.offline': 'Offline',
+      'driver.login_title': 'Đăng nhập tài xế',
+      'driver.login_subtitle': 'Nhập mã để bắt đầu ca làm việc',
+      'driver.code_placeholder': 'Mã tài xế (VD: DRV-001)',
+      'driver.login_btn': 'Vào ca',
+
+      // ── Tracking ─────────────────────────────────────────────
+      'tracking.loading': 'Đang tải thông tin đơn hàng...',
+      'tracking.not_found_title': 'Không tìm thấy đơn hàng',
+      'tracking.not_found_desc': 'Vui lòng kiểm tra lại mã Tracking Token trên biên lai.',
+      'tracking.new_order': 'Đặt đơn mới',
+      'tracking.step_ordered': 'Đã đặt',
+      'tracking.step_preparing': 'Đang làm',
+      'tracking.step_ready': 'Sẵn sàng',
+      'tracking.step_delivering': 'Đang giao',
+      'tracking.step_done': 'Hoàn tất',
+      'tracking.subtotal': 'Tạm tính',
+      'tracking.fee': 'Phí giao hàng',
+      'tracking.total': 'Tổng cộng',
+      'tracking.order_detail': 'Chi tiết đơn hàng',
+      'tracking.order_label': 'Đơn hàng',
+      'tracking.lookup_title': 'Tra cứu đơn hàng',
+      'tracking.lookup_desc': 'Nhập mã Tracking Token để xem tiến độ thực tế.',
+      'tracking.lookup_placeholder': 'Mã gồm 6 chữ số...',
+      'tracking.lookup_btn': 'Tra cứu',
+      'tracking.back': 'Về trang chủ',
+
+      // ── Delivery ─────────────────────────────────────────────
+      'delivery.back_home': 'Về trang chủ',
+      'delivery.status_accepting': 'Đang nhận đơn',
+      'delivery.hero_title': '🛵 Giao hàng tận nơi',
+      'delivery.hero_desc': 'Giao nhanh trong bán kính <strong>3km</strong> • Phí ship từ ',
+      'delivery.step_menu': 'Chọn món',
+      'delivery.search_placeholder': 'Tìm kiếm...',
+      'delivery.loading_menu': 'Đang tải thực đơn...',
+      'delivery.cart_title': 'Giỏ hàng',
+      'delivery.subtotal': 'Tổng (tạm tính):',
+      'delivery.continue': 'Tiếp tục',
+      'delivery.step_info': 'Thông tin giao hàng',
+      'delivery.receiver_name': 'Tên người nhận',
+      'delivery.phone': 'Số điện thoại',
+      'delivery.address': 'Địa chỉ giao hàng',
+      'delivery.find_location': 'Tìm vị trí hiện tại',
+      'delivery.notes': 'Ghi chú (Tùy chọn, vd: Tòa nhà, tầng...)',
+      'delivery.go_back': 'Quay lại',
+      'delivery.confirm_pay': 'Xác nhận & Thanh toán',
+      'delivery.step_payment': 'Thanh toán & Hoàn tất',
+      'delivery.pay_instruction': 'Vui lòng thanh toán để hoàn tất đơn',
+      'delivery.qr_instruction': 'Mở ứng dụng ngân hàng và quét mã:',
+      'delivery.total_amount': 'Tổng thanh toán',
+      'delivery.waiting_payment': 'Đang chờ thanh toán...',
+      'delivery.check_payment_btn': 'Tôi đã chuyển khoản',
+      'delivery.success_title': 'Đặt hàng thành công!',
+      'delivery.success_desc': 'Đơn hàng của bạn đã được ghi nhận và đang chờ xác nhận.',
+      'delivery.track_order_btn': 'Theo dõi tiến độ',
 
       // ── Superadmin ────────────────────────────────────────────
       'superadmin.title': 'Trung Tâm Điều Hành SaaS',
@@ -358,10 +412,64 @@
       'driver.today': 'Today',
       'driver.earnings': 'Earnings',
       'driver.rating': 'Rating',
-      'driver.pending_orders': 'Pending Deliveries',
-      'driver.no_orders': 'No orders assigned.',
+      'driver.pending_orders': 'Pending Orders',
+      'driver.no_orders': 'No pending orders.',
       'driver.online': 'Online',
       'driver.offline': 'Offline',
+      'driver.login_title': 'Driver Login',
+      'driver.login_subtitle': 'Enter code to start shift',
+      'driver.code_placeholder': 'Driver Code (e.g. DRV-001)',
+      'driver.login_btn': 'Login',
+
+      // ── Tracking ─────────────────────────────────────────────
+      'tracking.loading': 'Loading order info...',
+      'tracking.not_found_title': 'Order Not Found',
+      'tracking.not_found_desc': 'Please check your Tracking Token on the receipt.',
+      'tracking.new_order': 'Place New Order',
+      'tracking.step_ordered': 'Ordered',
+      'tracking.step_preparing': 'Preparing',
+      'tracking.step_ready': 'Ready',
+      'tracking.step_delivering': 'Delivering',
+      'tracking.step_done': 'Done',
+      'tracking.subtotal': 'Subtotal',
+      'tracking.fee': 'Delivery Fee',
+      'tracking.total': 'Total',
+      'tracking.order_detail': 'Order Detail',
+      'tracking.order_label': 'Order',
+      'tracking.lookup_title': 'Look up order',
+      'tracking.lookup_desc': 'Enter Tracking Token to see realtime progress.',
+      'tracking.lookup_placeholder': '6-digit code...',
+      'tracking.lookup_btn': 'Look up',
+      'tracking.back': 'Back to home',
+
+      // ── Delivery ─────────────────────────────────────────────
+      'delivery.back_home': 'Back to home',
+      'delivery.status_accepting': 'Accepting orders',
+      'delivery.hero_title': '🛵 Delivery Service',
+      'delivery.hero_desc': 'Fast delivery within <strong>3km</strong> • Fee from ',
+      'delivery.step_menu': 'Select Items',
+      'delivery.search_placeholder': 'Search...',
+      'delivery.loading_menu': 'Loading menu...',
+      'delivery.cart_title': 'Your Cart',
+      'delivery.subtotal': 'Subtotal:',
+      'delivery.continue': 'Continue',
+      'delivery.step_info': 'Delivery Information',
+      'delivery.receiver_name': 'Receiver Name',
+      'delivery.phone': 'Phone Number',
+      'delivery.address': 'Delivery Address',
+      'delivery.find_location': 'Find current location',
+      'delivery.notes': 'Notes (Optional, e.g. Building, floor...)',
+      'delivery.go_back': 'Go Back',
+      'delivery.confirm_pay': 'Confirm & Pay',
+      'delivery.step_payment': 'Payment & Complete',
+      'delivery.pay_instruction': 'Please pay to complete order',
+      'delivery.qr_instruction': 'Open your banking app and scan:',
+      'delivery.total_amount': 'Total Amount',
+      'delivery.waiting_payment': 'Waiting for payment...',
+      'delivery.check_payment_btn': 'I have transferred',
+      'delivery.success_title': 'Order Successful!',
+      'delivery.success_desc': 'Your order has been recorded and is pending confirmation.',
+      'delivery.track_order_btn': 'Track Order Progress',
 
       // ── Superadmin ────────────────────────────────────────────
       'superadmin.title': 'SaaS Command Center',
@@ -497,6 +605,7 @@
     else if (path.includes('/tracking')) patchTrackingPage();
     else if (path.includes('/tv')) patchTVPage();
     else if (path.includes('/driver')) patchDriverPage();
+    else if (path.includes('/delivery')) applyDataAttributes(); // Delivery uses pure data-i18n tags!
     else if (path.includes('/superadmin')) patchSuperadminPage();
   }
 
@@ -962,7 +1071,7 @@
       bottom: 20px;
       right: 20px;
       z-index: 9999;
-      background: linear-gradient(135deg, #994700, #FF7A00);
+      background: linear-gradient(135deg, var(--primary, #994700), var(--accent, #FF7A00));
       color: white;
       border: none;
       border-radius: 50px;
@@ -970,15 +1079,15 @@
       font-size: 13px;
       font-weight: 700;
       cursor: pointer;
-      box-shadow: 0 4px 20px rgba(153,71,0,0.4);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
       display: flex;
       align-items: center;
       gap: 6px;
       transition: transform 0.15s, box-shadow 0.15s;
       font-family: 'Inter', sans-serif;
     `;
-    btn.onmouseenter = () => { btn.style.transform = 'scale(1.05)'; btn.style.boxShadow = '0 6px 24px rgba(153,71,0,0.5)'; };
-    btn.onmouseleave = () => { btn.style.transform = 'scale(1)'; btn.style.boxShadow = '0 4px 20px rgba(153,71,0,0.4)'; };
+    btn.onmouseenter = () => { btn.style.transform = 'scale(1.05)'; btn.style.boxShadow = '0 6px 24px rgba(0,0,0,0.3)'; };
+    btn.onmouseleave = () => { btn.style.transform = 'scale(1)'; btn.style.boxShadow = '0 4px 20px rgba(0,0,0,0.2)'; };
     btn.onclick = togglePageLang;
     document.body.appendChild(btn);
     updateToggleBtn();
