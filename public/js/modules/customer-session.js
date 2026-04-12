@@ -339,11 +339,65 @@ export function showTableLockedOverlay() {
     dom.loader.style.minHeight = '60vh';
 }
 
+// --- Kiosk Mode ---
+export const isKioskMode = new URLSearchParams(window.location.search).get('kiosk') === '1';
+let kioskIdleTimer = null;
+const KIOSK_IDLE_TIMEOUT = 60 * 1000; // 60s idle
+const KIOSK_WARNING_TIMEOUT = 10 * 1000; // 10s warning
+
+function resetKioskTimer() {
+    clearTimeout(kioskIdleTimer);
+    kioskIdleTimer = setTimeout(showKioskWarning, KIOSK_IDLE_TIMEOUT);
+}
+
+function showKioskWarning() {
+    import('./customer-ui.js').then(m => {
+        // Auto-refresh after WARNING timeout if no interaction
+        kioskIdleTimer = setTimeout(() => {
+            m.closeConfirmModal();
+            import('./customer-cart.js').then(c => {
+                // Ignore if cart has orders placed but we are just clearing local state
+                c.clearCart();
+                location.reload();
+            });
+        }, KIOSK_WARNING_TIMEOUT);
+
+        m.customerConfirm("Phiên giao dịch Kiosk sẽ kết thúc. Bạn có muốn tiếp tục không?").then(wantsToContinue => {
+            if (wantsToContinue) {
+                clearTimeout(kioskIdleTimer);
+                resetKioskTimer();
+            } else {
+                clearTimeout(kioskIdleTimer);
+                import('./customer-cart.js').then(c => {
+                    c.clearCart();
+                    location.reload();
+                });
+            }
+        });
+    });
+}
+
 // init() — entry point
 export async function init() {
     document.getElementById('table-number-display').textContent = TABLE_NUMBER;
     applyAutoDarkMode();
     
+    // Kiosk Mode Setup
+    if (isKioskMode) {
+        document.body.classList.add('kiosk-mode');
+        const style = document.createElement('style');
+        style.textContent = `
+            .kiosk-mode button[onclick="openStaffModal()"] { display: none !important; }
+            .kiosk-mode .hero-section { min-height: 100px; }
+        `;
+        document.head.appendChild(style);
+        
+        ['touchstart', 'mousemove', 'click', 'scroll', 'keypress'].forEach(evt => 
+            document.addEventListener(evt, resetKioskTimer, { passive: true })
+        );
+        resetKioskTimer();
+    }
+
     // Init Tenant dynamically from URL
     const tenantOk = await initTenant();
     if (!tenantOk) return;

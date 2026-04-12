@@ -153,6 +153,7 @@ window.canAccessTab = function(tabId) {
         'audit': ['settings_audit'],
         'qr': ['tables_qr'],
         'delivery': ['delivery_view', 'delivery_manage', 'delivery_drivers', 'delivery_settings'],
+        'crm': ['analytics_dashboard', 'analytics_revenue', 'crm_view'],
         'settings': ['settings_manage']
     };
 
@@ -213,6 +214,8 @@ function switchTab(tabId) {
         fetchCashflowData();
     } else if (tabId === 'delivery') {
         if (typeof initDeliveryModule === 'function') initDeliveryModule();
+    } else if (tabId === 'crm') {
+        if (typeof renderCrmDashboard === 'function') renderCrmDashboard();
     } else {
         fetchProducts();
     }
@@ -501,7 +504,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }; // We redefine it here just in case, but it's already global
 
-    const allTabsId = ['dashboard', 'orders', 'pos', 'history', 'tables', 'menu', 'inventory', 'restock', 'promo', 'customers', 'staff', 'analytics', 'audit', 'cashflow', 'shifts', 'qr', 'settings'];
+    const allTabsId = ['dashboard', 'orders', 'pos', 'history', 'tables', 'menu', 'inventory', 'restock', 'promo', 'customers', 'staff', 'analytics', 'audit', 'cashflow', 'shifts', 'qr', 'delivery', 'crm', 'settings'];
     let defaultTab = '';
     
     if (role !== 'admin') {

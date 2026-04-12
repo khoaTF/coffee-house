@@ -86,6 +86,7 @@ export async function placeOrder(method = 'cash') {
     const formattedItems = state.cart.map(item => ({
         productId: item._id || item.id,
         name: item.name,
+        category: item.category,
         quantity: item.quantity,
         price: item.price,
         selectedOptions: item.selectedOptions || [],
