@@ -153,15 +153,17 @@ export function getAvailableToAdd(product) {
     state.cart.forEach(cartItem => {
         if (cartItem.recipe) {
             cartItem.recipe.forEach(req => {
-                usedIngredients[req.ingredientId] = (usedIngredients[req.ingredientId] || 0) + (req.quantity * cartItem.quantity);
+                let actualId = req.ingredientId || req.ingredient_id;
+                usedIngredients[actualId] = (usedIngredients[actualId] || 0) + (req.quantity * cartItem.quantity);
             });
         }
     });
 
     let additionalAllowed = Infinity;
     product.recipe.forEach(req => {
-        let totalStock = state.ingredientStock[req.ingredientId] || 0;
-        let used = usedIngredients[req.ingredientId] || 0;
+        let actualId = req.ingredientId || req.ingredient_id;
+        let totalStock = state.ingredientStock[actualId] || 0;
+        let used = usedIngredients[actualId] || 0;
         let remaining = Math.max(0, totalStock - used);
         
         let possible = Math.floor(remaining / req.quantity);
