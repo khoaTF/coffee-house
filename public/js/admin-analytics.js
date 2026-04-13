@@ -5,6 +5,7 @@
 
 let revenueDailyChartInstance = null;
 let revenueCategoryChartInstance = null;
+let trendCategoryChartInstance = null;
 
 function renderAnalytics() {
     const analyticsSection = document.getElementById('section-analytics');
@@ -40,6 +41,7 @@ function renderAnalytics() {
 
     const categoryTotals = {};
     const itemSales = {};
+    const trendCategoryData = {};
 
     orderHistory.forEach(o => {
         if (o.paymentStatus !== 'paid' || o.status === 'Cancelled') return;
@@ -47,7 +49,8 @@ function renderAnalytics() {
         const d = new Date(o.createdAt);
         if (d >= startDate && d <= endDate) {
             const dateStr = d.toISOString().split('T')[0];
-            const dayMatch = dateLabels.find(l => l.dateStr === dateStr);
+            const dayIndex = dateLabels.findIndex(l => l.dateStr === dateStr);
+            const dayMatch = dayIndex !== -1 ? dateLabels[dayIndex] : null;
             if (dayMatch) dayMatch.revenue += (o.totalPrice || 0);
 
             if (o.items && Array.isArray(o.items)) {
@@ -61,6 +64,13 @@ function renderAnalytics() {
                     if (!itemSales[name]) itemSales[name] = { qty: 0, rev: 0 };
                     itemSales[name].qty += item.quantity;
                     itemSales[name].rev += itemRev;
+                    
+                    if (!trendCategoryData[cat]) {
+                        trendCategoryData[cat] = Array(daysToShow).fill(0);
+                    }
+                    if (dayIndex !== -1) {
+                        trendCategoryData[cat][dayIndex] += itemRev;
+                    }
                 });
             }
         }
@@ -115,6 +125,44 @@ function renderAnalytics() {
             plugins: { legend: { position: 'bottom', labels: { color: '#c9d1d9' } } }
         }
     });
+
+    // Trend Category Chart
+    const ctxTrend = document.getElementById('trendCategoryChart');
+    if (ctxTrend) {
+        if (trendCategoryChartInstance) trendCategoryChartInstance.destroy();
+        const datasets = Object.keys(trendCategoryData).map((cat, i) => {
+            const colors = ['#d4a76a', '#3498db', '#e74c3c', '#2ecc71', '#9b59b6', '#f1c40f'];
+            return {
+                label: cat,
+                data: trendCategoryData[cat],
+                borderColor: colors[i % colors.length],
+                backgroundColor: colors[i % colors.length],
+                tension: 0.4,
+                borderWidth: 2,
+                fill: false
+            };
+        });
+
+        trendCategoryChartInstance = new Chart(ctxTrend.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: Object.keys(trendCategoryData).length ? dateLabels.map(l => l.display) : ['Chưa có dữ liệu'],
+                datasets: datasets.length ? datasets : [{ label: 'Không có', data: dateLabels.map(() => 0), borderColor: '#c9d1d9' }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { ticks: { color: '#8b949e' }, grid: { display: false } },
+                    y: { ticks: { color: '#8b949e', callback: v => v.toLocaleString('vi-VN') + 'đ' }, grid: { color: 'rgba(139,148,158,0.1)' } }
+                },
+                plugins: {
+                    legend: { position: 'bottom', labels: { color: '#c9d1d9' } },
+                    tooltip: { callbacks: { label: function(c) { return c.dataset.label + ': ' + c.raw.toLocaleString('vi-VN') + ' đ'; } } }
+                }
+            }
+        });
+    }
 
     // Top Items
     const topItemsEl = document.getElementById('top-selling-body');
@@ -533,7 +581,13 @@ function renderHeatmap(startDate, endDate) {
                 else if (count <= maxCount * 0.75) intensity = 3;
                 else intensity = 4;
             }
-            row.innerHTML += `<div class="heatmap-cell intensity-${intensity}" title="${dayLabel} ${h}h: ${count} đơn"></div>`;
+            row.innerHTML += `
+            <div class="heatmap-cell intensity-${intensity} relative group cursor-pointer">
+                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 pointer-events-none shadow-lg">
+                    Khung giờ ${h}h-${h+1}h ${dayLabel}: ${count} đơn
+                    <svg class="absolute text-slate-800 h-2 w-full left-0 top-full" x="0px" y="0px" viewBox="0 0 255 255" xml:space="preserve"><polygon class="fill-current" points="0,0 127.5,127.5 255,0"/></svg>
+                </div>
+            </div>`;
         }
         heatmapEl.appendChild(row);
     });

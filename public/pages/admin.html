@@ -267,8 +267,8 @@
                             <p class="text-sm text-slate-500 mb-0">Theo dõi doanh thu, hiệu suất và đánh giá.</p>
                         </div>
                         <div class="flex gap-2">
-                            <button class="btn btn-outline-success btn-sm rounded-lg" onclick="exportOrdersToCSV()"><i class="fa-solid fa-file-csv me-1"></i> Doanh Thu</button>
-                            <button class="btn btn-outline-info btn-sm rounded-lg" onclick="exportInventoryToCSV()"><i class="fa-solid fa-box-open me-1"></i> Kho</button>
+                            <button class="btn btn-outline-success btn-sm rounded-lg border-2 font-semibold text-[#27ae60] border-[#27ae60] hover:bg-[#27ae60] hover:text-white" onclick="exportOrdersExcel()"><i class="fa-solid fa-file-excel me-1"></i> Doanh Thu</button>
+                            <button class="btn btn-outline-info btn-sm rounded-lg border-2 font-semibold text-[#0984e3] border-[#0984e3] hover:bg-[#0984e3] hover:text-white" onclick="exportInventoryExcel()"><i class="fa-solid fa-file-excel me-1"></i> Kho</button>
                         </div>
                     </div>
                     
@@ -305,6 +305,19 @@
                                     <h5 class="font-noto font-bold text-[#C0A062] mb-4 flex items-center gap-2"><i class="fa-solid fa-chart-pie"></i> Tỉ trọng Danh mục</h5>
                                     <div class="flex-1 flex justify-center items-center" style="min-height: 250px;">
                                         <canvas id="revenueCategoryChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-4 mb-6">
+                        <div class="col-12">
+                            <div class="card bg-white border border-slate-200 rounded-2xl shadow-soft">
+                                <div class="card-body p-5">
+                                    <h5 class="font-noto font-bold text-[#C0A062] mb-4 flex items-center gap-2"><i class="fa-solid fa-chart-line"></i> Xu hướng Danh mục (30 ngày gần đây)</h5>
+                                    <div style="height: 300px; width: 100%;">
+                                        <canvas id="trendCategoryChart"></canvas>
                                     </div>
                                 </div>
                             </div>
@@ -664,7 +677,7 @@
                             <div class="bg-slate-100 px-4 py-2 rounded-xl border border-[#C0A062]/30 shadow-soft" id="total-revenue">
                                 <span class="text-slate-500 text-sm">Tổng doanh thu:</span> <span class="text-[#b45309] font-bold">0 đ</span>
                             </div>
-                            <button class="btn btn-outline-success btn-sm rounded-xl font-semibold" onclick="exportOrdersToCSV()"><i class="fa-solid fa-file-csv me-1"></i> Xuất CSV</button>
+                            <button class="btn btn-outline-success btn-sm rounded-xl font-semibold border-2 text-[#27ae60] border-[#27ae60] hover:bg-[#27ae60] hover:text-white" onclick="exportOrdersExcel()"><i class="fa-solid fa-file-excel me-1"></i> Xuất Excel</button>
                         </div>
                     </div>
 
