@@ -1,67 +1,183 @@
-# ☕ Nohope Coffee — Hệ Thống Đặt Món QR & Quản Lý Quán (Phiên bản Dễ Hiểu)
+# ☕ Nohope Coffee — Hệ Thống Đặt Món QR & Quản Lý Quán
 
-> Không chỉ là một phần mềm đặt món thông thường, Nohope Coffee là một **giải pháp quản lý quán cà phê thông minh từ A-Z**: Từ lúc khách ngồi vào bàn, quét mã chọn món, nhà bếp chế biến, giao hàng, đến khi chủ quán xem báo cáo doanh thu tài chính từ xa.
+> Hệ thống POS thời gian thực tích hợp màn hình bếp, giao hàng và phân tích dành cho quán cà phê — tất cả trong một nền tảng.
 
 [![Node.js](https://img.shields.io/badge/Node.js-%3E%3D18-brightgreen)](https://nodejs.org)
 [![Supabase](https://img.shields.io/badge/Backend-Supabase-3ECF8E)](https://supabase.com)
 [![Vercel](https://img.shields.io/badge/Deploy-Vercel-black)](https://vercel.com)
+[![License](https://img.shields.io/badge/License-Private-red)](.)
 
 ---
 
-## 🌟 Chương Trình Của Chúng Ta Hoạt Động Ra Sao?
+## ✨ Tính Năng
 
-Hãy tưởng tượng bạn là một khách hàng bước vào quán, hoặc bạn là người chủ đang điều hành. Dưới đây là những gì sẽ diễn ra dưới sự điều phối trơn tru của hệ thống:
+### 👤 Khách Hàng
+- **Đặt Món Qua Mã QR** — Quét QR tại bàn → Xem menu → Đặt món → Thanh toán
+- **Theo Dõi Đơn Hàng Thời Gian Thực** — Cập nhật trạng thái trực tiếp (chờ xử lý → đang pha → hoàn thành)
+- **🎰 Túi Mù (Mystery Box)** — Vòng quay kiểu gacha: trả 29.000đ, nhận ngẫu nhiên 1 món được tiết lộ qua hoạt ảnh máy đánh bạc. Món rẻ hơn xuất hiện thường xuyên hơn!
+- **Đặt Giao Hàng** — Đặt hàng online kèm địa chỉ và số điện thoại
+- **Tích Điểm Thành Viên** — Kiếm & đổi điểm, phân hạng thành viên
+- **Đa Ngôn Ngữ** — Chuyển đổi Tiếng Việt 🇻🇳 / English 🇬🇧 (i18n)
+- **Hỗ Trợ PWA** — Cài đặt trên điện thoại như ứng dụng native
 
-### 1. Trải Nghiệm Khách Hàng (Tự đặt món - Không cần chờ đợi nhân viên)
-- Khách hàng tới, ngồi vào bất kỳ bàn nào và dùng điện thoại thông minh **quét mã QR** được dán sẵn trên bàn.
-- Điện thoại lập tức hiển thị **Menu điện tử** sang trọng. Khách có thể xem hình ảnh, giá cả, và chủ động tinh chỉnh đồ uống (Ví dụ: ít đá, nhiều sữa, đổi cỡ ly L).
-- Khách có thể giải trí với tính năng **Túi Mù (Mystery Box)**: Trò chơi vòng quay Gacha - Khách trả một số tiền cố định và hồi hộp chờ đợi xem hệ thống sẽ quay trúng đồ uống ngẫu nhiên nào.
-- Sau khi chọn xong, khách bấm **"Gửi đơn"**, màn hình sẽ hiển thị mã QR Ngân Hàng của chủ quán. Khách chỉ cần mở App ngân hàng quét thanh toán và đơn hàng lập tức được đẩy thẳng vào bếp.
+### 🍳 Bếp (Kitchen Display)
+- **Màn Hình Bếp Thời Gian Thực** — Đơn hàng hiển thị ngay lập tức qua Supabase Realtime
+- **Quản Lý Hàng Đợi** — Nhận, chuẩn bị và hoàn thành đơn hàng
+- **Trừ Kho Theo Công Thức** — Tự động trừ nguyên liệu khi xử lý đơn
 
-### 2. Sự Nhịp Nhàng Tại Quầy Bếp
-- Trong lúc khách đang ngồi trò chuyện, **Màn Hình iPad tại bộ phận Barista (Bếp)** phát ra tiếng báo động "Ting Ting" và hiện lên thông tin đơn hàng mới.
-- Nhân viên bếp thao tác trên màn hình, bấm nút **"Bắt đầu làm"**. 
-- Điều kỳ diệu xảy ra ngầm dưới hệ thống: Database tự động truy cập vào kho nguyên liệu, **trừ đi số lượng bột cà phê, sữa, ly/nắp** một cách chính xác dựa trên công thức định lượng đã khai báo!
-- Khi món nước hoàn thành, nhân viên bếp bấm **"Sửa soạn xong"**. Điện thoại của vị khách ngoài bàn cũng đồng thời chuyển trạng thái báo hiệu *"Đồ uống của bạn đã sẵn sàng được phục vụ!"*.
+### 🔧 Quản Trị (Admin)
+- **Phân Tích Dashboard** — Doanh thu, số đơn, sản phẩm bán chạy
+- **Quản Lý Menu** — Thêm/sửa/xóa sản phẩm, danh mục, giá, tuỳ chọn
+- **Kho Hàng & Nhập Hàng** — Theo dõi nguyên liệu, phiếu nhập kho với đơn giá
+- **Nhân Viên & Phân Quyền (RBAC)** — Phân quyền chi tiết (huỷ đơn, xử lý thanh toán, v.v.)
+- **Quản Lý Ca Làm** — Mở/đóng ca, đối chiếu doanh thu
+- **Sổ Quỹ (Cashflow)** — Ghi chép thu chi thủ công + tự động, báo cáo KPI
+- **Khuyến Mãi** — Mã giảm giá, chiến dịch ưu đãi
+- **Tạo Mã QR** — Tạo & in mã QR riêng cho từng bàn
+- **AI Gợi Ý Bán Chạy** — Tự động gắn thẻ sản phẩm trending
+- **Băng Rôn Quảng Cáo** — Banner trang chủ & popup khuyến mãi
+- **Xuất CSV** — Xuất dữ liệu để phân tích bên ngoài
 
-### 3. Giao Hàng Xuyên Suốt (Dành Cho Khách Ngoại Tuyến)
-- Khách không đến quán mà muốn gọi về nhà? Họ chỉ cần vào trang giao hàng của quán, chọn món, điền địa chỉ và số điện thoại.
-- Trải nghiệm đặt hàng mượt mà y như các app đặt đồ ăn chuyên nghiệp, giúp nhà hàng giữ chân khách trung thành và tối ưu hoá lợi nhuận thay vì phải chia hoa hồng sâu cho các app bên thứ 3.
+### 🌍 Siêu Quản Trị Hệ Thống (Superadmin / SaaS)
+- **Kiến Trúc Đa Cửa Hàng (Multi-tenant)** — Một CSDL, nhiều cửa hàng độc lập với nhau
+- **Quản Lý Các Gói Thuê Bao (Subscriptions)** — Khởi tạo cửa hàng, giới hạn nhân sự (`max_staff`) và menu (`max_items`)
+- **Đóng/Mở & Thu Hồi Dữ Liệu** — Đình chỉ (Suspend) và Xóa Vĩnh Viễn (Hard-Delete/Cascade) toàn bộ Cửa Hàng.
 
-### 4. Quyền Lực Trong Tay Người Quản Lý (Giám Sát Bức Tranh Toàn Cảnh)
-- Ở bất kỳ đâu có sóng Internet, chủ quán chỉ cần mở màn hình **Bảng Điều Khiển (Dashboard)**.
-- Hệ thống tổng hợp tự động mọi thứ một cách minh bạch: Hôm nay bán được bao nhiêu cốc, doanh thu và chi phí lời lãi ra sao, giờ nào đông khách nhất?
-- Chủ quán nắm được chính xác kho hàng còn lại bao nhiêu gram cà phê, có món nào nguyên liệu sắp hết không để kịp thời nhập thêm. Mọi quyết định đều dựa trên những con số biết nói.
+---
 
-### 5. Khả Năng Mở Rộng Dành Cho Chuỗi (Mô hình SaaS - Multi-tenant)
-- Nếu quán cà phê phát triển thành hệ thống chuỗi, nền tảng cho phép tạo ra **nhiều cửa hàng con**.
-- Mỗi chi nhánh sẽ có không gian hình ảnh, menu và dữ liệu doanh thu tách biệt hoàn toàn nhưng người Tổng Quản Lý vẫn có thể xem tập trung ở một nơi duy nhất.
+## 🛠 Công Nghệ Sử Dụng
+
+| Lớp | Công Nghệ |
+|-----|-----------|
+| **Frontend** | Vanilla HTML / CSS / JavaScript, PWA |
+| **Backend** | Supabase (PostgreSQL + Realtime + Auth + RPC) |
+| **Hosting** | Vercel (Static + Serverless Functions) |
+| **Thanh Toán** | Chuyển khoản QR (Ngân hàng / MoMo) |
+| **CSS Framework** | Tailwind CSS v3 |
 
 ---
 
-## 🛠 Dành Cho Đội Ngũ Kỹ Thuật (Architecture & Tech Stack)
+## 🚀 Bắt Đầu Nhanh
 
-Hệ thống được thiết kế cực kỳ liền mạch dựa trên kiến trúc **Real-time (Thời gian thực)** và **Serverless (Phi máy chủ)**:
+### Yêu Cầu
+- **Node.js** >= 18 (LTS khuyến nghị)
+- **Tài khoản Supabase** — Với các bảng dữ liệu & hàm RPC đã cấu hình
 
-- **Bộ não xử lý (Backend):** Ứng dụng Supabase (hệ thống trên nền PostgreSQL) mang lại khả năng phân quyền mạnh mẽ (RLS) để cô lập dữ liệu hiệu quả, kết hợp cùng các thủ tục lưu trữ (Stored Procedures/RPC) nhằm giảm tải logic xuống tận cấp độ CSDL.
-- **Chi tiết Thời Theo Dõi (Real-time):** Sử dụng `WebSockets` giúp trạng thái đơn hàng đồng bộ vĩnh viễn với các màn hình của quán trong thời gian cực thấp (độ trễ ~0.2s) mà không cần khách hàng phải tự tải lại trình duyệt.
-- **Trải Nghiệm Tốc Độ (Frontend):** Ứng dụng Web App nhẹ nhàng, được phát triển trên chuẩn PWA thuần không bị giật lag, kết hợp Framework giao diện hiện đại **Tailwind CSS**. 
-- **Triển khai cực nhanh (Deployment):** Nền tảng tĩnh được đưa lên hệ thống phân phối nội dung toàn cầu của **Vercel** giúp khách quét mã và tải thực đơn ngay lập tức dù ở mạng 3G yếu.
+### Cài Đặt
+```bash
+git clone https://github.com/khoaTF/coffee-house.git
+cd coffee-house
+npm install
+```
 
-### 🚀 Hướng Dẫn Vận Hành Ứng Dụng (Local Setup)
+### Cấu Hình Môi Trường
+Tạo file `.env` ở thư mục gốc (hoặc thiết lập biến môi trường trên Vercel):
+```env
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
+```
 
-1. Tải ứng dụng về máy tính (Yêu cầu có `Node.js >= 18`):  
-   `git clone https://github.com/khoaTF/coffee-house.git`
-2. Truy cập vào thư mục và cài đặt bộ gõ:  
-   `cd coffee-house && npm install`
-3. Liên kết với kho dữ liệu hệ thống (Điền file `.env`):
-   ```env
-   SUPABASE_URL=liên_kết_của_bạn
-   SUPABASE_ANON_KEY=chìa_khoá_api_của_bạn
-   ```
-4. Khởi chạy máy chủ nội bộ:  
-   `npm start` _(hoặc `npm run dev`)_
-5. Xong! Hệ thống đã lập tức sẵn sàng để phục vụ khách hàng.
+### Chạy Cục Bộ (Local)
+```bash
+npm start
+# hoặc
+npm run dev
+```
+
+### CSS Build (Tailwind)
+```bash
+npm run build:css
+```
 
 ---
-*Mã nguồn thuộc sở hữu của Nohope Hệ Thống Cà Phê Thông Minh © 2026. Mọi quyền được bảo hộ.*
+
+## 🗺 Các Trang Truy Cập
+
+| Trang | Đường Dẫn |
+|-------|-----------|
+| Menu Khách Hàng | `/?table=1` |
+| Màn Hình Bếp | `/pages/kitchen.html` |
+| Dashboard Quản Trị | `/pages/admin.html` |
+| Đặt Giao Hàng | `/pages/delivery.html` |
+| Theo Dõi Đơn Hàng | `/pages/tracking.html` |
+
+---
+
+## 📁 Cấu Trúc Dự Án
+
+```
+cafe_qr_production_final/
+├── public/
+│   ├── pages/          # Các trang HTML (index, admin, kitchen, delivery, tracking)
+│   ├── js/             # Module JavaScript phía client
+│   │   ├── customer.js     # Logic đặt món khách hàng
+│   │   ├── gacha.js        # Túi Mù – máy quay slot
+│   │   ├── i18n.js         # Đa ngôn ngữ (VI/EN)
+│   │   ├── admin.js        # Dashboard quản trị
+│   │   ├── admin-orders.js # Quản lý đơn hàng admin
+│   │   ├── admin-cashflow.js # Sổ quỹ & cashflow
+│   │   └── ...
+│   ├── css/            # Stylesheet
+│   └── images/         # Tài nguyên tĩnh
+├── src/
+│   ├── server.js       # Express server + API routes
+│   ├── controllers/    # Logic xử lý request
+│   ├── routes/         # Định nghĩa route
+│   └── config/         # Cấu hình ứng dụng
+├── database/           # Schema & migration SQL
+├── supabase/           # Cấu hình Supabase
+├── vercel.json         # Cấu hình triển khai Vercel
+└── package.json
+```
+
+---
+
+## 🎰 Tính Năng Túi Mù (Mystery Box)
+
+Tính năng gacha đặc biệt dành cho khách hàng:
+
+1. Thêm **"Túi Mù"** vào giỏ hàng với giá cố định **29.000đ**
+2. Thanh toán bình thường
+3. Sau khi thanh toán, **hoạt ảnh máy đánh bạc** tiết lộ món được chọn ngẫu nhiên
+4. Kết quả hiển thị **Thắng / Hoà / Thua** dựa trên giá trị thực của món so với giá túi mù
+
+**Xác Suất Xuất Hiện:**
+- Món ≤ 29.000đ → xuất hiện **3×** thường hơn
+- Món ≤ 43.500đ → xuất hiện **2×** thường hơn
+- Món cao cấp → tỉ lệ cơ bản **1×**
+
+---
+
+## 🔐 Phân Quyền (RBAC)
+
+| Vai Trò | Quyền Hạn |
+|---------|-----------|
+| **Super Admin** | Toàn quyền kiểm soát Cấu trúc SaaS, giới hạn Tenant, xoá Tenant |
+| **Admin** | Toàn quyền hệ thống theo từng chi nhánh cụ thể |
+| **Nhân Viên (Staff)** | Xử lý thanh toán, huỷ đơn, quản lý ca |
+| **Bếp (Kitchen)** | Xem & cập nhật trạng thái đơn |
+| **Khách Hàng** | Đặt món, theo dõi đơn, tích điểm |
+
+---
+
+## 🌐 Triển Khai (Deployment)
+
+Dự án được tối ưu cho **Vercel**:
+
+```bash
+# Cài Vercel CLI
+npm i -g vercel
+
+# Triển khai
+vercel --prod
+```
+
+Thiết lập các biến môi trường trên Vercel Dashboard:
+- `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`
+
+---
+
+## 📄 Giấy Phép
+
+Dự án nội bộ — **Nohope Coffee © 2026**. Bảo lưu mọi quyền.

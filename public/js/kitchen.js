@@ -389,8 +389,9 @@ window.updateOrderStatus = async (orderId, newStatus, btn) => {
             // Earn Loyalty Points
             if (order && order.customer_phone) {
                 const { data: custData } = await supabase.from('customers').select('id, current_points, total_spent').eq('phone', order.customer_phone).maybeSingle();
-                const earnedPts = order.earned_points || 0;
                 const paidAmt = order.total_price || order.totalPrice || 0;
+                // Tính điểm: 1 điểm cho mỗi 10,000 VNĐ
+                const earnedPts = Math.floor(paidAmt / 10000);
 
                 if (custData) {
                     const newPts = (custData.current_points || 0) + earnedPts;

@@ -15,21 +15,9 @@ if (!supabaseUrl || !supabaseKey) {
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 const defaultUsers = [
-  { 
-      email: process.env.ADMIN_EMAIL || 'admin@example.com', 
-      password: process.env.ADMIN_PASSWORD || 'ChangeMe!123', 
-      role: 'admin' 
-  },
-  { 
-      email: process.env.KITCHEN_EMAIL || 'kitchen@example.com', 
-      password: process.env.KITCHEN_PASSWORD || 'ChangeMe!123', 
-      role: 'kitchen' 
-  },
-  { 
-      email: process.env.STAFF_EMAIL || 'staff@example.com', 
-      password: process.env.STAFF_PASSWORD || 'ChangeMe!123', 
-      role: 'staff' 
-  }
+  { email: 'admin@nohope.cafe', password: 'AdminPassword!2024', role: 'admin' },
+  { email: 'kitchen@nohope.cafe', password: 'SharedKitchenPwd#123', role: 'kitchen' },
+  { email: 'staff@nohope.cafe', password: 'SharedStaffPwd#123', role: 'staff' }
 ];
 
 async function setupUsers() {
@@ -39,13 +27,13 @@ async function setupUsers() {
       email: user.email,
       password: user.password,
     });
-    
+
     if (error) {
-       if (error.message.includes('User already registered')) {
-         console.log(`User ${user.email} already exists.`);
-       } else {
-         console.error(`Error creating ${user.email}:`, error.message);
-       }
+      if (error.message.includes('User already registered')) {
+        console.log(`User ${user.email} already exists.`);
+      } else {
+        console.error(`Error creating ${user.email}:`, error.message);
+      }
     } else {
       console.log(`Successfully created/updated ${user.email}.`);
     }

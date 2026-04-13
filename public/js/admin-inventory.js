@@ -532,26 +532,28 @@ async function submitRestockTicket() {
     }
 }
 
-// --- Export Inventory CSV ---
-window.exportInventoryToCSV = async function() {
+// --- Export Inventory Excel ---
+window.exportInventoryExcel = async function() {
+    if (typeof XLSX === 'undefined') {
+        showAdminToast('Thư viện xuất Excel chưa sẵn sàng.', 'warning');
+        return;
+    }
     const { data } = await supabase.from('ingredients').select('*').eq('tenant_id', window.AdminState.tenantId).order('name');
     if (!data || data.length === 0) return showAdminToast('Không có dữ liệu kho!', 'warning');
 
-    const columns = [
-        { key: 'name', label: 'Tên Nguyên Liệu' },
-        { key: 'stock', label: 'Tồn Kho' },
-        { key: 'unit', label: 'Đơn Vị' },
-        { key: 'min_stock', label: 'Mức Tối Thiểu' },
-        { key: 'status', label: 'Trạng Thái' }
-    ];
-
     const rows = data.map(i => ({
-        ...i,
-        status: i.stock <= (i.min_stock || 0) ? 'SẮP HẾT' : 'Đủ hàng'
+        'Tên Nguyên Liệu': i.name,
+        'Tồn Kho': i.stock,
+        'Đơn Vị': i.unit,
+        'Mức Tối Thiểu': i.min_stock,
+        'Trạng Thái': i.stock <= (i.min_stock || 0) ? 'SẮP HẾT' : 'Đủ hàng'
     }));
 
     const dateStr = new Date().toISOString().split('T')[0];
-    exportToCSV(rows, columns, `ton_kho_${dateStr}.csv`);
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Ton Kho");
+    XLSX.writeFile(wb, `ton_kho_${dateStr}.xlsx`);
 };
 
 // --- Low Stock Alert (Dashboard) ---
@@ -585,7 +587,11 @@ async function checkLowStock() {
     } catch(e) { console.error('Low stock check error:', e); }
 }
 
-async function exportInventoryLogsToCSV() {
+window.exportInventoryLogsExcel = async function() {
+    if (typeof XLSX === 'undefined') {
+        showAdminToast('Thư viện xuất Excel chưa sẵn sàng.', 'warning');
+        return;
+    }
     try {
         const { data: logs, error } = await supabase.from('inventory_logs')
             .select('*, ingredients(name, unit)')
@@ -595,22 +601,30 @@ async function exportInventoryLogsToCSV() {
         if (error) throw error;
         if (!logs || logs.length === 0) { showAdminToast('Không có dữ liệu log kho nào!', 'warning'); return; }
 
-        let csv = 'Thời gian,Tên nguyên liệu,Loại,Khối lượng thay đổi,Tồn cũ,Tồn mới,Chi tiết\n';
-        logs.forEach(l => {
+        const typeMap = { deduction: 'Xuất (Bán)', restock: 'Nhập', spoilage: 'Hư hỏng', adjustment: 'Kiểm kho' };
+        
+        const rows = logs.map(l => {
             const date = new Date(l.created_at).toLocaleString('vi-VN');
             const ingName = l.ingredients ? l.ingredients.name : 'Unknown';
             const unit = l.ingredients ? l.ingredients.unit : '';
-            const typeMap = { deduction: 'Xuất (Bán)', restock: 'Nhập', spoilage: 'Hư hỏng', adjustment: 'Kiểm kho' };
             const type = typeMap[l.change_type] || l.change_type;
             const prefix = l.amount > 0 ? '+' : '';
-            csv += `"${date}","${ingName}","${type}","${prefix}${l.amount} ${unit}","${l.previous_stock}","${l.new_stock}","${l.reason || ''}"\n`;
+            
+            return {
+                'Thời gian': date,
+                'Tên nguyên liệu': ingName,
+                'Loại': type,
+                'Khối lượng thay đổi': `${prefix}${l.amount} ${unit}`,
+                'Tồn cũ': l.previous_stock,
+                'Tồn mới': l.new_stock,
+                'Chi tiết': l.reason || ''
+            };
         });
 
-        const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = `inventory_logs_${new Date().toISOString().split('T')[0]}.csv`;
-        link.click();
+        const ws = XLSX.utils.json_to_sheet(rows);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Lich Su Kho");
+        XLSX.writeFile(wb, `inventory_logs_${new Date().toISOString().split('T')[0]}.xlsx`);
     } catch (e) {
         console.error(e);
         showAdminToast('Lỗi xuất dữ liệu kho!', 'error');
