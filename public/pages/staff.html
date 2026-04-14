@@ -174,7 +174,7 @@
         const staffAvatar = sessionStorage.getItem('nohope_staff_avatar') || '';
         const staffAvatarEl = document.getElementById('staff-page-avatar');
         if (staffAvatar && staffAvatarEl) {
-            staffAvatarEl.innerHTML = `<img src="${staffAvatar}" alt="" class="w-full h-full object-cover" onerror="this.onerror=null;this.parentElement.innerHTML='<i class=\\'fa-solid fa-user text-on-surface-variant text-sm\\'></i>';">`;
+            staffAvatarEl.innerHTML = `<img src="${staffAvatar}" alt="Staff avatar" class="w-full h-full object-cover" onerror="this.onerror=null;this.parentElement.innerHTML='<i class=\\'fa-solid fa-user text-on-surface-variant text-sm\\'></i>';">`;
         }
         
         // STRICT Auth Check via Supabase
