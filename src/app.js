@@ -30,13 +30,6 @@ app.use(rateLimit({
     message: { error: 'Too many requests, please try again later.' }
 }));
 
-// Stricter rate limiter for auth endpoints
-const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 5,
-    message: { error: 'Too many login attempts, please try again after 15 minutes.' }
-});
-
 // Rate limiter for webhook endpoint
 const webhookLimiter = rateLimit({
     windowMs: 1 * 60 * 1000,
@@ -66,7 +59,6 @@ app.get('/', (req, res) => {
 });
 
 // API Routes mounting — apply specific rate limiters
-app.use('/api/login', authLimiter);
 app.use('/api/webhook', webhookLimiter);
 app.use('/api', apiRoutes);
 
