@@ -402,7 +402,7 @@ async function openCloseShiftModal() {
                 </div>
                 <div class="d-flex justify-content-between mb-2">
                     <span class="text-slate-500">Thu thẻ (POS):</span>
-                    <strong class="text-purple-400">+ ${cardRevenue.toLocaleString('vi-VN')} đ</strong>
+                    <strong class="text-cyan-400">+ ${cardRevenue.toLocaleString('vi-VN')} đ</strong>
                 </div>
                 <div class="d-flex justify-content-between mb-3 border-b border-slate-200 pb-3">
                     <span class="text-slate-500">Thu chuyển khoản:</span>
