@@ -335,6 +335,10 @@ async function submitStartShift() {
         currentShift = data;
         updateShiftUI(true, data.opened_by, new Date(data.opened_at));
         
+        if (typeof window.logAudit === 'function') {
+            window.logAudit('MỞ CA', \`Ca được mở bởi \${staffName}. Tiền đầu ca: \${startBalance.toLocaleString()}đ\`);
+        }
+
         bootstrap.Modal.getInstance(document.getElementById('shiftActionModal')).hide();
         showAlert('Đã mở ca làm việc!', 'success');
         
@@ -362,8 +366,9 @@ async function openCloseShiftModal() {
         const orders = allOrders.filter(o => o.payment_status === 'paid' && o.status !== 'Cancelled' && o.status !== 'cancelled');
 
         const totalRevenue = orders.reduce((s, o) => s + (o.total_price || 0), 0);
-        const cashRevenue = orders.filter(o => o.payment_method !== 'transfer').reduce((s, o) => s + (o.total_price || 0), 0);
+        const cashRevenue = orders.filter(o => o.payment_method === 'cash' || !o.payment_method).reduce((s, o) => s + (o.total_price || 0), 0);
         const transferRevenue = orders.filter(o => o.payment_method === 'transfer').reduce((s, o) => s + (o.total_price || 0), 0);
+        const cardRevenue = orders.filter(o => o.payment_method === 'card').reduce((s, o) => s + (o.total_price || 0), 0);
         
         const expectedEndBalance = currentShift.start_balance + cashRevenue;
 
@@ -394,6 +399,10 @@ async function openCloseShiftModal() {
                 <div class="d-flex justify-content-between mb-2">
                     <span class="text-slate-500">Thu tiền mặt (Đơn):</span>
                     <strong class="text-green-400">+ ${cashRevenue.toLocaleString('vi-VN')} đ</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-slate-500">Thu thẻ (POS):</span>
+                    <strong class="text-purple-400">+ ${cardRevenue.toLocaleString('vi-VN')} đ</strong>
                 </div>
                 <div class="d-flex justify-content-between mb-3 border-b border-slate-200 pb-3">
                     <span class="text-slate-500">Thu chuyển khoản:</span>
@@ -497,6 +506,27 @@ async function submitCloseShift() {
             .eq('tenant_id', window.AdminState.tenantId);
 
         if (error) throw error;
+
+        // Automatically log discrepancy to cashflow
+        const diff = actualBalance - expectedBalance;
+        if (diff !== 0) {
+            const isLoss = diff < 0;
+            const cashflowCat = isLoss ? 'Thất thoát' : 'Khác';
+            const cashflowNotes = `[Chênh lệnh chốt ca] ${notes}`;
+            
+            await supabase.from('cash_transactions').insert([{
+                tenant_id: window.AdminState.tenantId,
+                amount: Math.abs(diff),
+                type: isLoss ? 'expense' : 'income',
+                category: cashflowCat,
+                notes: cashflowNotes,
+                created_by: closedBy
+            }]);
+        }
+
+        if (typeof window.logAudit === 'function') {
+            window.logAudit('ĐÓNG CA', \`Ca được đóng bởi \${closedBy}. Doanh thu: \${totalRevenue.toLocaleString()}đ, Lệch: \${diff.toLocaleString()}đ\`);
+        }
 
         currentShift = null;
         updateShiftUI(false);

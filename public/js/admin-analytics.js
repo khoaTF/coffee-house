@@ -302,38 +302,66 @@ async function renderDashboardStats() {
         const revenue = todayOrders?.filter(o => o.payment_status === 'paid' && o.status !== 'Cancelled').reduce((s, o) => s + (o.total_price || 0), 0) || 0;
         const activeTables = tablesData?.filter(t => t.status === 'occupied').length || 0;
 
-        container.innerHTML = `
-            <div class="dashboard-kpi-grid">
-                <div class="kpi-card kpi-orders">
-                    <div class="kpi-icon"><i class="fa-solid fa-receipt"></i></div>
-                    <div class="kpi-body">
-                        <div class="kpi-value" id="kpi-total-orders">${total}</div>
-                        <div class="kpi-label">Đơn hàng hôm nay</div>
+        const role = sessionStorage.getItem('cafe_role') || localStorage.getItem('cafe_role');
+        const isStaff = role === 'staff';
+
+        if (isStaff) {
+             container.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="kpi-card kpi-pending bg-white rounded-2xl shadow-sm border border-slate-100 p-4 flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center flex-shrink-0">
+                            <i class="fa-solid fa-hourglass-half text-orange-500 text-xl"></i>
+                        </div>
+                        <div class="kpi-body">
+                            <div class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Đơn đang xử lý</div>
+                            <div class="text-xl font-bold text-slate-800" id="kpi-pending">${pending}</div>
+                        </div>
+                    </div>
+                    <div class="kpi-card kpi-tables bg-white rounded-2xl shadow-sm border border-slate-100 p-4 flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                            <i class="fa-solid fa-chair text-blue-500 text-xl"></i>
+                        </div>
+                        <div class="kpi-body">
+                            <div class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Bàn đang phục vụ</div>
+                            <div class="text-xl font-bold text-slate-800" id="kpi-active-tables">${activeTables}</div>
+                        </div>
                     </div>
                 </div>
-                <div class="kpi-card kpi-revenue">
-                    <div class="kpi-icon"><i class="fa-solid fa-coins"></i></div>
-                    <div class="kpi-body">
-                        <div class="kpi-value" id="kpi-revenue">${revenue.toLocaleString('vi-VN')}đ</div>
-                        <div class="kpi-label">Doanh thu hôm nay</div>
+            `;
+        } else {
+            container.innerHTML = `
+                <div class="dashboard-kpi-grid">
+                    <div class="kpi-card kpi-orders">
+                        <div class="kpi-icon"><i class="fa-solid fa-receipt"></i></div>
+                        <div class="kpi-body">
+                            <div class="kpi-value" id="kpi-total-orders">${total}</div>
+                            <div class="kpi-label">Đơn hàng hôm nay</div>
+                        </div>
+                    </div>
+                    <div class="kpi-card kpi-revenue">
+                        <div class="kpi-icon"><i class="fa-solid fa-coins"></i></div>
+                        <div class="kpi-body">
+                            <div class="kpi-value" id="kpi-revenue">${revenue.toLocaleString('vi-VN')}đ</div>
+                            <div class="kpi-label">Doanh thu hôm nay</div>
+                        </div>
+                    </div>
+                    <div class="kpi-card kpi-pending">
+                        <div class="kpi-icon"><i class="fa-solid fa-hourglass-half"></i></div>
+                        <div class="kpi-body">
+                            <div class="kpi-value" id="kpi-pending">${pending}</div>
+                            <div class="kpi-label">Đơn đang xử lý</div>
+                        </div>
+                    </div>
+                    <div class="kpi-card kpi-tables">
+                        <div class="kpi-icon"><i class="fa-solid fa-chair"></i></div>
+                        <div class="kpi-body">
+                            <div class="kpi-value" id="kpi-active-tables">${activeTables}</div>
+                            <div class="kpi-label">Bàn đang phục vụ</div>
+                        </div>
                     </div>
                 </div>
-                <div class="kpi-card kpi-pending">
-                    <div class="kpi-icon"><i class="fa-solid fa-hourglass-half"></i></div>
-                    <div class="kpi-body">
-                        <div class="kpi-value" id="kpi-pending">${pending}</div>
-                        <div class="kpi-label">Đơn đang xử lý</div>
-                    </div>
-                </div>
-                <div class="kpi-card kpi-tables">
-                    <div class="kpi-icon"><i class="fa-solid fa-chair"></i></div>
-                    <div class="kpi-body">
-                        <div class="kpi-value" id="kpi-active-tables">${activeTables}</div>
-                        <div class="kpi-label">Bàn đang phục vụ</div>
-                    </div>
-                </div>
-            </div>
-        `;
+            `;
+        }
 
         checkLowStock();
     } catch (e) {
@@ -351,6 +379,9 @@ async function loadDashboard() {
     container.innerHTML = `<div class="text-center py-16 text-slate-500"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tải...</div>`;
 
     try {
+        const role = sessionStorage.getItem('cafe_role') || localStorage.getItem('cafe_role');
+        const isStaff = role === 'staff';
+
         const todayStart = new Date(); todayStart.setHours(0,0,0,0);
         const todayEnd = new Date(); todayEnd.setHours(23,59,59,999);
         const weekStart = new Date(); weekStart.setDate(weekStart.getDate() - 6); weekStart.setHours(0,0,0,0);
@@ -359,8 +390,49 @@ async function loadDashboard() {
             supabase.from('orders').select('*').eq('tenant_id', window.AdminState.tenantId).gte('created_at', todayStart.toISOString()).lte('created_at', todayEnd.toISOString()),
             supabase.from('orders').select('*').eq('tenant_id', window.AdminState.tenantId).gte('created_at', weekStart.toISOString()).eq('payment_status', 'paid').neq('status', 'Cancelled'),
             supabase.from('ingredients').select('name, stock, low_stock_threshold').eq('tenant_id', window.AdminState.tenantId).lt('stock', supabase.raw ? 1 : Number.MAX_SAFE_INTEGER),
-            supabase.from('orders').select('id').eq('tenant_id', window.AdminState.tenantId).in('status', ['Pending', 'Preparing'])
+            supabase.from('orders').select('*').eq('tenant_id', window.AdminState.tenantId).in('status', ['Pending', 'Preparing'])
         ]);
+
+        if (isStaff) {
+             const recentPending = (pendingOrders || []).sort((a,b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 8);
+             
+             container.innerHTML = `
+                 <div class="card bg-white border border-slate-200 rounded-2xl overflow-hidden mb-6">
+                     <div class="p-4 border-b border-slate-200 justify-between items-center hidden md:flex">
+                         <h5 class="font-bold text-slate-800 mb-0"><i class="fa-solid fa-list-check me-2 text-[#C0A062]"></i>Công việc cần làm (Đơn mới cập nhật)</h5>
+                         <button class="btn btn-sm btn-outline-primary" onclick="switchTab('orders')">Tới trang Xử lý đơn</button>
+                     </div>
+                     <div class="p-4 border-b border-slate-200 md:hidden">
+                         <h5 class="font-bold text-slate-800 mb-3"><i class="fa-solid fa-list-check me-2 text-[#C0A062]"></i>Công việc cần làm</h5>
+                         <button class="btn btn-sm btn-outline-primary w-full" onclick="switchTab('orders')">Tới trang Xử lý đơn</button>
+                     </div>
+                     <div class="table-responsive">
+                         <table class="table table-hover mb-0 min-w-full">
+                             <thead class="bg-slate-100 text-slate-600"><tr><th class="border-0 py-3 px-4">Bàn</th><th class="border-0 py-3 px-4 w-32">Giờ đặt</th><th class="border-0 py-3 px-4 w-40 text-center">Trạng thái</th></tr></thead>
+                             <tbody>
+                                 ${recentPending.length === 0 ? '<tr><td colspan="3" class="text-center py-6 text-slate-500 font-medium">Hiện không có đơn nào đang chờ xử lý.</td></tr>' :
+                                     recentPending.map(o => {
+                                         const statusColors = { Pending:'bg-warning text-dark', Preparing:'bg-primary' };
+                                         const statusVI = { Pending:'Đang chờ', Preparing:'Đang chuẩn bị' };
+                                         const time = new Date(o.created_at).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
+                                         return \`<tr>
+                                             <td class="py-3 px-4 text-slate-800 font-bold">\${window.escapeHTML(o.table_number || '?')}</td>
+                                             <td class="py-3 px-4 text-slate-500 text-sm">\${time}</td>
+                                             <td class="py-3 px-4 text-center"><span class="badge \${statusColors[o.status]||'bg-secondary'} px-3 py-2 text-xs rounded-full shadow-sm">\${statusVI[o.status]||o.status}</span></td>
+                                         </tr>\`;
+                                     }).join('')
+                                 }
+                             </tbody>
+                         </table>
+                     </div>
+                 </div>
+                 
+                 <div class="text-center">
+                    <p class="text-slate-500 italic mb-4">Các báo cáo và thông tin mật được giới hạn hiển thị đối với tài khoản nhân viên.</p>
+                 </div>
+             `;
+             return;
+        }
 
         const revenueOrdersToday = (todayOrders || []).filter(o => o.payment_status === 'paid' && o.status !== 'Cancelled');
         const revenueToday = revenueOrdersToday.reduce((s, o) => s + (o.total_price || 0), 0);

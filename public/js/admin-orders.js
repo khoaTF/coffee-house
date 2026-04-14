@@ -286,6 +286,13 @@ window.printInvoice = async (orderId) => {
     const wifiPass = storeSettings.wifi_pass || '';
     const bankAccNo = storeSettings.bank_acc || '';
     const bankId = storeSettings.bank_id || 'mb';
+    const logoUrl = storeSettings.logo_url || '';
+    const zaloOa = storeSettings.zalo_oa_url || storeSettings.zalo_id || '';
+    
+    // Zalo or Feedback QR (Zalo preferred)
+    const feedbackLink = zaloOa ? (zaloOa.startsWith('http') ? zaloOa : `https://zalo.me/${zaloOa}`) : `${window.location.origin}/feedback?t=${AdminState.tenantId}`;
+    const feedbackQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(feedbackLink)}&margin=1`;
+
 
     const subtotal = order.totalPrice || 0;
     const discount = order.discountAmount || 0;
@@ -321,28 +328,38 @@ window.printInvoice = async (orderId) => {
         <title>Hóa Đơn ${orderIdShort} — ${storeName}</title>
         <style>
             * { box-sizing: border-box; margin: 0; padding: 0; }
-            body { font-family: 'Courier New', monospace; font-size: 13px; color: #111; background: #fff; width: 80mm; padding: 8px 6px; }
-            .logo-row { text-align: center; margin-bottom: 6px; }
-            .store-name { font-size: 18px; font-weight: 900; letter-spacing: 1px; }
-            .store-sub { font-size: 11px; color: #555; margin-top: 2px; }
-            .divider-solid { border: none; border-top: 2px solid #111; margin: 8px 0; }
-            .divider-dash { border: none; border-top: 1px dashed #aaa; margin: 6px 0; }
-            .meta-row { display: flex; justify-content: space-between; font-size: 11px; margin: 2px 0; }
-            .items-table { width: 100%; border-collapse: collapse; margin: 6px 0; }
-            .total-section { margin-top: 8px; }
-            .total-row { display: flex; justify-content: space-between; font-size: 12px; margin: 3px 0; }
-            .grand-total { font-size: 17px; font-weight: 900; margin-top: 6px; padding-top: 6px; border-top: 2px solid #111; display:flex; justify-content:space-between; }
-            .pay-status { text-align:center; margin: 8px 0; padding: 5px 10px; border-radius: 6px; font-weight: 700; font-size: 13px; color: #fff; background: ${payStatusBg}; }
-            .footer { text-align: center; font-size: 11px; color: #555; margin-top: 10px; }
-            .qr-img { display: block; margin: 8px auto; width: 90px; height: 90px; }
-            @media print { @page { margin: 0; size: 80mm auto; } body { width: 80mm !important; } }
+            body { font-family: 'Courier New', monospace; font-size: 13px; color: #111; background: #fff; width: 80mm; padding: 0; margin: 0 auto; line-height: 1.4; }
+            .receipt-container { padding: 10px 8px; width: 100%; max-width: 80mm; margin: 0 auto; }
+            .logo-row { text-align: center; margin-bottom: 8px; }
+            .store-logo { max-width: 60px; max-height: 60px; object-fit: contain; margin-bottom: 6px; filter: grayscale(100%); }
+            .store-name { font-size: 18px; font-weight: 900; -webkit-font-smoothing: antialiased; letter-spacing: 0.5px; text-transform: uppercase; }
+            .store-sub { font-size: 11px; color: #333; margin-top: 3px; font-weight: 500; }
+            .receipt-title { text-align: center; font-size: 14px; font-weight: bold; margin-top: 10px; margin-bottom: 5px; }
+            .divider-solid { border: none; border-top: 2px solid #111; margin: 10px 0; }
+            .divider-dash { border: none; border-top: 1px dashed #777; margin: 8px 0; }
+            .meta-row { display: flex; justify-content: space-between; font-size: 12px; margin: 3px 0; }
+            .items-table { width: 100%; border-collapse: collapse; margin: 8px 0; }
+            .items-table td { font-size: 12px; padding: 6px 2px; border-bottom: 1px dashed #e2e8f0; vertical-align: top; }
+            .total-section { margin-top: 10px; }
+            .total-row { display: flex; justify-content: space-between; font-size: 12px; margin: 4px 0; }
+            .grand-total { font-size: 18px; font-weight: 900; margin-top: 8px; padding-top: 8px; border-top: 2px solid #111; display:flex; justify-content:space-between; }
+            .pay-status { text-align:center; margin: 12px 0; padding: 6px 10px; font-weight: 900; font-size: 13px; color: #fff; background: ${payStatusBg}; border-radius: 4px; border: 1px solid #111; color: #111; background: transparent; }
+            .footer { text-align: center; font-size: 12px; color: #333; margin-top: 15px; }
+            .qr-wrapper { text-align: center; margin: 15px 0; page-break-inside: avoid; border: 1px dashed #aaa; padding: 8px; border-radius: 6px; }
+            .qr-prompt { font-size: 12px; font-weight: bold; margin-bottom: 6px; }
+            .qr-img { display: block; margin: 0 auto; width: 100px; height: 100px; }
+            .pay-qr-wrapper { text-align: center; margin: 10px 0; page-break-inside: avoid; }
+            .pay-qr-img { display: block; margin: 0 auto; width: 120px; height: 120px; }
+            .pay-qr-text { font-size: 11px; margin-top: 4px; font-weight: bold; }
+            @media print { @page { margin: 0; size: 80mm auto; } body { width: 80mm !important; } .receipt-container { padding: 5px !important; } }
         </style>
-    </head><body>
+    </head><body><div class="receipt-container">
         <div class="logo-row">
+            ${logoUrl ? `<img src="${logoUrl}" class="store-logo" alt="Logo">` : ''}
             <div class="store-name">${esc(storeName)}</div>
             ${storeAddress ? `<div class="store-sub">${esc(storeAddress)}</div>` : ''}
-            <div class="store-sub">HÓA ĐƠN BÁN HÀNG</div>
         </div>
+        <div class="receipt-title">HÓA ĐƠN BÁN HÀNG</div>
         <hr class="divider-solid">
         <div class="meta-row"><span>Mã đơn:</span><span><b>#${orderIdShort}</b></span></div>
         <div class="meta-row"><span>Bàn số:</span><span><b>Bàn ${esc(order.tableNumber)}</b></span></div>
@@ -354,20 +371,34 @@ window.printInvoice = async (orderId) => {
         <div class="total-section">
             ${discount > 0 ? `
                 <div class="total-row"><span>Tạm tính:</span><span>${(subtotal + discount).toLocaleString('vi-VN')} đ</span></div>
-                <div class="total-row" style="color:#dc2626;"><span>Giảm giá:</span><span>-${discount.toLocaleString('vi-VN')} đ</span></div>
+                <div class="total-row" style="font-weight:bold;"><span>Giảm giá:</span><span>-${discount.toLocaleString('vi-VN')} đ</span></div>
             ` : ''}
-            ${order.orderNote ? `<div class="total-row" style="color:#666;font-style:italic;"><span>Ghi chú:</span><span style="text-align:right;max-width:55%;">${esc(order.orderNote)}</span></div>` : ''}
+            ${order.orderNote ? `<div class="total-row" style="font-style:italic; margin-top:8px;"><span>Ghi chú:</span><span style="text-align:right;max-width:60%;">${esc(order.orderNote)}</span></div>` : ''}
             <div class="grand-total"><span>TỔNG CỘNG</span><span>${finalTotal.toLocaleString('vi-VN')} đ</span></div>
         </div>
+        
         <div class="pay-status">${payStatusText}</div>
-        ${qrUrl ? `<img src="${qrUrl}" class="qr-img" alt="QR Thanh toán">` : ''}
+        
+        ${qrUrl && order.paymentStatus !== 'paid' ? `
+        <div class="pay-qr-wrapper">
+            <img src="${qrUrl}" class="pay-qr-img" alt="QR Thanh toán">
+            <div class="pay-qr-text">Quét mã để thanh toán</div>
+        </div>
+        ` : ''}
+        
         <hr class="divider-solid">
         <div class="footer">
-            ${wifiName ? `<div>📶 WiFi: <b>${esc(wifiName)}</b>${wifiPass ? ` / ${esc(wifiPass)}` : ''}</div>` : ''}
-            <div style="margin-top:6px;font-size:12px;font-weight:700;">Cảm ơn quý khách!</div>
-            <div>Hẹn gặp lại lần sau 🙏</div>
+            ${wifiName ? `<div style="margin-bottom:8px;">📶 WiFi: <b>${esc(wifiName)}</b>${wifiPass ? ` / ${esc(wifiPass)}` : ''}</div>` : ''}
+            
+            <div class="qr-wrapper">
+                <div class="qr-prompt">Quét mã để Đánh giá & Khuyến mãi!</div>
+                <img src="${feedbackQrUrl}" class="qr-img" alt="Feedback QR">
+            </div>
+
+            <div style="margin-top:10px;font-size:13px;font-weight:900;">CẢM ƠN QUÝ KHÁCH!</div>
+            <div style="font-size:11px; margin-top:3px;">Hẹn gặp lại lần sau 🙏</div>
         </div>
-    </body></html>`);
+    </div></body></html>`);
     printWindow.document.close();
     printWindow.focus();
     setTimeout(() => { printWindow.print(); }, 400);

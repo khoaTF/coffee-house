@@ -120,6 +120,13 @@ When user's prompt is NOT in English:
 2. Identify dependent files
 3. Update ALL affected files together
 
+### 🐙 Git Version Control (Mandatory)
+
+**Always commit and push to GitHub after every system change.**
+
+- Execute `git add .`, followed by a descriptive `git commit` and `git push` seamlessly after completing logic changes, modifications, or executions.
+- The remote repository MUST be kept in sync at all times.
+
 ### 🗺️ System Map Read
 
 > 🔴 **MANDATORY:** Read `ARCHITECTURE.md` at session start to understand Agents, Skills, and Scripts.

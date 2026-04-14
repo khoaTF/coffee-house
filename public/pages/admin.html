@@ -42,7 +42,7 @@
     <link rel="stylesheet" href="/css/styles.css?v=1.8">
     <script>
         const role = localStorage.getItem('cafe_role') || sessionStorage.getItem('cafe_role');
-        if (role !== 'admin' && role !== 'manager') {
+        if (role !== 'admin' && role !== 'manager' && role !== 'staff') {
             window.location.href = '/login';
         }
     </script>
