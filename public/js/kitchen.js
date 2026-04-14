@@ -388,7 +388,7 @@ window.updateOrderStatus = async (orderId, newStatus, btn) => {
 
             // Earn Loyalty Points
             if (order && order.customer_phone) {
-                const { data: custData } = await supabase.from('customers').select('id, current_points, total_spent').eq('phone', order.customer_phone).maybeSingle();
+                const { data: custData } = await supabase.from('customers').select('id, current_points, total_spent').eq('phone', order.customer_phone).eq('tenant_id', window.KitchenState.tenantId).maybeSingle();
                 const paidAmt = order.total_price || order.totalPrice || 0;
                 // Tính điểm: 1 điểm cho mỗi 10,000 VNĐ
                 const earnedPts = Math.floor(paidAmt / 10000);
@@ -401,9 +401,9 @@ window.updateOrderStatus = async (orderId, newStatus, btn) => {
                     else if (newSpent >= 2000000) newTier = 'Gold';
                     else if (newSpent >= 500000) newTier = 'Silver';
 
-                    await supabase.from('customers').update({ current_points: newPts, total_spent: newSpent, tier: newTier }).eq('id', custData.id);
+                    await supabase.from('customers').update({ current_points: newPts, total_spent: newSpent, tier: newTier }).eq('id', custData.id).eq('tenant_id', window.KitchenState.tenantId);
                     if (earnedPts > 0) {
-                        await supabase.from('point_logs').insert([{ customer_id: custData.id, amount: earnedPts, reason: 'Tich diem don hang ' + orderId.substring(0, 8) }]);
+                        await supabase.from('point_logs').insert([{ customer_id: custData.id, amount: earnedPts, reason: 'Tich diem don hang ' + orderId.substring(0, 8), tenant_id: window.KitchenState.tenantId }]);
                     }
                     // D7 - Auto-generate voucher when points reach 500
                     if (newPts >= 500) {
@@ -413,9 +413,9 @@ window.updateOrderStatus = async (orderId, newStatus, btn) => {
                             code: vCode, type: 'fixed', value: 20000,
                             min_order: 0, max_uses: 1, current_uses: 0,
                             is_active: true, description: 'Voucher VIP - ' + order.customer_phone,
-                            expires_at: expiry
+                            expires_at: expiry, tenant_id: window.KitchenState.tenantId
                         }]);
-                        if (!vcErr) { await supabase.from('customers').update({ current_points: newPts - 500 }).eq('id', custData.id); }
+                        if (!vcErr) { await supabase.from('customers').update({ current_points: newPts - 500 }).eq('id', custData.id).eq('tenant_id', window.KitchenState.tenantId); }
                     }
                 } else {
                     let newTier = 'Bronze';
@@ -424,11 +424,11 @@ window.updateOrderStatus = async (orderId, newStatus, btn) => {
                     else if (paidAmt >= 500000) newTier = 'Silver';
 
                     const { data: newCust } = await supabase.from('customers').insert([{
-                        phone: order.customer_phone, name: 'Khách hàng', current_points: earnedPts, total_spent: paidAmt, tier: newTier
+                        phone: order.customer_phone, name: 'Khách hàng', current_points: earnedPts, total_spent: paidAmt, tier: newTier, tenant_id: window.KitchenState.tenantId
                     }]).select().single();
 
                     if (newCust && earnedPts > 0) {
-                        await supabase.from('point_logs').insert([{ customer_id: newCust.id, amount: earnedPts, reason: 'Tích điẻm đơn hàng ' + orderId.substring(0, 8) }]);
+                        await supabase.from('point_logs').insert([{ customer_id: newCust.id, amount: earnedPts, reason: 'Tích điẻm đơn hàng ' + orderId.substring(0, 8), tenant_id: window.KitchenState.tenantId }]);
                     }
                 }
             }
