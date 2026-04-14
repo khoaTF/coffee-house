@@ -204,7 +204,7 @@
             const avatarUrl = sessionStorage.getItem('nohope_staff_avatar') || '';
             const avatarEl = document.getElementById('kitchen-staff-avatar');
             if (avatarUrl && avatarEl) {
-                avatarEl.innerHTML = `<img src="${avatarUrl}" alt="" class="w-full h-full object-cover" onerror="this.onerror=null;this.parentElement.innerHTML='<i class=\\'fa-solid fa-user text-gray-500 dark:text-gray-400 text-sm\\'></i>';">`;
+                avatarEl.innerHTML = `<img src="${avatarUrl}" alt="Customer avatar" class="w-full h-full object-cover" onerror="this.onerror=null;this.parentElement.innerHTML='<i class=\'fa-solid fa-user text-gray-500 dark:text-gray-400 text-sm\'></i>';">`;
             }
         });
     </script>
