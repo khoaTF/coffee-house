@@ -536,27 +536,9 @@ async function syncOfflineOrders() {
     };
 }
 
-window.posSubmitOrder = async function() {
-    if (posCart.length === 0) {
-        showAdminToast('Giỏ hàng trống!', 'warning');
-        return;
-    }
-    if (!posSelectedTable) {
-        showAdminToast('Vui lòng chọn bàn trước khi đặt hàng!', 'warning');
-        return;
-    }
-    const btn = document.getElementById('pos-submit-btn');
-    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Đang gửi...'; }
-
-    const totalPrice = posCart.reduce((s, c) => {
-        const optionsPrice = (c.selectedOptions || []).reduce((sum, o) => sum + o.priceExtra, 0);
-        return s + (c.price + optionsPrice) * c.quantity;
-    }, 0);
-    const note = (document.getElementById('pos-order-note')?.value || '').trim();
-    const staffName = sessionStorage.getItem('nohope_staff_name') || localStorage.getItem('nohope_staff_name') || 'POS';
-
+function posCalculateReductions(cartItems) {
     const reductions = {};
-    posCart.forEach(item => {
+    cartItems.forEach(item => {
         if (item.recipe && Array.isArray(item.recipe)) {
             item.recipe.forEach(ri => {
                 const iId = ri.ingredientId || ri.ingredient_id;
@@ -578,6 +560,56 @@ window.posSubmitOrder = async function() {
             });
         }
     });
+    return reductions;
+}
+
+async function posCheckOnlineStock(reductions) {
+    if (!navigator.onLine) return [];
+    
+    const ingredientIds = Object.keys(reductions);
+    if (ingredientIds.length === 0) return [];
+    
+    const { data: freshStock, error: stockErr } = await supabase.from('ingredients')
+        .select('id, name, stock')
+        .in('id', ingredientIds)
+        .eq('tenant_id', window.AdminState.tenantId);
+        
+    if (!stockErr && freshStock && freshStock.length > 0) {
+        const stockMap = {};
+        freshStock.forEach(i => stockMap[i.id] = i.stock);
+        
+        const outOfStockNames = [];
+        for (const iId of ingredientIds) {
+            if ((stockMap[iId] || 0) < reductions[iId]) {
+                const ingInfo = freshStock.find(i => i.id === iId);
+                outOfStockNames.push(ingInfo ? ingInfo.name : 'Vật tư');
+            }
+        }
+        return outOfStockNames;
+    }
+    return [];
+}
+
+window.posSubmitOrder = async function() {
+    if (posCart.length === 0) {
+        showAdminToast('Giỏ hàng trống!', 'warning');
+        return;
+    }
+    if (!posSelectedTable) {
+        showAdminToast('Vui lòng chọn bàn trước khi đặt hàng!', 'warning');
+        return;
+    }
+    const btn = document.getElementById('pos-submit-btn');
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Đang gửi...'; }
+
+    const totalPrice = posCart.reduce((s, c) => {
+        const optionsPrice = (c.selectedOptions || []).reduce((sum, o) => sum + o.priceExtra, 0);
+        return s + (c.price + optionsPrice) * c.quantity;
+    }, 0);
+    const note = (document.getElementById('pos-order-note')?.value || '').trim();
+    const staffName = sessionStorage.getItem('nohope_staff_name') || localStorage.getItem('nohope_staff_name') || 'POS';
+
+    const reductions = posCalculateReductions(posCart);
 
     const items = posCart.map(c => ({ 
         id: c.id, 
@@ -588,7 +620,6 @@ window.posSubmitOrder = async function() {
         selectedOptions: c.selectedOptions || []
     }));
 
-    // Detect if payment method is selected in POS modal or default to cash
     let paymentMethod = 'cash';
     const pmRadio = document.querySelector('input[name="pos_payment"]:checked');
     if (pmRadio) {
@@ -596,53 +627,30 @@ window.posSubmitOrder = async function() {
     }
 
     try {
-        // Only run stock pre-check if we are online!
-        if (navigator.onLine) {
-            const ingredientIds = Object.keys(reductions);
-            if (ingredientIds.length > 0) {
-                const { data: freshStock, error: stockErr } = await supabase.from('ingredients')
-                    .select('id, name, stock')
-                    .in('id', ingredientIds)
-                    .eq('tenant_id', window.AdminState.tenantId);
-                    
-                if (!stockErr && freshStock && freshStock.length > 0) {
-                    const stockMap = {};
-                    freshStock.forEach(i => stockMap[i.id] = i.stock);
-                    
-                    const outOfStockNames = [];
-                    for (const iId of ingredientIds) {
-                        if ((stockMap[iId] || 0) < reductions[iId]) {
-                            const ingInfo = freshStock.find(i => i.id === iId);
-                            outOfStockNames.push(ingInfo ? ingInfo.name : 'Vật tư');
-                        }
-                    }
-                    if (outOfStockNames.length > 0) {
-                        showAdminToast(`Hết nguyên liệu: ${outOfStockNames.join(', ')}`, 'error');
-                        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Gửi đơn hàng'; }
-                        return;
-                    }
-                }
-            }
+        const outOfStockNames = await posCheckOnlineStock(reductions);
+        if (outOfStockNames.length > 0) {
+            showAdminToast(`Hết nguyên liệu: ${outOfStockNames.join(', ')}`, 'error');
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Gửi đơn hàng'; }
+            return;
         }
 
         const orderPayload = {
             tenant_id: window.AdminState.tenantId,
             table_number: String(posSelectedTable),
-            session_id: 'POS_' + Date.now(), // Fixed: Missing NOT NULL column `session_id`
+            session_id: 'POS_' + Date.now(),
             items: items,
             reductions: reductions,
             total_price: totalPrice,
             order_note: note || null,
-            status: 'Pending',     // POS orders are initially pending for Kitchen to prepare
-            payment_method: paymentMethod,  // POS orders default to cash
-            payment_status: 'paid'   // POS orders default to paid
+            status: 'Pending',     
+            payment_method: paymentMethod,  
+            payment_status: 'paid'   
         };
 
         if (navigator.onLine) {
             const { data: newOrderId, error } = await supabase.rpc('place_order_and_deduct_inventory', { payload: orderPayload });
             if (error) {
                 console.error("RPC Error Details:", error);
-                // Fallback to offline if there was a server connection issue
                 if (error.message && error.message.includes("Failed to fetch")) {
                     await saveOrderToIDB(orderPayload);
                     showAdminToast(`Lỗi mạng. Đã lưu Offline đơn bàn ${posSelectedTable}! (Sẽ đồng bộ sau) 🟡`, 'warning');
@@ -650,7 +658,6 @@ window.posSubmitOrder = async function() {
                     throw new Error(error.message || 'Lỗi gửi đơn (Database)');
                 }
             } else {
-                // POS orders are immediately paid (RPC doesn't set is_paid directly):
                 const { error: updateErr } = await supabase.from('orders')
                     .update({ is_paid: true, payment_status: 'paid' })
                     .eq('id', newOrderId)
@@ -661,12 +668,10 @@ window.posSubmitOrder = async function() {
                 showAdminToast(`Đã gửi đơn bàn ${posSelectedTable} thành công! 🎉`, 'success');
             }
         } else {
-            // Navigator is offline
             await saveOrderToIDB(orderPayload);
             showAdminToast(`Mạng ngoại tuyến. LƯU OFFLINE đơn bàn ${posSelectedTable}! (Sẽ đồng bộ sau) 🟡`, 'warning');
         }
         
-        // Print bill popup - happens online or offline!
         posPrintBill({ id: 'OFFLINE_PENDING_' + Date.now(), table_number: posSelectedTable, items: items, total_price: totalPrice, order_note: note });
         
         posCart = [];

@@ -1,5 +1,4 @@
 let currentShift = null;
-let shiftsModuleInitialized = false;
 
 async function initShiftsModule() {
     const container = document.getElementById('shifts-tab-content');
@@ -547,8 +546,6 @@ async function submitCloseShift() {
    TIMESHEET LOGIC
    ============================================================== */
 
-let currentTimesheet = null;
-
 async function checkTimesheetStatus() {
     const tAction = document.getElementById('timesheet-action-btn');
     const tText = document.getElementById('timesheet-status-text');
@@ -567,12 +564,10 @@ async function checkTimesheetStatus() {
         if (error) throw error;
 
         if (data && data.length > 0) {
-            currentTimesheet = data[0];
-            const checkInTime = new Date(currentTimesheet.check_in).toLocaleTimeString('vi-VN', {hour:'2-digit',minute:'2-digit'});
+            const checkInTime = new Date(data[0].check_in).toLocaleTimeString('vi-VN', {hour:'2-digit',minute:'2-digit'});
             tText.innerHTML = `Bạn đã VÀO CA lúc <strong class="text-green-500">${checkInTime}</strong>. Đừng quên ra ca khi xong việc.`;
             tAction.innerHTML = `<button class="btn rounded-xl font-bold py-2 px-5 text-sm text-white shadow-soft" style="background:#ef4444;" onclick="submitCheckOut()"><i class="fa-solid fa-sign-out-alt me-2"></i>Ra ca (Check-out)</button>`;
         } else {
-            currentTimesheet = null;
             tText.innerHTML = `Bạn chưa chấm công vào ca. Hãy bắt đầu ngay!`;
             tAction.innerHTML = `<button class="btn rounded-xl font-bold py-2 px-5 text-sm shadow-soft" style="background:#10b981;color:#fff;" onclick="submitCheckIn()"><i class="fa-solid fa-sign-in-alt me-2"></i>Vào ca (Check-in)</button>`;
         }
