@@ -766,47 +766,109 @@ window.printReceipt = (orderId) => {
     if (!order) return;
 
     const itemsHtml = order.items.map(i => {
-        const optionNames = i.selectedOptions && i.selectedOptions.length > 0 ? ` (+ ${i.selectedOptions.map(o => o.choiceName).join(', ')})` : '';
-        return `<div>${i.quantity}x ${i.name}${optionNames} - ${(i.price * i.quantity).toLocaleString('vi-VN')}đ</div>`;
+        const optionNames = i.selectedOptions && i.selectedOptions.length > 0 ? `<br><small style="color: #555;">+ ${i.selectedOptions.map(o => o.choiceName).join(', ')}</small>` : '';
+        return `
+            <tr>
+                <td style="text-align: left; padding: 5px 0; border-bottom: 1px dashed #ccc;">
+                    <strong>${i.name}</strong>${optionNames}
+                </td>
+                <td style="text-align: center; padding: 5px 0; border-bottom: 1px dashed #ccc;">${i.quantity}</td>
+                <td style="text-align: right; padding: 5px 0; border-bottom: 1px dashed #ccc;">${(i.price * i.quantity).toLocaleString('vi-VN')}</td>
+            </tr>
+        `;
     }).join('');
+
     const total = order.totalPrice ? order.totalPrice.toLocaleString('vi-VN') : '0';
     const timeStr = order.createdAt ? new Date(order.createdAt).toLocaleString('vi-VN') : new Date().toLocaleString('vi-VN');
-    const noteHtml = order.orderNote ? `<div style="margin-top: 10px; font-style: italic;">Ghi chú: ${order.orderNote}</div>` : '';
+    const noteHtml = order.orderNote ? `<div style="margin-top: 10px; font-style: italic; text-align: left;">Ghi chú: ${order.orderNote}</div>` : '';
 
-    const printWindow = window.open('', '', 'width=400,height=600');
+    const storeName = localStorage.getItem('tenant_name') || 'Nohope Coffee';
+    const storeLogo = localStorage.getItem('tenant_logo'); // If available
+    
+    const logoHtml = storeLogo && storeLogo !== 'null' ? `<img src="${storeLogo}" style="max-width: 100px; max-height: 100px; margin-bottom: 10px; border-radius: 50%;">` : `<h2>${storeName}</h2>`;
+
+    // Generate Zalo OA / Feedback QR Data
+    const feedbackUrl = localStorage.getItem('tenant_feedback_url') || `${window.location.origin}/customer.html?store=${tenantId}`;
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(feedbackUrl)}`;
+
+    const printWindow = window.open('', '', 'width=400,height=800');
     printWindow.document.write(`
         <html>
             <head>
                 <title>Hóa Đơn - Bàn ${order.tableNumber}</title>
                 <style>
-                    body { font-family: 'Courier New', Courier, monospace; padding: 20px; font-size: 14px; color: #000; }
-                    .header { text-align: center; border-bottom: 2px dashed #000; padding-bottom: 10px; margin-bottom: 15px; }
-                    .items { margin-bottom: 15px; border-bottom: 2px dashed #000; padding-bottom: 10px; }
-                    .total { text-align: right; font-weight: bold; font-size: 16px; margin-bottom: 20px; }
-                    .footer { text-align: center; font-size: 12px; }
+                    @page { margin: 0; }
+                    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 15px; font-size: 13px; color: #000; width: 80mm; margin: 0 auto; box-sizing: border-box; }
+                    .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 10px; }
+                    .header h2 { margin: 0 0 5px 0; font-size: 18px; text-transform: uppercase; }
+                    .detail-row { display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 12px; }
+                    table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+                    th { border-bottom: 2px solid #000; padding: 5px 0; text-align: left; font-size: 12px; }
+                    .total-box { margin-top: 10px; border-top: 2px solid #000; padding-top: 10px; font-size: 16px; font-weight: bold; display: flex; justify-content: space-between; }
+                    .footer { text-align: center; margin-top: 20px; font-size: 12px; }
+                    .qr-box { margin-top: 15px; text-align: center; }
+                    .qr-box img { width: 120px; height: 120px; margin-bottom: 5px; }
                 </style>
             </head>
             <body>
                 <div class="header">
-                    <h2>Nohope Coffee</h2>
-                    <div>Hóa đơn thanh toán</div>
-                    <div>Bàn số: <strong>${order.tableNumber}</strong></div>
-                    <div>Thời gian: ${timeStr}</div>
-                    <div>Mã đơn: ${(order._id || '').substring(0, 8)}</div>
+                    ${logoHtml}
+                    <div><strong>HÓA ĐƠN THANH TOÁN</strong></div>
                 </div>
-                <div class="items">
-                    ${itemsHtml}
-                    ${noteHtml}
+                
+                <div class="detail-row">
+                    <span>Bàn / Table:</span>
+                    <strong>${order.tableNumber}</strong>
                 </div>
-                <div class="total">Tổng cộng: ${total} đ</div>
-                <div class="footer">Cảm ơn quý khách! Hẹn gặp lại.</div>
+                <div class="detail-row">
+                    <span>Ngày / Date:</span>
+                    <span>${timeStr}</span>
+                </div>
+                <div class="detail-row">
+                    <span>Mã / Ref:</span>
+                    <span>${(order._id || '').substring(0, 8)}</span>
+                </div>
+
+                <table style="margin-top: 15px;">
+                    <thead>
+                        <tr>
+                            <th style="text-align: left; width: 50%;">Món</th>
+                            <th style="text-align: center; width: 15%;">SL</th>
+                            <th style="text-align: right; width: 35%;">Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${itemsHtml}
+                    </tbody>
+                </table>
+                
+                ${noteHtml}
+
+                <div class="total-box">
+                    <span>TỔNG CỘNG:</span>
+                    <span>${total} đ</span>
+                </div>
+
+                <div class="qr-box">
+                    <img src="${qrUrl}" alt="QR Feedback/Zalo">
+                    <div>Quét QR để Đánh Giá / Nhận Ưu Đãi</div>
+                    <div style="font-size: 10px; margin-top: 3px; color: #555;">${storeName} Zalo OA</div>
+                </div>
+
+                <div class="footer">
+                    <div>Xin cảm ơn quý khách!</div>
+                    <div style="font-size: 10px; margin-top: 5px;">Powered by Nohope Cafe</div>
+                </div>
             </body>
         </html>
     `);
     printWindow.document.close();
     printWindow.focus();
-    printWindow.print();
-    printWindow.close();
+    // setTimeout to ensure QR code image loads before calling print
+    setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+    }, 800);
 };
 
 // --- Kitchen History ---
