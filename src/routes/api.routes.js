@@ -1,11 +1,7 @@
 const express = require('express');
-const authController = require('../controllers/auth.controller');
 const webhookController = require('../controllers/webhook.controller');
 
 const router = express.Router();
-
-// Auth Routes
-router.post('/login', authController.login);
 
 // Webhook Routes (SePay / Casso)
 router.post('/webhook/payment', webhookController.handlePaymentWebhook);
