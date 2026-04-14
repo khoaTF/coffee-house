@@ -23,9 +23,9 @@ async function initShiftsModule() {
         <div class="card bg-white border border-slate-200 rounded-2xl shadow-soft p-6 mb-6">
             <div class="flex flex-col md:flex-row justify-between items-center gap-4">
                 <div>
-                    <h5 class="font-bold text-[#F2E8D5] mb-1 flex items-center gap-2">
+                    <h3 class="font-bold text-[#F2E8D5] mb-1 flex items-center gap-2">
                         <i class="fa-solid fa-user-clock text-[#C0A062]"></i> Chấm công cá nhân
-                    </h5>
+                    </h3>
                     <p class="text-sm text-slate-500 mb-0" id="timesheet-status-text">Kiểm tra trạng thái chấm công của bạn.</p>
                 </div>
                 <div id="timesheet-action-btn">
@@ -40,7 +40,7 @@ async function initShiftsModule() {
                 <div class="card bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden h-100">
                     <div class="card-body p-0">
                         <div class="p-4 border-b border-slate-200">
-                            <h5 class="font-bold text-[#F2E8D5] mb-0"><i class="fa-solid fa-history me-2 text-[#C0A062]"></i>Lịch sử ca</h5>
+                            <h3 class="font-bold text-[#F2E8D5] mb-0"><i class="fa-solid fa-history me-2 text-[#C0A062]"></i>Lịch sử ca</h3>
                         </div>
                         <div class="table-responsive">
                             <table class="table table-hover align-middle mb-0 border-0">
@@ -65,7 +65,7 @@ async function initShiftsModule() {
                 <div class="card bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden h-100">
                     <div class="card-body p-0">
                         <div class="p-4 border-b border-slate-200">
-                            <h5 class="font-bold text-[#F2E8D5] mb-0"><i class="fa-solid fa-users text-[#C0A062]"></i>Lịch sử Chấm công</h5>
+                            <h3 class="font-bold text-[#F2E8D5] mb-0"><i class="fa-solid fa-users text-[#C0A062]"></i>Lịch sử Chấm công</h3>
                         </div>
                         <div class="table-responsive">
                             <table class="table table-hover align-middle mb-0 border-0">
@@ -336,7 +336,7 @@ async function submitStartShift() {
         updateShiftUI(true, data.opened_by, new Date(data.opened_at));
         
         if (typeof window.logAudit === 'function') {
-            window.logAudit('MỞ CA', \`Ca được mở bởi \${staffName}. Tiền đầu ca: \${startBalance.toLocaleString()}đ\`);
+            window.logAudit('MỞ CA', `Ca được mở bởi ${staffName}. Tiền đầu ca: ${startBalance.toLocaleString()}đ`);
         }
 
         bootstrap.Modal.getInstance(document.getElementById('shiftActionModal')).hide();
@@ -525,7 +525,7 @@ async function submitCloseShift() {
         }
 
         if (typeof window.logAudit === 'function') {
-            window.logAudit('ĐÓNG CA', \`Ca được đóng bởi \${closedBy}. Doanh thu: \${totalRevenue.toLocaleString()}đ, Lệch: \${diff.toLocaleString()}đ\`);
+            window.logAudit('ĐÓNG CA', `Ca được đóng bởi ${closedBy}. Doanh thu: ${totalRevenue.toLocaleString()}đ, Lệch: ${diff.toLocaleString()}đ`);
         }
 
         currentShift = null;
