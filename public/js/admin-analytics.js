@@ -277,6 +277,32 @@ async function fetchFeedbackStats() {
     }
 }
 
+// --- Count-Up Animation Utility ---
+function animateCountUp(element, targetValue, duration = 800, isCurrency = false) {
+    if (!element) return;
+    const startTime = performance.now();
+    const startValue = 0;
+
+    function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        // easeOutExpo for satisfying deceleration
+        const eased = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+        const currentValue = Math.round(startValue + (targetValue - startValue) * eased);
+
+        if (isCurrency) {
+            element.textContent = currentValue.toLocaleString('vi-VN') + ' đ';
+        } else {
+            element.textContent = currentValue.toLocaleString('vi-VN');
+        }
+
+        if (progress < 1) {
+            requestAnimationFrame(update);
+        }
+    }
+    requestAnimationFrame(update);
+}
+
 // --- Dashboard KPI Cards ---
 async function renderDashboardStats() {
     const container = document.getElementById('dashboard-kpi-cards');
@@ -362,6 +388,14 @@ async function renderDashboardStats() {
                 </div>
             `;
         }
+
+        // Trigger count-up animations
+        requestAnimationFrame(() => {
+            animateCountUp(document.getElementById('kpi-total-orders'), total, 700);
+            animateCountUp(document.getElementById('kpi-revenue'), revenue, 900, true);
+            animateCountUp(document.getElementById('kpi-pending'), pending, 600);
+            animateCountUp(document.getElementById('kpi-active-tables'), activeTables, 600);
+        });
 
         checkLowStock();
     } catch (e) {
