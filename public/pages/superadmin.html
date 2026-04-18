@@ -412,12 +412,12 @@
             <div class="auth-card">
                 <img src="/images/bunny_logo.png" alt="Logo" class="logo">
                 <h2 class="auth-title">Super Admin OS</h2>
-                <p class="auth-subtitle">Restricted Access Area. Enter Owner Secret.</p>
+                <p class="auth-subtitle" data-i18n="superadmin.login_title">Restricted Access Area. Enter Owner Secret.</p>
                 
                 <form id="owner-auth-form">
-                    <input type="password" id="owner-secret-input" class="auth-input" placeholder="Owner Secret Code" required autofocus>
+                    <input type="password" id="owner-secret-input" class="auth-input" placeholder="Owner Secret Code" data-i18n="superadmin.owner_secret" data-i18n-attr="placeholder" required autofocus>
                     <button type="submit" class="primary-btn" id="auth-submit-btn">
-                        <i class="fa-solid fa-lock-open me-2"></i> Unlock System
+                        <i class="fa-solid fa-lock-open me-2"></i> <span data-i18n="superadmin.unlock_btn">Unlock System</span>
                     </button>
                     <div id="auth-error" class="text-danger mt-3 small" style="display: none;"></div>
                 </form>
@@ -430,13 +430,13 @@
                 <div class="brand">
                     <img src="/images/bunny_logo.png" alt="Logo">
                     <div class="brand-text">
-                        <h1>SaaS Command Center</h1>
-                        <p>Nohope Coffee Platform</p>
+                        <h1 data-i18n="superadmin.title">SaaS Command Center</h1>
+                        <p data-i18n="superadmin.platform_subtitle">Nohope Coffee Platform</p>
                     </div>
                 </div>
                 <div>
                     <button class="btn btn-outline-danger btn-sm rounded-pill px-3" id="logout-btn">
-                        <i class="fa-solid fa-power-off me-2"></i>Lock
+                        <i class="fa-solid fa-power-off me-2"></i><span data-i18n="admin.logout">Lock</span>
                     </button>
                 </div>
             </div>
@@ -445,39 +445,39 @@
                 <div class="stats">
                     <div class="stat-item">
                         <span class="stat-value text-success" id="total-revenue-count">0đ</span>
-                        <span class="stat-label">Platform Revenue</span>
+                        <span class="stat-label" data-i18n="superadmin.stat_revenue">Platform Revenue</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-value" id="total-tenants-count">0</span>
-                        <span class="stat-label">Active Tenants</span>
+                        <span class="stat-label" data-i18n="superadmin.stat_tenants">Active Tenants</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-value" id="total-users-count">0</span>
-                        <span class="stat-label">Staff Accounts</span>
+                        <span class="stat-label" data-i18n="superadmin.stat_users">Staff Accounts</span>
                     </div>
                 </div>
                 <button class="primary-btn" style="width: auto; padding: 0.8rem 1.5rem;" data-bs-toggle="modal" data-bs-target="#createTenantModal">
-                    <i class="fa-solid fa-plus me-2"></i> Onboard New
+                    <i class="fa-solid fa-plus me-2"></i> <span data-i18n="superadmin.onboard">Onboard New</span>
                 </button>
             </div>
 
             <!-- Broadcast Section -->
             <div class="card bg-dark border-secondary mb-4" style="border-radius: 16px;">
                 <div class="card-body p-4">
-                    <h5 class="mb-3 font-noto font-bold"><i class="fa-solid fa-bullhorn text-warning me-2"></i> Global Broadcast</h5>
+                    <h5 class="mb-3 font-noto font-bold"><i class="fa-solid fa-bullhorn text-warning me-2"></i> <span data-i18n="superadmin.broadcast_title">Global Broadcast</span></h5>
                     <div class="row g-2">
                         <div class="col-md-7">
-                            <input type="text" id="broadcast-message" class="form-control bg-black text-white border-secondary" placeholder="Enter system announcement...">
+                            <input type="text" id="broadcast-message" class="form-control bg-black text-white border-secondary" placeholder="Enter system announcement..." data-i18n="superadmin.broadcast_placeholder" data-i18n-attr="placeholder">
                         </div>
                         <div class="col-md-3">
                             <select id="broadcast-type" class="form-control bg-black text-white border-secondary">
-                                <option value="info">Info (Blue)</option>
-                                <option value="warning">Warning (Yellow)</option>
-                                <option value="danger">Danger (Red)</option>
+                                <option value="info" data-i18n="superadmin.broadcast_info">Info (Blue)</option>
+                                <option value="warning" data-i18n="superadmin.broadcast_warning">Warning (Yellow)</option>
+                                <option value="danger" data-i18n="superadmin.broadcast_danger">Danger (Red)</option>
                             </select>
                         </div>
                         <div class="col-md-2">
-                            <button id="send-broadcast-btn" class="btn btn-warning w-100 font-bold" style="border-radius: 10px;">Send Alert</button>
+                            <button id="send-broadcast-btn" class="btn btn-warning w-100 font-bold" style="border-radius: 10px;" data-i18n="superadmin.broadcast_btn">Send Alert</button>
                         </div>
                     </div>
                 </div>
@@ -487,16 +487,16 @@
                 <div class="col-md-8">
                     <div class="input-group">
                         <span class="input-group-text bg-dark border-secondary text-muted"><i class="fa-solid fa-search"></i></span>
-                        <input type="text" id="tenant-search" class="form-control bg-dark text-white border-secondary" placeholder="Search by name or domain...">
+                        <input type="text" id="tenant-search" class="form-control bg-dark text-white border-secondary" placeholder="Search by name or domain..." data-i18n="superadmin.search" data-i18n-attr="placeholder">
                     </div>
                 </div>
                 <div class="col-md-4">
                     <select id="status-filter" class="form-select bg-dark text-white border-secondary">
-                        <option value="all">All Statuses</option>
-                        <option value="active">Active</option>
-                        <option value="suspended">Suspended</option>
-                        <option value="expiring">Expiring Soon</option>
-                        <option value="expired">Expired</option>
+                        <option value="all" data-i18n="superadmin.filter_all">All Statuses</option>
+                        <option value="active" data-i18n="superadmin.filter_active">Active</option>
+                        <option value="suspended" data-i18n="superadmin.filter_suspended">Suspended</option>
+                        <option value="expiring" data-i18n="superadmin.filter_expiring">Expiring Soon</option>
+                        <option value="expired" data-i18n="superadmin.filter_expired">Expired</option>
                     </select>
                 </div>
             </div>
@@ -505,7 +505,7 @@
                 <!-- Data populated by JS -->
                 <div class="text-center w-100 py-5 text-muted">
                     <i class="fa-solid fa-spinner fa-spin fa-2x mb-3"></i>
-                    <p>Loading tenant matrix...</p>
+                    <p data-i18n="common.loading">Loading tenant matrix...</p>
                 </div>
             </div>
         </div>
@@ -516,36 +516,36 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="fa-solid fa-rocket me-2 text-primary"></i> Onboard New Tenant</h5>
+                    <h5 class="modal-title"><i class="fa-solid fa-rocket me-2 text-primary"></i> <span data-i18n="superadmin.create_title">Onboard New Tenant</span></h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="create-tenant-form">
                         <div class="mb-3">
-                            <label class="form-label">Client / Brand Name</label>
-                            <input type="text" id="new-client-name" class="form-control" placeholder="e.g. Phúc Long Coffee" required>
+                            <label class="form-label" data-i18n="superadmin.client_name">Client / Brand Name</label>
+                            <input type="text" id="new-client-name" class="form-control" data-i18n="superadmin.create_placeholder_name" data-i18n-attr="placeholder" placeholder="e.g. Phúc Long Coffee" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Subscription Tier</label>
+                            <label class="form-label" data-i18n="superadmin.tier">Subscription Tier</label>
                             <select id="new-client-tier" class="form-select bg-dark text-white border-secondary">
-                                <option value="trial">Trial (7 days, 5 staff, 50 items)</option>
-                                <option value="basic">Basic (30 days, 10 staff, 200 items)</option>
-                                <option value="premium">Premium (365 days, 50 staff, unlimited items)</option>
+                                <option value="trial" data-i18n="superadmin.tier_trial">Trial (7 days, 5 staff, 50 items)</option>
+                                <option value="basic" data-i18n="superadmin.tier_basic">Basic (30 days, 10 staff, 200 items)</option>
+                                <option value="premium" data-i18n="superadmin.tier_premium">Premium (365 days, 50 staff, unlimited items)</option>
                             </select>
                         </div>
                         <div class="mb-2">
-                            <label class="form-label">Default Admin PIN</label>
-                            <input type="text" id="new-admin-pin" class="form-control" placeholder="6 digits recommended" required>
+                            <label class="form-label" data-i18n="superadmin.admin_pin">Default Admin PIN</label>
+                            <input type="text" id="new-admin-pin" class="form-control" data-i18n="superadmin.create_placeholder_pin" data-i18n-attr="placeholder" placeholder="6 digits recommended" required>
                             <div class="form-text text-muted mt-2" style="font-size: 0.8rem;">
                                 <i class="fa-solid fa-circle-info me-1"></i>
-                                This PIN will be used by the client's superuser to log in to the Dashboard. A secure Auth credential will be automatically generated.
+                                <span data-i18n="superadmin.create_pin_hint">This PIN will be used by the client's superuser to log in to the Dashboard. A secure Auth credential will be automatically generated.</span>
                             </div>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="primary-btn rounded-pill px-4 m-0" style="width: auto;" id="confirm-create-btn">
+                    <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal" data-i18n="common.cancel">Cancel</button>
+                    <button type="button" class="primary-btn rounded-pill px-4 m-0" style="width: auto;" id="confirm-create-btn" data-i18n="superadmin.create_btn">
                         Initialize Tenant
                     </button>
                 </div>
@@ -558,7 +558,11 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="fa-solid fa-gear me-2 text-primary"></i> <span id="manage-tenant-name-display" class="text-white"></span></h5>
+                    <h5 class="modal-title">
+                        <i class="fa-solid fa-gear me-2 text-primary"></i> 
+                        <span data-i18n="superadmin.manage_title" id="manage-title-text">Manage</span>: 
+                        <span id="manage-tenant-name-display" class="text-white"></span>
+                    </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -566,77 +570,77 @@
 
                     <!-- Actions -->
                     <div class="d-flex gap-2 mb-4">
-                        <button class="btn btn-sm btn-outline-info flex-fill" id="btn-impersonate" onclick="impersonateTenant()"><i class="fa-solid fa-masks-theater me-2"></i>Login As Admin</button>
-                        <button class="btn btn-sm btn-outline-warning flex-fill" id="btn-reset-pin" onclick="resetTenantPin()"><i class="fa-solid fa-key me-2"></i>Reset PIN</button>
-                        <button class="btn btn-sm btn-outline-danger flex-fill" id="btn-delete-tenant" onclick="deleteTenant()"><i class="fa-solid fa-trash me-2"></i>Delete</button>
+                        <button class="btn btn-sm btn-outline-info flex-fill" id="btn-impersonate" onclick="impersonateTenant()"><i class="fa-solid fa-masks-theater me-2"></i><span data-i18n="superadmin.btn_impersonate">Login As Admin</span></button>
+                        <button class="btn btn-sm btn-outline-warning flex-fill" id="btn-reset-pin" onclick="resetTenantPin()"><i class="fa-solid fa-key me-2"></i><span data-i18n="superadmin.btn_reset_pin">Reset PIN</span></button>
+                        <button class="btn btn-sm btn-outline-danger flex-fill" id="btn-delete-tenant" onclick="deleteTenant()"><i class="fa-solid fa-trash me-2"></i><span data-i18n="superadmin.btn_delete">Delete</span></button>
                     </div>
 
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
-                            <label class="form-label">Client ID</label>
+                            <label class="form-label" data-i18n="superadmin.col_id">Client ID</label>
                             <input type="text" id="manage-tenant-id-display" class="form-control" readonly disabled style="opacity: 0.7; font-size: 0.8rem">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Status</label>
+                            <label class="form-label" data-i18n="superadmin.col_status">Status</label>
                             <select id="manage-tenant-status" class="form-control" style="appearance: auto;">
-                                <option value="active">🟢 Active</option>
-                                <option value="suspended">🔴 Suspended</option>
+                                <option value="active">🟢 <span data-i18n="superadmin.filter_active">Active</span></option>
+                                <option value="suspended">🔴 <span data-i18n="superadmin.filter_suspended">Suspended</span></option>
                             </select>
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label text-warning">Quick Set Plan</label>
+                        <label class="form-label text-warning" data-i18n="superadmin.quick_plan">Quick Set Plan</label>
                         <select id="manage-tenant-tier" class="form-select bg-dark border-warning text-white">
-                            <option value="">-- Select a predefined tier to autofill --</option>
-                            <option value="trial">Trial (7 days, 5 staff, 50 items)</option>
-                            <option value="basic">Basic (30 days, 10 staff, 200 items)</option>
-                            <option value="premium">Premium (365 days, 50 staff, 9999 items)</option>
+                            <option value="" data-i18n="superadmin.tier_default">-- Select a predefined tier to autofill --</option>
+                            <option value="trial" data-i18n="superadmin.tier_trial">Trial (7 days, 5 staff, 50 items)</option>
+                            <option value="basic" data-i18n="superadmin.tier_basic">Basic (30 days, 10 staff, 200 items)</option>
+                            <option value="premium" data-i18n="superadmin.tier_premium">Premium (365 days, 50 staff, 9999 items)</option>
                         </select>
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label text-warning">Subscription Expiry Date</label>
+                        <label class="form-label text-warning" data-i18n="superadmin.expiry_date">Subscription Expiry Date</label>
                         <input type="datetime-local" id="manage-tenant-expiry" class="form-control border-warning text-warning font-bold">
                     </div>
                     <div class="row g-3 mb-3">
                         <div class="col-6">
-                            <label class="form-label">Max Staff Accounts</label>
+                            <label class="form-label" data-i18n="superadmin.max_staff">Max Staff Accounts</label>
                             <input type="number" id="manage-tenant-max-staff" class="form-control" value="5">
                         </div>
                         <div class="col-6">
-                            <label class="form-label">Max Menu Items</label>
+                            <label class="form-label" data-i18n="superadmin.max_items">Max Menu Items</label>
                             <input type="number" id="manage-tenant-max-items" class="form-control" value="50">
                         </div>
                     </div>
                     
-                    <h6 class="mt-4 mb-3 text-info border-bottom border-secondary pb-2"><i class="fa-solid fa-paint-roller me-2"></i> Branding & Infrastructure</h6>
+                    <h6 class="mt-4 mb-3 text-info border-bottom border-secondary pb-2"><i class="fa-solid fa-paint-roller me-2"></i> <span data-i18n="superadmin.branding_title">Branding & Infrastructure</span></h6>
                     
                     <div class="mb-3">
-                        <label class="form-label">Custom Domain</label>
-                        <input type="text" id="manage-tenant-domain" class="form-control" placeholder="e.g. order.mycafe.com" value="">
+                        <label class="form-label" data-i18n="superadmin.custom_domain">Custom Domain</label>
+                        <input type="text" id="manage-tenant-domain" class="form-control" data-i18n="superadmin.domain_placeholder" data-i18n-attr="placeholder" placeholder="e.g. order.mycafe.com" value="">
                     </div>
                     <div class="row g-3 mb-3">
                         <div class="col-8">
-                            <label class="form-label">Logo URL</label>
+                            <label class="form-label" data-i18n="superadmin.logo_url">Logo URL</label>
                             <input type="text" id="manage-tenant-logo" class="form-control" placeholder="/images/bunny_logo.png">
                         </div>
                         <div class="col-4">
-                            <label class="form-label">Primary Color</label>
+                            <label class="form-label" data-i18n="superadmin.primary_color">Primary Color</label>
                             <input type="color" id="manage-tenant-color" class="form-control form-control-color w-100" value="#c084fc" style="height: 44px;">
                         </div>
                     </div>
                     
-                    <h6 class="mt-4 mb-3 text-success border-bottom border-secondary pb-2"><i class="fa-solid fa-plug me-2"></i> Integrations</h6>
+                    <h6 class="mt-4 mb-3 text-success border-bottom border-secondary pb-2"><i class="fa-solid fa-plug me-2"></i> <span data-i18n="superadmin.integrations_title">Integrations</span></h6>
                     <div class="mb-3">
-                        <label class="form-label">Zalo ZNS / Webhook URL</label>
+                        <label class="form-label" data-i18n="superadmin.webhook_url">Zalo ZNS / Webhook URL</label>
                         <input type="text" id="manage-tenant-zns" class="form-control" placeholder="https://api.yourzns.com/webhook..." value="">
-                        <div class="form-text text-muted" style="font-size: 0.8rem;">Leave blank to disable ZNS marketing automations.</div>
+                        <div class="form-text text-muted" style="font-size: 0.8rem;" data-i18n="superadmin.webhook_hint">Leave blank to disable ZNS marketing automations.</div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="primary-btn rounded-pill px-4 m-0 bg-success text-white" style="width: auto;" id="confirm-update-tenant-btn">
+                    <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal" data-i18n="common.cancel">Cancel</button>
+                    <button type="button" class="primary-btn rounded-pill px-4 m-0 bg-success text-white" style="width: auto;" id="confirm-update-tenant-btn" data-i18n="superadmin.save_btn">
                         Save Tenant Info
                     </button>
                 </div>

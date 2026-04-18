@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 errDiv.style.display = 'block';
                 setTimeout(() => {
                     btn.disabled = false;
-                    btn.innerHTML = '<i class="fa-solid fa-lock-open me-2"></i> Unlock System';
+                    btn.innerHTML = `<i class="fa-solid fa-lock-open me-2"></i> ${window.t ? window.t('superadmin.unlock_btn') : 'Unlock System'}`;
                 }, 1000);
             }
         });
@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const btn = document.getElementById('auth-submit-btn');
             btn.disabled = false;
-            btn.innerHTML = '<i class="fa-solid fa-lock-open me-2"></i> Unlock System';
+            btn.innerHTML = `<i class="fa-solid fa-lock-open me-2"></i> ${window.t ? window.t('superadmin.unlock_btn') : 'Unlock System'}`;
         });
     }
 
@@ -157,7 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast(err.message, 'danger');
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = 'Initialize Tenant';
+                btn.innerHTML = window.t ? window.t('superadmin.create_btn') : 'Create Workspace';
             }
         });
     }
@@ -232,7 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast(err.message, 'danger');
             } finally {
                 confirmUpdateCmdBtn.disabled = false;
-                confirmUpdateCmdBtn.innerHTML = 'Save Tenant Info';
+                confirmUpdateCmdBtn.innerHTML = window.t ? window.t('superadmin.save_btn') : 'Save Tenant Info';
             }
         });
     }
@@ -261,7 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast(e.message, 'danger');
             } finally {
                 broadcastBtn.disabled = false;
-                broadcastBtn.innerHTML = 'Send Alert';
+                broadcastBtn.innerHTML = window.t ? window.t('superadmin.broadcast_btn') : 'Send Alert';
             }
         });
     }
@@ -411,8 +411,8 @@ function renderTenants(tenants) {
                         <span>${new Intl.NumberFormat('vi-VN').format(t.total_revenue || 0)}đ ${window.t ? window.t('superadmin.card_rev') : 'Rev'}</span>
                     </div>
                     <div class="metric" style="width: 45%;">
-                        <i class="fa-solid fa-users"></i>
-                        <span>${t.staff_count || 0}/${t.max_staff || 5} ${window.t ? window.t('superadmin.card_staff') : 'Staff'}</span>
+                        <i class="fa-solid fa-users ${(t.staff_count || 0) > (t.max_staff || 5) ? 'text-danger' : ''}"></i>
+                        <span class="${(t.staff_count || 0) > (t.max_staff || 5) ? 'text-danger fw-bold' : ''}" title="${(t.staff_count || 0) > (t.max_staff || 5) ? 'Over limit (Downgraded)' : ''}">${t.staff_count || 0}/${t.max_staff || 5} ${window.t ? window.t('superadmin.card_staff') : 'Staff'}</span>
                     </div>
                     <div class="metric" style="width: 45%;">
                         <i class="fa-solid fa-hourglass-end ${isExpired ? 'text-danger' : ''}"></i>
