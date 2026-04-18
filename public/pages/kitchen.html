@@ -15,6 +15,14 @@
     <!-- Velvet Crema Typography -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    
+    <!-- Core Styles -->
+    <link rel="stylesheet" href="/css/styles.css?v=1.9">
     
     <!-- Tailwind CSS -->
     <link rel="stylesheet" href="css/index.css">
@@ -35,23 +43,37 @@
     </style>
 
     <script>
-        const role = localStorage.getItem('cafe_role') || sessionStorage.getItem('cafe_role');
-        if (role !== 'kitchen' && role !== 'admin' && role !== 'manager') {
-            window.location.href = '/login';
-        }
+        // Auth gate: hide page until verified
+        document.documentElement.style.opacity = '0';
     </script>
     
     <!-- Supabase Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-config.js"></script>
     <script>
-        // STRICT Auth Check via Supabase
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            if (!session) {
-                localStorage.clear(); sessionStorage.clear();
+        // Combined Auth Check: Supabase session + role validation
+        (async function() {
+            const role = localStorage.getItem('cafe_role') || sessionStorage.getItem('cafe_role');
+            if (role !== 'kitchen' && role !== 'admin' && role !== 'manager') {
                 window.location.href = '/login';
+                return;
             }
-        });
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) {
+                    localStorage.clear(); sessionStorage.clear();
+                    window.location.href = '/login';
+                    return;
+                }
+            } catch(e) {
+                console.error('Auth check failed:', e);
+                window.location.href = '/login';
+                return;
+            }
+            // Auth verified — reveal page
+            document.documentElement.style.opacity = '1';
+            document.documentElement.style.transition = 'opacity 0.3s ease';
+        })();
     </script>
     
     <!-- PWA Favicons -->

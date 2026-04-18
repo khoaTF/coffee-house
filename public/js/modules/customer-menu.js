@@ -175,8 +175,26 @@ export function getAvailableToAdd(product) {
     return additionalAllowed === Infinity ? 999 : additionalAllowed;
 }
 
+// Show skeleton loading placeholders while menu loads
+function showMenuSkeleton() {
+    if (!dom.menuContainer) return;
+    dom.menuContainer.style.display = 'grid';
+    const skeletonCount = 6;
+    dom.menuContainer.innerHTML = Array.from({ length: skeletonCount }, (_, i) => `
+        <div class="skeleton-card" style="animation-delay: ${i * 80}ms">
+            <div class="skeleton-img"></div>
+            <div style="padding: 12px;">
+                <div class="skeleton skeleton-text medium"></div>
+                <div class="skeleton skeleton-text price"></div>
+                <div class="skeleton skeleton-text short" style="margin-top:12px; height:36px; border-radius:50px;"></div>
+            </div>
+        </div>
+    `).join('');
+}
+
 // Fetch Menu from Backend
 export async function fetchMenu() {
+    showMenuSkeleton();
     try {
         const [prodRes, stockRes, ordersRes, settingsRes] = await Promise.all([
             supabase.from('products').select('*').eq('tenant_id', state.tenantId).eq('is_available', true),

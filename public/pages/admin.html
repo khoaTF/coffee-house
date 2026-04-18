@@ -13,6 +13,11 @@
     <meta property="og:url" content="https://cafe-house.example.com/admin.html">
     <meta property="og:image" content="https://cafe-house.example.com/assets/admin-og.jpg">
     <meta name="robots" content="noindex, nofollow">
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
@@ -22,13 +27,31 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/js/supabase-config.js"></script>
     <script>
-        // STRICT Auth Check via Supabase
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            if (!session) {
-                localStorage.clear(); sessionStorage.clear();
+        // Auth gate: hide page until verified
+        document.documentElement.style.opacity = '0';
+        // Combined Auth Check: Supabase session + role validation
+        (async function() {
+            const role = localStorage.getItem('cafe_role') || sessionStorage.getItem('cafe_role');
+            if (role !== 'admin' && role !== 'manager' && role !== 'staff') {
                 window.location.href = '/login';
+                return;
             }
-        });
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) {
+                    localStorage.clear(); sessionStorage.clear();
+                    window.location.href = '/login';
+                    return;
+                }
+            } catch(e) {
+                console.error('Auth check failed:', e);
+                window.location.href = '/login';
+                return;
+            }
+            // Auth verified — reveal page
+            document.documentElement.style.opacity = '1';
+            document.documentElement.style.transition = 'opacity 0.3s ease';
+        })();
     </script>
     
     <!-- Chart.js -->
@@ -39,13 +62,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="/css/styles.css?v=1.8">
-    <script>
-        const role = localStorage.getItem('cafe_role') || sessionStorage.getItem('cafe_role');
-        if (role !== 'admin' && role !== 'manager' && role !== 'staff') {
-            window.location.href = '/login';
-        }
-    </script>
+    <link rel="stylesheet" href="/css/styles.css?v=1.9">
     <link rel="stylesheet" href="/css/index.css">
     <link rel="stylesheet" href="/css/admin.css">
 

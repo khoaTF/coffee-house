@@ -266,6 +266,21 @@
       'superadmin.broadcast_title': 'Thông báo Toàn hệ thống',
       'superadmin.broadcast_placeholder': 'Nhập thông báo...',
       'superadmin.broadcast_btn': 'Gửi Thông báo',
+      'superadmin.platform_subtitle': 'Nền tảng Cà Phê Nohope',
+      'superadmin.create_placeholder_name': 'vd: Phúc Long Coffee',
+      'superadmin.create_placeholder_pin': 'Khuyên dùng 6 chữ số',
+      'superadmin.create_pin_hint': 'Mã PIN này sẽ được Admin sử dụng để đăng nhập vào Bảng điều khiển.',
+      'superadmin.broadcast_info': 'Thông tin (Xanh dương)',
+      'superadmin.broadcast_warning': 'Cảnh báo (Vàng)',
+      'superadmin.broadcast_danger': 'Khẩn cấp (Đỏ)',
+      'superadmin.branding_title': 'Thương Hiệu & Hệ Thống',
+      'superadmin.custom_domain': 'Tên Miền Tùy Chỉnh',
+      'superadmin.domain_placeholder': 'vd: order.mycafe.com',
+      'superadmin.logo_url': 'Đường dẫn Logo',
+      'superadmin.primary_color': 'Màu Chủ Đạo',
+      'superadmin.integrations_title': 'Tích Hợp',
+      'superadmin.webhook_url': 'Zalo ZNS / Webhook URL',
+      'superadmin.webhook_hint': 'Bỏ trống nếu không sử dụng Zalo ZNS marketing.',
     },
 
     en: {
@@ -527,6 +542,21 @@
       'superadmin.broadcast_title': 'Global Broadcast',
       'superadmin.broadcast_placeholder': 'Enter system announcement...',
       'superadmin.broadcast_btn': 'Send Alert',
+      'superadmin.platform_subtitle': 'Nohope Coffee Platform',
+      'superadmin.create_placeholder_name': 'e.g. Phúc Long Coffee',
+      'superadmin.create_placeholder_pin': '6 digits recommended',
+      'superadmin.create_pin_hint': "This PIN will be used by the client's superuser to log in to the Dashboard.",
+      'superadmin.broadcast_info': 'Info (Blue)',
+      'superadmin.broadcast_warning': 'Warning (Yellow)',
+      'superadmin.broadcast_danger': 'Danger (Red)',
+      'superadmin.branding_title': 'Branding & Infrastructure',
+      'superadmin.custom_domain': 'Custom Domain',
+      'superadmin.domain_placeholder': 'e.g. order.mycafe.com',
+      'superadmin.logo_url': 'Logo URL',
+      'superadmin.primary_color': 'Primary Color',
+      'superadmin.integrations_title': 'Integrations',
+      'superadmin.webhook_url': 'Zalo ZNS / Webhook URL',
+      'superadmin.webhook_hint': 'Leave blank to disable ZNS marketing automations.',
     }
   };
 
@@ -549,6 +579,11 @@
     applyPageLang();
     updateToggleBtn();
     document.documentElement.lang = lang;
+    
+    // Re-render JS dynamic elements if function exists
+    if (window.fetchAndRenderTenants) {
+        window.fetchAndRenderTenants();
+    }
   }
 
   function togglePageLang() {
@@ -719,11 +754,12 @@
       if (logoutBtn) logoutBtn.innerHTML = `<i class="fa-solid fa-power-off me-2"></i>${t('common.logout')}`;
 
       // Broadcast section
-      patch('.fa-bullhorn', 'superadmin.broadcast_title');
       const broadcastTitle = document.querySelector('h5.mb-3.font-noto');
       if (broadcastTitle) broadcastTitle.innerHTML = `<i class="fa-solid fa-bullhorn text-warning me-2"></i> ${t('superadmin.broadcast_title')}`;
       patch('#broadcast-message', 'superadmin.broadcast_placeholder', 'placeholder');
-      patch('#send-broadcast-btn', 'superadmin.broadcast_btn');
+      
+      const sendBroadcastBtn = document.getElementById('send-broadcast-btn');
+      if (sendBroadcastBtn) sendBroadcastBtn.textContent = t('superadmin.broadcast_btn');
 
       // Dashboard Stats
       const statLabels = document.querySelectorAll('.stat-label');
@@ -735,7 +771,7 @@
       patch('#tenant-search', 'superadmin.search', 'placeholder');
       
       const filterSelect = document.getElementById('status-filter');
-      if (filterSelect) {
+      if (filterSelect && filterSelect.options && filterSelect.options.length >= 5) {
         filterSelect.options[0].textContent = t('superadmin.filter_all');
         filterSelect.options[1].textContent = `🟢 ${t('superadmin.filter_active')}`;
         filterSelect.options[2].textContent = `🔴 ${t('superadmin.filter_suspended')}`;
@@ -748,29 +784,11 @@
 
       // Modals - Create
       const createTitle = document.querySelector('#createTenantModal .modal-title');
-      if (createTitle) createTitle.innerHTML = `<i class="fa-solid fa-plus-circle me-2 text-primary"></i> ${t('superadmin.create_title')}`;
-      
-      const createLabels = document.querySelectorAll('#createTenantModal label');
-      if (createLabels[0]) createLabels[0].textContent = t('superadmin.client_name');
-      if (createLabels[1]) createLabels[1].textContent = t('superadmin.subdomain');
-      if (createLabels[2]) createLabels[2].textContent = t('superadmin.tier');
-      if (createLabels[3]) createLabels[3].textContent = t('superadmin.admin_pin');
-      if (createLabels[4]) createLabels[4].textContent = t('superadmin.admin_password');
-
-      const createTierSelect = document.getElementById('new-client-tier');
-      if (createTierSelect) {
-        createTierSelect.options[0].textContent = t('superadmin.tier_default');
-        createTierSelect.options[1].textContent = t('superadmin.tier_trial');
-        createTierSelect.options[2].textContent = t('superadmin.tier_basic');
-        createTierSelect.options[3].textContent = t('superadmin.tier_premium');
-      }
-
-      const createBtn = document.getElementById('btn-create-tenant');
-      if (createBtn) createBtn.textContent = t('superadmin.create_btn');
+      if (createTitle) createTitle.innerHTML = `<i class="fa-solid fa-rocket me-2 text-primary"></i> ${t('superadmin.create_title')}`;
 
       // Modals - Manage
-      const manageTitle = document.querySelector('#manageTenantModal .modal-title');
-      if (manageTitle) manageTitle.innerHTML = `<i class="fa-solid fa-gear me-2 text-info"></i> ${t('superadmin.manage_title')}`;
+      const manageTitleText = document.getElementById('manage-title-text');
+      if (manageTitleText) manageTitleText.textContent = t('superadmin.manage_title');
 
       const btnImpersonate = document.getElementById('btn-impersonate');
       if (btnImpersonate) btnImpersonate.innerHTML = `<i class="fa-solid fa-masks-theater me-2"></i>${t('superadmin.btn_impersonate')}`;
@@ -781,37 +799,12 @@
       const btnDelete = document.getElementById('btn-delete-tenant');
       if (btnDelete) btnDelete.innerHTML = `<i class="fa-solid fa-trash me-2"></i>${t('superadmin.btn_delete')}`;
 
-      const manageLabels = document.querySelectorAll('#manageTenantModal label');
-      if (manageLabels[0]) manageLabels[0].textContent = t('superadmin.col_id'); // Client ID
-      if (manageLabels[1]) manageLabels[1].textContent = t('superadmin.col_status'); // Status
-      if (manageLabels[2]) manageLabels[2].textContent = t('superadmin.quick_plan'); // Quick Set Plan
-      if (manageLabels[3]) manageLabels[3].textContent = t('superadmin.expiry_date'); // Expiry Date
-      if (manageLabels[4]) manageLabels[4].textContent = t('superadmin.max_staff'); // Max Staff Accounts
-      if (manageLabels[5]) manageLabels[5].textContent = t('superadmin.max_items'); // Max Menu Items
-
-      const manageTierSelect = document.getElementById('manage-tenant-tier');
-      if (manageTierSelect) {
-        manageTierSelect.options[0].textContent = t('superadmin.tier_default');
-        manageTierSelect.options[1].textContent = t('superadmin.tier_trial');
-        manageTierSelect.options[2].textContent = t('superadmin.tier_basic');
-        manageTierSelect.options[3].textContent = t('superadmin.tier_premium');
-      }
-
-      const manageStatusSelect = document.getElementById('manage-tenant-status');
-      if (manageStatusSelect) {
-        manageStatusSelect.options[0].textContent = `🟢 ${t('superadmin.filter_active')}`;
-        manageStatusSelect.options[1].textContent = `🔴 ${t('superadmin.filter_suspended')}`;
-      }
-
-      const saveBtn = document.getElementById('confirm-update-tenant-btn');
-      if (saveBtn) saveBtn.textContent = t('superadmin.save_btn');
-
       // Sidebar
       const sidebarDocContainer = document.querySelector('.fa-book');
-      if (sidebarDocContainer) sidebarDocContainer.parentNode.innerHTML = `<i class="fa-solid fa-book w-5"></i> ${t('superadmin.sidebar_doc')}`;
+      if (sidebarDocContainer && sidebarDocContainer.parentNode) sidebarDocContainer.parentNode.innerHTML = `<i class="fa-solid fa-book w-5"></i> ${t('superadmin.sidebar_doc')}`;
       
       const sidebarAPIContainer = document.querySelector('.fa-server');
-      if (sidebarAPIContainer) sidebarAPIContainer.parentNode.innerHTML = `<i class="fa-solid fa-server w-5 text-success"></i> ${t('superadmin.sidebar_api')} <span class="badge bg-success ms-auto">OK</span>`;
+      if (sidebarAPIContainer && sidebarAPIContainer.parentNode) sidebarAPIContainer.parentNode.innerHTML = `<i class="fa-solid fa-server w-5 text-success"></i> ${t('superadmin.sidebar_api')} <span class="badge bg-success ms-auto">OK</span>`;
     } catch (_) {}
   }
 
