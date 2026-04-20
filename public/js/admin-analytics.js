@@ -449,11 +449,11 @@ async function loadDashboard() {
                                          const statusColors = { Pending:'bg-warning text-dark', Preparing:'bg-primary' };
                                          const statusVI = { Pending:'Đang chờ', Preparing:'Đang chuẩn bị' };
                                          const time = new Date(o.created_at).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
-                                         return \`<tr>
-                                             <td class="py-3 px-4 text-slate-800 font-bold">\${window.escapeHTML(o.table_number || '?')}</td>
-                                             <td class="py-3 px-4 text-slate-500 text-sm">\${time}</td>
-                                             <td class="py-3 px-4 text-center"><span class="badge \${statusColors[o.status]||'bg-secondary'} px-3 py-2 text-xs rounded-full shadow-sm">\${statusVI[o.status]||o.status}</span></td>
-                                         </tr>\`;
+                                         return `<tr>
+                                             <td class="py-3 px-4 text-slate-800 font-bold">${window.escapeHTML(o.table_number || '?')}</td>
+                                             <td class="py-3 px-4 text-slate-500 text-sm">${time}</td>
+                                             <td class="py-3 px-4 text-center"><span class="badge ${statusColors[o.status]||'bg-secondary'} px-3 py-2 text-xs rounded-full shadow-sm">${statusVI[o.status]||o.status}</span></td>
+                                         </tr>`;
                                      }).join('')
                                  }
                              </tbody>

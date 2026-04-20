@@ -1,6 +1,6 @@
 // Nohope Coffee Service Worker v5
 // Strategy: Stale-While-Revalidate for static assets, Network-First for API
-const CACHE_VERSION = 'v5';
+const CACHE_VERSION = 'v6';
 const CACHE_NAME = `cafe-qr-${CACHE_VERSION}`;
 
 // Critical assets to pre-cache on install
@@ -11,6 +11,7 @@ const PRECACHE_ASSETS = [
   '/css/index.css',
   '/css/logo.css',
   '/css/gacha.css',
+  '/js/supabase.js',
   '/js/supabase-config.js',
   '/js/i18n.js',
   '/js/customer.js',
