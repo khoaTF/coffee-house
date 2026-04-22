@@ -330,7 +330,8 @@
                 // GAP 6: Dynamic table count from store_settings (same as admin)
                 let maxTable = 15;
                 try {
-                    const { data: storeSettings } = await supabase.from('store_settings').select('table_count').eq('id', 1).maybeSingle();
+                    const tenantId = sessionStorage.getItem('nohope_tenant_id') || localStorage.getItem('nohope_tenant_id');
+                    const { data: storeSettings } = await supabase.from('store_settings').select('table_count').eq('tenant_id', tenantId).maybeSingle();
                     if (storeSettings && storeSettings.table_count > 0) maxTable = storeSettings.table_count;
                 } catch(_) {}
                 for (let i = 1; i <= maxTable; i++) {
