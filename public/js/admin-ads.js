@@ -99,7 +99,15 @@ async function autoAssignBestSellers() {
 // ---------------------------
 
 let bannersList = [];
-const adBannerModal = new bootstrap.Modal(document.getElementById('adBannerModal'));
+let _adBannerModal = null;
+
+function getAdBannerModal() {
+    if (!_adBannerModal) {
+        const el = document.getElementById('adBannerModal');
+        if (el) _adBannerModal = new bootstrap.Modal(el);
+    }
+    return _adBannerModal;
+}
 
 async function loadBanners() {
     const tbody = document.getElementById('banners-table-body');
@@ -117,7 +125,7 @@ async function loadBanners() {
         renderBannersTable();
     } catch (err) {
         console.error('Error loading banners:', err);
-        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-red-500">Lỗi: ${window.escapeHTML(err.message)}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-red-500">Lỗi: ${window.escapeHTML ? window.escapeHTML(err.message) : err.message}</td></tr>`;
     }
 }
 
@@ -161,7 +169,8 @@ function renderBannersTable() {
 function openAdBannerModal() {
     document.getElementById('adBannerForm').reset();
     document.getElementById('bannerId').value = '';
-    adBannerModal.show();
+    const modal = getAdBannerModal();
+    if (modal) modal.show();
 }
 
 async function saveAdBanner() {
@@ -191,7 +200,8 @@ async function saveAdBanner() {
         if (error) throw error;
 
         showToast('Đã thêm banner thành công!', 'success');
-        adBannerModal.hide();
+        const modal = getAdBannerModal();
+        if (modal) modal.hide();
         loadBanners();
 
     } catch (err) {
@@ -212,7 +222,7 @@ async function toggleBannerStatus(id, isActive) {
     } catch (err) {
         console.error('Error toggling banner status:', err);
         alert('Lỗi cập nhật trạng thái: ' + err.message);
-        loadBanners(); // Reload to revert UI state
+        loadBanners();
     }
 }
 
@@ -231,21 +241,13 @@ async function deleteBanner(id) {
     }
 }
 
-// Ensure loadBanners is called when switching to promo tab
+// Hook into tab switching to load banners when promo section is shown
 document.addEventListener('DOMContentLoaded', () => {
-    // Setup tabs listener for section-promo
-    const promoLink = document.querySelector('a[onclick="showSection(\\\'promo\\\')"]');
-    if (promoLink) {
-        // Find existing onclick handler logic and append banner loading if needed
-        // Or dynamically hook into section changes
-    }
-    
-    // Quick and dirty hook: intercept showSection
-    const originalShowSection = window.showSection;
-    if (typeof originalShowSection === 'function') {
-        window.showSection = function(sectionId) {
-            originalShowSection(sectionId);
-            if (sectionId === 'promo') {
+    const originalSwitchTab = window.switchTab;
+    if (typeof originalSwitchTab === 'function') {
+        window.switchTab = function(tabId) {
+            originalSwitchTab(tabId);
+            if (tabId === 'promo') {
                 loadBanners();
             }
         };
