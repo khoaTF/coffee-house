@@ -1,5 +1,27 @@
 // admin-ads.js
 
+// Ensure showToast is available (defined in superadmin.js but not in admin scope)
+if (typeof window.showToast !== 'function') {
+    window.showToast = function(message, type = 'success') {
+        // Create toast element
+        const toast = document.createElement('div');
+        const bgColor = type === 'success' ? '#22c55e' : type === 'error' ? '#ef4444' : '#f59e0b';
+        toast.style.cssText = `
+            position: fixed; top: 20px; right: 20px; z-index: 99999;
+            padding: 12px 20px; border-radius: 12px; color: white; font-weight: 600;
+            font-size: 14px; background: ${bgColor}; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateX(120%); transition: transform 0.3s ease;
+            max-width: 360px;
+        `;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        requestAnimationFrame(() => { toast.style.transform = 'translateX(0)'; });
+        setTimeout(() => {
+            toast.style.transform = 'translateX(120%)';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    };
+}
 // ---------------------------
 // 1. AI Best Seller feature
 // ---------------------------
