@@ -105,6 +105,7 @@
                 sessionStorage.setItem('nohope_staff_avatar', data.avatar_url || '');
                 if (data.tenant_id) {
                     sessionStorage.setItem('tenant_id', data.tenant_id);
+                    localStorage.setItem('tenant_id', data.tenant_id);
                 }
                 if (data.tenant_name) {
                     sessionStorage.setItem('tenant_name', data.tenant_name);
@@ -119,9 +120,10 @@
                     sessionStorage.setItem('max_items', data.max_items);
                 }
                 
-                localStorage.removeItem('cafe_role');
-                localStorage.removeItem('nohope_staff_auth');
-                localStorage.removeItem('nohope_staff_name');
+                // Sync essential auth info to localStorage for cross-tab access (kitchen, tv)
+                localStorage.setItem('cafe_role', data.role);
+                localStorage.setItem('nohope_staff_auth', 'true');
+                localStorage.setItem('nohope_staff_name', data.name || 'Nhân viên');
 
                 btn.innerHTML = '<i class="fa-solid fa-check me-2"></i>Thành công!';
                 btn.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
