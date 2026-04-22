@@ -122,18 +122,43 @@ function renderOrders() {
             // Skip order entirely if it has no items for this station
             if (items.length === 0) return;
 
-            const itemsHtml = items.map(item => {
+            // Check if this order has item-level tracking
+            const hasItemTracking = items.some(i => typeof i.item_code === 'string');
+            const doneCount = items.filter(i => i.is_done).length;
+            const totalItemCount = items.length;
+            const progressPct = totalItemCount > 0 ? Math.round((doneCount / totalItemCount) * 100) : 0;
+
+            const itemsHtml = items.map((item, idx) => {
                 const optionsHtml = item.selectedOptions && item.selectedOptions.length > 0
                     ? `<div class="ml-4 text-gray-500 dark:text-gray-400 text-sm mt-1 border-l-2 border-[#D97531] pl-2">+ ${item.selectedOptions.map(o => window.escapeHTML(o.choiceName)).join(', ')}</div>`
                     : '';
+                const isDone = !!item.is_done;
+                const itemCode = item.item_code || `#${idx + 1}`;
+                const doneClass = isDone ? 'item-done' : '';
+                const canToggle = order.status === 'Preparing' && hasItemTracking;
+                const toggleAttr = canToggle ? `onclick="markItemDone('${order._id}', ${idx})" style="cursor:pointer"` : '';
                 return `
-                <li class="py-2 border-b border-gray-100 dark:border-gray-800 last:border-0">
-                    <div class="flex items-start justify-between">
-                        <span class="font-medium text-[#1B1C1C] dark:text-[#F6F3F2]"><span class="font-bold text-[#D97531] mr-1">${item.quantity || 1}x</span> ${window.escapeHTML(item.name || 'Unknown Item')}</span>
+                <li class="py-2 border-b border-gray-100 dark:border-gray-800 last:border-0 kitchen-item ${doneClass}" ${toggleAttr}>
+                    <div class="flex items-center gap-2">
+                        ${hasItemTracking ? `<span class="item-check ${isDone ? 'checked' : ''}">${isDone ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-regular fa-circle"></i>'}</span>` : ''}
+                        <span class="item-code-badge">${window.escapeHTML(itemCode)}</span>
+                        <span class="font-medium text-[#1B1C1C] dark:text-[#F6F3F2] ${isDone ? 'line-through opacity-50' : ''}"><span class="font-bold text-[#D97531] mr-1">${item.quantity || 1}x</span> ${window.escapeHTML(item.name || 'Unknown Item')}</span>
                     </div>
                     ${optionsHtml}
                 </li>`;
             }).join('');
+
+            // Progress bar HTML (only for orders with item tracking in Preparing state)
+            const progressHtml = hasItemTracking && order.status === 'Preparing' ? `
+                <div class="item-progress-bar mb-3">
+                    <div class="flex justify-between items-center text-xs font-semibold mb-1">
+                        <span class="text-gray-500 dark:text-gray-400">Tiến độ</span>
+                        <span class="${doneCount === totalItemCount ? 'text-green-500' : 'text-[#D97531]'}">${doneCount}/${totalItemCount}</span>
+                    </div>
+                    <div class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                        <div class="h-full rounded-full transition-all duration-500 ${doneCount === totalItemCount ? 'bg-green-500' : 'bg-[#D97531]'}" style="width: ${progressPct}%"></div>
+                    </div>
+                </div>` : '';
 
             // Determine Background and Border based on wait time
             let bgClass = 'bg-white dark:bg-[#2A2B2B]';
@@ -217,6 +242,7 @@ function renderOrders() {
                     <ul class="mb-4 list-none pl-0">
                         ${itemsHtml}
                     </ul>
+                    ${progressHtml}
                     ${order.orderNote ? `<div class="p-3 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm rounded-xl mb-4 font-bold flex gap-2 items-start border border-red-200 dark:border-red-800/50"><i class="fa-solid fa-triangle-exclamation mt-0.5"></i> <span>Ghi chú: ${window.escapeHTML(order.orderNote)}</span></div>` : ''}
                     
                     <!-- Status / Payment tags -->
@@ -228,7 +254,8 @@ function renderOrders() {
 
                 <div class="mt-auto pt-4 border-t border-gray-100 dark:border-gray-800">
                     ${order.status === 'Pending' ? `<button class="w-full py-3 mb-3 bg-[#D97531] hover:bg-[#b05f28] text-white rounded-xl font-bold transition-all shadow-sm hover:shadow active:scale-95 flex justify-center items-center gap-2" onclick="updateOrderStatus('${order._id}', 'Preparing', this)"><i class="fa-solid fa-fire"></i> Nhận đơn & Chế biến</button>` : ''}
-                    ${order.status === 'Preparing' ? `<button class="w-full py-3 mb-3 bg-[#994700] hover:bg-[#7a3900] text-white rounded-xl font-bold transition-all shadow-sm hover:shadow active:scale-95 flex justify-center items-center gap-2" onclick="updateOrderStatus('${order._id}', 'Ready', this)"><i class="fa-solid fa-bell-concierge"></i> Đã làm xong (Báo TV)</button>` : ''}
+                    ${order.status === 'Preparing' && hasItemTracking ? `<button class="w-full py-3 mb-3 bg-[#994700] hover:bg-[#7a3900] text-white rounded-xl font-bold transition-all shadow-sm hover:shadow active:scale-95 flex justify-center items-center gap-2" onclick="markAllItemsDone('${order._id}', this)"><i class="fa-solid fa-check-double"></i> Đánh dấu tất cả xong</button>` : ''}
+                    ${order.status === 'Preparing' && !hasItemTracking ? `<button class="w-full py-3 mb-3 bg-[#994700] hover:bg-[#7a3900] text-white rounded-xl font-bold transition-all shadow-sm hover:shadow active:scale-95 flex justify-center items-center gap-2" onclick="updateOrderStatus('${order._id}', 'Ready', this)"><i class="fa-solid fa-bell-concierge"></i> Đã làm xong (Báo TV)</button>` : ''}
                     ${order.status === 'Ready' && !isDelivery ? `<button class="w-full py-3 mb-3 bg-gray-800 hover:bg-black dark:bg-gray-100 dark:hover:bg-white dark:text-[#1B1C1C] text-white rounded-xl font-bold transition-all shadow-sm hover:shadow active:scale-95 flex justify-center items-center gap-2" onclick="updateOrderStatus('${order._id}', 'Completed', this)"><i class="fa-solid fa-check-circle"></i> Đã Giao Khách (Xóa màn TV)</button>` : ''}
                     ${order.status === 'Ready' && isDelivery ? `<div class="w-full py-3 mb-3 bg-[#CCFBF1] dark:bg-[#14b8a6]/20 text-[#14b8a6] dark:text-[#5eead4] border border-[#14b8a6]/30 rounded-xl font-bold text-center flex justify-center items-center gap-2"><i class="fa-solid fa-motorcycle"></i> Chờ Shipper...</div>` : ''}
                     <div class="flex gap-3">
@@ -527,6 +554,74 @@ window.updateOrderStatus = async (orderId, newStatus, btn) => {
             }
         }
         renderOrders();
+    }
+};
+// --- Item-Level Tracking ---
+window.markItemDone = async (orderId, itemIndex) => {
+    const order = orders.find(o => o._id === orderId || o.id === orderId);
+    if (!order || !Array.isArray(order.items)) return;
+
+    // Toggle is_done for this item
+    const updatedItems = order.items.map((item, idx) => {
+        if (idx === itemIndex) return { ...item, is_done: !item.is_done };
+        return item;
+    });
+
+    // Optimistic update
+    order.items = updatedItems;
+    renderOrders();
+
+    try {
+        const allDone = updatedItems.every(i => i.is_done);
+        const updatePayload = { items: updatedItems };
+        if (allDone) {
+            updatePayload.status = 'Ready';
+        }
+
+        const { error } = await supabase.from('orders').update(updatePayload).eq('id', orderId);
+        if (error) throw error;
+
+        if (allDone) {
+            order.status = 'Ready';
+            renderOrders();
+            playDing();
+        }
+    } catch (e) {
+        console.error('markItemDone error:', e);
+        // Revert optimistic update
+        order.items[itemIndex].is_done = !order.items[itemIndex].is_done;
+        renderOrders();
+        showRetryToast('Lỗi khi cập nhật trạng thái món', 'error');
+    }
+};
+
+window.markAllItemsDone = async (orderId, btn) => {
+    const order = orders.find(o => o._id === orderId || o.id === orderId);
+    if (!order || !Array.isArray(order.items)) return;
+
+    if (btn) {
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Xử lý...';
+        btn.disabled = true;
+    }
+
+    const updatedItems = order.items.map(item => ({ ...item, is_done: true }));
+
+    // Optimistic update
+    order.items = updatedItems;
+    order.status = 'Ready';
+    renderOrders();
+
+    try {
+        const { error } = await supabase.from('orders').update({ items: updatedItems, status: 'Ready' }).eq('id', orderId);
+        if (error) throw error;
+        playDing();
+    } catch (e) {
+        console.error('markAllItemsDone error:', e);
+        // Revert
+        order.items = order.items.map(item => ({ ...item, is_done: false }));
+        order.status = 'Preparing';
+        renderOrders();
+        showRetryToast('Lỗi khi cập nhật trạng thái đơn', 'error');
     }
 };
 

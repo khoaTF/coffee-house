@@ -659,10 +659,16 @@
             div.className = 'bg-surface border border-outline-variant/30 rounded-2xl p-5 shadow-soft hover:shadow-float transition-all group flex flex-col gap-4';
             
             let itemsHtml = '<ul class="flex flex-col gap-2">';
+            const hasTracking = order.items.some(i => typeof i.item_code === 'string');
+            const doneItems = order.items.filter(i => i.is_done).length;
+            const totalItems = order.items.length;
             order.items.forEach(item => {
+                const isDone = !!item.is_done;
+                const codeTag = item.item_code ? `<span class="inline-flex items-center justify-center min-w-[24px] h-[18px] px-1.5 bg-primary/10 text-primary text-[10px] font-bold rounded mr-1.5">${window.escapeHTML(item.item_code)}</span>` : '';
+                const doneIcon = hasTracking ? (isDone ? '<i class="fa-solid fa-circle-check text-green-500 mr-1.5 text-xs"></i>' : '<i class="fa-regular fa-circle text-gray-400 mr-1.5 text-xs"></i>') : '';
                 itemsHtml += `
-                    <li class="flex justify-between items-start text-sm font-bold text-on-surface">
-                        <span class="flex-1"><span class="text-secondary mr-2">${item.quantity}x</span> ${window.escapeHTML(item.name)}</span>
+                    <li class="flex justify-between items-start text-sm font-bold text-on-surface ${isDone ? 'opacity-50 line-through' : ''}">
+                        <span class="flex-1 flex items-center">${doneIcon}${codeTag}<span class="text-secondary mr-2">${item.quantity}x</span> ${window.escapeHTML(item.name)}</span>
                     </li>`;
                 if(item.selectedOptions && item.selectedOptions.length > 0) {
                      itemsHtml += `<li class="text-xs text-on-surface-variant/80 ml-8 mb-2 font-medium">
@@ -670,6 +676,19 @@
                                    </li>`;
                 }
             });
+            // Progress bar for staff view
+            if (hasTracking && order.status === 'Preparing') {
+                const pct = totalItems > 0 ? Math.round((doneItems / totalItems) * 100) : 0;
+                itemsHtml += `<li class="mt-2 pt-2 border-t border-outline-variant/20">
+                    <div class="flex justify-between text-xs font-bold mb-1">
+                        <span class="text-on-surface-variant">Bếp đã xong</span>
+                        <span class="${doneItems === totalItems ? 'text-green-600' : 'text-primary'}">${doneItems}/${totalItems}</span>
+                    </div>
+                    <div class="w-full h-1.5 bg-surface-variant/40 rounded-full overflow-hidden">
+                        <div class="h-full rounded-full transition-all duration-500 ${doneItems === totalItems ? 'bg-green-500' : 'bg-primary'}" style="width: ${pct}%"></div>
+                    </div>
+                </li>`;
+            }
             itemsHtml += '</ul>';
 
             let noteHtml = order.order_note ? 

@@ -40,6 +40,21 @@
         /* Fix modal backdrop to cover tailwind headers */
         .modal-backdrop { z-index: 1040 !important; }
         .modal { z-index: 1050 !important; }
+
+        /* Item-Level Tracking */
+        .kitchen-item { transition: all 0.2s ease; border-radius: 8px; padding: 8px !important; margin: 2px 0; }
+        .kitchen-item[onclick]:hover { background: rgba(217, 117, 49, 0.08); }
+        .kitchen-item.item-done { background: rgba(34, 197, 94, 0.06); }
+        .item-check { font-size: 1.2rem; flex-shrink: 0; transition: all 0.2s ease; color: #9ca3af; }
+        .item-check.checked { color: #22c55e; transform: scale(1.1); }
+        .item-code-badge {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 28px; height: 22px; padding: 0 6px;
+            background: #FFF4E8; color: #994700; font-weight: 700; font-size: 0.7rem;
+            border-radius: 6px; border: 1px solid #FFDDBB; flex-shrink: 0;
+        }
+        .dark .item-code-badge { background: rgba(255, 122, 0, 0.15); color: #FF7A00; border-color: rgba(255, 122, 0, 0.3); }
+        .item-progress-bar { margin-top: 4px; }
     </style>
 
     <script>

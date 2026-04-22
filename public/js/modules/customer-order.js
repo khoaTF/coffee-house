@@ -83,14 +83,22 @@ export async function placeOrder(method = 'cash') {
     
     const totalPrice = subtotal - state.currentDiscountAmount;
     
-    const formattedItems = state.cart.map(item => ({
+    // Generate item_code prefix from table number (1→A, 2→B, ..., 26→Z, 27→AA)
+    const tblNum = parseInt(TABLE_NUMBER) || 1;
+    const codePrefix = tblNum <= 26
+        ? String.fromCharCode(64 + tblNum)
+        : String.fromCharCode(64 + Math.floor((tblNum - 1) / 26)) + String.fromCharCode(65 + ((tblNum - 1) % 26));
+
+    const formattedItems = state.cart.map((item, index) => ({
         productId: item._id || item.id,
         name: item.name,
         category: item.category,
         quantity: item.quantity,
         price: item.price,
         selectedOptions: item.selectedOptions || [],
-        recipe: item.recipe || []
+        recipe: item.recipe || [],
+        item_code: `${codePrefix}${index + 1}`,
+        is_done: false
     }));
     
     const reductions = {};
