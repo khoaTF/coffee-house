@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "03_User_Roles.md",
+                "file": "01_System_Architecture.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "03_User_Roles"
+              "title": "01_System_Architecture"
             }
           }
         ]
@@ -185,6 +185,8 @@
   },
   "active": "64bc1498d037906b",
   "lastOpenFiles": [
+    "00_Map_Of_Contents.md",
+    "03_User_Roles.md",
     "pages/admin.md",
     "pages/superadmin.md",
     "task.md",
@@ -192,14 +194,12 @@
     "bao_cao_du_an.md",
     "06_Backend_And_APIs.md",
     "05_Frontend_Modules.md",
-    "03_User_Roles.md",
     "pages/login.md",
     "pages/index.md",
     "USER_MANUAL.md",
     "2026-04-22.md",
     "Tong_Ket_Phase5.md",
     "04_Order_Lifecycle.md",
-    "00_Map_Of_Contents.md",
     "tạo một liên kết.md"
   ]
 }

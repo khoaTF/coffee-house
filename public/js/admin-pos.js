@@ -611,13 +611,18 @@ window.posSubmitOrder = async function() {
 
     const reductions = posCalculateReductions(posCart);
 
-    const items = posCart.map(c => ({ 
+    const tableNum = posSelectedTable === 'POS' ? 'POS' : String(posSelectedTable);
+    const tableLetter = tableNum === 'POS' ? 'P' : String.fromCharCode(64 + Math.min(parseInt(tableNum) || 1, 26));
+
+    const items = posCart.map((c, idx) => ({ 
         id: c.id, 
         name: c.name, 
         price: c.price, 
         quantity: c.quantity, 
         recipe: c.recipe,
-        selectedOptions: c.selectedOptions || []
+        selectedOptions: c.selectedOptions || [],
+        item_code: `${tableLetter}${idx + 1}`,
+        is_done: false
     }));
 
     let paymentMethod = 'cash';
