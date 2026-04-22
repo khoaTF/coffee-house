@@ -13,3 +13,7 @@ diff.txt
 # IDE
 .vscode/
 .idea/
+# Obsidian
+.obsidian/workspace
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
