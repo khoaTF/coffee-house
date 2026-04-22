@@ -6,12 +6,13 @@ let tenantId = null;
 
 // Start TV Mode (Fullscreen + Audio Perms)
 function startTVMode() {
-    tenantId = new URLSearchParams(window.location.search).get('store') || localStorage.getItem('tenant_id');
+    tenantId = new URLSearchParams(window.location.search).get('store') || sessionStorage.getItem('tenant_id') || localStorage.getItem('tenant_id');
     if (!tenantId) {
         alert("Không tìm thấy thông tin cửa hàng. Vui lòng đăng nhập lại.");
-        window.location.href = '/auth.html';
+        window.location.href = '/login';
         return;
     }
+    sessionStorage.setItem('tenant_id', tenantId);
     localStorage.setItem('tenant_id', tenantId);
 
     document.getElementById('setup-prompt').style.display = 'none';
