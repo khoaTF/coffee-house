@@ -175,6 +175,159 @@
             </div>
         </a>
 
+        <!-- Promo Banner Carousel -->
+        <div class="mb-6 overflow-hidden" id="promo-carousel-section">
+            <div class="flex gap-3 overflow-x-auto hide-scrollbar snap-x snap-mandatory scroll-smooth pb-2" id="promo-carousel">
+                <!-- Banner 1: Khuyến mãi -->
+                <div class="snap-center shrink-0 w-[85%] sm:w-[45%] lg:w-[32%] rounded-2xl overflow-hidden relative cursor-pointer group" onclick="handlePromoBanner('combo-summer')">
+                    <div class="bg-gradient-to-br from-[#FF6B35] via-[#F7931E] to-[#FFD700] p-5 h-32 flex items-center relative overflow-hidden">
+                        <div class="absolute -right-4 -bottom-4 opacity-20 text-8xl">☕</div>
+                        <div class="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                        <div class="relative z-10 flex-1">
+                            <span class="bg-white/25 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Hot Deal 🔥</span>
+                            <h4 class="text-white font-black text-lg mt-2 leading-tight font-['Plus_Jakarta_Sans']">Combo Mùa Hè</h4>
+                            <p class="text-white/80 text-xs mt-1">Giảm <strong class="text-yellow-200">30%</strong> cho 2 ly bất kỳ</p>
+                        </div>
+                        <div class="shrink-0 w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-3xl shadow-lg group-hover:scale-110 transition-transform duration-300">🥤</div>
+                    </div>
+                </div>
+
+                <!-- Banner 2: Thành viên mới -->
+                <div class="snap-center shrink-0 w-[85%] sm:w-[45%] lg:w-[32%] rounded-2xl overflow-hidden relative cursor-pointer group" onclick="handlePromoBanner('new-member')">
+                    <div class="bg-gradient-to-br from-[#6C63FF] via-[#9B59B6] to-[#E91E63] p-5 h-32 flex items-center relative overflow-hidden">
+                        <div class="absolute -right-4 -bottom-4 opacity-20 text-8xl">👑</div>
+                        <div class="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+                        <div class="relative z-10 flex-1">
+                            <span class="bg-white/25 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Thành viên ✨</span>
+                            <h4 class="text-white font-black text-lg mt-2 leading-tight font-['Plus_Jakarta_Sans']">Tích điểm x2</h4>
+                            <p class="text-white/80 text-xs mt-1">Nhập SĐT nhận <strong class="text-pink-200">quà miễn phí</strong></p>
+                        </div>
+                        <div class="shrink-0 w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-3xl shadow-lg group-hover:scale-110 transition-transform duration-300">🎁</div>
+                    </div>
+                </div>
+
+                <!-- Banner 3: Delivery -->
+                <div class="snap-center shrink-0 w-[85%] sm:w-[45%] lg:w-[32%] rounded-2xl overflow-hidden relative cursor-pointer group" onclick="handlePromoBanner('delivery')">
+                    <div class="bg-gradient-to-br from-[#00B894] via-[#00CEC9] to-[#0984E3] p-5 h-32 flex items-center relative overflow-hidden">
+                        <div class="absolute -right-4 -bottom-4 opacity-20 text-8xl">🛵</div>
+                        <div class="absolute top-0 left-1/2 w-20 h-20 bg-white/10 rounded-full -translate-y-1/2"></div>
+                        <div class="relative z-10 flex-1">
+                            <span class="bg-white/25 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Giao hàng 🚀</span>
+                            <h4 class="text-white font-black text-lg mt-2 leading-tight font-['Plus_Jakarta_Sans']">Free Ship 2km</h4>
+                            <p class="text-white/80 text-xs mt-1">Đặt qua app, <strong class="text-cyan-200">giao tận nơi</strong></p>
+                        </div>
+                        <div class="shrink-0 w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-3xl shadow-lg group-hover:scale-110 transition-transform duration-300">📦</div>
+                    </div>
+                </div>
+
+                <!-- Banner 4: Happy Hour -->
+                <div class="snap-center shrink-0 w-[85%] sm:w-[45%] lg:w-[32%] rounded-2xl overflow-hidden relative cursor-pointer group" onclick="handlePromoBanner('happy-hour')">
+                    <div class="bg-gradient-to-br from-[#994700] via-[#CC6600] to-[#FF7A00] p-5 h-32 flex items-center relative overflow-hidden">
+                        <div class="absolute -right-4 -bottom-4 opacity-20 text-8xl">⏰</div>
+                        <div class="absolute top-0 right-1/3 w-16 h-16 bg-white/10 rounded-full -translate-y-1/2"></div>
+                        <div class="relative z-10 flex-1">
+                            <span class="bg-white/25 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">14h-17h ⚡</span>
+                            <h4 class="text-white font-black text-lg mt-2 leading-tight font-['Plus_Jakarta_Sans']">Happy Hour</h4>
+                            <p class="text-white/80 text-xs mt-1">Mua 1 tặng 1 <strong class="text-amber-200">mỗi ngày</strong></p>
+                        </div>
+                        <div class="shrink-0 w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-3xl shadow-lg group-hover:scale-110 transition-transform duration-300">🍹</div>
+                    </div>
+                </div>
+            </div>
+            <!-- Carousel indicators -->
+            <div class="flex justify-center gap-1.5 mt-2" id="promo-carousel-dots">
+                <div class="w-5 h-1.5 rounded-full bg-[#994700] transition-all duration-300"></div>
+                <div class="w-1.5 h-1.5 rounded-full bg-[#994700]/30 transition-all duration-300"></div>
+                <div class="w-1.5 h-1.5 rounded-full bg-[#994700]/30 transition-all duration-300"></div>
+                <div class="w-1.5 h-1.5 rounded-full bg-[#994700]/30 transition-all duration-300"></div>
+            </div>
+        </div>
+
+        <script>
+        // Promo Banner Auto-Scroll & Dots
+        (function() {
+            const carousel = document.getElementById('promo-carousel');
+            const dotsContainer = document.getElementById('promo-carousel-dots');
+            if (!carousel || !dotsContainer) return;
+            
+            const dots = dotsContainer.querySelectorAll('div');
+            let currentIndex = 0;
+            let autoScrollTimer;
+            
+            function updateDots(index) {
+                dots.forEach((dot, i) => {
+                    if (i === index) {
+                        dot.className = 'w-5 h-1.5 rounded-full bg-[#994700] transition-all duration-300';
+                    } else {
+                        dot.className = 'w-1.5 h-1.5 rounded-full bg-[#994700]/30 transition-all duration-300';
+                    }
+                });
+            }
+            
+            function scrollToIndex(index) {
+                const items = carousel.querySelectorAll('.snap-center');
+                if (items[index]) {
+                    const scrollLeft = items[index].offsetLeft - carousel.offsetLeft - 8;
+                    carousel.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+                    currentIndex = index;
+                    updateDots(index);
+                }
+            }
+            
+            function startAutoScroll() {
+                autoScrollTimer = setInterval(() => {
+                    const items = carousel.querySelectorAll('.snap-center');
+                    currentIndex = (currentIndex + 1) % items.length;
+                    scrollToIndex(currentIndex);
+                }, 4000);
+            }
+            
+            // Pause auto-scroll on touch
+            carousel.addEventListener('touchstart', () => clearInterval(autoScrollTimer));
+            carousel.addEventListener('touchend', () => {
+                // Detect current visible item
+                const items = carousel.querySelectorAll('.snap-center');
+                const scrollLeft = carousel.scrollLeft;
+                let closestIndex = 0;
+                let closestDist = Infinity;
+                items.forEach((item, i) => {
+                    const dist = Math.abs(item.offsetLeft - carousel.offsetLeft - scrollLeft);
+                    if (dist < closestDist) { closestDist = dist; closestIndex = i; }
+                });
+                currentIndex = closestIndex;
+                updateDots(currentIndex);
+                startAutoScroll();
+            });
+            
+            startAutoScroll();
+        })();
+        
+        function handlePromoBanner(type) {
+            switch(type) {
+                case 'combo-summer':
+                    showToast('🔥 Combo Mùa Hè: Giảm 30% cho 2 ly! Hãy chọn món yêu thích.', 'success');
+                    break;
+                case 'new-member':
+                    document.getElementById('floating-cart')?.click();
+                    setTimeout(() => {
+                        document.getElementById('customer-phone-input')?.focus();
+                    }, 500);
+                    break;
+                case 'delivery':
+                    window.open('/delivery', '_blank');
+                    break;
+                case 'happy-hour':
+                    const hour = new Date().getHours();
+                    if (hour >= 14 && hour < 17) {
+                        showToast('⚡ Happy Hour đang diễn ra! Mua 1 tặng 1 ngay!', 'success');
+                    } else {
+                        showToast('⏰ Happy Hour từ 14h-17h mỗi ngày. Quay lại sau nhé!', 'info');
+                    }
+                    break;
+            }
+        }
+        </script>
+
         <!-- Mobile Search (only on sm) -->
         <div class="md:hidden relative mb-6">
             <input type="text" id="menu-search-mobile" placeholder="Tìm kiếm món uống..." class="bg-surface-container-highest border-none rounded-full py-3 px-12 text-sm w-full focus:ring-2 focus:ring-primary/20 transition-all text-on-surface">
