@@ -101,60 +101,158 @@ function applyBranding(tenantData) {
     }
 }
 
-// --- Banner Ads ---
+// --- Banner Ads (Dynamic Carousel + Popup) ---
+const BANNER_GRADIENTS = [
+    'from-[#FF6B35] via-[#F7931E] to-[#FFD700]',
+    'from-[#6C63FF] via-[#9B59B6] to-[#E91E63]',
+    'from-[#00B894] via-[#00CEC9] to-[#0984E3]',
+    'from-[#994700] via-[#CC6600] to-[#FF7A00]',
+    'from-[#E74C3C] via-[#C0392B] to-[#8E44AD]',
+    'from-[#2ECC71] via-[#27AE60] to-[#16A085]',
+];
+
 export async function fetchBanners() {
     try {
         const { data, error } = await supabase
             .from('promotion_banners')
             .select('*')
             .eq('tenant_id', state.tenantId)
-            .eq('is_active', true);
+            .eq('is_active', true)
+            .order('created_at', { ascending: false });
 
         if (error) throw error;
-        
-        let hasHomeBanner = false;
+        if (!data || data.length === 0) return;
 
-        data.forEach(banner => {
-            if (banner.is_popup) {
-                const popupImage = document.getElementById('adPopupImage');
-                const popupLink = document.getElementById('adPopupLink');
-                const popupModal = document.getElementById('adPopupModal');
-                
-                if (popupImage && popupModal && !sessionStorage.getItem('ad_banner_shown_' + banner.id)) {
-                    popupImage.src = banner.image_url;
-                    if (banner.target_url) {
-                        popupLink.href = banner.target_url;
-                        if (!banner.target_url.startsWith('#') && !banner.target_url.startsWith(window.location.origin)) {
-                            popupLink.target = '_blank';
-                        }
-                    } else {
-                        popupLink.href = 'javascript:void(0)';
-                    }
+        const sliderBanners = data.filter(b => !b.is_popup);
+        const popupBanners = data.filter(b => b.is_popup);
 
-                    popupModal.classList.remove('hidden');
-                    popupModal.classList.add('flex');
-                    setTimeout(() => {
-                        popupModal.classList.remove('opacity-0');
-                    }, 50);
-                    
-                    sessionStorage.setItem('ad_banner_shown_' + banner.id, 'true');
-                }
-            } else if (!hasHomeBanner) {
-                const heroImg = document.getElementById('hero-banner-image');
-                const heroLink = document.getElementById('hero-banner-link');
-                if (heroImg) heroImg.src = banner.image_url;
-                if (heroLink && banner.target_url) {
-                    heroLink.href = banner.target_url;
+        // Render slider carousel
+        if (sliderBanners.length > 0) {
+            renderBannerCarousel(sliderBanners);
+        }
+
+        // Show first unseen popup
+        popupBanners.forEach(banner => {
+            const popupImage = document.getElementById('adPopupImage');
+            const popupLink = document.getElementById('adPopupLink');
+            const popupModal = document.getElementById('adPopupModal');
+            
+            if (popupImage && popupModal && !sessionStorage.getItem('ad_banner_shown_' + banner.id)) {
+                popupImage.src = banner.image_url;
+                if (banner.target_url) {
+                    popupLink.href = banner.target_url;
                     if (!banner.target_url.startsWith('#') && !banner.target_url.startsWith(window.location.origin)) {
-                        heroLink.target = '_blank';
+                        popupLink.target = '_blank';
                     }
+                } else {
+                    popupLink.href = 'javascript:void(0)';
                 }
-                hasHomeBanner = true;
+
+                popupModal.classList.remove('hidden');
+                popupModal.classList.add('flex');
+                setTimeout(() => {
+                    popupModal.classList.remove('opacity-0');
+                }, 50);
+                
+                sessionStorage.setItem('ad_banner_shown_' + banner.id, 'true');
             }
         });
     } catch (err) {
         console.error("Error fetching banners:", err);
     }
+}
+
+function renderBannerCarousel(banners) {
+    const section = document.getElementById('promo-carousel-section');
+    const carousel = document.getElementById('promo-carousel');
+    const dotsContainer = document.getElementById('promo-carousel-dots');
+    if (!section || !carousel) return;
+
+    // Render banner cards
+    carousel.innerHTML = banners.map((banner, i) => {
+        const gradient = BANNER_GRADIENTS[i % BANNER_GRADIENTS.length];
+        const targetAttr = banner.target_url 
+            ? `onclick="window.open('${banner.target_url}', '_blank')"` 
+            : '';
+        
+        return `
+        <div class="snap-center shrink-0 w-[85%] sm:w-[45%] lg:w-[32%] rounded-2xl overflow-hidden relative cursor-pointer group" ${targetAttr}>
+            <div class="bg-gradient-to-br ${gradient} h-32 flex items-center relative overflow-hidden">
+                <div class="absolute inset-0 bg-black/10"></div>
+                <img src="${banner.image_url}" alt="${banner.title}" class="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-60" onerror="this.style.display='none'">
+                <div class="relative z-10 flex-1 p-5">
+                    <span class="bg-white/25 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Khuyến mãi ⚡</span>
+                    <h4 class="text-white font-black text-lg mt-2 leading-tight font-['Plus_Jakarta_Sans'] drop-shadow-md">${banner.title}</h4>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+
+    // Show section
+    section.classList.remove('hidden');
+
+    // Render dots
+    if (dotsContainer && banners.length > 1) {
+        dotsContainer.innerHTML = banners.map((_, i) => 
+            `<div class="${i === 0 ? 'w-5 h-1.5' : 'w-1.5 h-1.5'} rounded-full ${i === 0 ? 'bg-[#994700]' : 'bg-[#994700]/30'} transition-all duration-300"></div>`
+        ).join('');
+    }
+
+    // Auto-scroll logic
+    if (banners.length > 1) {
+        initCarouselAutoScroll(carousel, dotsContainer);
+    }
+}
+
+function initCarouselAutoScroll(carousel, dotsContainer) {
+    let currentIndex = 0;
+    let autoScrollTimer;
+
+    function updateDots(index) {
+        if (!dotsContainer) return;
+        const dots = dotsContainer.querySelectorAll('div');
+        dots.forEach((dot, i) => {
+            dot.className = i === index
+                ? 'w-5 h-1.5 rounded-full bg-[#994700] transition-all duration-300'
+                : 'w-1.5 h-1.5 rounded-full bg-[#994700]/30 transition-all duration-300';
+        });
+    }
+
+    function scrollToIndex(index) {
+        const items = carousel.querySelectorAll('.snap-center');
+        if (items[index]) {
+            const scrollLeft = items[index].offsetLeft - carousel.offsetLeft - 8;
+            carousel.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+            currentIndex = index;
+            updateDots(index);
+        }
+    }
+
+    function startAutoScroll() {
+        clearInterval(autoScrollTimer);
+        autoScrollTimer = setInterval(() => {
+            const items = carousel.querySelectorAll('.snap-center');
+            currentIndex = (currentIndex + 1) % items.length;
+            scrollToIndex(currentIndex);
+        }, 4000);
+    }
+
+    carousel.addEventListener('touchstart', () => clearInterval(autoScrollTimer));
+    carousel.addEventListener('touchend', () => {
+        const items = carousel.querySelectorAll('.snap-center');
+        const scrollPos = carousel.scrollLeft;
+        let closestIndex = 0;
+        let closestDist = Infinity;
+        items.forEach((item, i) => {
+            const dist = Math.abs(item.offsetLeft - carousel.offsetLeft - scrollPos);
+            if (dist < closestDist) { closestDist = dist; closestIndex = i; }
+        });
+        currentIndex = closestIndex;
+        updateDots(currentIndex);
+        startAutoScroll();
+    });
+
+    startAutoScroll();
 }
 
 window.closeAdPopup = function() {
