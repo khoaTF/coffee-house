@@ -675,7 +675,7 @@ window.saveStoreSettings = async function(type) {
 
     try {
         if (typeof supabase !== 'undefined') {
-            const { error } = await supabase.from('store_settings').upsert({ id: 1, tenant_id: AdminState.tenantId, ...updates });
+            const { error } = await supabase.from('store_settings').upsert({ tenant_id: AdminState.tenantId, ...updates }, { onConflict: 'tenant_id' });
             if (error) throw error;
         }
 
