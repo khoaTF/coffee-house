@@ -1,49 +1,96 @@
 # 🏗 1. Kiến Trúc Hệ Thống (System Architecture)
 
-Hệ thống được thiết kế theo mô hình **Fat-Client (JAMStack - static html + client js + BaaS)**, kết hợp cùng một web server siêu nhẹ để serve file html và nhận webhook. Thay vì xử lý logic thông qua Server truyền thống, 90% logic được đẩy xuống Frontend và kết nối thẳng qua **Supabase (Backend-as-a-Service)**.
+> [!IMPORTANT]
+> Hệ thống sử dụng mô hình **Fat-Client (JAMStack)**: 90% logic chạy trên trình duyệt, kết nối thẳng Supabase. Server chỉ serve file tĩnh + nhận webhook.
 
 ## Sơ Đồ Kiến Trúc Tổng Thể
 
 ```mermaid
 graph TD
-    %% Tác nhân
-    Client[📱 Trình Duyệt / Khách / Nhân viên]
-    NodeServer[🟢 Node.js Express Server\n(src/app.js)]
-    SupaAuth[🔐 Supabase Auth]
-    SupaDB[🗄 Supabase Postgres & Functions]
-    SupaRealtime[⚡ Supabase Realtime]
-    ThirdParty[💳 Webhook (Thanh toán, \nZalo ZNS, API ngoài)]
+    subgraph CLIENT["📱 Frontend (Trình duyệt)"]
+        CustApp["Customer App<br/>index.html + modules/"]
+        KitchenApp["Kitchen KDS<br/>kitchen.html + kitchen.js"]
+        AdminApp["Admin Dashboard<br/>admin.html + admin-*.js"]
+        StaffApp["Staff POS<br/>staff.html"]
+        TVApp["TV Display<br/>tv.html + tv.js"]
+        DeliveryApp["Delivery Hub<br/>delivery.html"]
+    end
 
-    %% Kết nối
-    Client -- "1. Gửi request lấy trang tĩnh\n(HTML, CSS, JS)" --> NodeServer
-    NodeServer -- "2. Trả về Frontend App" --> Client
-    
-    Client -- "3. Đăng nhập / Xác thực\n(Token JWT)" --> SupaAuth
-    Client -- "4. Truy vấn / Ghi Dữ Liệu\n(Supabase.js client)" --> SupaDB
-    Client -- "5. WebSocket: Lắng nghe trạng thái realtime" <--> SupaRealtime
-    
-    ThirdParty -- "6. Bắn Webhook" --> NodeServer
-    NodeServer -- "7. Controller xử lý Webhook\n(Thêm đơn, Cập nhật trạng thái...)" --> SupaDB
+    subgraph VERCEL["☁️ Vercel (Hosting)"]
+        StaticFiles["Static File Server<br/>(HTML/CSS/JS)"]
+        WebhookFn["Serverless Function<br/>api/payment-webhook.js"]
+        ExpressAPI["Express Server<br/>src/app.js"]
+    end
 
-    %% Style
-    classDef client fill:#3b82f6,stroke:#fff,stroke-width:2px,color:#fff,rx:10,ry:10;
-    classDef server fill:#22c55e,stroke:#fff,stroke-width:2px,color:#fff,rx:10,ry:10;
-    classDef supabase fill:#10b981,stroke:#fff,stroke-width:2px,color:#fff,rx:10,ry:10;
-    classDef thirdparty fill:#f59e0b,stroke:#fff,stroke-width:2px,color:#fff,rx:10,ry:10;
+    subgraph SUPABASE["🟢 Supabase (BaaS)"]
+        SupaAuth["🔐 Auth<br/>(JWT + PIN Login)"]
+        SupaDB["🗄 PostgreSQL<br/>(15+ Tables + RPC)"]
+        SupaRT["⚡ Realtime<br/>(WebSocket Channels)"]
+        SupaRLS["🛡 RLS Policies<br/>(Row Level Security)"]
+        SupaStorage["📁 Storage<br/>(Images)"]
+    end
 
-    class Client client;
-    class NodeServer server;
-    class SupaAuth,SupaDB,SupaRealtime supabase;
-    class ThirdParty thirdparty;
+    Bank["🏦 Ngân hàng<br/>(Sepay/Casso)"]
+
+    CLIENT -->|"HTTPS GET"| StaticFiles
+    CLIENT <-->|"supabase-js SDK"| SupaDB
+    CLIENT <-->|"WebSocket"| SupaRT
+    CLIENT -->|"JWT Login"| SupaAuth
+    Bank -->|"POST webhook"| WebhookFn
+    WebhookFn -->|"Service Role Key"| SupaDB
+    SupaDB --- SupaRLS
+
+    classDef client fill:#3b82f6,stroke:#fff,color:#fff
+    classDef vercel fill:#000,stroke:#fff,color:#fff
+    classDef supa fill:#3ecf8e,stroke:#fff,color:#000
+    classDef bank fill:#f59e0b,stroke:#fff,color:#000
+
+    class CustApp,KitchenApp,AdminApp,StaffApp,TVApp,DeliveryApp client
+    class StaticFiles,WebhookFn,ExpressAPI vercel
+    class SupaAuth,SupaDB,SupaRT,SupaRLS,SupaStorage supa
+    class Bank bank
 ```
 
-## Giải Thích Các Tầng
-- **Tầng Client**: Là các modules trong `public/js/` chứa mọi Logic giao diện. Khi file tải về trình duyệt, mã JS sẽ tự bắt nối `supabase.js` bằng public key.
-- **Tầng Server (Express)**:
-    - Nhiệm vụ 1: Trả về file HTML sạch, tối ưu bảo mật (`Helmet`), rate-limiting (tránh DDOS).
-    - Nhiệm vụ 2: `.post('/api/webhook')` tiếp nhận biến động bên ngoài (nhạc lệnh ngân hàng báo đã thanh toán). Do CSDL không gọi qua mạng internet bên ngoài được hoặc cần ẩn API token, hệ thống ủy quyền tác vụ này thay vì lưu Secret dưới Frontend.
-- **Tầng Supabase**: 
-    - Database xử lý dữ liệu với RLS (Row Level Security).
-    - Realtime dùng PostgreSQL replication để ngay lập tức cập nhật màn hình Bếp, Thu Ngân khi Khách đặt đơn.
+## Tech Stack Chi Tiết
 
-👉 **Tiếp theo**: Đi vào chi tiết xem dữ liệu được lưu trữ ra sao với [[02_Database_Schema]]
+| Layer | Công nghệ | Vai trò |
+|-------|-----------|---------|
+| **Frontend** | Vanilla JS + Tailwind CSS 3.4 | UI/UX, business logic |
+| **Styling** | Glassmorphism + Dark Mode | Design system |
+| **Font** | Plus Jakarta Sans + Inter | Typography |
+| **Icons** | Font Awesome 6.4 | Biểu tượng |
+| **i18n** | Custom i18n.js | Đa ngôn ngữ VI/EN |
+| **Backend** | Express 5 + Helmet + Rate Limiter | Security & Routing |
+| **Database** | Supabase PostgreSQL | CSDL chính |
+| **Realtime** | Supabase Realtime (WebSocket) | Đồng bộ tức thì |
+| **Auth** | Supabase Auth + PIN Hash | Xác thực nhân viên |
+| **Hosting** | Vercel (Serverless) | Deploy & CDN |
+| **Payment** | VietQR + Webhook Auto-verify | Thanh toán tự động |
+
+## Luồng Dữ Liệu Chính
+
+```mermaid
+sequenceDiagram
+    participant KH as 📱 Khách hàng
+    participant FE as 💻 Frontend JS
+    participant SB as 🟢 Supabase DB
+    participant RT as ⚡ Realtime
+    participant BP as 🍳 Màn hình Bếp
+    participant TV as 📺 TV Display
+
+    KH->>FE: Quét QR → Vào menu
+    FE->>SB: Đọc products + store_settings
+    KH->>FE: Chọn món → Checkout
+    FE->>SB: INSERT orders (status=Pending)
+    SB->>RT: Broadcast INSERT event
+    RT->>BP: 🔔 Đơn mới xuất hiện + âm báo
+    RT->>TV: Hiện mã đơn "Đang chuẩn bị"
+    BP->>SB: UPDATE status → Preparing → Ready
+    SB->>RT: Broadcast UPDATE event
+    RT->>TV: ✅ Đơn chuyển sang "Đã xong"
+    RT->>KH: Tracking page cập nhật
+```
+
+---
+
+👉 **Tiếp theo**: Cấu trúc database chi tiết → [[02_Database_Schema]]
