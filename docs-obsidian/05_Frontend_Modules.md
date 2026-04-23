@@ -1,39 +1,124 @@
-# 💻 5. Cấu trúc Mã Nguồn (Frontend Modules)
+# 💻 5. Cấu Trúc Mã Nguồn Frontend (Modules)
 
-Dự án này sử dụng kiến trúc hoàn toàn Modular trên Frontend JS (`public/js/`), không build bằng Webpack/React mà dùng Vanilla JS (với ES Modules nếu có) cho tốc độ thực thi trực tiếp trên trình duyệt. Rất thích hợp để host dưới dạng Static File.
+> [!NOTE]
+> Kiến trúc **100% Vanilla JS** — không React/Vue. Mỗi trang HTML load các file `.js` cần thiết. Tổng cộng **39 file JS** + **8 file CSS**.
 
-## Các Thư Viện Chức Năng Chính
+## Sơ Đồ Module Dependency
 
 ```mermaid
-graph LR
-    subgraph Core ["Nhân lõi & Data"]
-        supabase[supabase.js (Connect DB)]
-        i18n[i18n.js (Đa ngôn ngữ)]
-        constants[constants.js (Hằng số)]
+graph TD
+    subgraph Core["🔧 Core Layer"]
+        supabase["supabase.js<br/>(SDK CDN 188KB)"]
+        config["supabase-config.js<br/>(Init client + escapeHTML)"]
+        constants["constants.js<br/>(Hằng số toàn cục)"]
+        helpers["helpers.js<br/>(Utility functions)"]
+        i18n["i18n.js + i18n-pages.js<br/>(Đa ngôn ngữ VI/EN)"]
+        store["store.js<br/>(State management)"]
+        retry["retry-helper.js<br/>(Network retry logic)"]
     end
 
-    subgraph UserSpaces ["Logic Giao Diện"]
-        customer[customer.js / tracking.js]
-        admin[admin-*.js (POS, Menu, Analytics...)]
-        roles[kitchen.js / delivery.js / staff.js]
+    subgraph Customer["📱 Customer Modules (9 files)"]
+        cust["customer.js<br/>(Entry point)"]
+        cMenu["customer-menu.js<br/>(Menu + Favorites ❤️)"]
+        cCart["customer-cart.js<br/>(Giỏ hàng + Notes)"]
+        cModal["customer-modal.js<br/>(Options + Note textarea)"]
+        cOrder["customer-order.js<br/>(Checkout + History)"]
+        cSession["customer-session.js<br/>(Table lock + QR)"]
+        cLoyalty["customer-loyalty.js<br/>(Tích điểm)"]
+        cFeedback["customer-feedback.js<br/>(Đánh giá 1-5⭐)"]
+        cConfig["customer-config.js<br/>(Cấu hình)"]
+        cUI["customer-ui.js<br/>(UI helpers)"]
     end
 
-    subgraph Addons ["Tính Năng Mờ Rộng"]
-        gacha[gacha.js (Vòng quay may mắn)]
+    subgraph Admin["📊 Admin Modules (13 files)"]
+        aCore["admin-core.js<br/>(Init + Router)"]
+        aMenu["admin-menu.js<br/>(CRUD sản phẩm)"]
+        aOrders["admin-orders.js<br/>(Quản lý đơn)"]
+        aPOS["admin-pos.js<br/>(POS tại quầy)"]
+        aInventory["admin-inventory.js<br/>(Kho + Recipe)"]
+        aAnalytics["admin-analytics.js<br/>(Charts + KPI)"]
+        aCRM["admin-crm.js<br/>(Phân khúc khách)"]
+        aCashflow["admin-cashflow.js<br/>(Sổ quỹ)"]
+        aShifts["admin-shifts.js<br/>(Ca làm việc)"]
+        aDelivery["admin-delivery.js<br/>(Giao hàng)"]
+        aAds["admin-ads.js<br/>(Promo banners)"]
+        aTables["admin-tables.js<br/>(Quản lý bàn)"]
+        aManagement["admin-management.js<br/>(Nhân sự)"]
     end
 
-    UserSpaces --> Core
-    Addons --> Core
+    subgraph Operations["🍳 Operations"]
+        kitchen["kitchen.js<br/>(KDS 68KB)"]
+        tv["tv.js<br/>(TV Display)"]
+        delivery["delivery.js<br/>(Điều phối GH)"]
+        driver["driver.js<br/>(Tài xế)"]
+        tracking["tracking.js<br/>(Tracking khách)"]
+        printer["receipt-printer.js<br/>(In bill 80mm)"]
+        gacha["gacha.js<br/>(Vòng quay thưởng)"]
+        superadmin["superadmin.js<br/>(SaaS management)"]
+    end
+
+    Core --> Customer
+    Core --> Admin
+    Core --> Operations
+    cust --> cMenu & cCart & cModal & cOrder & cSession & cLoyalty & cFeedback
+
+    classDef core fill:#6366f1,color:#fff
+    classDef cust fill:#3b82f6,color:#fff
+    classDef admin fill:#f59e0b,color:#000
+    classDef ops fill:#22c55e,color:#000
+
+    class supabase,config,constants,helpers,i18n,store,retry core
+    class cust,cMenu,cCart,cModal,cOrder,cSession,cLoyalty,cFeedback,cConfig,cUI cust
+    class aCore,aMenu,aOrders,aPOS,aInventory,aAnalytics,aCRM,aCashflow,aShifts,aDelivery,aAds,aTables,aManagement admin
+    class kitchen,tv,delivery,driver,tracking,printer,gacha,superadmin ops
 ```
 
-## Bóc Tách `public/js/`
-- **`supabase.js` / `supabase-config.js`**: Tim mạch của ứng dụng - cấu hình URL và API KEY để JS Client móc thẳng tới DB.
-- **Dòng họ `admin-*.js`**: Chủ yếu để load vào trang `admin.html`. 
-  - `admin-analytics.js`: Phân tích Chart.
-  - `admin-pos.js`: Điểm tính tiền tại quầy cho thu ngân.
-  - `admin-inventory.js`: Quản lý trừ kho recipe.
-  - `admin-shifts.js`: Mở/Đóng ca.
-- **`customer.js`** & **`gacha.js`**: Logic tạo đơn ngoài Front-end và mini-game Vòng Quay cho khách hàng.
-- **Dòng họ đa ngôn ngữ**: `i18n.js`, `i18n-pages.js`. Hỗ trợ chuyển đổi Tiếng Việt / Tiếng Anh cho khách nước ngoài khi dùng menu thông minh.
+## Chi Tiết Customer Modules
 
-👉 **Tiếp tục với**: [[06_Backend_And_APIs]]
+| File | Size | Chức năng |
+|------|------|-----------|
+| `customer.js` | 1.2KB | Entry point — load tất cả modules |
+| `customer-menu.js` | 27KB | Render menu, filter category, **Favorites ❤️** |
+| `customer-cart.js` | 16KB | Giỏ hàng, quantity, **item notes**, tính tổng |
+| `customer-modal.js` | 11KB | Modal chọn Options (Size/Topping) + **note textarea** |
+| `customer-order.js` | 26KB | Checkout, VietQR, lịch sử, **notes in history** |
+| `customer-session.js` | 20KB | Table lock, QR session, device fingerprint |
+| `customer-loyalty.js` | 12KB | Tích điểm, tier display, point exchange |
+| `customer-feedback.js` | 15KB | Đánh giá 5⭐, comment, submit |
+| `customer-config.js` | 3.5KB | Store settings, theme config |
+| `customer-ui.js` | 3.4KB | Toast, modal helpers |
+
+## Chi Tiết Admin Modules
+
+| File | Size | Chức năng |
+|------|------|-----------|
+| `admin-core.js` | 34KB | Tab routing, init, permissions check |
+| `admin-menu.js` | 34KB | CRUD products, options, recipe, images |
+| `admin-orders.js` | 32KB | Danh sách đơn, filter, detail modal |
+| `admin-pos.js` | 38KB | POS tại quầy cho staff |
+| `admin-inventory.js` | 28KB | Kho nguyên liệu, import, logs |
+| `admin-analytics.js` | 42KB | KPI metrics, charts, revenue analysis |
+| `admin-management.js` | 34KB | CRUD nhân viên, phân quyền |
+| `admin-shifts.js` | 33KB | Ca làm việc, đối soát |
+| `admin-cashflow.js` | 13KB | Sổ quỹ thu/chi |
+| `admin-delivery.js` | 31KB | Quản lý giao hàng |
+| `admin-crm.js` | 5KB | CRM + RFM segmentation |
+| `admin-ads.js` | 11KB | Promo banners management |
+| `admin-tables.js` | 16KB | Quản lý sơ đồ bàn |
+
+## CSS Architecture
+
+| File | Size | Phạm vi |
+|------|------|---------|
+| `styles.css` | 44KB | Global design system + components |
+| `index.css` | 82KB | Tailwind compiled output |
+| `admin.css` | 14KB | Admin-specific styles |
+| `kitchen.css` | 3KB | Kitchen dashboard styles |
+| `login.css` | 7KB | Login page styles |
+| `gacha.css` | 7KB | Lucky wheel animations |
+| `logo.css` | 2KB | Logo & branding |
+| `staff.css` | 1KB | Staff POS styles |
+
+---
+
+👉 **Tiếp theo**: Backend & APIs → [[06_Backend_And_APIs]]
