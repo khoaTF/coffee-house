@@ -85,8 +85,8 @@
             try {
                 const { data, error } = await supabase.rpc('list_active_tenants');
                 if (error || !data || data.length === 0) {
-                    // Fallback: hide selector if no tenants or error
-                    section.style.display = 'none';
+                    select.innerHTML = '<option value="">Không có chi nhánh</option>';
+                    select.disabled = true;
                     return;
                 }
 
@@ -105,10 +105,10 @@
                     select.appendChild(opt);
                 });
 
-                // Auto-select if only 1 tenant
+                // Auto-select if only 1 tenant (show name, disable select)
                 if (data.length === 1) {
                     select.value = data[0].id;
-                    section.style.display = 'none';
+                    select.disabled = true;
                 }
 
                 // Pre-select from URL param ?store=xxx
@@ -117,11 +117,12 @@
                     const match = data.find(t => t.id === urlStore || t.name.toLowerCase() === urlStore.toLowerCase());
                     if (match) {
                         select.value = match.id;
-                        section.style.display = 'none';
+                        select.disabled = true;
                     }
                 }
             } catch (e) {
-                section.style.display = 'none';
+                select.innerHTML = '<option value="">Lỗi tải chi nhánh</option>';
+                select.disabled = true;
             }
         }
 
