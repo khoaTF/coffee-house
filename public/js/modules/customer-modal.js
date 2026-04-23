@@ -109,6 +109,30 @@ export function openOptionsModal(itemOrId) {
         });
         container.appendChild(group);
     });
+
+    // Item note textarea
+    let noteGroup = document.getElementById('options-item-note-group');
+    if (!noteGroup) {
+        noteGroup = document.createElement('div');
+        noteGroup.id = 'options-item-note-group';
+        noteGroup.className = 'option-group mb-3';
+        noteGroup.innerHTML = `
+            <h3 style="font-size: 1.1rem; margin-bottom: 10px; font-weight: bold; color: var(--text-main);">
+                <i class="fa-solid fa-pen-to-square" style="color: var(--primary); margin-right: 6px;"></i>Ghi chú cho món
+            </h3>
+            <textarea id="options-item-note" rows="2" maxlength="200"
+                placeholder="VD: Ít đường, không hành, thêm đá..."
+                style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;font-size:0.95rem;
+                background:var(--surface-container);color:var(--text-main);resize:none;font-family:inherit;
+                transition:border-color 0.2s;"
+                onfocus="this.style.borderColor='var(--primary)'"
+                onblur="this.style.borderColor='var(--border)'"></textarea>
+        `;
+        container.appendChild(noteGroup);
+    } else {
+        container.appendChild(noteGroup);
+        document.getElementById('options-item-note').value = '';
+    }
     
     if (dom.optionsModal) dom.optionsModal.classList.add('active');
     const fab = document.querySelector('.fab-container');
@@ -163,8 +187,12 @@ export function attachEventListeners() {
             }
         });
         
+        // Capture item note
+        const itemNoteEl = document.getElementById('options-item-note');
+        const itemNote = itemNoteEl ? itemNoteEl.value.trim() : '';
+        
         const cartKey = generateCartKey(state.currentOptionsItem._id, selectedOptions);
-        handleCartUpdate(cartKey, state.currentOptionsItem, 1, selectedOptions);
+        handleCartUpdate(cartKey, state.currentOptionsItem, 1, selectedOptions, itemNote);
         closeOptionsModal();
     });
 

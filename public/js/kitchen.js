@@ -133,6 +133,9 @@ function renderOrders() {
                 const optionsHtml = item.selectedOptions && item.selectedOptions.length > 0
                     ? `<div class="ml-4 text-gray-500 dark:text-gray-400 text-sm mt-1 border-l-2 border-[#D97531] pl-2">+ ${item.selectedOptions.map(o => window.escapeHTML(o.choiceName)).join(', ')}</div>`
                     : '';
+                const itemNoteHtml = item.note
+                    ? `<div class="ml-4 mt-1 px-2 py-1 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 text-xs rounded-md border border-amber-200 dark:border-amber-800/50 flex items-center gap-1.5"><i class="fa-solid fa-pen-to-square text-[10px]"></i> ${window.escapeHTML(item.note)}</div>`
+                    : '';
                 const isDone = !!item.is_done;
                 const itemCode = item.item_code || `#${idx + 1}`;
                 const doneClass = isDone ? 'item-done' : '';
@@ -146,6 +149,7 @@ function renderOrders() {
                         <span class="font-medium text-[#1B1C1C] dark:text-[#F6F3F2] ${isDone ? 'line-through opacity-50' : ''}"><span class="font-bold text-[#D97531] mr-1">${item.quantity || 1}x</span> ${window.escapeHTML(item.name || 'Unknown Item')}</span>
                     </div>
                     ${optionsHtml}
+                    ${itemNoteHtml}
                 </li>`;
             }).join('');
 
@@ -249,7 +253,7 @@ function renderOrders() {
                     <!-- Status / Payment tags -->
                     <div class="flex flex-wrap gap-2 mb-4">
                         ${order.payment_method === 'transfer' ? '<span class="px-2.5 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-xs font-semibold rounded-lg border border-blue-100 dark:border-blue-800"><i class="fa-solid fa-qrcode mr-1"></i> Chuyển khoản</span>' : '<span class="px-2.5 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-xs font-semibold rounded-lg border border-gray-200 dark:border-gray-700"><i class="fa-solid fa-money-bill-wave mr-1"></i> Tại quầy</span>'}
-                        ${order.payment_status === 'paid' ? '<span class="px-2.5 py-1 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 text-xs font-semibold rounded-lg border border-green-100 dark:border-green-800"><i class="fa-solid fa-check mr-1"></i> Đã thanh toán</span>' : '<span class="px-2.5 py-1 bg-orange-50 dark:bg-orange-900/20 text-[#D97531] dark:text-orange-400 text-xs font-semibold rounded-lg border border-orange-100 dark:border-orange-800"><i class="fa-solid fa-clock mr-1"></i> Chưa thanh toán</span>'}
+                        ${order.payment_status === 'paid' ? '<span class="px-2.5 py-1 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 text-xs font-semibold rounded-lg border border-green-100 dark:border-green-800"><i class="fa-solid fa-check mr-1"></i> Đã thanh toán</span>' : `<button class="px-2.5 py-1 bg-orange-50 dark:bg-orange-900/20 text-[#D97531] dark:text-orange-400 text-xs font-semibold rounded-lg border border-orange-100 dark:border-orange-800 hover:bg-[#D97531] hover:text-white transition-all cursor-pointer" onclick="event.stopPropagation(); markOrderPaid('${order._id}', this)" title="Nhấn để xác nhận thanh toán"><i class="fa-solid fa-clock mr-1"></i> Chưa TT — Nhấn xác nhận</button>`}
                     </div>
                 </div>
 
@@ -260,7 +264,7 @@ function renderOrders() {
                     ${order.status === 'Ready' && !isDelivery ? `<button class="w-full py-3 mb-3 bg-gray-800 hover:bg-black dark:bg-gray-100 dark:hover:bg-white dark:text-[#1B1C1C] text-white rounded-xl font-bold transition-all shadow-sm hover:shadow active:scale-95 flex justify-center items-center gap-2" onclick="updateOrderStatus('${order._id}', 'Completed', this)"><i class="fa-solid fa-check-circle"></i> Đã Giao Khách (Xóa màn TV)</button>` : ''}
                     ${order.status === 'Ready' && isDelivery ? `<div class="w-full py-3 mb-3 bg-[#CCFBF1] dark:bg-[#14b8a6]/20 text-[#14b8a6] dark:text-[#5eead4] border border-[#14b8a6]/30 rounded-xl font-bold text-center flex justify-center items-center gap-2"><i class="fa-solid fa-motorcycle"></i> Chờ Shipper...</div>` : ''}
                     <div class="flex gap-3">
-                        <button class="flex-1 py-2.5 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl font-semibold transition-colors flex justify-center items-center gap-2 text-sm" onclick="printReceipt('${order._id}')">
+                        <button class="flex-1 py-2.5 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl font-semibold transition-colors flex justify-center items-center gap-2 text-sm" onclick="printReceipt(orders.find(o => o._id === '${order._id}'))">
                             <i class="fa-solid fa-print"></i> In Bill
                         </button>
                         ${order.status === 'Pending' ? `<button class="px-4 py-2.5 border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl font-semibold transition-colors flex justify-center items-center text-sm" onclick="updateOrderStatus('${order._id}', 'Cancelled', this)" aria-label="Cancel Order"><i class="fa-solid fa-times"></i></button>` : ''}
@@ -593,6 +597,41 @@ window.markItemDone = async (orderId, itemIndex) => {
         order.items[itemIndex].is_done = !order.items[itemIndex].is_done;
         renderOrders();
         showRetryToast('Lỗi khi cập nhật trạng thái món', 'error');
+    }
+};
+
+// 1-Tap Manual Payment Confirmation
+window.markOrderPaid = async (orderId, btn) => {
+    if (!confirm('Xác nhận đã nhận thanh toán cho đơn này?')) return;
+    
+    const origHTML = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+    btn.disabled = true;
+
+    try {
+        const { error } = await supabase
+            .from('orders')
+            .update({ 
+                payment_status: 'paid',
+                payment_verified_at: new Date().toISOString()
+            })
+            .eq('_id', orderId);
+
+        if (error) throw error;
+
+        // Update local state
+        const order = orders.find(o => o._id === orderId);
+        if (order) order.payment_status = 'paid';
+
+        btn.innerHTML = '<i class="fa-solid fa-check mr-1"></i> Đã TT';
+        btn.className = 'px-2.5 py-1 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 text-xs font-semibold rounded-lg border border-green-100 dark:border-green-800';
+        btn.disabled = true;
+        btn.onclick = null;
+    } catch (e) {
+        console.error('Lỗi xác nhận TT:', e);
+        btn.innerHTML = origHTML;
+        btn.disabled = false;
+        alert('Không thể cập nhật. Thử lại.');
     }
 };
 
