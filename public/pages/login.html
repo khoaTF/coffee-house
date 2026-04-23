@@ -35,6 +35,17 @@
             <p class="subtitle">Đăng nhập vào hệ thống quản lý</p>
 
             <form id="login-form">
+                <!-- Branch Selector -->
+                <div id="tenant-section" class="form-group">
+                    <label class="login-pin-label">Chi nhánh</label>
+                    <div class="input-icon-wrapper">
+                        <select id="tenant-select" class="login-select-input">
+                            <option value="">Đang tải chi nhánh...</option>
+                        </select>
+                        <i class="fa-solid fa-store login-pin-icon"></i>
+                    </div>
+                </div>
+
                 <!-- PIN Section -->
                 <div id="pin-section">
                     <div class="form-group">
@@ -67,6 +78,55 @@
     <script>
         let currentMode = 'pin';
 
+        // Load active tenants for branch selector
+        async function loadTenants() {
+            const select = document.getElementById('tenant-select');
+            const section = document.getElementById('tenant-section');
+            try {
+                const { data, error } = await supabase.rpc('list_active_tenants');
+                if (error || !data || data.length === 0) {
+                    // Fallback: hide selector if no tenants or error
+                    section.style.display = 'none';
+                    return;
+                }
+
+                select.innerHTML = '';
+                if (data.length > 1) {
+                    const defaultOpt = document.createElement('option');
+                    defaultOpt.value = '';
+                    defaultOpt.textContent = '-- Chọn chi nhánh --';
+                    select.appendChild(defaultOpt);
+                }
+
+                data.forEach(t => {
+                    const opt = document.createElement('option');
+                    opt.value = t.id;
+                    opt.textContent = t.name;
+                    select.appendChild(opt);
+                });
+
+                // Auto-select if only 1 tenant
+                if (data.length === 1) {
+                    select.value = data[0].id;
+                    section.style.display = 'none';
+                }
+
+                // Pre-select from URL param ?store=xxx
+                const urlStore = new URLSearchParams(window.location.search).get('store');
+                if (urlStore) {
+                    const match = data.find(t => t.id === urlStore || t.name.toLowerCase() === urlStore.toLowerCase());
+                    if (match) {
+                        select.value = match.id;
+                        section.style.display = 'none';
+                    }
+                }
+            } catch (e) {
+                section.style.display = 'none';
+            }
+        }
+
+        loadTenants();
+
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('login-btn');
@@ -81,15 +141,24 @@
                 const typedPin = document.getElementById('staff-pin')?.value || '';
                 if (!typedPin) throw new Error("Vui lòng nhập Mã PIN.");
 
+                const tenantSelect = document.getElementById('tenant-select');
+                const selectedTenant = tenantSelect.value || null;
+
+                // Build RPC params — include tenant_id if selected
+                const rpcParams = { pin_code: typedPin };
+                if (selectedTenant) {
+                    rpcParams.p_tenant_id = selectedTenant;
+                }
+
                 const { data, error } = await supabase
-                    .rpc('verify_pin', { pin_code: typedPin })
+                    .rpc('verify_pin', rpcParams)
                     .single();
 
-                if (error || !data) throw new Error("Mã PIN không hợp lệ (sai mã)!");
+                if (error || !data) throw new Error("Mã PIN không hợp lệ hoặc sai chi nhánh!");
 
                 // Phase 6 SaaS: Dynamic Individual Auth using UUID and typed PIN
                 const authEmail = 'staff_' + data.id + '@nohope.cafe';
-                const authPass = typedPin; // The typed PIN is mapped as the Supabase Auth password!
+                const authPass = typedPin;
                 
                 const authRes = await supabase.auth.signInWithPassword({
                     email: authEmail,
