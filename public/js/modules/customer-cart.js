@@ -5,6 +5,10 @@ import { state, dom } from './customer-config.js';
 import { getAvailableToAdd, updateMenuCardsUI } from './customer-menu.js';
 import { customerAlert } from './customer-ui.js';
 
+// Expose cart to standalone scripts (gacha.js)
+window.cart = state.cart;
+window.updateCartUI = null; // Will be set after updateCartUI is defined
+
 // Generate unique cart key based on options
 export function generateCartKey(productId, selectedOptions) {
     if (!selectedOptions || selectedOptions.length === 0) return productId;
@@ -157,6 +161,8 @@ window.addUpsellItem = function() {
 
 export function updateCartUI() {
     updateMenuCardsUI();
+    // Keep window.cart in sync (gacha.js uses it)
+    window.cart = state.cart;
     const totalQty = state.cart.reduce((sum, item) => sum + item.quantity, 0);
     const totalPrice = state.cart.reduce((sum, item) => {
         const itemOptionsPrice = (item.selectedOptions || []).reduce((s, o) => s + o.priceExtra, 0);
@@ -200,6 +206,7 @@ export function updateCartUI() {
 
     renderModalCart();
 }
+window.updateCartUI = updateCartUI;
 
 export function renderModalCart() {
     if (state.cart.length === 0) {

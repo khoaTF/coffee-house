@@ -39,6 +39,7 @@ export async function verifyCustomerPhone(showLoading = true) {
         
         if (data) {
             window.currentCustomerPoints = data.current_points || 0;
+            if (typeof window.updateGachaFAB === 'function') window.updateGachaFAB();
             
             const vip = getVipTier(data.total_spent || 0);
             const cardEl = document.querySelector('.vip-card') || document.getElementById('vip-card-el');
@@ -80,6 +81,7 @@ export async function verifyCustomerPhone(showLoading = true) {
             fetchCustomerHistory(phoneInput);
         } else {
             window.currentCustomerPoints = 0;
+            if (typeof window.updateGachaFAB === 'function') window.updateGachaFAB();
             document.getElementById('vip-card-container').style.display = 'none';
             msg.innerHTML = `<i class="fa-solid fa-star"></i> SĐT mới! Bạn sẽ đổi hạng thành viên sau khi thanh toán đơn này.`;
             msg.style.display = 'block';

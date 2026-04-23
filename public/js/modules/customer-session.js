@@ -30,6 +30,7 @@ export async function initTenant() {
 
         if (data && data.id) {
             state.tenantId = data.id;
+            window.__tenantId = data.id; // Expose for standalone scripts (gacha.js)
             applyBranding(data);
             return true;
         } else {
