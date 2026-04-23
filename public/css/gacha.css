@@ -1,7 +1,88 @@
 /* ==============================================
-   GACHA / Mystery Box v3 — CS:GO Case Opening
-   Extracted from index.html inline styles
+   GACHA v4 — Loyalty Spin Wheel (Points-based)
+   Floating FAB + CS:GO-style reel animation
    ============================================== */
+
+/* ---- Floating Spin FAB Button ---- */
+.gacha-spin-fab {
+    position: fixed;
+    bottom: 110px; /* Above mobile nav bar */
+    right: 16px;
+    z-index: 45;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, #FF7A00 0%, #F59E0B 100%);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 20px rgba(255, 122, 0, 0.4), 0 0 0 0 rgba(255, 122, 0, 0.3);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    opacity: 0;
+    transform: scale(0) translateY(20px);
+    pointer-events: none;
+    overflow: visible;
+}
+.gacha-spin-fab.visible {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    pointer-events: auto;
+    animation: gacha-fab-entrance 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both,
+               gacha-fab-float 3s ease-in-out 0.5s infinite;
+}
+.gacha-spin-fab:active {
+    transform: scale(0.9) !important;
+}
+.gacha-fab-icon {
+    font-size: 1.5rem;
+    line-height: 1;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+}
+.gacha-fab-pts {
+    font-size: 0.5rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: 0.3px;
+    opacity: 0.9;
+    margin-top: 1px;
+}
+.gacha-fab-pulse {
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid #FF7A00;
+    opacity: 0;
+    animation: gacha-fab-ring 2s ease-out infinite;
+}
+
+@keyframes gacha-fab-entrance {
+    0% { opacity: 0; transform: scale(0) translateY(20px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes gacha-fab-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+}
+@keyframes gacha-fab-ring {
+    0% { opacity: 0.6; transform: scale(1); }
+    100% { opacity: 0; transform: scale(1.6); }
+}
+
+/* Desktop: adjust position */
+@media (min-width: 1024px) {
+    .gacha-spin-fab {
+        bottom: 24px;
+        right: 24px;
+        width: 64px;
+        height: 64px;
+    }
+    .gacha-fab-icon { font-size: 1.8rem; }
+    .gacha-fab-pts { font-size: 0.55rem; }
+}
 
 .gacha-star {
     position: absolute;

@@ -232,6 +232,8 @@ export async function fetchMenu() {
                 isBestSeller: p.is_best_seller
             };
         });
+        // Expose to gacha.js (standalone script)
+        window.menuItems = state.menuItems;
         
         state.ingredientStock = {};
         stockRes.data.forEach(i => state.ingredientStock[i.id] = i.stock);
@@ -404,11 +406,6 @@ export function renderMenu(category) {
 
         dom.menuContainer.appendChild(card);
     });
-
-    // Inject Mystery Box gacha card
-    if (typeof injectGachaCard === 'function' && !searchQuery && (category === 'All')) {
-        injectGachaCard();
-    }
 }
 window.renderMenu = renderMenu;
 

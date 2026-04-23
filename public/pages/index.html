@@ -249,6 +249,13 @@
     </div>
 </main>
 
+<!-- Floating Gacha Spin FAB (appears when customer has 500+ points) -->
+<button id="gacha-spin-fab" class="gacha-spin-fab" onclick="startGachaSpin()" title="Quay thưởng">
+    <span class="gacha-fab-icon">🎰</span>
+    <span class="gacha-fab-pts">0 đ</span>
+    <span class="gacha-fab-pulse"></span>
+</button>
+
 <!-- Mobile Navigation Bar -->
 <nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-end px-6 pb-6 lg:hidden bg-[#FCF9F8]/90 dark:bg-[#1B1C1C]/90 backdrop-blur-2xl rounded-t-[2rem] border-t border-[#1B1C1C]/5 pt-4">
     <button onclick="openCategoryModal(); return false;" class="flex flex-col items-center justify-center bg-gradient-to-br from-[#994700] to-[#FF7A00] text-white rounded-full w-14 h-14 -mt-8 shadow-lg shadow-[#FF7A00]/30 transition-all duration-300 scale-110 border-0">
@@ -691,8 +698,8 @@
     <div class="gacha-slot-card">
         <!-- Header -->
         <div style="padding:20px 20px 12px;text-align:center;">
-            <h2 style="font-size:1.3rem;font-weight:900;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;text-transform:uppercase;letter-spacing:1px;">🎰 Mở Túi Mù</h2>
-            <p id="gacha-slot-subtitle" style="font-size:0.75rem;color:rgba(255,255,255,0.4);margin-top:4px;">Đang bốc món cho bạn...</p>
+            <h2 style="font-size:1.3rem;font-weight:900;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;text-transform:uppercase;letter-spacing:1px;">🎰 Vòng Quay May Mắn</h2>
+            <p id="gacha-slot-subtitle" style="font-size:0.75rem;color:rgba(255,255,255,0.4);margin-top:4px;">Đang quay cho bạn...</p>
         </div>
 
         <!-- CS:GO Horizontal Reel -->
