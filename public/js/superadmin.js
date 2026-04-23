@@ -118,39 +118,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if(error) throw error;
 
-                showToast(data.message, 'success');
+                showToast('Chi nhánh "' + clientName + '" đã tạo thành công!', 'success');
                 
                 // Immediately apply tier if chosen
                 const tier = document.getElementById('new-client-tier').value;
-                if(tier !== 'trial') {
-                    // Fetch tenants to find the new one (as we don't have its ID returned directly)
-                    const { data: newTenants, error: fetchErr } = await supabase.rpc('get_all_tenants', { owner_secret: ownerSecret });
-                    if(!fetchErr && newTenants && newTenants.length > 0) {
-                        // The newest tenant is the first one because order is created_at DESC
-                        const newestTenant = newTenants[newTenants.findIndex(t => t.name === clientName)];
-                        if(newestTenant) {
-                            let daysToAdd = tier === 'basic' ? 30 : 365;
-                            let newExp = new Date();
-                            newExp.setDate(newExp.getDate() + daysToAdd);
-                            await supabase.rpc('update_tenant_subscription', {
-                                p_tenant_id: newestTenant.id,
-                                p_end_date: newExp.toISOString(),
-                                p_max_staff: tier === 'basic' ? 10 : 50,
-                                p_max_items: tier === 'basic' ? 200 : 9999,
-                                owner_secret: ownerSecret
-                            });
-                        }
-                    }
+                if(tier !== 'trial' && data?.tenant_id) {
+                    let daysToAdd = tier === 'basic' ? 30 : 365;
+                    let newExp = new Date();
+                    newExp.setDate(newExp.getDate() + daysToAdd);
+                    await supabase.rpc('update_tenant_subscription', {
+                        p_tenant_id: data.tenant_id,
+                        p_end_date: newExp.toISOString(),
+                        p_max_staff: tier === 'basic' ? 10 : 50,
+                        p_max_items: tier === 'basic' ? 200 : 9999,
+                        owner_secret: ownerSecret
+                    });
                 }
                 
-                // Close modal
-                bootstrap.Modal.getInstance(document.getElementById('createTenantModal')).hide();
+                // Close modal safely
+                const createModal = bootstrap.Modal.getInstance(document.getElementById('createTenantModal'));
+                if (createModal) createModal.hide();
                 
                 // Clear form
                 document.getElementById('create-tenant-form').reset();
-                
-                // Refresh dashboard
-                await fetchAndRenderTenants();
 
             } catch (err) {
                 console.error(err);
@@ -158,6 +148,8 @@ document.addEventListener('DOMContentLoaded', () => {
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = window.t ? window.t('superadmin.create_btn') : 'Create Workspace';
+                // Always refresh dashboard
+                await fetchAndRenderTenants();
             }
         });
     }
@@ -219,13 +211,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 showToast('Tenant updated successfully', 'success');
                 
-                // Close modal
-                const modalEl = document.getElementById('manageTenantModal');
-                const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-                modal.hide();
-                
-                // Refresh dashboard
-                await fetchAndRenderTenants();
+                // Close modal safely
+                const manageModal = bootstrap.Modal.getInstance(document.getElementById('manageTenantModal'));
+                if (manageModal) manageModal.hide();
 
             } catch (err) {
                 console.error(err);
@@ -233,6 +221,8 @@ document.addEventListener('DOMContentLoaded', () => {
             } finally {
                 confirmUpdateCmdBtn.disabled = false;
                 confirmUpdateCmdBtn.innerHTML = window.t ? window.t('superadmin.save_btn') : 'Save Tenant Info';
+                // Always refresh dashboard
+                await fetchAndRenderTenants();
             }
         });
     }
@@ -559,18 +549,18 @@ async function deleteTenant() {
 
         showToast('Tenant permanently deleted.', 'success');
         
-        // Hide Modal
-        const modalEl = document.getElementById('manageTenantModal');
-        const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-        modal.hide();
+        // Hide Modal safely
+        const delModal = bootstrap.Modal.getInstance(document.getElementById('manageTenantModal'));
+        if (delModal) delModal.hide();
 
-        await fetchAndRenderTenants();
     } catch(err) {
         console.error(err);
         showToast(err.message, 'danger');
     } finally {
         btn.disabled = false;
         btn.innerHTML = oldText;
+        // Always refresh dashboard
+        await fetchAndRenderTenants();
     }
 }
 
