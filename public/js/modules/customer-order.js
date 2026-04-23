@@ -97,6 +97,7 @@ export async function placeOrder(method = 'cash') {
         price: item.price,
         selectedOptions: item.selectedOptions || [],
         recipe: item.recipe || [],
+        note: item.note || '',
         item_code: `${codePrefix}${index + 1}`,
         is_done: false
     }));
@@ -333,6 +334,7 @@ export function renderHistoryModal() {
                     ${i.selectedOptions && i.selectedOptions.length > 0 ? 
                         `<div style="font-size: 0.75rem; color: #888; padding-left: 15px;">+${i.selectedOptions.map(o => window.escapeHTML(o.choiceName)).join(', +')}</div>` 
                         : ''}
+                    ${i.note ? `<div style="font-size:0.73rem;color:#D97531;padding-left:15px;"><i class="fa-solid fa-pen-to-square" style="font-size:9px;margin-right:3px"></i>${window.escapeHTML(i.note)}</div>` : ''}
                 </div>
                 <span>${((i.price + (i.selectedOptions || []).reduce((s, o) => s + o.priceExtra, 0)) * i.quantity).toLocaleString('vi-VN')} đ</span>
             </li>

@@ -16,7 +16,7 @@ export function generateCartKey(productId, selectedOptions) {
     return `${productId}|${optString}`;
 }
 
-export function handleCartUpdate(cartKey, baseItem, change, selectedOptions) {
+export function handleCartUpdate(cartKey, baseItem, change, selectedOptions, itemNote) {
     const existingIndex = state.cart.findIndex(c => c.cartKey === cartKey);
     
     if (existingIndex > -1) {
@@ -25,13 +25,18 @@ export function handleCartUpdate(cartKey, baseItem, change, selectedOptions) {
             state.cart.splice(existingIndex, 1);
         } else {
             state.cart[existingIndex].quantity = newQty;
+            // Update note if provided
+            if (itemNote !== undefined && itemNote !== '') {
+                state.cart[existingIndex].note = itemNote;
+            }
         }
     } else if (change > 0) {
         state.cart.push({ 
             ...baseItem, 
             cartKey: cartKey,
             quantity: 1,
-            selectedOptions: selectedOptions
+            selectedOptions: selectedOptions,
+            note: itemNote || ''
         });
     } else if (change < 0) {
         for(let i = state.cart.length - 1; i >= 0; i--) {
@@ -233,12 +238,18 @@ export function renderModalCart() {
                 '</div>';
         }
 
+        let noteHtml = '';
+        if (item.note) {
+            noteHtml = `<div style="font-size:0.78rem;color:#D97531;margin-top:4px;display:flex;align-items:center;gap:4px;"><i class="fa-solid fa-pen-to-square" style="font-size:10px"></i> ${window.escapeHTML(item.note)}</div>`;
+        }
+
         const row = document.createElement('div');
         row.className = 'cart-item';
         row.innerHTML = `
             <div class="cart-item-info">
                 <div class="cart-item-title leading-tight mb-1" style="font-family: 'Plus Jakarta Sans', sans-serif;">${window.escapeHTML(item.name)}</div>
                 ${optionsHtml}
+                ${noteHtml}
                 <div class="cart-item-price" style="color: #994700;">${(itemBasePrice + optionsPrice).toLocaleString('vi-VN')} đ</div>
             </div>
             <div class="qty-controls ml-4 shrink-0">

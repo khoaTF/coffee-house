@@ -5,6 +5,24 @@ import { TABLE_NUMBER, state, dom, sessionId, statusMap } from './customer-confi
 import { updateCartUI } from './customer-cart.js';
 import { customerAlert } from './customer-ui.js';
 
+// Favorites management
+const FAVORITES_KEY = 'customer_favorites';
+function getFavorites() {
+    try { return JSON.parse(localStorage.getItem(FAVORITES_KEY)) || []; } catch { return []; }
+}
+function toggleFavorite(productId) {
+    const favs = getFavorites();
+    const idx = favs.indexOf(productId);
+    if (idx > -1) favs.splice(idx, 1); else favs.push(productId);
+    localStorage.setItem(FAVORITES_KEY, JSON.stringify(favs));
+    // Update heart icons on page
+    document.querySelectorAll(`[data-fav-id="${productId}"]`).forEach(el => {
+        el.classList.toggle('is-fav', favs.includes(productId));
+        el.innerHTML = favs.includes(productId) ? '<i class="fa-solid fa-heart"></i>' : '<i class="fa-regular fa-heart"></i>';
+    });
+}
+window.toggleFavorite = toggleFavorite;
+
 export function getActiveCategory() {
     const activeDesktopNode = document.querySelector('.category-pill.bg-white');
     const activeMobileNode = document.querySelector('.category-pill.bg-gradient-to-br');
@@ -15,6 +33,10 @@ window.getActiveCategory = getActiveCategory;
 
 export function renderCategories(activeCategory = 'All') {
     const categories = ['All', ...new Set(state.menuItems.map(item => item.category).filter(Boolean))];
+    // Add favorites pill if any exist
+    const favs = getFavorites();
+    const hasFavItems = favs.some(fId => state.menuItems.find(m => m._id === fId));
+    if (hasFavItems) categories.splice(1, 0, '❤️ Yêu thích');
     
     const desktopContainer = document.getElementById('desktop-category-filters');
     const mobileContainer = document.getElementById('mobile-category-filters');
@@ -302,6 +324,14 @@ export function renderMenu(category) {
     const searchQuery = (sqDesktop || sqMobile).toLowerCase();
 
     const filteredItems = state.menuItems.filter(item => {
+        if (category === '❤️ Yêu thích') {
+            const favs = getFavorites();
+            const matchesFav = favs.includes(item._id);
+            const matchesSearch = !searchQuery || 
+                                   item.name.toLowerCase().includes(searchQuery) || 
+                                   (item.description && item.description.toLowerCase().includes(searchQuery));
+            return matchesFav && matchesSearch;
+        }
         const matchesCategory = !!searchQuery || category === 'All' || item.category === category;
         const matchesSearch = !searchQuery || 
                                item.name.toLowerCase().includes(searchQuery) || 
@@ -347,6 +377,9 @@ export function renderMenu(category) {
                 <div class="absolute bottom-3 right-3 bg-[#4ade80]/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs font-bold text-white shadow-sm flex items-center gap-1 z-10">
                     <i class="fa-solid fa-tag text-[12px]"></i> KM
                 </div>` : ''}
+                <button data-fav-id="${item._id}" class="fav-heart-btn ${getFavorites().includes(item._id) ? 'is-fav' : ''}" onclick="event.stopPropagation(); toggleFavorite('${item._id}')" aria-label="Yêu thích">
+                    <i class="fa-${getFavorites().includes(item._id) ? 'solid' : 'regular'} fa-heart"></i>
+                </button>
             </div>
             <div class="p-4 flex flex-col h-[calc(100%-75%)] min-h-[150px]">
                 <div class="flex justify-between items-start gap-2 mb-1">

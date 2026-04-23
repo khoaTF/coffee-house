@@ -2,6 +2,10 @@
   "version": 2,
   "routes": [
     {
+      "src": "/api/payment-webhook",
+      "dest": "/api/payment-webhook.js"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "/api"
     },
