@@ -311,3 +311,8 @@ body::after {
     background: #1a1f35;
     color: #f5f5f5;
 }
+.login-select-input:disabled {
+    opacity: 0.7;
+    cursor: default;
+    background-image: none;
+}
