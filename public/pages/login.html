@@ -46,12 +46,21 @@
                     </div>
                 </div>
 
+                <!-- Staff Name -->
+                <div class="form-group">
+                    <label class="login-pin-label">Tên đăng nhập</label>
+                    <div class="input-icon-wrapper">
+                        <input type="text" id="staff-name" placeholder="Nhập tên nhân viên" autocomplete="off" class="login-pin-input">
+                        <i class="fa-solid fa-user login-pin-icon"></i>
+                    </div>
+                </div>
+
                 <!-- PIN Section -->
                 <div id="pin-section">
                     <div class="form-group">
                         <label class="login-pin-label">Mã PIN Bí mật</label>
                         <div class="input-icon-wrapper">
-                            <input type="password" id="staff-pin" placeholder="••••••" inputmode="numeric" autocomplete="off" class="login-pin-input" autofocus>
+                            <input type="password" id="staff-pin" placeholder="••••••" inputmode="numeric" autocomplete="off" class="login-pin-input">
                             <i class="fa-solid fa-key login-pin-icon"></i>
                         </div>
                     </div>
@@ -139,14 +148,16 @@
             errorMsg.style.display = 'none';
 
             try {
+                const staffName = (document.getElementById('staff-name')?.value || '').trim();
                 const typedPin = document.getElementById('staff-pin')?.value || '';
+                if (!staffName) throw new Error("Vui lòng nhập tên đăng nhập.");
                 if (!typedPin) throw new Error("Vui lòng nhập Mã PIN.");
 
                 const tenantSelect = document.getElementById('tenant-select');
                 const selectedTenant = tenantSelect.value || null;
 
-                // Build RPC params — include tenant_id if selected
-                const rpcParams = { pin_code: typedPin };
+                // Build RPC params — include tenant_id and staff name
+                const rpcParams = { pin_code: typedPin, p_staff_name: staffName };
                 if (selectedTenant) {
                     rpcParams.p_tenant_id = selectedTenant;
                 }
