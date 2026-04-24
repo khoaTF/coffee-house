@@ -6,6 +6,10 @@
       "dest": "/api/payment-webhook.js"
     },
     {
+      "src": "/api/ai-assistant",
+      "dest": "/api/ai-assistant.js"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "/api"
     },
