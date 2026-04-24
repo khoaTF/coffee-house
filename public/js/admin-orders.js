@@ -23,7 +23,8 @@ async function fetchHistory() {
             totalPrice: o.total_price,
             discountAmount: o.discount_amount,
             paymentMethod: o.payment_method,
-            paymentStatus: o.payment_status
+            paymentStatus: o.payment_status,
+            orderSource: o.order_source || 'qr_table'
         }));
 
         renderHistoryTable();
@@ -50,7 +51,7 @@ function renderHistoryTable() {
     if (orderHistory.length === 0) {
         const tr = document.createElement('tr');
         const td = document.createElement('td');
-        td.colSpan = 7;
+        td.colSpan = 8;
         td.className = 'text-muted text-center py-4';
         td.textContent = 'Chưa có đơn hàng nào trong quá khứ.';
         tr.appendChild(td);
@@ -108,6 +109,25 @@ function renderHistoryTable() {
         tdTable.className = 'fw-bold table-cell';
         tdTable.textContent = `Bàn ${order.tableNumber || '?'}`;
 
+        // Channel badge
+        const CHANNEL_MAP = {
+            qr_table: { icon: 'fa-qrcode', label: 'QR' },
+            pos_counter: { icon: 'fa-cash-register', label: 'POS' },
+            grabfood: { icon: 'fa-motorcycle', label: 'Grab' },
+            shopeefood: { icon: 'fa-bag-shopping', label: 'Shopee' },
+            befood: { icon: 'fa-utensils', label: 'BeFood' },
+            zalo: { icon: 'fa-comment-dots', label: 'Zalo' },
+            phone_call: { icon: 'fa-phone', label: 'Phone' },
+            manual: { icon: 'fa-pen', label: 'Thủ công' }
+        };
+        const ch = order.orderSource || 'qr_table';
+        const chInfo = CHANNEL_MAP[ch] || CHANNEL_MAP.qr_table;
+        const tdChannel = document.createElement('td');
+        const chBadge = document.createElement('span');
+        chBadge.className = `channel-badge ch-${ch}`;
+        chBadge.innerHTML = `<i class="fa-solid ${chInfo.icon}"></i> ${chInfo.label}`;
+        tdChannel.appendChild(chBadge);
+
         const tdItems = document.createElement('td');
         const smallItems = document.createElement('small');
         smallItems.className = 'items-cell';
@@ -159,9 +179,16 @@ function renderHistoryTable() {
             btnPrint.innerHTML = '<i class="fa-solid fa-print"></i> In Bill';
             btnPrint.onclick = () => printInvoice(order._id);
             tdAction.appendChild(btnPrint);
+
+            const btnInvoice = document.createElement('button');
+            btnInvoice.className = 'btn btn-sm ms-1';
+            btnInvoice.style.cssText = 'background:rgba(180,83,9,0.1);color:#b45309;border:1px solid rgba(180,83,9,0.2);font-weight:600;';
+            btnInvoice.innerHTML = '<i class="fa-solid fa-file-invoice"></i> Hóa đơn';
+            btnInvoice.onclick = () => generateEInvoice(order._id);
+            tdAction.appendChild(btnInvoice);
         }
 
-        tr.append(tdId, tdDate, tdTable, tdItems, tdPrice, tdStatus, tdAction);
+        tr.append(tdId, tdDate, tdTable, tdChannel, tdItems, tdPrice, tdStatus, tdAction);
         historyTableBody.appendChild(tr);
     });
 
@@ -408,6 +435,15 @@ window.printInvoice = async (orderId) => {
 // --- History Date Filter ---
 let historyFilterRange = 'today';
 let historyFilteredData = [];
+let channelFilter = 'all';
+
+window.setChannelFilter = function(ch) {
+    channelFilter = ch;
+    document.querySelectorAll('.channel-filter-btn').forEach(b => b.classList.remove('active'));
+    const btn = document.querySelector(`.channel-filter-btn[data-channel="${ch}"]`);
+    if (btn) btn.classList.add('active');
+    applyHistoryFilters();
+};
 
 function initHistoryFilter() {
     const filterBar = document.getElementById('history-filter-bar');
@@ -474,6 +510,11 @@ function applyHistoryFilters() {
 function renderFilteredHistory() {
     const searchTerm = (document.getElementById('history-search-input')?.value || '').toLowerCase().trim();
     let data = historyFilteredData;
+
+    // Apply channel filter
+    if (channelFilter && channelFilter !== 'all') {
+        data = data.filter(o => (o.orderSource || o.order_source || 'qr_table') === channelFilter);
+    }
 
     if (searchTerm) {
         data = data.filter(o => {
@@ -639,4 +680,42 @@ window.exportOrdersExcel = function() {
     XLSX.writeFile(wb, 'donhang_' + today + '.xlsx');
     if(typeof logAudit === 'function') logAudit('Xuat bao cao Excel', rows.length + ' don hang');
     showAdminToast('Da xuat ' + rows.length + ' don hang ra file Excel!', 'success');
+};
+
+// --- E-Invoice Generation ---
+window.generateEInvoice = async function(orderId) {
+    try {
+        showAdminToast('Đang tạo hóa đơn...', 'info');
+
+        const tenantId = window.AdminState?.tenantId;
+        if (!tenantId) {
+            showAdminToast('Không tìm thấy Tenant ID', 'error');
+            return;
+        }
+
+        const response = await fetch('/api/generate-invoice', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ order_id: orderId, tenant_id: tenantId })
+        });
+
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.error || 'Lỗi tạo hóa đơn');
+        }
+
+        const html = await response.text();
+        const invoiceWindow = window.open('', '_blank', 'width=900,height=700');
+        invoiceWindow.document.write(html);
+        invoiceWindow.document.close();
+
+        // Auto-trigger print dialog
+        setTimeout(() => invoiceWindow.print(), 500);
+
+        if (typeof logAudit === 'function') logAudit('Tạo E-Invoice', `Đơn hàng ${orderId}`);
+        showAdminToast('Hóa đơn đã sẵn sàng!', 'success');
+    } catch (error) {
+        console.error('Invoice error:', error);
+        showAdminToast('Lỗi: ' + error.message, 'error');
+    }
 };
