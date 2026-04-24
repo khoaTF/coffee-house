@@ -303,6 +303,7 @@ export function renderModalCart() {
 function renderCartUpsells() {
     const container = document.getElementById('cart-upsell-container');
     const itemsContainer = document.getElementById('cart-upsell-items');
+    const titleEl = container?.querySelector('.smart-upsell-title');
     if (!container || !itemsContainer) return;
     
     if (state.cart.length === 0) {
@@ -310,52 +311,114 @@ function renderCartUpsells() {
         return;
     }
     
-    // Exclude items already in cart, filter for price <= 35000 and available
     const cartIds = state.cart.map(c => c._id || c.id);
-    const availableUpsells = state.menuItems.filter(i => !cartIds.includes(i._id) && i.price <= 35000 && getAvailableToAdd(i) > 0);
+    const cartCategories = [...new Set(state.cart.map(c => (c.category || '').toLowerCase()))];
+    const availableUpsells = state.menuItems.filter(i => !cartIds.includes(i._id) && getAvailableToAdd(i) > 0);
     
     if (availableUpsells.length === 0) {
         container.classList.add('hidden');
         return;
     }
-    
-    // --- Personalized Upsell Logic ---
-    // Tally purchase history
+
+    // --- Phase 8: Smart Upsell & Cross-sell Engine ---
+    const hour = new Date().getHours();
+    const isBreakfast = hour >= 6 && hour < 10;
+    const isLunch = hour >= 10 && hour < 14;
+    const isAfternoon = hour >= 14 && hour < 18;
+
+    // 1) Personal history scoring
     const itemFreqs = {};
-    if (state.customerHistoryOrders && state.customerHistoryOrders.length > 0) {
+    if (state.customerHistoryOrders?.length > 0) {
         state.customerHistoryOrders.forEach(order => {
             (order.items || []).forEach(item => {
                 const id = item._id || item.productId || item.id;
-                if (id) {
-                    if (!itemFreqs[id]) itemFreqs[id] = 0;
-                    itemFreqs[id] += (item.quantity || 1);
-                }
+                if (id) itemFreqs[id] = (itemFreqs[id] || 0) + (item.quantity || 1);
             });
         });
     }
 
-    // Sort available upsells. Prioritize items in history (by freq desc), then fallback to pseudo-random
-    const baseNum = state.cart.reduce((s,i) => s + i.price, 0);
-    const sortedUpsells = availableUpsells.sort((a, b) => {
-        const freqA = itemFreqs[a._id] || 0;
-        const freqB = itemFreqs[b._id] || 0;
-        if (freqA !== freqB) {
-            return freqB - freqA; // descending frequency
-        }
-        // Fallback: pseudo-stable random
-        return (a.name.charCodeAt(0) + baseNum % 10) - (b.name.charCodeAt(0) + baseNum % 10);
+    // 2) Community co-purchase patterns (items frequently bought together with current cart items)
+    const coPurchaseScores = {};
+    if (state.customerHistoryOrders?.length > 0) {
+        state.customerHistoryOrders.forEach(order => {
+            const orderItemIds = (order.items || []).map(i => i._id || i.productId || i.id);
+            const hasCartOverlap = cartIds.some(cid => orderItemIds.includes(cid));
+            if (hasCartOverlap) {
+                orderItemIds.forEach(oid => {
+                    if (!cartIds.includes(oid)) {
+                        coPurchaseScores[oid] = (coPurchaseScores[oid] || 0) + 1;
+                    }
+                });
+            }
+        });
+    }
+
+    // 3) Multi-factor scoring
+    const scored = availableUpsells.map(item => {
+        let score = 0;
+        const cat = (item.category || '').toLowerCase();
+
+        // Personal history boost (max ~40 pts)
+        score += Math.min((itemFreqs[item._id] || 0) * 5, 40);
+
+        // Community co-purchase boost (max ~30 pts)
+        score += Math.min((coPurchaseScores[item._id] || 0) * 10, 30);
+
+        // Cross-category boost: if cart has drinks → suggest food and vice versa (+20)
+        const drinkCats = ['coffee', 'tea', 'trà', 'cà phê', 'nước ép', 'juice', 'smoothie', 'drinks', 'đồ uống'];
+        const foodCats = ['food', 'đồ ăn', 'bánh', 'snack', 'bakery'];
+        const cartHasDrink = cartCategories.some(c => drinkCats.some(d => c.includes(d)));
+        const cartHasFood = cartCategories.some(c => foodCats.some(f => c.includes(f)));
+        const itemIsDrink = drinkCats.some(d => cat.includes(d));
+        const itemIsFood = foodCats.some(f => cat.includes(f));
+
+        if (cartHasDrink && !cartHasFood && itemIsFood) score += 20;
+        if (cartHasFood && !cartHasDrink && itemIsDrink) score += 20;
+
+        // Time-context boost (+15)
+        if (isBreakfast && (cat.includes('coffee') || cat.includes('cà phê') || cat.includes('bánh') || cat.includes('bread'))) score += 15;
+        if (isLunch && (cat.includes('food') || cat.includes('đồ ăn'))) score += 15;
+        if (isAfternoon && (cat.includes('tea') || cat.includes('trà') || cat.includes('juice') || cat.includes('nước ép'))) score += 15;
+
+        // Affordable items boost (under 30k) for impulse buy
+        if (item.price <= 30000) score += 5;
+
+        return { item, score };
     });
-    
-    const selected = sortedUpsells.slice(0, 3);
-    
+
+    scored.sort((a, b) => b.score - a.score);
+    const selected = scored.slice(0, 4);
+
+    // Determine contextual title
+    let upsellTitle = '<i class="fa-solid fa-sparkles text-[#FF7A00] mr-1"></i> Gợi ý dùng kèm:';
+    const topItem = selected[0];
+    if (topItem && coPurchaseScores[topItem.item._id] > 0) {
+        upsellTitle = '<i class="fa-solid fa-users text-[#FF7A00] mr-1"></i> Khách khác hay gọi thêm:';
+    } else if (topItem && itemFreqs[topItem.item._id] > 0) {
+        upsellTitle = '<i class="fa-solid fa-heart text-[#FF7A00] mr-1"></i> Bạn thường dùng kèm:';
+    } else if (isBreakfast) {
+        upsellTitle = '<i class="fa-solid fa-sun text-[#FF7A00] mr-1"></i> Sáng nay dùng thêm:';
+    } else if (isAfternoon) {
+        upsellTitle = '<i class="fa-solid fa-mug-hot text-[#FF7A00] mr-1"></i> Chiều nay thử thêm:';
+    }
+
+    if (titleEl) titleEl.innerHTML = upsellTitle;
+
     itemsContainer.innerHTML = '';
-    selected.forEach(item => {
+    selected.forEach(({ item, score }) => {
+        const isCoPurchase = coPurchaseScores[item._id] > 0;
+        const isPersonal = itemFreqs[item._id] > 0;
+        let badgeHtml = '';
+        if (isCoPurchase) badgeHtml = '<div class="absolute top-1 left-1 bg-[#FF7A00]/90 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full backdrop-blur-sm">🔥 Hot</div>';
+        else if (isPersonal) badgeHtml = '<div class="absolute top-1 left-1 bg-[#994700]/90 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full backdrop-blur-sm">❤️ Yêu thích</div>';
+
         const div = document.createElement('div');
-        div.className = 'upsell-item shrink-0 w-[110px] bg-white dark:bg-[#1B1C1B] rounded-xl overflow-hidden border border-outline-variant/30 active:scale-95 transition-transform flex flex-col shadow-sm cursor-pointer';
+        div.className = 'upsell-item shrink-0 w-[110px] bg-white dark:bg-[#1B1C1B] rounded-xl overflow-hidden border border-outline-variant/30 active:scale-95 transition-transform flex flex-col shadow-sm cursor-pointer hover:shadow-md';
         div.onclick = () => window.updateCart(item._id, 1);
         div.innerHTML = `
             <div class="h-[70px] bg-gray-200 dark:bg-gray-800 relative">
-                <img src="${item.imageUrl || ''}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/300x300?text=Food'">
+                <img src="${item.imageUrl || ''}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/300x300?text=Food'" loading="lazy">
+                ${badgeHtml}
                 <div class="absolute bottom-1 right-1 w-6 h-6 bg-[#FF7A00] text-white rounded-full flex items-center justify-center shadow-md">
                     <i class="fa-solid fa-plus text-xs"></i>
                 </div>
