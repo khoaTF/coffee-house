@@ -13,7 +13,7 @@
 // Environment variables are read inside the handler to ensure they are properly loaded by Vercel
 
 const SYSTEM_PROMPT = `Bạn là trợ lý AI thông minh của hệ thống quản lý quán cà phê "Nohope Coffee".
-Vai trò: Hỗ trợ chủ quán phân tích doanh thu, tồn kho, đơn hàng và đưa ra gợi ý kinh doanh.
+Vai trò: Hỗ trợ chủ quán phân tích dữ liệu và quản lý hệ thống.
 
 QUY TẮC QUAN TRỌNG:
 1. Trả lời bằng tiếng Việt, ngắn gọn và chuyên nghiệp.
@@ -22,7 +22,8 @@ QUY TẮC QUAN TRỌNG:
 4. Sử dụng emoji phù hợp để dễ đọc.
 5. Format kết quả dạng markdown ngắn gọn.
 6. Nếu không có đủ dữ liệu, nói rõ và gợi ý cần thêm gì.
-7. Không bao giờ thực hiện thay đổi dữ liệu, chỉ đọc và phân tích.
+7. Bạn có khả năng HỖ TRỢ ĐỔI TRẠNG THÁI MÓN (Còn hàng / Hết hàng) khi người dùng yêu cầu.
+   - Nếu người dùng yêu cầu bật/tắt trạng thái món (vd: "Cho món Trà Đào hết hàng"), bạn PHẢI TÌM TÊN MÓN chính xác nhất trong danh sách thực đơn được cung cấp trong [DỮ LIỆU HIỆN TẠI CỦA QUÁN], sau đó gọi function \`update_product_availability\` với tên món đó.
 8. Giữ câu trả lời dưới 500 từ.`;
 
 module.exports = async function handler(req, res) {
@@ -44,7 +45,7 @@ module.exports = async function handler(req, res) {
         return res.status(500).json({ error: 'GEMINI_API_KEY not configured' });
     }
 
-    const GEMINI_MODEL = 'gemini-2.5-flash';
+    const GEMINI_MODEL = 'gemini-flash-latest';
     const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
     try {
@@ -75,6 +76,9 @@ module.exports = async function handler(req, res) {
             if (context.totalProducts !== undefined) {
                 contextStr += `\n🍽️ Tổng số món trong menu: ${context.totalProducts}`;
             }
+            if (context.productList && context.productList.length > 0) {
+                contextStr += `\n📋 Danh sách thực đơn hiện tại: ${context.productList.join(', ')}`;
+            }
             if (context.avgOrderValue !== undefined) {
                 contextStr += `\n💰 Giá trị đơn trung bình: ${Number(context.avgOrderValue).toLocaleString('vi-VN')}đ`;
             }
@@ -84,30 +88,65 @@ module.exports = async function handler(req, res) {
             ? `[DỮ LIỆU HIỆN TẠI CỦA QUÁN]${contextStr}\n\n[CÂU HỎI CỦA CHỦ QUÁN]\n${message}`
             : message;
 
-        // Call Gemini API
-        const geminiRes = await fetch(GEMINI_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [
-                    {
-                        role: 'user',
-                        parts: [{ text: SYSTEM_PROMPT + '\n\n' + userMessage }]
+        const requestBody = JSON.stringify({
+            contents: [
+                {
+                    role: 'user',
+                    parts: [{ text: SYSTEM_PROMPT + '\n\n' + userMessage }]
+                }
+            ],
+            tools: [{
+                functionDeclarations: [{
+                    name: "update_product_availability",
+                    description: "Đề xuất cập nhật trạng thái còn hàng/hết hàng của một món ăn. Chỉ dùng khi người dùng yêu cầu rõ ràng. Bạn phải tìm tên món chính xác trong thực đơn.",
+                    parameters: {
+                        type: "OBJECT",
+                        properties: {
+                            productName: {
+                                type: "STRING",
+                                description: "Tên món ăn cần cập nhật, ghi chính xác như trong thực đơn."
+                            },
+                            isAvailable: {
+                                type: "BOOLEAN",
+                                description: "true nếu Còn hàng (bật), false nếu Hết hàng (tắt)."
+                            }
+                        },
+                        required: ["productName", "isAvailable"]
                     }
-                ],
-                generationConfig: {
-                    temperature: 0.7,
-                    maxOutputTokens: 1024,
-                    topP: 0.9
-                },
-                safetySettings: [
-                    { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
-                    { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
-                    { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
-                    { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' }
-                ]
-            })
+                }]
+            }],
+            generationConfig: {
+                temperature: 0.7,
+                maxOutputTokens: 1024,
+                topP: 0.9
+            },
+            safetySettings: [
+                { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
+                { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
+                { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
+                { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' }
+            ]
         });
+
+        // Call Gemini API with 1 retry for 503 high demand
+        let geminiRes;
+        let retries = 1;
+        while (retries >= 0) {
+            geminiRes = await fetch(GEMINI_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: requestBody
+            });
+
+            if (geminiRes.ok) break;
+
+            if (geminiRes.status === 503 && retries > 0) {
+                retries--;
+                await new Promise(r => setTimeout(r, 800)); // wait 800ms before retry
+            } else {
+                break;
+            }
+        }
 
         if (!geminiRes.ok) {
             const errText = await geminiRes.text();
@@ -116,11 +155,39 @@ module.exports = async function handler(req, res) {
         }
 
         const data = await geminiRes.json();
-        const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Xin lỗi, tôi không thể trả lời lúc này.';
+        const candidate = data?.candidates?.[0];
+        
+        let reply = '';
+        let action = null;
+
+        if (candidate?.content?.parts) {
+            const parts = candidate.content.parts;
+            
+            // Check for function call
+            const functionCallPart = parts.find(p => p.functionCall);
+            if (functionCallPart) {
+                const call = functionCallPart.functionCall;
+                if (call.name === 'update_product_availability') {
+                    const args = call.args;
+                    action = {
+                        type: 'update_product_availability',
+                        payload: args
+                    };
+                    const statusText = args.isAvailable ? 'Còn hàng' : 'Hết hàng';
+                    reply = `Tôi đã chuẩn bị lệnh cập nhật món **${args.productName}** thành **${statusText}**. Vui lòng xác nhận bên dưới nhé! 👇`;
+                }
+            } else {
+                // Just text
+                reply = parts[0]?.text || 'Xin lỗi, tôi không thể trả lời lúc này.';
+            }
+        } else {
+             reply = 'Xin lỗi, tôi không thể trả lời lúc này.';
+        }
 
         return res.status(200).json({
             success: true,
-            reply: reply.trim()
+            reply: reply.trim(),
+            action: action
         });
 
     } catch (error) {
