@@ -56,23 +56,28 @@ export async function initTenant() {
 function applyBranding(tenantData) {
     if (!tenantData) return;
 
-    // Apply Store Name
+    // Apply Store Name dynamically across the entire document
     if (tenantData.name) {
-        // Find existing text elements
-        const html = document.documentElement.innerHTML;
-        const mainTitles = document.querySelectorAll('h3.font-headline');
-        mainTitles.forEach(el => {
-            if (el.textContent.includes('Nohope Coffee')) {
-                el.textContent = tenantData.name;
-            }
-        });
-        
-        const sidebarTitle = document.querySelector('h1.tracking-tight');
-        if (sidebarTitle && sidebarTitle.textContent === 'Nohope') {
-            sidebarTitle.textContent = tenantData.name.split(' ')[0] || tenantData.name;
-        }
-        
         document.title = `${tenantData.name} - Thực đơn & Đặt món QR`;
+        
+        const shortName = tenantData.name.split(' ')[0] || tenantData.name;
+        
+        // Function to replace text in all text nodes
+        const replaceTextInDOM = (node) => {
+            if (node.nodeType === 3) { // Node.TEXT_NODE
+                if (node.nodeValue.includes('Nohope Coffee')) {
+                    node.nodeValue = node.nodeValue.replace(/Nohope Coffee/g, tenantData.name);
+                } else if (node.nodeValue.includes('Nohope')) {
+                    node.nodeValue = node.nodeValue.replace(/Nohope/g, shortName);
+                }
+            } else if (node.nodeType === 1 && node.nodeName !== 'SCRIPT' && node.nodeName !== 'STYLE') {
+                for (let child of node.childNodes) {
+                    replaceTextInDOM(child);
+                }
+            }
+        };
+        
+        replaceTextInDOM(document.body);
     }
 
     if (tenantData.primary_color || tenantData.branding?.primary_color) {
@@ -87,7 +92,8 @@ function applyBranding(tenantData) {
     // Images
     const logoSrc = tenantData.logo_url || tenantData.branding?.logo;
     if (logoSrc) {
-        document.querySelectorAll('img[src*="bunny_logo.png"]').forEach(img => {
+        window.tenantLogoUrl = logoSrc;
+        document.querySelectorAll('.tenant-logo-img').forEach(img => {
             img.src = logoSrc;
         });
         const favicons = document.querySelectorAll('link[rel="icon"], link[rel="apple-touch-icon"]');

@@ -430,11 +430,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (desktopNameEl) desktopNameEl.textContent = staffName;
     if (mobileNameEl) mobileNameEl.textContent = staffName;
 
-    const tenantName = sessionStorage.getItem('tenant_name') || 'Nohope Coffee';
+    const tenantName = localStorage.getItem('tenant_name') || sessionStorage.getItem('tenant_name') || 'Nohope Coffee';
     const desktopTenantEl = document.getElementById('desktop-tenant-name');
     const mobileTenantEl = document.getElementById('mobile-tenant-name');
     if (desktopTenantEl) desktopTenantEl.textContent = tenantName;
     if (mobileTenantEl) mobileTenantEl.textContent = tenantName;
+
+    // Apply store logo to admin UI if set
+    const storeLogo = localStorage.getItem('tenant_logo');
+    if (storeLogo) {
+        document.querySelectorAll('.tenant-logo-img').forEach(img => img.src = storeLogo);
+    }
 
     // Display avatar in sidebar
     const desktopAvatarEl = document.getElementById('desktop-staff-avatar');
