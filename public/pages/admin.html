@@ -801,6 +801,32 @@
                             <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
                             <input type="text" id="history-search-input" placeholder="Tìm kiếm theo bàn, món, mã đơn..." class="form-control bg-slate-100 border-slate-200 text-slate-800 rounded-xl ps-9 placeholder-[#A89F88]">
                         </div>
+
+                        <!-- Channel Filter -->
+                        <div class="flex flex-wrap gap-2 mt-3" id="channel-filter-bar">
+                            <button class="channel-filter-btn active" data-channel="all" onclick="setChannelFilter('all')">
+                                <i class="fa-solid fa-layer-group me-1"></i>Tất cả
+                            </button>
+                            <button class="channel-filter-btn" data-channel="qr_table" onclick="setChannelFilter('qr_table')">
+                                <i class="fa-solid fa-qrcode me-1 text-blue-500"></i>QR Bàn
+                            </button>
+                            <button class="channel-filter-btn" data-channel="pos_counter" onclick="setChannelFilter('pos_counter')">
+                                <i class="fa-solid fa-cash-register me-1 text-emerald-500"></i>POS
+                            </button>
+                            <button class="channel-filter-btn" data-channel="grabfood" onclick="setChannelFilter('grabfood')">
+                                <i class="fa-solid fa-motorcycle me-1 text-green-600"></i>GrabFood
+                            </button>
+                            <button class="channel-filter-btn" data-channel="shopeefood" onclick="setChannelFilter('shopeefood')">
+                                <i class="fa-solid fa-bag-shopping me-1 text-orange-500"></i>ShopeeFood
+                            </button>
+                            <button class="channel-filter-btn" data-channel="zalo" onclick="setChannelFilter('zalo')">
+                                <i class="fa-solid fa-comment-dots me-1 text-blue-600"></i>Zalo
+                            </button>
+                            <button class="channel-filter-btn" data-channel="manual" onclick="setChannelFilter('manual')">
+                                <i class="fa-solid fa-pen me-1 text-slate-500"></i>Thủ công
+                            </button>
+                        </div>
+
                         <div class="flex gap-2 mt-3">
                             <button class="btn btn-sm rounded-xl font-semibold ms-auto" style="background:#27ae60;color:#fff;" onclick="exportOrdersExcel()">
                                 <i class="fa-solid fa-file-excel me-1"></i>Xuất Excel
@@ -817,6 +843,7 @@
                                             <th class="border-0 font-semibold py-3 px-4">Mã đơn</th>
                                             <th class="border-0 font-semibold py-3 px-4">Thời gian</th>
                                             <th class="border-0 font-semibold py-3 px-4">Bàn</th>
+                                            <th class="border-0 font-semibold py-3 px-4">Kênh</th>
                                             <th class="border-0 font-semibold py-3 px-4">Các món</th>
                                             <th class="border-0 font-semibold py-3 px-4">Tổng cộng</th>
                                             <th class="border-0 font-semibold py-3 px-4">Trạng thái</th>
@@ -824,7 +851,7 @@
                                         </tr>
                                     </thead>
                                     <tbody id="history-table-body" class="border-transparent">
-                                        <tr><td colspan="7" class="text-center py-6 text-slate-500">Đang tải biểu mẫu...</td></tr>
+                                        <tr><td colspan="8" class="text-center py-6 text-slate-500">Đang tải biểu mẫu...</td></tr>
                                     </tbody>
                                 </table>
                             </div>

@@ -10,6 +10,18 @@
       "dest": "/api/ai-assistant.js"
     },
     {
+      "src": "/api/external-order",
+      "dest": "/api/external-order.js"
+    },
+    {
+      "src": "/api/generate-invoice",
+      "dest": "/api/generate-invoice.js"
+    },
+    {
+      "src": "/api/zalo-notify",
+      "dest": "/api/zalo-notify.js"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "/api"
     },

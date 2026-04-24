@@ -207,6 +207,50 @@ h3 { color: #d4a76a; font-size: 1.1rem; margin-bottom: 15px; }
     color: #d4a76a;
 }
 
+/* ===== CHANNEL FILTER BUTTONS ===== */
+.channel-filter-btn {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    color: #6b7280;
+    padding: 5px 12px;
+    border-radius: 16px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.channel-filter-btn:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+    color: #374151;
+}
+.channel-filter-btn.active {
+    background: rgba(212,167,106,0.12);
+    border-color: #d4a76a;
+    color: #b45309;
+}
+
+/* Channel Badge Styles */
+.channel-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+}
+.channel-badge.ch-qr_table { background: rgba(59,130,246,0.1); color: #2563eb; }
+.channel-badge.ch-pos_counter { background: rgba(16,185,129,0.1); color: #059669; }
+.channel-badge.ch-grabfood { background: rgba(22,163,74,0.1); color: #15803d; }
+.channel-badge.ch-shopeefood { background: rgba(249,115,22,0.1); color: #c2410c; }
+.channel-badge.ch-befood { background: rgba(239,68,68,0.1); color: #dc2626; }
+.channel-badge.ch-zalo { background: rgba(37,99,235,0.1); color: #1d4ed8; }
+.channel-badge.ch-phone_call { background: rgba(168,85,247,0.1); color: #7c3aed; }
+.channel-badge.ch-manual { background: rgba(107,114,128,0.1); color: #4b5563; }
+
 /* ===== SHIFT SUMMARY MODAL ===== */
 .shift-summary-header h4 { font-size: 1.1rem; font-weight: 700; color: #111827; margin-bottom: 6px; }
 .shift-meta { display: flex; flex-direction: column; gap: 2px; font-size: 0.8rem; color: #6b7280; margin-bottom: 20px; }
