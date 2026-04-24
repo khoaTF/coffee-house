@@ -10,9 +10,7 @@
  * Security: Only accepts requests from authenticated admin sessions.
  */
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_MODEL = 'gemini-1.5-flash';
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+// Environment variables are read inside the handler to ensure they are properly loaded by Vercel
 
 const SYSTEM_PROMPT = `Bạn là trợ lý AI thông minh của hệ thống quản lý quán cà phê "Nohope Coffee".
 Vai trò: Hỗ trợ chủ quán phân tích doanh thu, tồn kho, đơn hàng và đưa ra gợi ý kinh doanh.
@@ -41,9 +39,13 @@ module.exports = async function handler(req, res) {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
+    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
     if (!GEMINI_API_KEY) {
         return res.status(500).json({ error: 'GEMINI_API_KEY not configured' });
     }
+
+    const GEMINI_MODEL = 'gemini-1.5-flash';
+    const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
     try {
         const { message, context } = req.body;
