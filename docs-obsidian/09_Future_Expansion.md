@@ -5,14 +5,30 @@
 
 ---
 
-## 🤖 Phase 8: AI & Data Intelligence (Tối Ưu Bằng Trí Tuệ Nhân Tạo)
+## 🤖 Phase 8: AI & Data Intelligence ✅ COMPLETED
 Mục tiêu: Biến dữ liệu thành hành động, tăng doanh thu tự động và giảm tải công việc quản lý.
 
-| Tính năng | Mô tả chi tiết | Lợi ích |
-|-----------|----------------|----------|
-| **Smart Upsell & Cross-sell** | AI phân tích lịch sử order, thời tiết, và thời gian trong ngày để gợi ý thêm món (vd: "Trưa nóng, thêm ly trà chanh nhé?"). | Tăng giá trị trung bình trên mỗi đơn hàng (AOV). |
-| **Sales & Inventory Forecasting** | Dự báo lượng nguyên liệu cần nhập cho tuần tới dựa trên dữ liệu lịch sử doanh thu và ngày lễ. | Giảm thiểu hàng tồn kho và tránh hết nguyên liệu giờ cao điểm. |
-| **AI Admin Assistant** | Trợ lý ảo cho chủ quán. Chủ quán có thể gõ "Doanh thu món Cafe Sữa tuần này?" để hệ thống tự render biểu đồ. | Quản lý nhanh chóng không cần thao tác nhiều bộ lọc. |
+> [!TIP]
+> Phase 8 đã triển khai hoàn tất vào 24/04/2026. Tất cả 3 tính năng đều live trên production.
+
+### 8.1 Smart Upsell & Cross-sell ✅
+**Files:** `customer-cart.js`, `index.html`
+- AI phân tích đa nhân tố: thời gian thực (Sáng/Trưa/Chiều), co-purchase patterns, cross-category pairing, personal history.
+- Dynamic UI: Tiêu đề upsell thay đổi theo context (⭐ Yêu thích / 🔥 Hot / ☀️ Thời điểm).
+- Hiển thị tối đa 4 món gợi ý trong giỏ hàng.
+
+### 8.2 Sales & Inventory Forecasting ✅
+**Files:** `admin-analytics.js`, `admin.html`
+- Thuật toán **Weighted Moving Average (WMA)**: Rolling 28 ngày, recency weight + weekday bonus (3x).
+- **Forecast Chart**: Biểu đồ dual-line (Thực tế vs Dự báo AI) với đường nét đứt cho forecast.
+- **KPI Summary**: Doanh thu dự báo tuần tới, xu hướng %, ngày cao điểm, độ tin cậy mô hình.
+
+### 8.3 AI Admin Assistant (Gemini Chatbot) ✅
+**Files:** `api/ai-assistant.js`, `admin-ai-assistant.js`, `vercel.json`
+- **Backend**: Vercel Serverless Function → Gemini 2.0 Flash API. Context injection (revenue, orders, top items, low stock).
+- **Frontend**: Floating Action Button (FAB) + sliding chat panel + typing indicator + markdown rendering.
+- **Quick Prompts**: 4 câu hỏi nhanh (Doanh thu, Top món, Tồn kho, Gợi ý).
+- **Security**: API key qua Vercel Env, CORS headers, safety settings.
 
 ---
 
