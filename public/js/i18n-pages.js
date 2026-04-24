@@ -1061,7 +1061,7 @@
     btn.title = 'Toggle Language / Chuyển ngôn ngữ';
     btn.style.cssText = `
       position: fixed;
-      bottom: 110px;
+      bottom: 160px;
       right: 20px;
       z-index: 9999;
       background: linear-gradient(135deg, var(--primary, #994700), var(--accent, #FF7A00));
