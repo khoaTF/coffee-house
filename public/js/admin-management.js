@@ -677,11 +677,22 @@ window.saveStoreSettings = async function(type) {
         if (typeof supabase !== 'undefined') {
             const { error } = await supabase.from('store_settings').upsert({ tenant_id: AdminState.tenantId, ...updates }, { onConflict: 'tenant_id' });
             if (error) throw error;
+
+            if (type === 'general' && updates.store_name) {
+                // Keep the tenants table name in sync for the customer view
+                await supabase.from('tenants').update({ name: updates.store_name }).eq('id', AdminState.tenantId);
+            }
         }
 
         const existing = JSON.parse(localStorage.getItem('store_settings') || '{}');
         const newSettings = { ...existing, ...updates };
         localStorage.setItem('store_settings', JSON.stringify(newSettings));
+        
+        if (type === 'general' && updates.store_name) {
+            localStorage.setItem('tenant_name', updates.store_name);
+            const storeNameEls = document.querySelectorAll('#admin-store-name, .store-name');
+            storeNameEls.forEach(el => el.textContent = updates.store_name);
+        }
 
         if(typeof logAudit === 'function') logAudit('Cập nhật cài đặt', `Loại: ${type}`);
         showAdminToast(`Đã lưu thiết lập ${type === 'general' ? 'thông tin' : 'thanh toán'} thành công!`, 'success');
@@ -702,13 +713,18 @@ window.saveStoreBranding = async function() {
 
     try {
         if (typeof supabase !== 'undefined') {
-            const { error } = await supabase.from('tenants').update({ branding: updates }).eq('id', AdminState.tenantId);
+            const { error } = await supabase.from('tenants').update({ branding: updates, logo_url: updates.logo }).eq('id', AdminState.tenantId);
             if (error) throw error;
         }
 
         const existing = JSON.parse(localStorage.getItem('store_branding') || '{}');
         const newBranding = { ...existing, ...updates };
         localStorage.setItem('store_branding', JSON.stringify(newBranding));
+        
+        if (updates.logo) {
+            localStorage.setItem('tenant_logo', updates.logo);
+            document.querySelectorAll('img[src*="bunny_logo.png"]').forEach(img => img.src = updates.logo);
+        }
 
         if(typeof logAudit === 'function') logAudit('Cập nhật cài đặt', 'Thương hiệu & Giao diện');
         showAdminToast('Đã lưu cấu hình thương hiệu thành công! Áp dụng ngay trên trang khách.', 'success');

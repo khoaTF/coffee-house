@@ -307,13 +307,18 @@ window.printInvoice = async (orderId) => {
     } catch(e) {
         storeSettings = JSON.parse(localStorage.getItem('store_settings') || '{}');
     }
+    
+    // Attempt to grab logo from branding or localStorage
+    const storeBranding = JSON.parse(localStorage.getItem('store_branding') || '{}');
+    const storeLogoUrl = localStorage.getItem('tenant_logo') || storeBranding.logo || '';
+    
     const storeName = storeSettings.store_name || 'Nohope Coffee';
     const storeAddress = storeSettings.store_address || '';
     const wifiName = storeSettings.wifi_name || '';
     const wifiPass = storeSettings.wifi_pass || '';
     const bankAccNo = storeSettings.bank_acc || '';
     const bankId = storeSettings.bank_id || 'mb';
-    const logoUrl = storeSettings.logo_url || '';
+    const logoUrl = storeLogoUrl || '';
     const zaloOa = storeSettings.zalo_oa_url || storeSettings.zalo_id || '';
     
     // Zalo or Feedback QR (Zalo preferred)
