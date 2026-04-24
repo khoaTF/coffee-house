@@ -70,6 +70,7 @@
 
         if (typeof products !== 'undefined' && Array.isArray(products)) {
             ctx.totalProducts = products.filter(p => p.available !== false).length;
+            ctx.productList = products.map(p => p.name);
         }
 
         if (typeof inventoryItems !== 'undefined' && Array.isArray(inventoryItems)) {
@@ -128,6 +129,10 @@
             const data = await response.json();
             appendBubble(msgArea, data.reply || 'Không có phản hồi.', 'ai');
             chatHistory.push({ role: 'ai', text: data.reply });
+
+            if (data.action) {
+                appendActionCard(msgArea, data.action);
+            }
         } catch (err) {
             const typingEl = document.getElementById(typingId);
             if (typingEl) typingEl.remove();
@@ -156,6 +161,35 @@
 
         container.insertAdjacentHTML('beforeend', html);
         container.scrollTop = container.scrollHeight;
+    }
+
+    // --- Render action card ---
+    function appendActionCard(container, action) {
+        if (action.type === 'update_product_availability') {
+            const statusText = action.payload.isAvailable ? 'Còn hàng' : 'Hết hàng';
+            const actionId = 'action-' + Date.now();
+            const actionJson = JSON.stringify(action).replace(/"/g, '&quot;');
+            
+            const html = `
+            <div id="${actionId}" class="flex gap-2 items-end mb-3 ml-9">
+                <div class="bg-white border border-[#C0A062]/40 rounded-xl p-3 shadow-sm w-full max-w-[85%]">
+                    <div class="text-xs text-slate-500 mb-1 font-medium"><i class="fa-solid fa-bolt text-[#e17055] mr-1"></i> Đề xuất thao tác</div>
+                    <div class="text-sm text-slate-800 mb-3 leading-tight">
+                        Đổi <strong>${escapeHtml(action.payload.productName)}</strong> thành <strong>${statusText}</strong>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="window._aiAssistant.executeAction('${actionId}', '${actionJson}')" class="flex-1 bg-gradient-to-r from-[#e17055] to-[#C0A062] text-white text-xs font-bold py-2 rounded-lg hover:opacity-90 transition-opacity border-0 cursor-pointer">
+                            <i class="fa-solid fa-check mr-1"></i> Xác nhận
+                        </button>
+                        <button onclick="document.getElementById('${actionId}').remove()" class="px-3 bg-slate-100 text-slate-600 text-xs font-bold py-2 rounded-lg hover:bg-slate-200 transition-colors border-0 cursor-pointer">
+                            Hủy
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+            container.insertAdjacentHTML('beforeend', html);
+            container.scrollTop = container.scrollHeight;
+        }
     }
 
     // --- Simple markdown formatter ---
@@ -311,6 +345,52 @@
         if (qp) qp.style.display = '';
     }
 
+    async function executeAction(actionId, actionJsonStr) {
+        try {
+            const action = JSON.parse(actionJsonStr);
+            const actionEl = document.getElementById(actionId);
+            if (actionEl) {
+                actionEl.innerHTML = `<div class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center text-xs text-slate-500 w-full max-w-[85%]"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Đang thực thi...</div>`;
+            }
+
+            if (action.type === 'update_product_availability') {
+                const { productName, isAvailable } = action.payload;
+                
+                // Find product by exact name
+                if (typeof products === 'undefined' || typeof supabase === 'undefined') {
+                    throw new Error('Hệ thống chưa tải xong dữ liệu hoặc mất kết nối.');
+                }
+                
+                const product = products.find(p => p.name.toLowerCase() === productName.toLowerCase());
+                if (!product) {
+                    throw new Error(`Không tìm thấy món "${productName}" trong hệ thống.`);
+                }
+                
+                // Update in Supabase
+                const { error } = await supabase
+                    .from('products')
+                    .update({ available: isAvailable })
+                    .eq('id', product.id);
+                    
+                if (error) throw error;
+                
+                if (typeof showAdminToast === 'function') {
+                    showAdminToast(`Đã đổi ${productName} thành ${isAvailable ? 'Còn hàng' : 'Hết hàng'}`, 'success');
+                }
+                
+                if (actionEl) {
+                    actionEl.innerHTML = `<div class="bg-green-50 border border-green-200 rounded-xl p-3 text-center text-xs text-green-600 font-medium w-full max-w-[85%]"><i class="fa-solid fa-check-circle mr-1"></i> Đã thực thi thành công!</div>`;
+                }
+            }
+        } catch (err) {
+            console.error('Execute action error:', err);
+            const msgArea = document.getElementById('ai-chat-messages');
+            appendBubble(msgArea, `❌ Lỗi thực thi: ${err.message}`, 'ai');
+            const actionEl = document.getElementById(actionId);
+            if (actionEl) actionEl.remove();
+        }
+    }
+
     // --- CSS Animations ---
     const style = document.createElement('style');
     style.textContent = `
@@ -339,7 +419,8 @@
             sendMessage(msg);
         },
         sendFromInput,
-        clearChat
+        clearChat,
+        executeAction
     };
 
     // Auto-init when DOM ready
