@@ -690,8 +690,10 @@ window.saveStoreSettings = async function(type) {
         
         if (type === 'general' && updates.store_name) {
             localStorage.setItem('tenant_name', updates.store_name);
-            const storeNameEls = document.querySelectorAll('#admin-store-name, .store-name');
-            storeNameEls.forEach(el => el.textContent = updates.store_name);
+            const desktopTenantEl = document.getElementById('desktop-tenant-name');
+            const mobileTenantEl = document.getElementById('mobile-tenant-name');
+            if (desktopTenantEl) desktopTenantEl.textContent = updates.store_name;
+            if (mobileTenantEl) mobileTenantEl.textContent = updates.store_name;
         }
 
         if(typeof logAudit === 'function') logAudit('Cập nhật cài đặt', `Loại: ${type}`);
@@ -723,7 +725,7 @@ window.saveStoreBranding = async function() {
         
         if (updates.logo) {
             localStorage.setItem('tenant_logo', updates.logo);
-            document.querySelectorAll('img[src*="bunny_logo.png"]').forEach(img => img.src = updates.logo);
+            document.querySelectorAll('.tenant-logo-img').forEach(img => img.src = updates.logo);
         }
 
         if(typeof logAudit === 'function') logAudit('Cập nhật cài đặt', 'Thương hiệu & Giao diện');
@@ -749,6 +751,15 @@ window.loadStoreSettings = async function() {
     }
 
     if (document.getElementById('setting-store-name')) document.getElementById('setting-store-name').value = settings.store_name || '';
+    
+    // Sync store name to sidebar & localStorage so header always matches DB
+    if (settings.store_name) {
+        localStorage.setItem('tenant_name', settings.store_name);
+        const desktopTenantEl = document.getElementById('desktop-tenant-name');
+        const mobileTenantEl = document.getElementById('mobile-tenant-name');
+        if (desktopTenantEl) desktopTenantEl.textContent = settings.store_name;
+        if (mobileTenantEl) mobileTenantEl.textContent = settings.store_name;
+    }
     if (document.getElementById('setting-store-address')) document.getElementById('setting-store-address').value = settings.store_address || '';
     if (document.getElementById('setting-wifi-name')) document.getElementById('setting-wifi-name').value = settings.wifi_name || '';
     if (document.getElementById('setting-wifi-pass')) document.getElementById('setting-wifi-pass').value = settings.wifi_pass || '';
@@ -777,6 +788,12 @@ window.loadStoreSettings = async function() {
     }
 
     if (document.getElementById('setting-brand-logo')) document.getElementById('setting-brand-logo').value = branding.logo || '';
+    
+    // Sync logo to sidebar & localStorage so header always matches DB
+    if (branding.logo) {
+        localStorage.setItem('tenant_logo', branding.logo);
+        document.querySelectorAll('.tenant-logo-img').forEach(img => img.src = branding.logo);
+    }
     if (document.getElementById('setting-brand-banner')) document.getElementById('setting-brand-banner').value = branding.banner || '';
     if (document.getElementById('setting-brand-primary')) {
         document.getElementById('setting-brand-primary').value = branding.primary_color || '#C0A062';
