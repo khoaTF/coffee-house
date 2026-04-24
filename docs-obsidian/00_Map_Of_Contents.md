@@ -39,6 +39,10 @@ Item Notes, Favorites, Receipt Printer, Auto Payment.
 Timeline các phase từ MVP → Production.
 👉 [[08_Development_Timeline]]
 
+## 🚀 9. Kế Hoạch Mở Rộng Hệ Thống
+Định hướng phát triển AI, Đa kênh, và Quản trị chuỗi (Phase 8+).
+👉 [[09_Future_Expansion]]
+
 ---
 
 ## 🗺 Sơ Đồ Mạng Lưới Trang Web

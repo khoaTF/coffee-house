@@ -6,6 +6,7 @@
 let revenueDailyChartInstance = null;
 let revenueCategoryChartInstance = null;
 let trendCategoryChartInstance = null;
+let forecastChartInstance = null;
 
 function renderAnalytics() {
     const analyticsSection = document.getElementById('section-analytics');
@@ -192,6 +193,7 @@ function renderAnalytics() {
     // Analytics Enhanced Features
     renderHeatmap(startDate, endDate);
     renderSmartPurchasing(startDate, endDate);
+    renderForecast();
 }
 
 // --- Feedback Stats ---
@@ -697,6 +699,155 @@ function renderHeatmap(startDate, endDate) {
         }
         heatmapEl.appendChild(row);
     });
+}
+
+// --- Phase 8: Revenue Forecast (Weighted Moving Average) ---
+function renderForecast() {
+    const ctx = document.getElementById('forecastChart');
+    if (!ctx) return;
+
+    // Build daily revenue map for last 28 days
+    const now = new Date();
+    const dayMs = 1000 * 60 * 60 * 24;
+    const dailyRevenue = {};
+
+    for (let i = 27; i >= 0; i--) {
+        const d = new Date(now.getTime() - i * dayMs);
+        const key = d.toISOString().split('T')[0];
+        dailyRevenue[key] = 0;
+    }
+
+    orderHistory.forEach(o => {
+        if (o.paymentStatus !== 'paid' || o.status === 'Cancelled') return;
+        const dateStr = new Date(o.createdAt).toISOString().split('T')[0];
+        if (dailyRevenue[dateStr] !== undefined) {
+            dailyRevenue[dateStr] += (o.totalPrice || 0);
+        }
+    });
+
+    const dates = Object.keys(dailyRevenue).sort();
+    const values = dates.map(d => dailyRevenue[d]);
+
+    // WMA Forecast: weight recent days more, same day-of-week bonus
+    const forecast = [];
+    const forecastDates = [];
+    const dayNames = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+
+    for (let i = 0; i < 7; i++) {
+        const targetDate = new Date(now.getTime() + (i + 1) * dayMs);
+        const targetDayOfWeek = targetDate.getDay();
+        forecastDates.push(targetDate.toLocaleDateString('vi-VN', { month: '2-digit', day: '2-digit' }));
+
+        let weightedSum = 0;
+        let weightTotal = 0;
+
+        // Look at the last 28 days
+        for (let j = 0; j < values.length; j++) {
+            const histDate = new Date(dates[j]);
+            const daysAgo = Math.floor((now - histDate) / dayMs);
+            const recencyWeight = Math.max(1, 28 - daysAgo); // More recent = higher weight
+            const sameDayBonus = histDate.getDay() === targetDayOfWeek ? 3 : 1; // Same weekday gets 3x
+            const weight = recencyWeight * sameDayBonus;
+            weightedSum += values[j] * weight;
+            weightTotal += weight;
+        }
+
+        forecast.push(weightTotal > 0 ? Math.round(weightedSum / weightTotal) : 0);
+    }
+
+    // Chart: Last 7 days actual + 7 days forecast
+    const last7Dates = dates.slice(-7);
+    const last7Values = values.slice(-7);
+    const allLabels = [
+        ...last7Dates.map(d => new Date(d).toLocaleDateString('vi-VN', { month: '2-digit', day: '2-digit' })),
+        ...forecastDates
+    ];
+    const actualData = [...last7Values, ...Array(7).fill(null)];
+    const forecastData = [...Array(6).fill(null), last7Values[6] || 0, ...forecast];
+
+    if (forecastChartInstance) forecastChartInstance.destroy();
+    forecastChartInstance = new Chart(ctx.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: allLabels,
+            datasets: [
+                {
+                    label: 'Thực tế',
+                    data: actualData,
+                    borderColor: '#C0A062',
+                    backgroundColor: 'rgba(192,160,98,0.1)',
+                    borderWidth: 2.5,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#C0A062',
+                    fill: true,
+                    tension: 0.3,
+                    spanGaps: false
+                },
+                {
+                    label: 'Dự báo (AI)',
+                    data: forecastData,
+                    borderColor: '#e17055',
+                    backgroundColor: 'rgba(225,112,85,0.08)',
+                    borderWidth: 2.5,
+                    borderDash: [8, 4],
+                    pointRadius: 4,
+                    pointBackgroundColor: '#e17055',
+                    pointStyle: 'triangle',
+                    fill: true,
+                    tension: 0.3,
+                    spanGaps: false
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'top', labels: { font: { family: 'Manrope', weight: '600' }, usePointStyle: true } },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => ctx.dataset.label + ': ' + (ctx.parsed.y || 0).toLocaleString('vi-VN') + ' đ'
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { callback: v => (v / 1000).toFixed(0) + 'K' }
+                },
+                x: {
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+
+    // Update summary KPIs
+    const forecastTotal = forecast.reduce((a, b) => a + b, 0);
+    const currentWeekTotal = last7Values.reduce((a, b) => a + b, 0);
+    const trendPercent = currentWeekTotal > 0 ? ((forecastTotal - currentWeekTotal) / currentWeekTotal * 100).toFixed(1) : 0;
+    const peakIdx = forecast.indexOf(Math.max(...forecast));
+    const peakDate = new Date(now.getTime() + (peakIdx + 1) * dayMs);
+    const peakDayName = dayNames[peakDate.getDay()] + ' ' + forecastDates[peakIdx];
+
+    // Confidence: based on data availability (more days = higher confidence)
+    const dataPoints = values.filter(v => v > 0).length;
+    const confidence = Math.min(95, Math.round((dataPoints / 28) * 100));
+
+    const fNextWeek = document.getElementById('forecast-next-week');
+    const fTrend = document.getElementById('forecast-trend');
+    const fPeak = document.getElementById('forecast-peak-day');
+    const fConf = document.getElementById('forecast-confidence');
+
+    if (fNextWeek) fNextWeek.textContent = forecastTotal.toLocaleString('vi-VN') + 'đ';
+    if (fTrend) {
+        const isUp = trendPercent >= 0;
+        fTrend.innerHTML = `<i class="fa-solid fa-arrow-${isUp ? 'up' : 'down'} text-${isUp ? '[#27ae60]' : 'red-500'} mr-1"></i><span class="text-${isUp ? '[#27ae60]' : 'red-500'}">${isUp ? '+' : ''}${trendPercent}%</span>`;
+    }
+    if (fPeak) fPeak.textContent = peakDayName;
+    if (fConf) {
+        fConf.innerHTML = `<div class="flex items-center gap-2"><div class="w-16 h-2 bg-slate-200 rounded-full overflow-hidden"><div class="h-full bg-[#27ae60] rounded-full" style="width:${confidence}%"></div></div>${confidence}%</div>`;
+    }
 }
 
 // --- Smart Purchasing (Dự báo nhập hàng thông minh) ---
