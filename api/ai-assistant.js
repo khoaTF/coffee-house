@@ -151,7 +151,17 @@ module.exports = async function handler(req, res) {
         if (!geminiRes.ok) {
             const errText = await geminiRes.text();
             console.error('Gemini API error:', geminiRes.status, errText);
-            return res.status(502).json({ error: 'AI service unavailable', detail: errText });
+            
+            let userErrorMsg = 'AI service unavailable';
+            if (geminiRes.status === 429) {
+                userErrorMsg = 'API Key đã hết hạn mức (Quota Exceeded)';
+            } else if (geminiRes.status === 503) {
+                userErrorMsg = 'Hệ thống AI của Google đang quá tải';
+            } else if (geminiRes.status === 400) {
+                userErrorMsg = 'Lỗi cú pháp hoặc API Key không hợp lệ';
+            }
+
+            return res.status(502).json({ error: userErrorMsg, detail: errText });
         }
 
         const data = await geminiRes.json();
