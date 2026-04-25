@@ -480,25 +480,21 @@ async function impersonateTenant() {
     const tenantId = document.getElementById('manage-tenant-id').value;
     const tenantName = document.getElementById('manage-tenant-name-display').innerText;
 
-    if(!confirm(`Login as Administrator for ${tenantName}?`)) return;
+    if(!confirm(`Login as Administrator for "${tenantName}"?\n\nBạn sẽ mở trang quản trị với quyền admin.`)) return;
 
-    // We can simulate an admin session manually bypassing auth (only valid for this browser context)
-    // We will open admin.html in a new tab by injecting sessionStorage variables.
-    
-    // Create a new window
-    const newWindow = window.open('admin.html', '_blank');
-    if(newWindow) {
-        // Because of same-origin policy, we can set session data before the page loads
-        // Sometimes it's safer to use search params if session storage isn't shared across tabs instantly
-        // A safer way is to store a temporary token or use localStorage (which is shared)
-        newWindow.sessionStorage.setItem('nohope_staff_id', 'superadmin-override');
-        newWindow.sessionStorage.setItem('nohope_tenant_id', tenantId);
-        newWindow.sessionStorage.setItem('cafe_role', 'admin');
-        newWindow.sessionStorage.setItem('nohope_staff_name', 'Super Admin Override');
-        newWindow.sessionStorage.setItem('tenant_name', tenantName);
-        newWindow.sessionStorage.setItem('nohope_permissions', JSON.stringify(['all']));
-    } else {
-        showToast("Popup blocked! Please allow popups for this site.", "danger");
+    // Use localStorage (shared across tabs) to pass session data
+    // admin-core.js reads: sessionStorage.getItem('tenant_id') || localStorage.getItem('tenant_id')
+    localStorage.setItem('tenant_id', tenantId);
+    localStorage.setItem('staff_id', 'superadmin-override');
+    localStorage.setItem('cafe_role', 'admin');
+    localStorage.setItem('nohope_staff_name', 'Super Admin Override');
+    localStorage.setItem('tenant_name', tenantName);
+    localStorage.setItem('nohope_permissions', JSON.stringify(['all']));
+
+    // Open admin page in new tab
+    const newWindow = window.open('/pages/admin.html', '_blank');
+    if(!newWindow) {
+        showToast("Popup blocked! Vui lòng cho phép popup cho trang này.", "danger");
     }
 }
 
