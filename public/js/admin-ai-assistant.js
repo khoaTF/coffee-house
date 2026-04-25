@@ -285,8 +285,11 @@
         return div.innerHTML;
     }
 
-    // --- Initialize UI ---
+    // --- Initialize UI (Admin only) ---
     function initAIAssistant() {
+        const role = sessionStorage.getItem('cafe_role') || localStorage.getItem('cafe_role');
+        if (role !== 'admin') return; // Only admin can use AI Assistant
+
         // Floating Action Button
         const fab = document.createElement('div');
         fab.id = 'ai-assistant-fab';
