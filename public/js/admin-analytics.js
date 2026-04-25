@@ -546,6 +546,28 @@ async function loadDashboard() {
                 </div>
             </div>
 
+            <!-- Quick Navigation Hub -->
+            <div class="card bg-white border border-slate-200 rounded-2xl shadow-soft mb-6 overflow-hidden" id="nav-hub-card">
+                <div class="p-4 border-b border-slate-200 flex justify-between items-center cursor-pointer select-none" onclick="toggleNavHub()">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#C0A062]/20 to-[#b45309]/10 flex items-center justify-center flex-shrink-0">
+                            <i class="fa-solid fa-compass text-[#C0A062] text-lg"></i>
+                        </div>
+                        <div>
+                            <h5 class="font-bold text-slate-800 mb-0 text-base">Trung tâm Điều hướng</h5>
+                            <p class="text-xs text-slate-500 mb-0">Truy cập nhanh tất cả chức năng quản trị</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-slate-400 font-medium hidden sm:inline">Thu gọn / Mở rộng</span>
+                        <i id="nav-hub-chevron" class="fa-solid fa-chevron-down text-slate-400 transition-transform duration-300"></i>
+                    </div>
+                </div>
+                <div id="nav-hub-body" class="p-4" style="display:block;">
+                    ${renderNavHub()}
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
                 <!-- Chart 7 ngày -->
                 <div class="lg:col-span-2 card bg-white border border-slate-200 rounded-2xl p-5">
@@ -633,10 +655,146 @@ async function loadDashboard() {
             });
         }
 
+        // Restore nav hub collapse state
+        initNavHubState();
+
     } catch(e) {
         console.error('loadDashboard error:', e);
         container.innerHTML = '<div class="text-center py-16 text-red-400"><i class="fa-solid fa-circle-xmark me-2"></i>Lỗi tải Dashboard.</div>';
     }
+}
+
+// --- Quick Navigation Hub ---
+function renderNavHub() {
+    const canAccess = window.canAccessTab || (() => true);
+
+    const navGroups = [
+        {
+            title: 'Vận hành',
+            icon: 'fa-solid fa-bolt',
+            color: '#C0A062',
+            items: [
+                { tab: 'orders', icon: 'fa-solid fa-cash-register', title: 'Bán hàng (POS)', desc: 'Tạo đơn, xử lý thanh toán' },
+                { tab: 'history', icon: 'fa-solid fa-clock-rotate-left', title: 'Lịch sử đơn', desc: 'Tra cứu đơn hàng đã hoàn thành' },
+                { tab: 'delivery', icon: 'fa-solid fa-motorcycle', title: 'Giao hàng', desc: 'Quản lý đơn giao, shipper' },
+                { tab: 'shifts', icon: 'fa-solid fa-user-clock', title: 'Ca làm việc', desc: 'Mở / đóng ca, giao ca thu ngân' },
+            ]
+        },
+        {
+            title: 'Quản lý',
+            icon: 'fa-solid fa-folder-open',
+            color: '#3498db',
+            items: [
+                { tab: 'menu', icon: 'fa-solid fa-utensils', title: 'Thực đơn', desc: 'Thêm, sửa, xoá món ăn & đồ uống' },
+                { tab: 'inventory', icon: 'fa-solid fa-boxes-stacked', title: 'Kho nguyên liệu', desc: 'Tồn kho, cảnh báo hết hàng' },
+                { tab: 'restock', icon: 'fa-solid fa-truck-ramp-box', title: 'Nhập hàng', desc: 'Tạo phiếu nhập kho từ nhà cung cấp' },
+                { tab: 'promo', icon: 'fa-solid fa-tags', title: 'Khuyến mãi', desc: 'Tạo mã giảm giá, chương trình ưu đãi' },
+                { tab: 'staff', icon: 'fa-solid fa-users-gear', title: 'Nhân viên', desc: 'Phân quyền, quản lý tài khoản NV' },
+                { tab: 'customers', icon: 'fa-solid fa-people-group', title: 'Khách hàng', desc: 'Danh sách khách, lịch sử mua hàng' },
+                { tab: 'crm', icon: 'fa-solid fa-heart', title: 'CRM & Loyalty', desc: 'Chăm sóc khách hàng, tích điểm' },
+            ]
+        },
+        {
+            title: 'Cửa hàng & Báo cáo',
+            icon: 'fa-solid fa-store',
+            color: '#2ecc71',
+            items: [
+                { tab: 'analytics', icon: 'fa-solid fa-chart-pie', title: 'Thống kê', desc: 'Biểu đồ doanh thu, top sản phẩm' },
+                { tab: 'cashflow', icon: 'fa-solid fa-money-bill-trend-up', title: 'Dòng tiền', desc: 'Thu chi, lợi nhuận theo ngày' },
+                { tab: 'tables', icon: 'fa-solid fa-chair', title: 'Sơ đồ bàn', desc: 'Cấu hình bàn, trạng thái phục vụ' },
+                { tab: 'qr', icon: 'fa-solid fa-qrcode', title: 'Mã QR', desc: 'In mã QR cho từng bàn' },
+                { tab: 'audit', icon: 'fa-solid fa-shield-halved', title: 'Nhật ký', desc: 'Lịch sử thao tác hệ thống' },
+                { tab: 'settings', icon: 'fa-solid fa-gear', title: 'Cài đặt', desc: 'Logo, tên quán, cấu hình chung' },
+            ]
+        }
+    ];
+
+    // External pages
+    const externalPages = [
+        { url: '/pages/staff.html', icon: 'fa-solid fa-headset', title: 'Trang Nhân viên', desc: 'Giao diện xử lý đơn cho NV', color: '#e17055' },
+        { url: '/pages/kitchen.html', icon: 'fa-solid fa-fire-burner', title: 'Trang Bếp', desc: 'Màn hình hiển thị đơn cho bếp', color: '#00b894' },
+        { url: '/pages/delivery.html', icon: 'fa-solid fa-truck-fast', title: 'Trang Giao hàng', desc: 'Bản đồ & quản lý shipper', color: '#0984e3' },
+        { url: '/pages/tv.html', icon: 'fa-solid fa-tv', title: 'Màn hình TV', desc: 'Hiển thị trạng thái đơn cho khách', color: '#6c5ce7' },
+    ];
+
+    let html = '';
+
+    navGroups.forEach(group => {
+        // Filter items by permission
+        const visibleItems = group.items.filter(item => canAccess(item.tab));
+        if (visibleItems.length === 0) return;
+
+        html += `
+            <div class="mb-5">
+                <div class="flex items-center gap-2 mb-3">
+                    <i class="${group.icon}" style="color:${group.color}"></i>
+                    <span class="font-bold text-sm text-slate-700 uppercase tracking-wider">${group.title}</span>
+                    <span class="text-xs text-slate-400">(${visibleItems.length})</span>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                    ${visibleItems.map(item => `
+                        <div class="nav-hub-card group" onclick="switchTab('${item.tab}')" title="${item.desc}">
+                            <div class="nav-hub-icon" style="background:${group.color}15;color:${group.color}">
+                                <i class="${item.icon}"></i>
+                            </div>
+                            <div class="nav-hub-title">${item.title}</div>
+                            <div class="nav-hub-desc">${item.desc}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    });
+
+    // External pages section
+    html += `
+        <div class="mb-2">
+            <div class="flex items-center gap-2 mb-3">
+                <i class="fa-solid fa-arrow-up-right-from-square" style="color:#636e72"></i>
+                <span class="font-bold text-sm text-slate-700 uppercase tracking-wider">Trang ngoài</span>
+                <span class="text-xs text-slate-400">(${externalPages.length})</span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                ${externalPages.map(page => `
+                    <div class="nav-hub-card nav-hub-external group" onclick="window.open('${page.url}','_blank')" title="${page.desc}">
+                        <div class="nav-hub-icon" style="background:${page.color}15;color:${page.color}">
+                            <i class="${page.icon}"></i>
+                        </div>
+                        <div class="nav-hub-title">${page.title} <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-400 ml-1"></i></div>
+                        <div class="nav-hub-desc">${page.desc}</div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+
+    return html;
+}
+
+function toggleNavHub() {
+    const body = document.getElementById('nav-hub-body');
+    const chevron = document.getElementById('nav-hub-chevron');
+    if (!body) return;
+
+    const isOpen = body.style.display !== 'none';
+    body.style.display = isOpen ? 'none' : 'block';
+    if (chevron) {
+        chevron.style.transform = isOpen ? 'rotate(-90deg)' : 'rotate(0deg)';
+    }
+    try { localStorage.setItem('nav_hub_collapsed', isOpen ? '1' : '0'); } catch(e) {}
+}
+
+// Auto-restore nav hub state
+function initNavHubState() {
+    try {
+        const collapsed = localStorage.getItem('nav_hub_collapsed');
+        if (collapsed === '1') {
+            const body = document.getElementById('nav-hub-body');
+            const chevron = document.getElementById('nav-hub-chevron');
+            if (body) body.style.display = 'none';
+            if (chevron) chevron.style.transform = 'rotate(-90deg)';
+        }
+    } catch(e) {}
 }
 
 // --- Heatmap (Bản đồ nhiệt) ---
