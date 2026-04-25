@@ -346,7 +346,7 @@ function renderTenants(tenants) {
 
     let html = '';
     tenants.forEach(t => {
-        totalUsers += (t.total_staff || 0);
+        totalUsers += (t.staff_count || 0);
         const date = new Date(t.created_at).toLocaleDateString('vi-VN', {
             year: 'numeric', month: 'short', day: 'numeric',
             hour: '2-digit', minute: '2-digit'
