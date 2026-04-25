@@ -62,7 +62,9 @@ function renderStaff(data) {
             <td class="font-mono text-warning font-bold tracking-widest">${s.pin ? '••••' : '---'}</td>
             <td class="text-end">
                 <button class="action-btn text-info" title="Sửa" onclick="openStaffModal('${s.id}')"><i class="fa-solid fa-pen"></i></button>
-                <button class="action-btn delete" title="Xóa" onclick="deleteStaff('${s.id}')"><i class="fa-solid fa-trash"></i></button>
+                ${s.role === 'admin' 
+                    ? '<span class="action-btn text-muted" title="Không thể xóa tài khoản Admin" style="cursor:not-allowed;opacity:0.4;"><i class="fa-solid fa-lock"></i></span>' 
+                    : `<button class="action-btn delete" title="Xóa" onclick="deleteStaff('${s.id}')"><i class="fa-solid fa-trash"></i></button>`}
             </td>
         `;
         tbody.appendChild(tr);
@@ -339,12 +341,21 @@ async function uploadStaffAvatar(blob, staffId) {
 
 async function deleteStaff(id) {
     const s = staffList.find(x => String(x.id) === String(id));
-    const confirmed = await customConfirm(`Bạn có chắc chắn muốn xóa nhân viên ${s ? s.name : ''}?`, 'Xác nhận xóa');
+    if (!s) return;
+
+    // Prevent deleting admin accounts
+    if (s.role === 'admin') {
+        showAdminToast('⚠️ Không thể xóa tài khoản Admin! Tài khoản này cần thiết để quản trị chi nhánh.', 'error');
+        return;
+    }
+
+    const confirmed = await customConfirm(`Bạn có chắc chắn muốn xóa nhân viên ${s.name}?`, 'Xác nhận xóa');
     if (!confirmed) return;
 
     try {
         const { error } = await supabase.from('users').delete().eq('id', id).eq('tenant_id', AdminState.tenantId);
         if (error) throw error;
+        logAudit('Xóa nhân viên', `Tên: ${s.name}, Vai trò: ${s.role}`);
         fetchStaff();
     } catch (e) {
         console.error("Delete staff error:", e);
