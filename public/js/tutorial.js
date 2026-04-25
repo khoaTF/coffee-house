@@ -207,11 +207,8 @@ class NohopeTutorial {
         const rect = target.getBoundingClientRect();
         const pad = step.padding || 8;
         const gap = 16;
-        const pos = step.position || 'bottom';
-
-        // Reset classes
-        tooltip.className = tooltip.className.replace(/pos-\w+/g, '').trim();
-        tooltip.classList.add(`pos-${pos}`);
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
 
         // Temporarily show to measure
         tooltip.style.visibility = 'hidden';
@@ -219,24 +216,65 @@ class NohopeTutorial {
         const tw = tooltip.offsetWidth;
         const th = tooltip.offsetHeight;
 
+        // Determine best position with auto-fallback
+        const preferred = step.position || 'bottom';
+        const positions = [preferred, 'bottom', 'top', 'right', 'left'];
+        let finalPos = preferred;
         let top, left;
-        if (pos === 'bottom') {
-            top = rect.bottom + pad + gap;
-            left = rect.left + rect.width / 2 - tw / 2;
-        } else if (pos === 'top') {
-            top = rect.top - pad - gap - th;
-            left = rect.left + rect.width / 2 - tw / 2;
-        } else if (pos === 'left') {
-            top = rect.top + rect.height / 2 - th / 2;
-            left = rect.left - pad - gap - tw;
-        } else {
-            top = rect.top + rect.height / 2 - th / 2;
-            left = rect.right + pad + gap;
+
+        for (const pos of positions) {
+            if (pos === 'bottom') {
+                top = rect.bottom + pad + gap;
+                left = rect.left + rect.width / 2 - tw / 2;
+            } else if (pos === 'top') {
+                top = rect.top - pad - gap - th;
+                left = rect.left + rect.width / 2 - tw / 2;
+            } else if (pos === 'left') {
+                top = rect.top + rect.height / 2 - th / 2;
+                left = rect.left - pad - gap - tw;
+            } else { // right
+                top = rect.top + rect.height / 2 - th / 2;
+                left = rect.right + pad + gap;
+            }
+
+            // Check if tooltip fits without overlapping
+            const clampedLeft = Math.max(12, Math.min(left, vw - tw - 12));
+            const clampedTop = Math.max(12, Math.min(top, vh - th - 12));
+
+            // Check overlap with target element
+            const tooltipRect = {
+                top: clampedTop, left: clampedLeft,
+                right: clampedLeft + tw, bottom: clampedTop + th
+            };
+            const highlightRect = {
+                top: rect.top - pad, left: rect.left - pad,
+                right: rect.right + pad, bottom: rect.bottom + pad
+            };
+
+            const overlaps = !(
+                tooltipRect.right < highlightRect.left ||
+                tooltipRect.left > highlightRect.right ||
+                tooltipRect.bottom < highlightRect.top ||
+                tooltipRect.top > highlightRect.bottom
+            );
+
+            if (!overlaps) {
+                finalPos = pos;
+                top = clampedTop;
+                left = clampedLeft;
+                break;
+            }
+            // If preferred overlaps, try next
+            if (pos === preferred) continue;
+            // Last resort: use clamped position anyway
+            finalPos = pos;
+            top = clampedTop;
+            left = clampedLeft;
         }
 
-        // Clamp to viewport
-        left = Math.max(12, Math.min(left, window.innerWidth - tw - 12));
-        top = Math.max(12, Math.min(top, window.innerHeight - th - 12));
+        // Apply position class
+        tooltip.className = tooltip.className.replace(/pos-\w+/g, '').trim();
+        tooltip.classList.add(`pos-${finalPos}`);
 
         tooltip.style.top = top + 'px';
         tooltip.style.left = left + 'px';
@@ -245,12 +283,24 @@ class NohopeTutorial {
         // Arrow position
         const arrow = tooltip.querySelector('.nht-arrow');
         if (arrow) {
-            if (pos === 'bottom' || pos === 'top') {
+            // Reset arrow styles
+            arrow.style.cssText = '';
+            if (finalPos === 'bottom') {
                 const arrowLeft = Math.max(20, Math.min(rect.left + rect.width / 2 - left - 7, tw - 28));
                 arrow.style.left = arrowLeft + 'px';
-                arrow.style.right = 'auto';
-                arrow.style.top = pos === 'bottom' ? '-6px' : 'auto';
-                arrow.style.bottom = pos === 'top' ? '-6px' : 'auto';
+                arrow.style.top = '-6px';
+            } else if (finalPos === 'top') {
+                const arrowLeft = Math.max(20, Math.min(rect.left + rect.width / 2 - left - 7, tw - 28));
+                arrow.style.left = arrowLeft + 'px';
+                arrow.style.bottom = '-6px';
+            } else if (finalPos === 'right') {
+                arrow.style.left = '-6px';
+                const arrowTop = Math.max(16, Math.min(rect.top + rect.height / 2 - top - 7, th - 28));
+                arrow.style.top = arrowTop + 'px';
+            } else if (finalPos === 'left') {
+                arrow.style.right = '-6px';
+                const arrowTop = Math.max(16, Math.min(rect.top + rect.height / 2 - top - 7, th - 28));
+                arrow.style.top = arrowTop + 'px';
             }
         }
     }
