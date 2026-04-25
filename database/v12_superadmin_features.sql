@@ -109,23 +109,29 @@ BEGIN
         RAISE EXCEPTION 'Unauthorized' USING ERRCODE = 'P0001';
     END IF;
 
-    -- Before deleting, ensure auth instances from Supabase Auth are cleaned up 
-    -- Alternatively rely on cascade if mapped, but Supabase Auth requires its own delete.
-    -- Delete from auth.users (this would cascade to public.users if fk exists)
-    DELETE FROM auth.users 
-    WHERE id IN (
-        SELECT instance_id FROM public.users WHERE tenant_id = p_tenant_id
-    );
-
-    -- Delete the tenant (this will cascade delete users, products, categories, orders because of ON DELETE CASCADE, assuming fks are setup, 
-    -- otherwise we delete them manually just to be safe)
-    DELETE FROM public.users WHERE tenant_id = p_tenant_id;
+    -- Delete ALL child tables with tenant_id FK (order matters for inter-table FKs)
+    DELETE FROM public.audit_logs WHERE tenant_id = p_tenant_id;
+    DELETE FROM public.cash_transactions WHERE tenant_id = p_tenant_id;
+    DELETE FROM public.customer_rfm_segments WHERE tenant_id = p_tenant_id;
+    DELETE FROM public.point_logs WHERE tenant_id = p_tenant_id;
+    DELETE FROM public.feedback WHERE tenant_id = p_tenant_id;
+    DELETE FROM public.inventory_logs WHERE tenant_id = p_tenant_id;
+    DELETE FROM public.staff_timesheets WHERE tenant_id = p_tenant_id;
+    DELETE FROM public.staff_requests WHERE tenant_id = p_tenant_id;
+    DELETE FROM public.shifts WHERE tenant_id = p_tenant_id;
+    DELETE FROM public.delivery_drivers WHERE tenant_id = p_tenant_id;
+    DELETE FROM public.table_sessions WHERE tenant_id = p_tenant_id;
+    DELETE FROM public.promotion_banners WHERE tenant_id = p_tenant_id;
+    DELETE FROM public.discounts WHERE tenant_id = p_tenant_id;
+    DELETE FROM public.store_settings WHERE tenant_id = p_tenant_id;
+    DELETE FROM public.customers WHERE tenant_id = p_tenant_id;
     DELETE FROM public.orders WHERE tenant_id = p_tenant_id;
     DELETE FROM public.products WHERE tenant_id = p_tenant_id;
     DELETE FROM public.categories WHERE tenant_id = p_tenant_id;
-    DELETE FROM public.tables WHERE tenant_id = p_tenant_id;
     DELETE FROM public.ingredients WHERE tenant_id = p_tenant_id;
-    
+    DELETE FROM public.users WHERE tenant_id = p_tenant_id;
+
+    -- Finally delete the tenant itself
     DELETE FROM public.tenants WHERE id = p_tenant_id;
 
     RETURN TRUE;
