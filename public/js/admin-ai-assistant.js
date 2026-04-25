@@ -69,7 +69,7 @@
         }
 
         if (typeof products !== 'undefined' && Array.isArray(products)) {
-            ctx.totalProducts = products.filter(p => p.available !== false).length;
+            ctx.totalProducts = products.filter(p => p.is_available !== false).length;
             ctx.productList = products.map(p => p.name);
         }
 
