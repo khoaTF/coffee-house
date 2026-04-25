@@ -436,6 +436,23 @@ document.addEventListener('DOMContentLoaded', () => {
     if (desktopTenantEl) desktopTenantEl.textContent = tenantName;
     if (mobileTenantEl) mobileTenantEl.textContent = tenantName;
 
+    // Async: fetch latest store name & logo from DB to keep sidebar in sync
+    if (typeof supabase !== 'undefined' && window.AdminState?.tenantId) {
+        supabase.from('store_settings').select('store_name, logo')
+            .eq('tenant_id', window.AdminState.tenantId).maybeSingle()
+            .then(({ data }) => {
+                if (data?.store_name) {
+                    localStorage.setItem('tenant_name', data.store_name);
+                    if (desktopTenantEl) desktopTenantEl.textContent = data.store_name;
+                    if (mobileTenantEl) mobileTenantEl.textContent = data.store_name;
+                }
+                if (data?.logo) {
+                    localStorage.setItem('tenant_logo', data.logo);
+                    document.querySelectorAll('.tenant-logo-img').forEach(img => img.src = data.logo);
+                }
+            });
+    }
+
     // Apply store logo to admin UI if set
     const storeLogo = localStorage.getItem('tenant_logo');
     if (storeLogo) {
