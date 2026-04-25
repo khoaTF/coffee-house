@@ -3,6 +3,7 @@
  * 
  * Connects to Gemini API to provide natural language querying
  * for business data (orders, revenue, inventory).
+ * Also supports menu management actions (add/update/delete products).
  * 
  * Endpoint: POST /api/ai-assistant
  * Body: { message: string, context: object }
@@ -12,8 +13,8 @@
 
 // Environment variables are read inside the handler to ensure they are properly loaded by Vercel
 
-const SYSTEM_PROMPT = `Bạn là trợ lý AI thông minh của hệ thống quản lý quán cà phê "Nohope Coffee".
-Vai trò: Hỗ trợ chủ quán phân tích dữ liệu và quản lý hệ thống.
+const SYSTEM_PROMPT = `Bạn là trợ lý AI thông minh của hệ thống quản lý quán cà phê.
+Vai trò: Hỗ trợ chủ quán phân tích dữ liệu, quản lý hệ thống và QUẢN LÝ THỰC ĐƠN.
 
 QUY TẮC QUAN TRỌNG:
 1. Trả lời bằng tiếng Việt, ngắn gọn và chuyên nghiệp.
@@ -22,9 +23,31 @@ QUY TẮC QUAN TRỌNG:
 4. Sử dụng emoji phù hợp để dễ đọc.
 5. Format kết quả dạng markdown ngắn gọn.
 6. Nếu không có đủ dữ liệu, nói rõ và gợi ý cần thêm gì.
-7. Bạn có khả năng HỖ TRỢ ĐỔI TRẠNG THÁI MÓN (Còn hàng / Hết hàng) khi người dùng yêu cầu.
-   - Nếu người dùng yêu cầu bật/tắt trạng thái món (vd: "Cho món Trà Đào hết hàng"), bạn PHẢI TÌM TÊN MÓN chính xác nhất trong danh sách thực đơn được cung cấp trong [DỮ LIỆU HIỆN TẠI CỦA QUÁN], sau đó gọi function \`update_product_availability\` với tên món đó.
-8. Giữ câu trả lời dưới 500 từ.`;
+7. Giữ câu trả lời dưới 500 từ.
+
+QUẢN LÝ THỰC ĐƠN — Bạn có khả năng thực hiện các thao tác sau:
+
+A. ĐỔI TRẠNG THÁI MÓN (Còn hàng / Hết hàng):
+   - Nếu người dùng yêu cầu bật/tắt trạng thái món (vd: "Cho món Trà Đào hết hàng"), gọi function \`update_product_availability\` với tên món chính xác trong thực đơn.
+
+B. THÊM MÓN MỚI:
+   - Khi người dùng yêu cầu thêm món (vd: "Thêm món Cà Phê Sữa giá 35000 vào menu"), gọi function \`add_product\`.
+   - Bạn PHẢI trích xuất tên món, giá, danh mục (category) từ yêu cầu.
+   - Các danh mục hợp lệ: "Coffee", "Tea", "Food", "Dessert", "Other".
+   - Nếu thiếu giá hoặc danh mục, hãy tự suy luận hợp lý (VD: "Cà phê sữa" → Coffee, giá ~ 29000-39000).
+   - Nếu người dùng yêu cầu thêm nhiều món cùng lúc, gọi function \`add_multiple_products\` với mảng products.
+
+C. CẬP NHẬT MÓN:
+   - Khi người dùng yêu cầu đổi giá, đổi tên, sửa mô tả (vd: "Đổi giá Cà Phê Đen thành 25000"), gọi function \`update_product\`.
+   - Bạn PHẢI tìm tên món chính xác trong danh sách thực đơn hiện tại.
+
+D. ẨN/XÓA MÓN:
+   - Khi người dùng muốn ẩn hoặc xóa món khỏi menu (vd: "Ẩn món Bánh Flan"), gọi function \`delete_product\`.
+
+NGUYÊN TẮC:
+- Luôn xác nhận lại thao tác trước khi thực hiện qua action card.
+- Nếu không rõ thông tin, HỎI LẠI thay vì đoán sai.
+- Khi thêm nhiều món, nhóm chúng gọn gàng.`;
 
 module.exports = async function handler(req, res) {
     // CORS headers
@@ -88,6 +111,116 @@ module.exports = async function handler(req, res) {
             ? `[DỮ LIỆU HIỆN TẠI CỦA QUÁN]${contextStr}\n\n[CÂU HỎI CỦA CHỦ QUÁN]\n${message}`
             : message;
 
+        const functionDeclarations = [
+            {
+                name: "update_product_availability",
+                description: "Cập nhật trạng thái còn hàng/hết hàng của một món ăn. Chỉ dùng khi người dùng yêu cầu rõ ràng.",
+                parameters: {
+                    type: "OBJECT",
+                    properties: {
+                        productName: {
+                            type: "STRING",
+                            description: "Tên món ăn cần cập nhật, ghi chính xác như trong thực đơn."
+                        },
+                        isAvailable: {
+                            type: "BOOLEAN",
+                            description: "true nếu Còn hàng (bật), false nếu Hết hàng (tắt)."
+                        }
+                    },
+                    required: ["productName", "isAvailable"]
+                }
+            },
+            {
+                name: "add_product",
+                description: "Thêm một món mới vào thực đơn. Dùng khi người dùng yêu cầu thêm 1 món.",
+                parameters: {
+                    type: "OBJECT",
+                    properties: {
+                        name: {
+                            type: "STRING",
+                            description: "Tên món mới."
+                        },
+                        price: {
+                            type: "NUMBER",
+                            description: "Giá bán (VNĐ). Nếu không rõ, suy luận giá phù hợp thị trường VN."
+                        },
+                        category: {
+                            type: "STRING",
+                            description: "Danh mục: 'Coffee', 'Tea', 'Food', 'Dessert', hoặc 'Other'.",
+                            enum: ["Coffee", "Tea", "Food", "Dessert", "Other"]
+                        },
+                        description: {
+                            type: "STRING",
+                            description: "Mô tả ngắn gọn về món (tùy chọn)."
+                        }
+                    },
+                    required: ["name", "price", "category"]
+                }
+            },
+            {
+                name: "add_multiple_products",
+                description: "Thêm nhiều món mới vào thực đơn cùng lúc. Dùng khi người dùng yêu cầu thêm từ 2 món trở lên.",
+                parameters: {
+                    type: "OBJECT",
+                    properties: {
+                        products: {
+                            type: "ARRAY",
+                            description: "Danh sách các món cần thêm.",
+                            items: {
+                                type: "OBJECT",
+                                properties: {
+                                    name: { type: "STRING", description: "Tên món." },
+                                    price: { type: "NUMBER", description: "Giá bán (VNĐ)." },
+                                    category: { type: "STRING", description: "Danh mục.", enum: ["Coffee", "Tea", "Food", "Dessert", "Other"] },
+                                    description: { type: "STRING", description: "Mô tả (tùy chọn)." }
+                                },
+                                required: ["name", "price", "category"]
+                            }
+                        }
+                    },
+                    required: ["products"]
+                }
+            },
+            {
+                name: "update_product",
+                description: "Cập nhật thông tin của một món đã có (đổi giá, tên, mô tả, danh mục). Phải tìm đúng tên món trong thực đơn.",
+                parameters: {
+                    type: "OBJECT",
+                    properties: {
+                        productName: {
+                            type: "STRING",
+                            description: "Tên món hiện tại cần sửa, ghi chính xác như trong thực đơn."
+                        },
+                        updates: {
+                            type: "OBJECT",
+                            description: "Các trường cần cập nhật.",
+                            properties: {
+                                name: { type: "STRING", description: "Tên mới (nếu đổi tên)." },
+                                price: { type: "NUMBER", description: "Giá mới (VNĐ)." },
+                                category: { type: "STRING", description: "Danh mục mới.", enum: ["Coffee", "Tea", "Food", "Dessert", "Other"] },
+                                description: { type: "STRING", description: "Mô tả mới." }
+                            }
+                        }
+                    },
+                    required: ["productName", "updates"]
+                }
+            },
+            {
+                name: "delete_product",
+                description: "Ẩn (soft-delete) một món khỏi thực đơn. Món sẽ không hiển thị cho khách nhưng vẫn còn trong hệ thống.",
+                parameters: {
+                    type: "OBJECT",
+                    properties: {
+                        productName: {
+                            type: "STRING",
+                            description: "Tên món cần ẩn, ghi chính xác như trong thực đơn."
+                        }
+                    },
+                    required: ["productName"]
+                }
+            }
+        ];
+
         const requestBody = JSON.stringify({
             contents: [
                 {
@@ -95,26 +228,7 @@ module.exports = async function handler(req, res) {
                     parts: [{ text: SYSTEM_PROMPT + '\n\n' + userMessage }]
                 }
             ],
-            tools: [{
-                functionDeclarations: [{
-                    name: "update_product_availability",
-                    description: "Đề xuất cập nhật trạng thái còn hàng/hết hàng của một món ăn. Chỉ dùng khi người dùng yêu cầu rõ ràng. Bạn phải tìm tên món chính xác trong thực đơn.",
-                    parameters: {
-                        type: "OBJECT",
-                        properties: {
-                            productName: {
-                                type: "STRING",
-                                description: "Tên món ăn cần cập nhật, ghi chính xác như trong thực đơn."
-                            },
-                            isAvailable: {
-                                type: "BOOLEAN",
-                                description: "true nếu Còn hàng (bật), false nếu Hết hàng (tắt)."
-                            }
-                        },
-                        required: ["productName", "isAvailable"]
-                    }
-                }]
-            }],
+            tools: [{ functionDeclarations }],
             generationConfig: {
                 temperature: 0.7,
                 maxOutputTokens: 1024,
@@ -177,14 +291,44 @@ module.exports = async function handler(req, res) {
             const functionCallPart = parts.find(p => p.functionCall);
             if (functionCallPart) {
                 const call = functionCallPart.functionCall;
-                if (call.name === 'update_product_availability') {
-                    const args = call.args;
-                    action = {
-                        type: 'update_product_availability',
-                        payload: args
-                    };
-                    const statusText = args.isAvailable ? 'Còn hàng' : 'Hết hàng';
-                    reply = `Tôi đã chuẩn bị lệnh cập nhật món **${args.productName}** thành **${statusText}**. Vui lòng xác nhận bên dưới nhé! 👇`;
+                const args = call.args;
+
+                switch (call.name) {
+                    case 'update_product_availability': {
+                        action = { type: 'update_product_availability', payload: args };
+                        const statusText = args.isAvailable ? 'Còn hàng' : 'Hết hàng';
+                        reply = `Tôi đã chuẩn bị lệnh cập nhật món **${args.productName}** thành **${statusText}**. Vui lòng xác nhận bên dưới nhé! 👇`;
+                        break;
+                    }
+                    case 'add_product': {
+                        action = { type: 'add_product', payload: args };
+                        const catMap = { Coffee: 'Cà phê', Tea: 'Trà', Food: 'Đồ ăn', Dessert: 'Tráng miệng', Other: 'Khác' };
+                        reply = `Tôi sẽ thêm món **${args.name}** vào menu:\n- 💰 Giá: **${Number(args.price).toLocaleString('vi-VN')}đ**\n- 📂 Danh mục: **${catMap[args.category] || args.category}**${args.description ? `\n- 📝 Mô tả: ${args.description}` : ''}\n\nXác nhận bên dưới nhé! 👇`;
+                        break;
+                    }
+                    case 'add_multiple_products': {
+                        action = { type: 'add_multiple_products', payload: args };
+                        const productsList = (args.products || []).map(p => `• **${p.name}** — ${Number(p.price).toLocaleString('vi-VN')}đ (${p.category})`).join('\n');
+                        reply = `Tôi sẽ thêm **${(args.products || []).length} món** vào menu:\n${productsList}\n\nXác nhận bên dưới nhé! 👇`;
+                        break;
+                    }
+                    case 'update_product': {
+                        action = { type: 'update_product', payload: args };
+                        const changes = [];
+                        if (args.updates?.name) changes.push(`Tên mới: **${args.updates.name}**`);
+                        if (args.updates?.price) changes.push(`Giá mới: **${Number(args.updates.price).toLocaleString('vi-VN')}đ**`);
+                        if (args.updates?.category) changes.push(`Danh mục: **${args.updates.category}**`);
+                        if (args.updates?.description) changes.push(`Mô tả: ${args.updates.description}`);
+                        reply = `Tôi sẽ cập nhật món **${args.productName}**:\n${changes.map(c => `- ${c}`).join('\n')}\n\nXác nhận bên dưới nhé! 👇`;
+                        break;
+                    }
+                    case 'delete_product': {
+                        action = { type: 'delete_product', payload: args };
+                        reply = `Tôi sẽ **ẩn** món **${args.productName}** khỏi thực đơn (có thể khôi phục lại sau). Xác nhận bên dưới nhé! 👇`;
+                        break;
+                    }
+                    default:
+                        reply = parts[0]?.text || 'Xin lỗi, tôi không thể trả lời lúc này.';
                 }
             } else {
                 // Just text
