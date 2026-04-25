@@ -8,11 +8,42 @@
 
     let chatOpen = false;
     let chatHistory = [];
-    const QUICK_PROMPTS = [
-        { icon: '📊', text: 'Phân tích doanh thu hôm nay' },
-        { icon: '🔥', text: 'Top 5 món bán chạy nhất tuần này' },
-        { icon: '⚠️', text: 'Nguyên liệu nào sắp hết?' },
-        { icon: '💡', text: 'Gợi ý cải thiện kinh doanh' },
+    const PROMPT_CATEGORIES = [
+        {
+            id: 'analytics', label: '📊 Phân tích', prompts: [
+                { icon: '📊', text: 'Phân tích doanh thu hôm nay' },
+                { icon: '📈', text: 'So sánh doanh thu tuần này với tuần trước' },
+                { icon: '🔥', text: 'Top 5 món bán chạy nhất tuần' },
+                { icon: '⏰', text: 'Khung giờ nào đông khách nhất?' },
+            ]
+        },
+        {
+            id: 'menu', label: '🍽️ Thực đơn', prompts: [
+                { icon: '➕', text: 'Thêm món mới vào menu' },
+                { icon: '💰', text: 'Đổi giá một món trong menu' },
+                { icon: '🚫', text: 'Cho món hết hàng tạm thời' },
+                { icon: '📋', text: 'Liệt kê tất cả món đang bán' },
+            ]
+        },
+        {
+            id: 'orders', label: '📦 Đơn hàng', prompts: [
+                { icon: '📦', text: 'Có bao nhiêu đơn hôm nay?' },
+                { icon: '💵', text: 'Giá trị đơn trung bình hôm nay?' },
+                { icon: '❌', text: 'Có đơn nào bị huỷ không?' },
+            ]
+        },
+        {
+            id: 'inventory', label: '📦 Kho', prompts: [
+                { icon: '⚠️', text: 'Nguyên liệu nào sắp hết?' },
+                { icon: '📊', text: 'Tổng quan tồn kho hiện tại' },
+            ]
+        },
+        {
+            id: 'tips', label: '💡 Gợi ý', prompts: [
+                { icon: '💡', text: 'Gợi ý cải thiện kinh doanh' },
+                { icon: '🎯', text: 'Nên chạy khuyến mãi gì tuần này?' },
+            ]
+        },
     ];
 
     // --- Build business context from live data ---
@@ -294,13 +325,16 @@
                             <i class="fa-solid fa-robot text-white text-xs"></i>
                         </div>
                         <div class="bg-slate-100 text-slate-800 rounded-2xl rounded-bl-md px-4 py-3 max-w-[85%] text-sm leading-relaxed">
-                            Xin chào! 👋 Tôi là trợ lý AI của <strong>Nohope Coffee</strong>. Hãy hỏi tôi bất cứ điều gì về doanh thu, đơn hàng, tồn kho hay gợi ý kinh doanh nhé!
+                            Xin chào! 👋 Tôi là trợ lý AI của <strong>Nohope Coffee</strong>. Tôi có thể giúp bạn <strong>phân tích doanh thu</strong>, <strong>quản lý thực đơn</strong>, <strong>theo dõi đơn hàng & kho</strong>, và <strong>gợi ý kinh doanh</strong>. Chọn mục bên dưới nhé!
                         </div>
                     </div>
 
-                    <!-- Quick prompts -->
-                    <div id="ai-quick-prompts" class="flex flex-wrap gap-2 mb-3 px-9">
-                        ${QUICK_PROMPTS.map(p => `<button onclick="window._aiAssistant.send('${p.text}')" class="text-xs px-3 py-1.5 rounded-full border border-[#C0A062]/30 bg-[#C0A062]/5 text-[#b45309] hover:bg-[#C0A062]/15 transition-colors cursor-pointer font-medium">${p.icon} ${p.text}</button>`).join('')}
+                    <!-- Category tabs -->
+                    <div id="ai-quick-prompts" class="mb-3 px-9">
+                        <div class="flex gap-1 mb-2 overflow-x-auto pb-1" style="scrollbar-width:none;">
+                            ${PROMPT_CATEGORIES.map((cat, i) => `<button onclick="window._aiAssistant.switchTab('${cat.id}')" id="ai-tab-${cat.id}" class="text-[10px] px-2.5 py-1 rounded-full whitespace-nowrap border cursor-pointer font-semibold transition-all ${i === 0 ? 'bg-[#e17055] text-white border-[#e17055]' : 'border-slate-200 bg-white text-slate-500 hover:border-[#C0A062]/50'}">${cat.label}</button>`).join('')}
+                        </div>
+                        ${PROMPT_CATEGORIES.map((cat, i) => `<div id="ai-prompts-${cat.id}" class="flex flex-wrap gap-1.5 ${i === 0 ? '' : 'hidden'}">${cat.prompts.map(p => `<button onclick="window._aiAssistant.send('${p.text}')" class="text-xs px-3 py-1.5 rounded-full border border-[#C0A062]/30 bg-[#C0A062]/5 text-[#b45309] hover:bg-[#C0A062]/15 transition-colors cursor-pointer font-medium">${p.icon} ${p.text}</button>`).join('')}</div>`).join('')}
                     </div>
                 </div>
 
@@ -473,6 +507,23 @@
     `;
     document.head.appendChild(style);
 
+    // --- Tab switching for prompt categories ---
+    function switchTab(tabId) {
+        PROMPT_CATEGORIES.forEach(cat => {
+            const tabBtn = document.getElementById(`ai-tab-${cat.id}`);
+            const panel = document.getElementById(`ai-prompts-${cat.id}`);
+            if (cat.id === tabId) {
+                tabBtn?.classList.remove('border-slate-200', 'bg-white', 'text-slate-500');
+                tabBtn?.classList.add('bg-[#e17055]', 'text-white', 'border-[#e17055]');
+                panel?.classList.remove('hidden');
+            } else {
+                tabBtn?.classList.add('border-slate-200', 'bg-white', 'text-slate-500');
+                tabBtn?.classList.remove('bg-[#e17055]', 'text-white', 'border-[#e17055]');
+                panel?.classList.add('hidden');
+            }
+        });
+    }
+
     // Public API
     window._aiAssistant = {
         toggle,
@@ -484,7 +535,8 @@
         },
         sendFromInput,
         clearChat,
-        executeAction
+        executeAction,
+        switchTab
     };
 
     // Auto-init when DOM ready
