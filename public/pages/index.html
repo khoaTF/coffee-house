@@ -33,8 +33,7 @@
 
     <!-- Tailwind CSS (Compiled for Production) -->
     <link rel="stylesheet" href="css/index.css">
-    <!-- Tutorial Onboarding -->
-    <link rel="stylesheet" href="css/tutorial.css">
+
     <!-- Gacha / Mystery Box Styles (extracted) -->
     <link rel="stylesheet" href="css/gacha.css">
     <style>
@@ -729,93 +728,6 @@
 <script src="js/helpers.js"></script>
 <script type="module" src="js/customer.js?v=3.0"></script>
 <script type="module" src="js/gacha.js?v=2.0"></script>
-<script src="js/tutorial.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(function() {
-        const customerTutorial = new NohopeTutorial({
-            storageKey: 'nohope_tutorial_customer_done',
-            welcomeEmoji: '☕',
-            welcomeTitle: 'Chào mừng đến Nohope Coffee!',
-            welcomeDesc: 'Lần đầu sử dụng? Hãy để chúng tôi hướng dẫn bạn đặt món siêu nhanh chỉ trong 30 giây.',
-            completeTitle: 'Bạn đã sẵn sàng!',
-            completeDesc: 'Giờ hãy thưởng thức trải nghiệm đặt món tuyệt vời tại Nohope Coffee nhé!',
-            steps: [
-                {
-                    element: '#hero-banner-link',
-                    title: 'Banner & Khuyến mãi',
-                    description: 'Đây là khu vực hiển thị <strong>chương trình khuyến mãi</strong> và thông tin đặc biệt từ quán. Nhấn vào banner để xem chi tiết.',
-                    icon: 'fa-solid fa-bullhorn',
-                    position: 'bottom',
-                    padding: 6
-                },
-                {
-                    element: window.innerWidth >= 1024 ? '#desktop-category-filters' : '#mobile-category-filters',
-                    title: 'Lọc Danh Mục',
-                    description: 'Nhấn vào các danh mục để <strong>lọc nhanh</strong> món uống theo loại: Cà phê, Trà sữa, Nước ép, Combo...',
-                    icon: 'fa-solid fa-filter',
-                    position: window.innerWidth >= 1024 ? 'right' : 'bottom',
-                    padding: 4
-                },
-                {
-                    element: '#menu-container',
-                    title: 'Thực Đơn Món Uống',
-                    description: 'Nhấn nút <strong>(+)</strong> để thêm nhanh. Hoặc nhấn vào <strong>hình ảnh</strong> món để tuỳ chỉnh đường, đá, topping theo ý bạn.',
-                    icon: 'fa-solid fa-mug-hot',
-                    position: 'top',
-                    padding: 8
-                },
-                {
-                    element: '#floating-cart',
-                    title: 'Giỏ Hàng',
-                    description: 'Nhấn vào biểu tượng giỏ hàng để xem các món đã chọn, nhập <strong>mã khuyến mãi</strong> hoặc <strong>số điện thoại thành viên</strong> để được giảm giá.',
-                    icon: 'fa-solid fa-cart-shopping',
-                    position: 'bottom',
-                    padding: 6,
-                    borderRadius: '50%'
-                },
-                {
-                    element: '#mobile-my-orders-btn, #my-orders-btn',
-                    title: 'Theo Dõi Đơn Hàng',
-                    description: 'Xem trạng thái đơn hàng <strong>thời gian thực</strong>: Đang chờ → Đang pha chế → Sẵn sàng. Màn hình sẽ rung khi có cập nhật!',
-                    icon: 'fa-solid fa-clock-rotate-left',
-                    position: 'top',
-                    padding: 6
-                },
-                {
-                    element: 'button[data-service="staff"]',
-                    title: 'Gọi Nhân Viên',
-                    description: 'Cần hỗ trợ? Nhấn nút này để <strong>gọi nhân viên</strong> đến bàn. Yêu cầu sẽ được gửi kín đáo đến quầy thu ngân.',
-                    icon: 'fa-solid fa-bell-concierge',
-                    position: 'right',
-                    padding: 6
-                },
-                {
-                    element: '#lang-toggle',
-                    title: 'Đổi Ngôn Ngữ',
-                    description: 'Chuyển đổi giữa <strong>Tiếng Việt</strong> và <strong>English</strong> chỉ bằng một chạm.',
-                    icon: 'fa-solid fa-language',
-                    position: 'right',
-                    padding: 6
-                }
-            ]
-        });
 
-        // Fix multi-selector: pick the visible element
-        customerTutorial.steps.forEach(function(step) {
-            if (step.element && step.element.includes(',')) {
-                var selectors = step.element.split(',').map(function(s) { return s.trim(); });
-                for (var i = 0; i < selectors.length; i++) {
-                    var el = document.querySelector(selectors[i]);
-                    if (el && el.offsetParent !== null) { step.element = selectors[i]; break; }
-                }
-            }
-        });
-
-        customerTutorial.autoStart(2000);
-        window._nohopeTutorial = customerTutorial;
-    }, 500);
-});
-</script>
 </body>
 </html>
