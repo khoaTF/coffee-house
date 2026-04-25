@@ -648,6 +648,32 @@
         </div>
     </div>
 
+    <!-- Delete Confirmation Modal (replaces blocking prompt) -->
+    <div class="modal fade" id="deleteTenantConfirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-danger">
+                <div class="modal-header border-danger bg-danger bg-opacity-10">
+                    <h5 class="modal-title text-danger"><i class="fa-solid fa-triangle-exclamation me-2"></i>Xác Nhận Xoá</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-warning mb-2" style="font-size:0.9rem"><i class="fa-solid fa-radiation me-1"></i> <strong>DANGER ZONE</strong></p>
+                    <p style="font-size:0.85rem">Thao tác này sẽ <strong class="text-danger">xoá vĩnh viễn</strong> toàn bộ dữ liệu (cài đặt, thực đơn, nhân viên, đơn hàng) của chi nhánh:</p>
+                    <p class="text-center fw-bold fs-5 text-white my-3" id="delete-confirm-tenant-name"></p>
+                    <label class="form-label" style="font-size:0.85rem">Nhập đúng tên chi nhánh để xác nhận:</label>
+                    <input type="text" id="delete-confirm-input" class="form-control border-danger" placeholder="Nhập tên chi nhánh..." autocomplete="off">
+                    <div id="delete-confirm-error" class="text-danger small mt-2" style="display:none">Tên không khớp. Vui lòng nhập chính xác.</div>
+                </div>
+                <div class="modal-footer border-danger">
+                    <button type="button" class="btn btn-outline-light btn-sm rounded-pill px-3" data-bs-dismiss="modal">Huỷ</button>
+                    <button type="button" class="btn btn-danger btn-sm rounded-pill px-3" id="confirm-delete-final-btn" disabled>
+                        <i class="fa-solid fa-trash me-1"></i> Xoá Vĩnh Viễn
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notifications -->
     <div class="toast-container position-fixed bottom-0 end-0 p-3">
         <div id="actionToast" class="toast align-items-center text-bg-dark border-0" role="alert" aria-live="assertive" aria-atomic="true">

@@ -530,38 +530,71 @@ async function deleteTenant() {
     const tenantId = document.getElementById('manage-tenant-id').value;
     const tenantName = document.getElementById('manage-tenant-name-display').innerText;
 
-    const userInput = prompt(`DANGER ZONE: This will permanently delete all data (settings, menus, staff, orders) for "${tenantName}".\nType "${tenantName}" exactly to confirm deletion:`);
-    if (userInput !== tenantName) {
-        return showToast("Name mismatch. Deletion cancelled.", "warning");
-    }
+    // Hide manage modal first, then show delete confirmation modal
+    const manageModal = bootstrap.Modal.getInstance(document.getElementById('manageTenantModal'));
+    if (manageModal) manageModal.hide();
 
-    const btn = document.getElementById('btn-delete-tenant');
-    const oldText = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Deleting...';
+    // Setup delete confirmation modal
+    document.getElementById('delete-confirm-tenant-name').innerText = tenantName;
+    document.getElementById('delete-confirm-input').value = '';
+    document.getElementById('delete-confirm-error').style.display = 'none';
+    
+    const confirmBtn = document.getElementById('confirm-delete-final-btn');
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<i class="fa-solid fa-trash me-1"></i> Xoá Vĩnh Viễn';
 
-    try {
-        const { error } = await supabase.rpc('delete_tenant', {
-            owner_secret: ownerSecret,
-            p_tenant_id: tenantId
-        });
-        if (error) throw error;
+    // Real-time input validation
+    const inputEl = document.getElementById('delete-confirm-input');
+    const inputHandler = () => {
+        const match = inputEl.value.trim() === tenantName;
+        confirmBtn.disabled = !match;
+        document.getElementById('delete-confirm-error').style.display = 
+            inputEl.value.length > 0 && !match ? 'block' : 'none';
+    };
+    inputEl.removeEventListener('input', inputEl._deleteHandler);
+    inputEl._deleteHandler = inputHandler;
+    inputEl.addEventListener('input', inputHandler);
 
-        showToast('Tenant permanently deleted.', 'success');
-        
-        // Hide Modal safely
-        const delModal = bootstrap.Modal.getInstance(document.getElementById('manageTenantModal'));
-        if (delModal) delModal.hide();
+    // Confirm button handler
+    const clickHandler = async () => {
+        if (inputEl.value.trim() !== tenantName) return;
 
-    } catch(err) {
-        console.error(err);
-        showToast(err.message, 'danger');
-    } finally {
-        btn.disabled = false;
-        btn.innerHTML = oldText;
-        // Always refresh dashboard
-        await fetchAndRenderTenants();
-    }
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Đang xoá...';
+
+        try {
+            const { error } = await supabase.rpc('delete_tenant', {
+                owner_secret: ownerSecret,
+                p_tenant_id: tenantId
+            });
+            if (error) throw error;
+
+            showToast('Chi nhánh đã bị xoá vĩnh viễn.', 'success');
+
+            const delModal = bootstrap.Modal.getInstance(document.getElementById('deleteTenantConfirmModal'));
+            if (delModal) delModal.hide();
+
+        } catch(err) {
+            console.error(err);
+            showToast(err.message, 'danger');
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = '<i class="fa-solid fa-trash me-1"></i> Xoá Vĩnh Viễn';
+        } finally {
+            await fetchAndRenderTenants();
+        }
+    };
+    
+    // Remove old handler to avoid duplicates
+    confirmBtn.removeEventListener('click', confirmBtn._deleteClickHandler);
+    confirmBtn._deleteClickHandler = clickHandler;
+    confirmBtn.addEventListener('click', clickHandler);
+
+    // Show the confirmation modal (non-blocking)
+    setTimeout(() => {
+        const deleteConfirmModal = new bootstrap.Modal(document.getElementById('deleteTenantConfirmModal'));
+        deleteConfirmModal.show();
+        inputEl.focus();
+    }, 300);
 }
 
 
