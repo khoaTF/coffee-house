@@ -165,31 +165,63 @@
 
     // --- Render action card ---
     function appendActionCard(container, action) {
-        if (action.type === 'update_product_availability') {
-            const statusText = action.payload.isAvailable ? 'Còn hàng' : 'Hết hàng';
-            const actionId = 'action-' + Date.now();
-            const actionJson = JSON.stringify(action).replace(/"/g, '&quot;');
-            
-            const html = `
-            <div id="${actionId}" class="flex gap-2 items-end mb-3 ml-9">
-                <div class="bg-white border border-[#C0A062]/40 rounded-xl p-3 shadow-sm w-full max-w-[85%]">
-                    <div class="text-xs text-slate-500 mb-1 font-medium"><i class="fa-solid fa-bolt text-[#e17055] mr-1"></i> Đề xuất thao tác</div>
-                    <div class="text-sm text-slate-800 mb-3 leading-tight">
-                        Đổi <strong>${escapeHtml(action.payload.productName)}</strong> thành <strong>${statusText}</strong>
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="window._aiAssistant.executeAction('${actionId}', '${actionJson}')" class="flex-1 bg-gradient-to-r from-[#e17055] to-[#C0A062] text-white text-xs font-bold py-2 rounded-lg hover:opacity-90 transition-opacity border-0 cursor-pointer">
-                            <i class="fa-solid fa-check mr-1"></i> Xác nhận
-                        </button>
-                        <button onclick="document.getElementById('${actionId}').remove()" class="px-3 bg-slate-100 text-slate-600 text-xs font-bold py-2 rounded-lg hover:bg-slate-200 transition-colors border-0 cursor-pointer">
-                            Hủy
-                        </button>
-                    </div>
-                </div>
-            </div>`;
-            container.insertAdjacentHTML('beforeend', html);
-            container.scrollTop = container.scrollHeight;
+        const actionId = 'action-' + Date.now();
+        const actionJson = JSON.stringify(action).replace(/"/g, '&quot;');
+        let summary = '';
+        let icon = 'fa-bolt';
+
+        switch (action.type) {
+            case 'update_product_availability': {
+                const st = action.payload.isAvailable ? 'Còn hàng' : 'Hết hàng';
+                summary = `Đổi <strong>${escapeHtml(action.payload.productName)}</strong> → <strong>${st}</strong>`;
+                icon = 'fa-toggle-on';
+                break;
+            }
+            case 'add_product': {
+                summary = `Thêm <strong>${escapeHtml(action.payload.name)}</strong> — ${Number(action.payload.price).toLocaleString('vi-VN')}đ (${action.payload.category})`;
+                icon = 'fa-plus-circle';
+                break;
+            }
+            case 'add_multiple_products': {
+                const items = (action.payload.products || []).map(p => `<strong>${escapeHtml(p.name)}</strong> ${Number(p.price).toLocaleString('vi-VN')}đ`).join('<br>');
+                summary = `Thêm ${(action.payload.products || []).length} món:<br>${items}`;
+                icon = 'fa-layer-group';
+                break;
+            }
+            case 'update_product': {
+                const ch = [];
+                if (action.payload.updates?.name) ch.push(`Tên → ${action.payload.updates.name}`);
+                if (action.payload.updates?.price) ch.push(`Giá → ${Number(action.payload.updates.price).toLocaleString('vi-VN')}đ`);
+                if (action.payload.updates?.category) ch.push(`Mục → ${action.payload.updates.category}`);
+                summary = `Sửa <strong>${escapeHtml(action.payload.productName)}</strong>: ${ch.join(', ')}`;
+                icon = 'fa-pen';
+                break;
+            }
+            case 'delete_product': {
+                summary = `Ẩn <strong>${escapeHtml(action.payload.productName)}</strong> khỏi menu`;
+                icon = 'fa-eye-slash';
+                break;
+            }
+            default: return;
         }
+
+        const html = `
+        <div id="${actionId}" class="flex gap-2 items-end mb-3 ml-9">
+            <div class="bg-white border border-[#C0A062]/40 rounded-xl p-3 shadow-sm w-full max-w-[85%]">
+                <div class="text-xs text-slate-500 mb-1 font-medium"><i class="fa-solid ${icon} text-[#e17055] mr-1"></i> Đề xuất thao tác</div>
+                <div class="text-sm text-slate-800 mb-3 leading-tight">${summary}</div>
+                <div class="flex gap-2">
+                    <button onclick="window._aiAssistant.executeAction('${actionId}', '${actionJson}')" class="flex-1 bg-gradient-to-r from-[#e17055] to-[#C0A062] text-white text-xs font-bold py-2 rounded-lg hover:opacity-90 transition-opacity border-0 cursor-pointer">
+                        <i class="fa-solid fa-check mr-1"></i> Xác nhận
+                    </button>
+                    <button onclick="document.getElementById('${actionId}').remove()" class="px-3 bg-slate-100 text-slate-600 text-xs font-bold py-2 rounded-lg hover:bg-slate-200 transition-colors border-0 cursor-pointer">
+                        Hủy
+                    </button>
+                </div>
+            </div>
+        </div>`;
+        container.insertAdjacentHTML('beforeend', html);
+        container.scrollTop = container.scrollHeight;
     }
 
     // --- Simple markdown formatter ---
@@ -353,34 +385,66 @@
                 actionEl.innerHTML = `<div class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center text-xs text-slate-500 w-full max-w-[85%]"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Đang thực thi...</div>`;
             }
 
-            if (action.type === 'update_product_availability') {
-                const { productName, isAvailable } = action.payload;
-                
-                // Find product by exact name
-                if (typeof products === 'undefined' || typeof supabase === 'undefined') {
-                    throw new Error('Hệ thống chưa tải xong dữ liệu hoặc mất kết nối.');
+            if (typeof supabase === 'undefined') throw new Error('Mất kết nối Supabase.');
+            const tenantId = window.AdminState?.tenantId;
+            if (!tenantId) throw new Error('Không xác định được tenant.');
+
+            let successMsg = '';
+
+            switch (action.type) {
+                case 'update_product_availability': {
+                    const { productName, isAvailable } = action.payload;
+                    const product = (typeof products !== 'undefined' ? products : []).find(p => p.name.toLowerCase() === productName.toLowerCase());
+                    if (!product) throw new Error(`Không tìm thấy món "${productName}".`);
+                    const { error } = await supabase.from('products').update({ is_available: isAvailable }).eq('id', product._id || product.id).eq('tenant_id', tenantId);
+                    if (error) throw error;
+                    successMsg = `Đã đổi ${productName} → ${isAvailable ? 'Còn hàng' : 'Hết hàng'}`;
+                    break;
                 }
-                
-                const product = products.find(p => p.name.toLowerCase() === productName.toLowerCase());
-                if (!product) {
-                    throw new Error(`Không tìm thấy món "${productName}" trong hệ thống.`);
+                case 'add_product': {
+                    const p = action.payload;
+                    const { error } = await supabase.from('products').insert([{ name: p.name, price: p.price, category: p.category, description: p.description || '', is_available: true, tenant_id: tenantId }]);
+                    if (error) throw error;
+                    successMsg = `Đã thêm món ${p.name}`;
+                    break;
                 }
-                
-                // Update in Supabase
-                const { error } = await supabase
-                    .from('products')
-                    .update({ available: isAvailable })
-                    .eq('id', product.id);
-                    
-                if (error) throw error;
-                
-                if (typeof showAdminToast === 'function') {
-                    showAdminToast(`Đã đổi ${productName} thành ${isAvailable ? 'Còn hàng' : 'Hết hàng'}`, 'success');
+                case 'add_multiple_products': {
+                    const rows = (action.payload.products || []).map(p => ({ name: p.name, price: p.price, category: p.category, description: p.description || '', is_available: true, tenant_id: tenantId }));
+                    const { error } = await supabase.from('products').insert(rows);
+                    if (error) throw error;
+                    successMsg = `Đã thêm ${rows.length} món vào menu`;
+                    break;
                 }
-                
-                if (actionEl) {
-                    actionEl.innerHTML = `<div class="bg-green-50 border border-green-200 rounded-xl p-3 text-center text-xs text-green-600 font-medium w-full max-w-[85%]"><i class="fa-solid fa-check-circle mr-1"></i> Đã thực thi thành công!</div>`;
+                case 'update_product': {
+                    const { productName, updates } = action.payload;
+                    const product = (typeof products !== 'undefined' ? products : []).find(p => p.name.toLowerCase() === productName.toLowerCase());
+                    if (!product) throw new Error(`Không tìm thấy món "${productName}".`);
+                    const updateData = {};
+                    if (updates.name) updateData.name = updates.name;
+                    if (updates.price) updateData.price = updates.price;
+                    if (updates.category) updateData.category = updates.category;
+                    if (updates.description !== undefined) updateData.description = updates.description;
+                    const { error } = await supabase.from('products').update(updateData).eq('id', product._id || product.id).eq('tenant_id', tenantId);
+                    if (error) throw error;
+                    successMsg = `Đã cập nhật món ${productName}`;
+                    break;
                 }
+                case 'delete_product': {
+                    const { productName } = action.payload;
+                    const product = (typeof products !== 'undefined' ? products : []).find(p => p.name.toLowerCase() === productName.toLowerCase());
+                    if (!product) throw new Error(`Không tìm thấy món "${productName}".`);
+                    const { error } = await supabase.from('products').update({ is_available: false }).eq('id', product._id || product.id).eq('tenant_id', tenantId);
+                    if (error) throw error;
+                    successMsg = `Đã ẩn món ${productName}`;
+                    break;
+                }
+                default: throw new Error('Thao tác không được hỗ trợ.');
+            }
+
+            if (typeof showAdminToast === 'function') showAdminToast(successMsg, 'success');
+            if (typeof fetchProducts === 'function') fetchProducts();
+            if (actionEl) {
+                actionEl.innerHTML = `<div class="bg-green-50 border border-green-200 rounded-xl p-3 text-center text-xs text-green-600 font-medium w-full max-w-[85%]"><i class="fa-solid fa-check-circle mr-1"></i> ${successMsg}</div>`;
             }
         } catch (err) {
             console.error('Execute action error:', err);
