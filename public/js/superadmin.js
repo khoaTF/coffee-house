@@ -499,13 +499,39 @@ async function impersonateTenant() {
 }
 
 async function resetTenantPin() {
-    const tenantId = document.getElementById('manage-tenant-id').value;
-    const tenantName = document.getElementById('manage-tenant-name-display').innerText;
+    const input = document.getElementById('reset-pin-input');
+    const errorEl = document.getElementById('reset-pin-error');
+    const confirmBtn = document.getElementById('confirm-reset-pin-btn');
     
-    const newPin = prompt(`Please enter a NEW 6-digit PIN for the Admin account of ${tenantName}:`);
-    if(!newPin || newPin.length < 4) {
-        return showToast('Reset cancelled or PIN too short.', 'warning');
-    }
+    // Reset state
+    input.value = '';
+    errorEl.style.display = 'none';
+    confirmBtn.disabled = true;
+
+    // Live validation
+    input.oninput = () => {
+        const v = input.value.replace(/\D/g, '');
+        input.value = v;
+        const valid = v.length >= 4 && v.length <= 6;
+        confirmBtn.disabled = !valid;
+        errorEl.style.display = v.length > 0 && !valid ? 'block' : 'none';
+    };
+
+    // Show modal (non-blocking)
+    const pinModal = new bootstrap.Modal(document.getElementById('resetPinModal'));
+    pinModal.show();
+    setTimeout(() => input.focus(), 300);
+}
+
+async function confirmResetPin() {
+    const tenantId = document.getElementById('manage-tenant-id').value;
+    const newPin = document.getElementById('reset-pin-input').value.trim();
+    const confirmBtn = document.getElementById('confirm-reset-pin-btn');
+
+    if (!newPin || newPin.length < 4) return;
+
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i>...';
 
     try {
         const { error } = await supabase.rpc('force_reset_pin', {
@@ -515,10 +541,15 @@ async function resetTenantPin() {
         });
         
         if (error) throw error;
+
+        bootstrap.Modal.getInstance(document.getElementById('resetPinModal'))?.hide();
         showToast('Admin PIN reset successfully!', 'success');
     } catch(err) {
         console.error(err);
         showToast(err.message, 'danger');
+    } finally {
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = '<i class="fa-solid fa-check me-1"></i>Xác nhận';
     }
 }
 
