@@ -341,8 +341,8 @@
 
                     <!-- Category tabs -->
                     <div id="ai-quick-prompts" class="mb-3 px-9">
-                        <div class="flex gap-1 mb-2 overflow-x-auto pb-1" style="scrollbar-width:none;">
-                            ${PROMPT_CATEGORIES.map((cat, i) => `<button onclick="window._aiAssistant.switchTab('${cat.id}')" id="ai-tab-${cat.id}" class="text-[10px] px-2.5 py-1 rounded-full whitespace-nowrap border cursor-pointer font-semibold transition-all ${i === 0 ? 'bg-[#e17055] text-white border-[#e17055]' : 'border-slate-200 bg-white text-slate-500 hover:border-[#C0A062]/50'}">${cat.label}</button>`).join('')}
+                        <div class="flex gap-1.5 mb-2 overflow-x-scroll pb-1.5" style="-webkit-overflow-scrolling:touch; scrollbar-width:thin; scrollbar-color:#C0A062 transparent;">
+                            ${PROMPT_CATEGORIES.map((cat, i) => `<button onclick="window._aiAssistant.switchTab('${cat.id}')" id="ai-tab-${cat.id}" class="text-[10px] px-2.5 py-1 rounded-full whitespace-nowrap border cursor-pointer font-semibold transition-all flex-shrink-0 ${i === 0 ? 'bg-[#e17055] text-white border-[#e17055]' : 'border-slate-200 bg-white text-slate-500 hover:border-[#C0A062]/50'}">${cat.label}</button>`).join('')}
                         </div>
                         ${PROMPT_CATEGORIES.map((cat, i) => `<div id="ai-prompts-${cat.id}" class="flex flex-wrap gap-1.5 ${i === 0 ? '' : 'hidden'}">${cat.prompts.map(p => `<button onclick="window._aiAssistant.send('${p.text}')" class="text-xs px-3 py-1.5 rounded-full border border-[#C0A062]/30 bg-[#C0A062]/5 text-[#b45309] hover:bg-[#C0A062]/15 transition-colors cursor-pointer font-medium">${p.icon} ${p.text}</button>`).join('')}</div>`).join('')}
                     </div>
