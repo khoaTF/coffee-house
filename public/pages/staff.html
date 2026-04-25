@@ -198,6 +198,8 @@
 
         // --- 2. Global State ---
         let currentTab = 'tables';
+        const tenantId = sessionStorage.getItem('nohope_tenant_id') || sessionStorage.getItem('tenant_id') || localStorage.getItem('nohope_tenant_id') || localStorage.getItem('tenant_id');
+        if (!tenantId) { console.error('Missing tenantId!'); alert('Không tìm thấy chi nhánh. Đăng nhập lại.'); window.location.href = '/login'; }
         const ordersContainer = document.getElementById('orders-container');
         const ordersKanbanEmpty = document.getElementById('orders-kanban-empty');
         const pendingContainer = document.getElementById('kanban-pending');
@@ -264,8 +266,8 @@
 
         function setupRealtime() {
             supabase
-                .channel('staff-orders')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, payload => {
+                .channel(`staff-orders-${tenantId}`)
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'orders', filter: `tenant_id=eq.${tenantId}` }, payload => {
                     // GAP 3: Detect table transfers
                     if (payload.eventType === 'UPDATE' && payload.new && payload.old) {
                         const orderId = payload.new.id;
@@ -297,8 +299,8 @@
                 });
 
             supabase
-                .channel('staff-requests')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'staff_requests' }, payload => {
+                .channel(`staff-requests-${tenantId}`)
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'staff_requests', filter: `tenant_id=eq.${tenantId}` }, payload => {
                     fetchRequestsBadge(); // Always update badge
                     if(currentTab === 'requests') fetchRequests();
                 })
@@ -318,6 +320,7 @@
                 const { data, error } = await supabase
                     .from('orders')
                     .select('*')
+                    .eq('tenant_id', tenantId)
                     .or('status.in.(Pending,Preparing,Ready),and(status.eq.Completed,is_paid.eq.false)');
                     
                 if (error) throw error;
@@ -335,7 +338,6 @@
                 // GAP 6: Dynamic table count from store_settings (same as admin)
                 let maxTable = 15;
                 try {
-                    const tenantId = sessionStorage.getItem('nohope_tenant_id') || localStorage.getItem('nohope_tenant_id');
                     const { data: storeSettings } = await supabase.from('store_settings').select('table_count').eq('tenant_id', tenantId).maybeSingle();
                     if (storeSettings && storeSettings.table_count > 0) maxTable = storeSettings.table_count;
                 } catch(_) {}
@@ -453,31 +455,33 @@
                             amount: amount,
                             description: `Thu tiền bàn ${currentSelectedTable} đơn #${orderIdShort}`,
                             category: 'order_payment',
-                            created_by: staffName
+                            created_by: staffName,
+                            tenant_id: tenantId
                         });
                         if (txErr) console.warn('Lỗi ghi sổ quỹ:', txErr.message);
                     }
 
                     // --- Cộng điểm Thành viên ---
                     if (ord.customer_phone && ord.earned_points > 0) {
-                        const { data: cData } = await supabase.from('customers').select('*').eq('phone', ord.customer_phone).maybeSingle();
+                        const { data: cData } = await supabase.from('customers').select('*').eq('tenant_id', tenantId).eq('phone', ord.customer_phone).maybeSingle();
                         if (cData) {
                             await supabase.from('customers').update({ 
                                 current_points: (cData.current_points || 0) + ord.earned_points,
                                 total_spent: (cData.total_spent || 0) + ord.total_price 
-                            }).eq('id', cData.id);
+                            }).eq('tenant_id', tenantId).eq('id', cData.id);
                         } else {
                             await supabase.from('customers').insert([{ 
                                 phone: ord.customer_phone, 
                                 name: 'Khách Tích Điểm', 
                                 current_points: ord.earned_points, 
-                                total_spent: ord.total_price 
+                                total_spent: ord.total_price,
+                                tenant_id: tenantId
                             }]);
                         }
                     }
                 }
                 // Cleans the table session so QR unlocks
-                await supabase.from('table_sessions').delete().eq('table_number', currentSelectedTable.toString());
+                await supabase.from('table_sessions').delete().eq('tenant_id', tenantId).eq('table_number', currentSelectedTable.toString());
                 
                 closeTableModal();
                 fetchTablesStatus();
@@ -548,6 +552,7 @@
                 const { data, error } = await supabase
                     .from('orders')
                     .select('*')
+                    .eq('tenant_id', tenantId)
                     .in('status', ['Pending', 'Preparing', 'Ready'])
                     .order('created_at', { ascending: false });
 
@@ -598,6 +603,7 @@
                 const { data, error } = await supabase
                     .from('staff_requests')
                     .select('*')
+                    .eq('tenant_id', tenantId)
                     .eq('status', 'pending')
                     .order('created_at', { ascending: true });
 
@@ -625,6 +631,7 @@
                 const { count, error } = await supabase
                     .from('staff_requests')
                     .select('*', { count: 'exact', head: true })
+                    .eq('tenant_id', tenantId)
                     .eq('status', 'pending');
                     
                 const badge = document.getElementById('req-badge');
@@ -799,7 +806,7 @@
         async function confirmPayment(orderId) {
             if(!confirm("Xác nhận đã thu thành công tiền order này? Bàn sẽ được dọn tự động để khách mới quét mã.")) return;
             try {
-                const { error: ordErr, data: ordData } = await supabase.from('orders').update({ is_paid: true, payment_status: 'paid' }).eq('id', orderId).select('table_number, total_price').single();
+                const { error: ordErr, data: ordData } = await supabase.from('orders').update({ is_paid: true, payment_status: 'paid' }).eq('tenant_id', tenantId).eq('id', orderId).select('table_number, total_price').single();
                 if(ordErr) throw ordErr;
                 
                 // --- Ghi giao dịch vào cash_transactions ---
@@ -811,14 +818,15 @@
                         amount: amount,
                         description: `Thu tiền đơn #${orderIdShort} (Bàn ${ordData.table_number || '?'})`,
                         category: 'order_payment',
-                        created_by: staffName
+                        created_by: staffName,
+                        tenant_id: tenantId
                     });
                     if (txErr) console.warn('Lỗi ghi sổ quỹ:', txErr.message);
                 }
 
                 // Auto-clear table session for new customers
                 if (ordData && ordData.table_number) {
-                    await supabase.from('table_sessions').delete().eq('table_number', ordData.table_number);
+                    await supabase.from('table_sessions').delete().eq('tenant_id', tenantId).eq('table_number', ordData.table_number);
                 }
                 
                 fetchOrders();
@@ -831,7 +839,7 @@
             // Once served, mark as Completed so it leaves the active terminal.
             if(!confirm("Đồng ý: Khách đã nhận đủ món và đơn hoàn tất?")) return;
             try {
-                const { error } = await supabase.from('orders').update({ status: 'Completed' }).eq('id', orderId);
+                const { error } = await supabase.from('orders').update({ status: 'Completed' }).eq('tenant_id', tenantId).eq('id', orderId);
                 if(error) throw error;
                 fetchOrders();
             } catch(e) {
@@ -842,7 +850,7 @@
         window.cancelOrder = async (orderId) => {
             if(!confirm("Bạn có chắc chắn muốn HỦY đơn hàng này? Thao tác này không thể hoàn tác.")) return;
             try {
-                const { error } = await supabase.from('orders').update({ status: 'Cancelled' }).eq('id', orderId);
+                const { error } = await supabase.from('orders').update({ status: 'Cancelled' }).eq('tenant_id', tenantId).eq('id', orderId);
                 if(error) throw error;
                 fetchOrders();
             } catch(e) {
@@ -852,7 +860,7 @@
 
         async function completeRequest(reqId) {
             try {
-                const { error } = await supabase.from('staff_requests').update({ status: 'completed' }).eq('id', reqId);
+                const { error } = await supabase.from('staff_requests').update({ status: 'completed' }).eq('tenant_id', tenantId).eq('id', reqId);
                 if(error) throw error;
                 fetchRequests();
                 fetchRequestsBadge();

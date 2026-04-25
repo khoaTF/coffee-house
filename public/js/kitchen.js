@@ -528,8 +528,8 @@ window.updateOrderStatus = async (orderId, newStatus, btn) => {
                             if (!ingrId) continue;
                             const restoreAmt = (ingr.amount || ingr.quantity || 0) * qty;
                             if (restoreAmt <= 0) continue;
-                            const { data: cur } = await supabase.from('ingredients').select('stock').eq('id', ingrId).maybeSingle();
-                            if (cur) await supabase.from('ingredients').update({ stock: (cur.stock || 0) + restoreAmt }).eq('id', ingrId);
+                            const { data: cur } = await supabase.from('ingredients').select('stock').eq('tenant_id', tenantId).eq('id', ingrId).maybeSingle();
+                            if (cur) await supabase.from('ingredients').update({ stock: (cur.stock || 0) + restoreAmt }).eq('tenant_id', tenantId).eq('id', ingrId);
                         }
                     }
                 } catch (re) { console.warn('Restore inventory warning:', re); }
