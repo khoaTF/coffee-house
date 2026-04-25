@@ -299,20 +299,24 @@ window.printInvoice = async (orderId) => {
     const order = orderHistory.find(o => String(o._id) === String(orderId));
     if (!order) return;
 
-    // Load store_settings
+    // Load store_settings and tenant info
     let storeSettings = {};
+    let tenantData = {};
     try {
-        const { data } = await supabase.from('store_settings').select('*').eq('tenant_id', AdminState.tenantId).maybeSingle();
-        storeSettings = data || JSON.parse(localStorage.getItem('store_settings') || '{}');
+        const { data: ssData } = await supabase.from('store_settings').select('*').eq('tenant_id', AdminState.tenantId).maybeSingle();
+        storeSettings = ssData || JSON.parse(localStorage.getItem('store_settings') || '{}');
+        
+        const { data: tData } = await supabase.from('tenants').select('name, logo_url, branding').eq('id', AdminState.tenantId).maybeSingle();
+        tenantData = tData || {};
     } catch(e) {
         storeSettings = JSON.parse(localStorage.getItem('store_settings') || '{}');
     }
     
-    // Attempt to grab logo from branding or localStorage
-    const storeBranding = JSON.parse(localStorage.getItem('store_branding') || '{}');
-    const storeLogoUrl = localStorage.getItem('tenant_logo') || storeBranding.logo || '';
+    // Attempt to grab logo from database, branding, or localStorage
+    const storeBranding = tenantData.branding || JSON.parse(localStorage.getItem('store_branding') || '{}');
+    const storeLogoUrl = tenantData.logo_url || localStorage.getItem('tenant_logo') || storeBranding.logo || '';
     
-    const storeName = storeSettings.store_name || 'Nohope Coffee';
+    const storeName = tenantData.name || storeSettings.store_name || 'Nohope Coffee';
     const storeAddress = storeSettings.store_address || '';
     const wifiName = storeSettings.wifi_name || '';
     const wifiPass = storeSettings.wifi_pass || '';

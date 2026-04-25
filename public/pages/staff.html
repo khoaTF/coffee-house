@@ -22,6 +22,8 @@
     <link rel="icon" type="image/png" href="/images/bunny_logo.png">
     <link rel="apple-touch-icon" href="/images/bunny_logo.png">
     <script src="/js/i18n-pages.js"></script>
+    <!-- Tutorial Onboarding -->
+    <link rel="stylesheet" href="/css/tutorial.css">
 </head>
 <body>
 
@@ -41,6 +43,9 @@
             </div>
             <button class="bg-surface-variant text-on-surface-variant px-4 py-2 rounded-xl font-bold text-sm hover:bg-surface-variant/80 transition-colors" id="refresh-btn" aria-label="Làm mới dữ liệu">
                 <i class="fa-solid fa-rotate-right mr-1"></i> Làm mới
+            </button>
+            <button onclick="if(window._staffTutorial) window._staffTutorial.restart();" class="bg-surface text-secondary border border-secondary/30 px-4 py-2 rounded-xl font-bold text-sm hover:bg-secondary/10 transition-colors" id="staff-tutorial-btn" aria-label="Hướng dẫn" title="Xem hướng dẫn sử dụng">
+                <i class="fa-solid fa-graduation-cap mr-1"></i> <span class="hidden sm:inline">Hướng dẫn</span>
             </button>
             <button class="bg-surface text-on-surface border border-outline px-4 py-2 rounded-xl font-bold text-sm hover:bg-surface-container transition-colors" id="logout-btn" aria-label="Đăng xuất">
                 <i class="fa-solid fa-right-from-bracket mr-1"></i> Thoát
@@ -868,5 +873,56 @@
         }, 30000); // 30s auto-refresh fallback
 
     </script>
+<script src="/js/tutorial.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        var staffTutorial = new NohopeTutorial({
+            storageKey: 'nohope_tutorial_staff_done',
+            welcomeEmoji: '👨‍🍳',
+            welcomeTitle: 'Chào mừng Nhân Viên!',
+            welcomeDesc: 'Hãy làm quen với các công cụ quản lý bàn và đơn hàng của bạn.',
+            completeTitle: 'Sẵn sàng làm việc!',
+            completeDesc: 'Bạn đã nắm được các thao tác cơ bản. Chúc bạn làm việc vui vẻ!',
+            steps: [
+                {
+                    element: '#tab-tables',
+                    title: 'Sơ Đồ Bàn',
+                    description: 'Xem trạng thái tất cả các bàn: <strong>Trống</strong>, <strong>Đang dùng</strong>, <strong>Chờ thanh toán</strong>. Nhấn vào bàn để xem chi tiết đơn hàng.',
+                    icon: 'fa-solid fa-chair',
+                    position: 'bottom',
+                    padding: 6
+                },
+                {
+                    element: '#tab-orders',
+                    title: 'Đơn Hàng & Món',
+                    description: 'Theo dõi đơn hàng dạng <strong>Kanban</strong>: Chờ nhận → Đang làm → Hoàn tất. Nhấn tích để đánh dấu từng món đã xong.',
+                    icon: 'fa-solid fa-list-check',
+                    position: 'bottom',
+                    padding: 6
+                },
+                {
+                    element: '#tab-requests',
+                    title: 'Yêu Cầu Hỗ Trợ',
+                    description: 'Khi khách nhấn nút gọi nhân viên, yêu cầu sẽ hiện tại đây kèm <strong>thông báo âm thanh</strong>. Nhấn để xác nhận đã hỗ trợ.',
+                    icon: 'fa-solid fa-bell-concierge',
+                    position: 'bottom',
+                    padding: 6
+                },
+                {
+                    element: '#refresh-btn',
+                    title: 'Làm Mới Dữ Liệu',
+                    description: 'Dữ liệu tự đồng cập nhật qua <strong>Realtime</strong>. Nhưng nếu cần, nhấn nút này để tải lại dữ liệu mới nhất.',
+                    icon: 'fa-solid fa-rotate-right',
+                    position: 'bottom',
+                    padding: 6
+                }
+            ]
+        });
+        staffTutorial.autoStart(2000);
+        window._staffTutorial = staffTutorial;
+    }, 1000);
+});
+</script>
 </body>
 </html>
