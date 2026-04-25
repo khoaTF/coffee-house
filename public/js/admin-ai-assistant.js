@@ -400,9 +400,6 @@
         const msg = input.value.trim();
         if (!msg) return;
         input.value = '';
-        // Hide quick prompts after first message
-        const qp = document.getElementById('ai-quick-prompts');
-        if (qp) qp.style.display = 'none';
         sendMessage(msg);
     }
 
@@ -541,8 +538,6 @@
     window._aiAssistant = {
         toggle,
         send: (msg) => {
-            const qp = document.getElementById('ai-quick-prompts');
-            if (qp) qp.style.display = 'none';
             if (!chatOpen) toggle();
             sendMessage(msg);
         },
