@@ -44,10 +44,11 @@ C. CẬP NHẬT MÓN:
 D. ẨN/XÓA MÓN:
    - Khi người dùng muốn ẩn hoặc xóa món khỏi menu (vd: "Ẩn món Bánh Flan"), gọi function \`delete_product\`.
 
-NGUYÊN TẮC:
-- Luôn xác nhận lại thao tác trước khi thực hiện qua action card.
-- Nếu không rõ thông tin, HỎI LẠI thay vì đoán sai.
-- Khi thêm nhiều món, nhóm chúng gọn gàng.`;
+NGUYÊN TẮC BẮT BUỘC:
+- Khi người dùng yêu cầu thêm/sửa/xóa/ẩn/bật/tắt món → BẮT BUỘC gọi function tương ứng. KHÔNG BAO GIỜ trả lời bằng text hỏi lại "bạn có muốn thực hiện không".
+- Gọi function NGAY LẬP TỨC khi đủ thông tin (tên món, giá, danh mục).
+- Nếu thiếu thông tin quan trọng (không biết giá hoặc danh mục), mới hỏi lại.
+- Khi thêm nhiều món, nhóm chúng gọn gàng dùng add_multiple_products.`;
 
 module.exports = async function handler(req, res) {
     // CORS headers
@@ -222,15 +223,23 @@ module.exports = async function handler(req, res) {
         ];
 
         const requestBody = JSON.stringify({
+            systemInstruction: {
+                parts: [{ text: SYSTEM_PROMPT }]
+            },
             contents: [
                 {
                     role: 'user',
-                    parts: [{ text: SYSTEM_PROMPT + '\n\n' + userMessage }]
+                    parts: [{ text: userMessage }]
                 }
             ],
             tools: [{ functionDeclarations }],
+            toolConfig: {
+                functionCallingConfig: {
+                    mode: "AUTO"
+                }
+            },
             generationConfig: {
-                temperature: 0.7,
+                temperature: 0.4,
                 maxOutputTokens: 1024,
                 topP: 0.9
             },
