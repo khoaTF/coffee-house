@@ -1,0 +1,509 @@
+/* =============================================
+   NOHOPE TUTORIAL - Interactive Onboarding
+   ============================================= */
+
+/* --- Overlay & Highlight --- */
+.nht-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9990;
+    pointer-events: auto;
+    transition: opacity 0.3s ease;
+}
+
+.nht-overlay-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 9990;
+    background: rgba(0, 0, 0, 0);
+    transition: background 0.4s ease;
+}
+.nht-overlay-bg.active {
+    background: rgba(0, 0, 0, 0.65);
+}
+
+.nht-highlight-ring {
+    position: fixed;
+    z-index: 9991;
+    border-radius: 12px;
+    box-shadow:
+        0 0 0 4000px rgba(0, 0, 0, 0.65),
+        0 0 0 3px rgba(192, 160, 98, 0.6),
+        0 0 24px 4px rgba(255, 122, 0, 0.15);
+    transition: all 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+}
+.nht-highlight-ring::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: inherit;
+    border: 2px solid rgba(192, 160, 98, 0.3);
+    animation: nht-pulse-ring 2s ease-in-out infinite;
+}
+
+@keyframes nht-pulse-ring {
+    0%, 100% { transform: scale(1); opacity: 0.6; }
+    50% { transform: scale(1.03); opacity: 1; }
+}
+
+/* --- Tooltip --- */
+.nht-tooltip {
+    position: fixed;
+    z-index: 9995;
+    width: 340px;
+    max-width: calc(100vw - 32px);
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow:
+        0 24px 48px rgba(0, 0, 0, 0.18),
+        0 4px 16px rgba(0, 0, 0, 0.08),
+        0 0 0 1px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: auto;
+    font-family: 'Inter', 'Manrope', -apple-system, sans-serif;
+}
+.nht-tooltip.visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+.nht-tooltip.pos-top { transform: translateY(-12px) scale(0.96); }
+.nht-tooltip.pos-top.visible { transform: translateY(0) scale(1); }
+
+/* Dark mode tooltip */
+body.dark .nht-tooltip,
+html.dark .nht-tooltip {
+    background: #1e1e1e;
+    box-shadow:
+        0 24px 48px rgba(0, 0, 0, 0.4),
+        0 4px 16px rgba(0, 0, 0, 0.2),
+        0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+/* Tooltip Header */
+.nht-tooltip-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 20px 0;
+}
+.nht-tooltip-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #994700, #FF7A00);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(153, 71, 0, 0.25);
+}
+.nht-tooltip-step-label {
+    font-size: 11px;
+    font-weight: 800;
+    color: #994700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+body.dark .nht-tooltip-step-label,
+html.dark .nht-tooltip-step-label {
+    color: #FF7A00;
+}
+.nht-tooltip-title {
+    font-size: 17px;
+    font-weight: 800;
+    color: #1a1a1a;
+    margin: 0;
+    line-height: 1.3;
+}
+body.dark .nht-tooltip-title,
+html.dark .nht-tooltip-title {
+    color: #f0f0f0;
+}
+
+/* Tooltip Body */
+.nht-tooltip-body {
+    padding: 14px 20px;
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: #555;
+}
+body.dark .nht-tooltip-body,
+html.dark .nht-tooltip-body {
+    color: #aaa;
+}
+
+/* Tooltip Footer */
+.nht-tooltip-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px 16px;
+    gap: 10px;
+}
+
+/* Progress Dots */
+.nht-progress {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+.nht-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #ddd;
+    transition: all 0.3s ease;
+}
+body.dark .nht-dot,
+html.dark .nht-dot {
+    background: #444;
+}
+.nht-dot.active {
+    width: 20px;
+    border-radius: 4px;
+    background: linear-gradient(135deg, #994700, #FF7A00);
+}
+.nht-dot.done {
+    background: #C0A062;
+}
+
+/* Buttons */
+.nht-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+.nht-btn {
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 13px;
+    border-radius: 12px;
+    padding: 10px 18px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+.nht-btn:active {
+    transform: scale(0.95);
+}
+.nht-btn-next {
+    background: linear-gradient(135deg, #994700, #FF7A00);
+    color: white;
+    box-shadow: 0 4px 12px rgba(153, 71, 0, 0.3);
+}
+.nht-btn-next:hover {
+    box-shadow: 0 6px 16px rgba(153, 71, 0, 0.4);
+    filter: brightness(1.05);
+}
+.nht-btn-prev {
+    background: #f0f0f0;
+    color: #555;
+}
+body.dark .nht-btn-prev,
+html.dark .nht-btn-prev {
+    background: #333;
+    color: #ccc;
+}
+.nht-btn-prev:hover {
+    background: #e5e5e5;
+}
+body.dark .nht-btn-prev:hover,
+html.dark .nht-btn-prev:hover {
+    background: #444;
+}
+.nht-btn-skip {
+    background: transparent;
+    color: #999;
+    padding: 10px 12px;
+    font-size: 12px;
+}
+.nht-btn-skip:hover {
+    color: #666;
+    background: rgba(0,0,0,0.04);
+}
+body.dark .nht-btn-skip:hover,
+html.dark .nht-btn-skip:hover {
+    background: rgba(255,255,255,0.06);
+    color: #aaa;
+}
+
+/* --- Welcome Screen --- */
+.nht-welcome {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+.nht-welcome.visible { opacity: 1; }
+.nht-welcome-bg {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+.nht-welcome-card {
+    position: relative;
+    background: white;
+    border-radius: 24px;
+    padding: 40px 32px;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 32px 64px rgba(0,0,0,0.2);
+    transform: scale(0.9) translateY(20px);
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+body.dark .nht-welcome-card,
+html.dark .nht-welcome-card {
+    background: #1e1e1e;
+}
+.nht-welcome.visible .nht-welcome-card {
+    transform: scale(1) translateY(0);
+}
+.nht-welcome-emoji {
+    font-size: 56px;
+    margin-bottom: 16px;
+    display: block;
+    animation: nht-bounce 1s ease-in-out;
+}
+@keyframes nht-bounce {
+    0%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-16px); }
+    60% { transform: translateY(-8px); }
+}
+.nht-welcome-title {
+    font-size: 24px;
+    font-weight: 900;
+    color: #1a1a1a;
+    margin: 0 0 8px;
+    font-family: 'Plus Jakarta Sans', 'Manrope', sans-serif;
+}
+body.dark .nht-welcome-title,
+html.dark .nht-welcome-title {
+    color: #f0f0f0;
+}
+.nht-welcome-desc {
+    font-size: 14px;
+    color: #777;
+    line-height: 1.6;
+    margin: 0 0 28px;
+}
+body.dark .nht-welcome-desc,
+html.dark .nht-welcome-desc {
+    color: #999;
+}
+.nht-welcome-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.nht-welcome-start {
+    background: linear-gradient(135deg, #994700, #FF7A00);
+    color: white;
+    border: none;
+    padding: 14px 24px;
+    border-radius: 16px;
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    font-family: inherit;
+    box-shadow: 0 8px 24px rgba(153, 71, 0, 0.3);
+    transition: all 0.2s ease;
+}
+.nht-welcome-start:hover {
+    box-shadow: 0 10px 28px rgba(153, 71, 0, 0.4);
+    filter: brightness(1.05);
+}
+.nht-welcome-start:active {
+    transform: scale(0.97);
+}
+.nht-welcome-dismiss {
+    background: transparent;
+    border: none;
+    color: #999;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 8px;
+    font-family: inherit;
+    transition: color 0.2s;
+}
+.nht-welcome-dismiss:hover {
+    color: #666;
+}
+
+/* --- Arrow / Pointer --- */
+.nht-arrow {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    background: #ffffff;
+    transform: rotate(45deg);
+    box-shadow: -2px -2px 4px rgba(0,0,0,0.04);
+    z-index: -1;
+}
+body.dark .nht-arrow,
+html.dark .nht-arrow {
+    background: #1e1e1e;
+}
+.nht-tooltip.pos-bottom .nht-arrow {
+    top: -6px;
+    left: 30px;
+}
+.nht-tooltip.pos-top .nht-arrow {
+    bottom: -6px;
+    left: 30px;
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.04);
+}
+.nht-tooltip.pos-left .nht-arrow {
+    right: -6px;
+    top: 24px;
+    box-shadow: 2px -2px 4px rgba(0,0,0,0.04);
+}
+.nht-tooltip.pos-right .nht-arrow {
+    left: -6px;
+    top: 24px;
+}
+
+/* --- Completion Celebration --- */
+.nht-complete {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+.nht-complete.visible { opacity: 1; }
+.nht-complete-card {
+    position: relative;
+    background: white;
+    border-radius: 24px;
+    padding: 40px 32px;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 32px 64px rgba(0,0,0,0.2);
+    transform: scale(0.9);
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+body.dark .nht-complete-card,
+html.dark .nht-complete-card {
+    background: #1e1e1e;
+}
+.nht-complete.visible .nht-complete-card {
+    transform: scale(1);
+}
+.nht-complete-emoji {
+    font-size: 64px;
+    margin-bottom: 16px;
+    display: block;
+    animation: nht-bounce 0.8s ease;
+}
+.nht-complete-title {
+    font-size: 22px;
+    font-weight: 900;
+    color: #1a1a1a;
+    margin: 0 0 8px;
+}
+body.dark .nht-complete-title,
+html.dark .nht-complete-title {
+    color: #f0f0f0;
+}
+.nht-complete-desc {
+    font-size: 14px;
+    color: #777;
+    margin: 0 0 24px;
+}
+body.dark .nht-complete-desc,
+html.dark .nht-complete-desc {
+    color: #999;
+}
+.nht-complete-btn {
+    background: linear-gradient(135deg, #994700, #FF7A00);
+    color: white;
+    border: none;
+    padding: 14px 32px;
+    border-radius: 16px;
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    font-family: inherit;
+    box-shadow: 0 8px 24px rgba(153, 71, 0, 0.3);
+    transition: all 0.2s ease;
+}
+.nht-complete-btn:hover {
+    box-shadow: 0 10px 28px rgba(153, 71, 0, 0.4);
+}
+.nht-complete-btn:active {
+    transform: scale(0.97);
+}
+
+/* --- Admin theme override (gold/warm) --- */
+.nht-admin .nht-tooltip-icon {
+    background: linear-gradient(135deg, #C0A062, #E8C97A);
+    box-shadow: 0 4px 12px rgba(192, 160, 98, 0.3);
+}
+.nht-admin .nht-tooltip-step-label { color: #C0A062; }
+.nht-admin .nht-dot.active {
+    background: linear-gradient(135deg, #C0A062, #E8C97A);
+}
+.nht-admin .nht-btn-next {
+    background: linear-gradient(135deg, #C0A062, #E8C97A);
+    color: #1a1a1a;
+    box-shadow: 0 4px 12px rgba(192, 160, 98, 0.3);
+}
+.nht-admin .nht-highlight-ring {
+    box-shadow:
+        0 0 0 4000px rgba(0, 0, 0, 0.65),
+        0 0 0 3px rgba(192, 160, 98, 0.6),
+        0 0 24px 4px rgba(192, 160, 98, 0.15);
+}
+.nht-admin .nht-welcome-start,
+.nht-admin .nht-complete-btn {
+    background: linear-gradient(135deg, #C0A062, #E8C97A);
+    color: #1a1a1a;
+    box-shadow: 0 8px 24px rgba(192, 160, 98, 0.3);
+}
+
+/* --- Responsive (Mobile) --- */
+@media (max-width: 640px) {
+    .nht-tooltip {
+        width: calc(100vw - 24px);
+        max-width: none;
+        border-radius: 16px;
+    }
+    .nht-tooltip-header { padding: 14px 16px 0; }
+    .nht-tooltip-body { padding: 10px 16px; font-size: 13px; }
+    .nht-tooltip-footer { padding: 0 16px 12px; }
+    .nht-tooltip-title { font-size: 15px; }
+    .nht-tooltip-icon { width: 36px; height: 36px; font-size: 16px; border-radius: 12px; }
+    .nht-btn { padding: 9px 14px; font-size: 12px; border-radius: 10px; }
+
+    .nht-welcome-card,
+    .nht-complete-card {
+        padding: 28px 20px;
+        border-radius: 20px;
+    }
+    .nht-welcome-title, .nht-complete-title { font-size: 20px; }
+    .nht-welcome-emoji, .nht-complete-emoji { font-size: 48px; }
+}
