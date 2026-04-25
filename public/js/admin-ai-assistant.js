@@ -10,11 +10,11 @@
     let chatHistory = [];
     const PROMPT_CATEGORIES = [
         {
-            id: 'analytics', label: '📊 Phân tích', prompts: [
+            id: 'pos', label: '🖥️ POS', prompts: [
                 { icon: '📊', text: 'Phân tích doanh thu hôm nay' },
                 { icon: '📈', text: 'So sánh doanh thu tuần này với tuần trước' },
-                { icon: '🔥', text: 'Top 5 món bán chạy nhất tuần' },
                 { icon: '⏰', text: 'Khung giờ nào đông khách nhất?' },
+                { icon: '💵', text: 'Giá trị đơn trung bình hôm nay?' },
             ]
         },
         {
@@ -23,25 +23,35 @@
                 { icon: '💰', text: 'Đổi giá một món trong menu' },
                 { icon: '🚫', text: 'Cho món hết hàng tạm thời' },
                 { icon: '📋', text: 'Liệt kê tất cả món đang bán' },
+                { icon: '🔥', text: 'Top 5 món bán chạy nhất tuần' },
             ]
         },
         {
-            id: 'orders', label: '📦 Đơn hàng', prompts: [
-                { icon: '📦', text: 'Có bao nhiêu đơn hôm nay?' },
-                { icon: '💵', text: 'Giá trị đơn trung bình hôm nay?' },
-                { icon: '❌', text: 'Có đơn nào bị huỷ không?' },
-            ]
-        },
-        {
-            id: 'inventory', label: '📦 Kho', prompts: [
+            id: 'inventory', label: '📦 Tồn kho', prompts: [
                 { icon: '⚠️', text: 'Nguyên liệu nào sắp hết?' },
                 { icon: '📊', text: 'Tổng quan tồn kho hiện tại' },
+                { icon: '📉', text: 'Nguyên liệu nào tiêu hao nhiều nhất?' },
             ]
         },
         {
-            id: 'tips', label: '💡 Gợi ý', prompts: [
-                { icon: '💡', text: 'Gợi ý cải thiện kinh doanh' },
+            id: 'import', label: '🚚 Nhập hàng', prompts: [
+                { icon: '📝', text: 'Tổng hợp lịch sử nhập hàng gần đây' },
+                { icon: '⚠️', text: 'Nguyên liệu nào cần nhập thêm?' },
+                { icon: '💸', text: 'Chi phí nhập hàng tháng này?' },
+            ]
+        },
+        {
+            id: 'promo', label: '🎁 Khuyến mãi', prompts: [
                 { icon: '🎯', text: 'Nên chạy khuyến mãi gì tuần này?' },
+                { icon: '📋', text: 'Liệt kê khuyến mãi đang chạy' },
+                { icon: '💡', text: 'Gợi ý combo hấp dẫn cho khách' },
+            ]
+        },
+        {
+            id: 'orders', label: '📋 Đơn hàng', prompts: [
+                { icon: '📦', text: 'Có bao nhiêu đơn hôm nay?' },
+                { icon: '❌', text: 'Có đơn nào bị huỷ không?' },
+                { icon: '💡', text: 'Gợi ý cải thiện kinh doanh' },
             ]
         },
     ];
