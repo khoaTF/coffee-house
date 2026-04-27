@@ -257,6 +257,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+let revenueChartInstance = null;
+
 async function showDashboard(preloadedData = null) {
     document.getElementById('auth-screen').style.display = 'none';
     document.getElementById('dashboard-screen').style.display = 'block';
@@ -265,6 +267,99 @@ async function showDashboard(preloadedData = null) {
         renderTenants(preloadedData);
     } else {
         await fetchAndRenderTenants();
+    }
+
+    initRevenueChart();
+    initActivityFeed();
+}
+
+async function initRevenueChart() {
+    try {
+        const { data, error } = await supabase.rpc('get_superadmin_revenue_chart', { owner_secret: ownerSecret });
+        if (error) throw error;
+
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+        
+        if (revenueChartInstance) {
+            revenueChartInstance.destroy();
+        }
+
+        const labels = data ? data.map(d => d.date_label) : [];
+        const revenues = data ? data.map(d => d.revenue) : [];
+
+        revenueChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Platform Revenue (VND)',
+                    data: revenues,
+                    borderColor: '#14b8a6',
+                    backgroundColor: 'rgba(20, 184, 166, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true,
+                    pointBackgroundColor: '#14b8a6'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: { color: '#94a3b8' }
+                    },
+                    x: {
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: { color: '#94a3b8' }
+                    }
+                }
+            }
+        });
+    } catch (e) {
+        console.error("Failed to load revenue chart:", e);
+    }
+}
+
+async function initActivityFeed() {
+    const feedContainer = document.getElementById('activity-feed');
+    try {
+        const { data, error } = await supabase.rpc('get_global_activity_logs', { owner_secret: ownerSecret, p_limit: 20 });
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            feedContainer.innerHTML = '<div class="text-center text-muted small mt-4">No recent activity.</div>';
+            return;
+        }
+
+        let html = '';
+        data.forEach(log => {
+            const time = new Date(log.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+            let icon = 'fa-circle-info text-info';
+            if (log.action.includes('CREATED')) icon = 'fa-plus text-success';
+            if (log.action.includes('SUSPENDED')) icon = 'fa-ban text-danger';
+            if (log.action.includes('EXTENDED')) icon = 'fa-bolt text-warning';
+
+            html += `
+                <div class="d-flex align-items-start mb-3 border-bottom border-secondary pb-2">
+                    <i class="fa-solid ${icon} mt-1 me-2" style="font-size: 0.9rem;"></i>
+                    <div>
+                        <div class="fw-bold" style="font-size: 0.85rem;">${escapeHtml(log.tenant_name)}</div>
+                        <div class="text-muted" style="font-size: 0.8rem;">${escapeHtml(log.action.replace(/_/g, ' '))}</div>
+                        <div class="text-muted mt-1" style="font-size: 0.7rem;"><i class="fa-regular fa-clock me-1"></i>${time}</div>
+                    </div>
+                </div>
+            `;
+        });
+        feedContainer.innerHTML = html;
+    } catch (e) {
+        console.error("Failed to load activity feed:", e);
+        feedContainer.innerHTML = '<div class="text-danger small">Failed to load logs.</div>';
     }
 }
 
@@ -411,8 +506,13 @@ function renderTenants(tenants) {
                 </div>
                 
                 <div class="tenant-actions">
-                    <button class="action-btn" onclick="copyTenantId('${t.id}')" title="Copy Tenant ID">
-                        <i class="fa-regular fa-copy"></i> ${window.t ? window.t('superadmin.card_copy_id') : 'Copy ID'}
+                    ${isExpired || isExpiringSoon ? `
+                    <button class="action-btn text-warning border-warning border-opacity-25 bg-warning bg-opacity-10 me-2" onclick="quickExtendTenant('${t.id}')" title="Quick Extend 30 Days">
+                        <i class="fa-solid fa-bolt"></i> +30 Ngày
+                    </button>
+                    ` : ''}
+                    <button class="action-btn me-2" onclick="copyTenantId('${t.id}')" title="Copy Tenant ID">
+                        <i class="fa-regular fa-copy"></i>
                     </button>
                     <button class="action-btn text-primary border-primary border-opacity-25 bg-primary bg-opacity-10" title="Tenant Settings" onclick="openManageModal(this)" data-tenant="${safeObjStr}">
                         <i class="fa-solid fa-gear"></i> ${window.t ? window.t('superadmin.btn_manage') : 'Manage'}
@@ -622,6 +722,26 @@ async function deleteTenant() {
         deleteConfirmModal.show();
         inputEl.focus();
     }, 300);
+}
+
+async function quickExtendTenant(tenantId) {
+    if (!confirm('Bạn có chắc muốn tự động gia hạn thêm 30 ngày cho chi nhánh này?')) return;
+    
+    try {
+        const { error } = await supabase.rpc('quick_extend_tenant', {
+            owner_secret: ownerSecret,
+            p_tenant_id: tenantId,
+            p_days: 30
+        });
+        if (error) throw error;
+
+        showToast('Đã gia hạn thêm 30 ngày thành công!', 'success');
+        await fetchAndRenderTenants();
+        initActivityFeed(); // Refresh feed to show extension
+    } catch (e) {
+        console.error(e);
+        showToast('Lỗi gia hạn: ' + e.message, 'danger');
+    }
 }
 
 
