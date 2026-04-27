@@ -534,8 +534,18 @@ async function submitRestockTicket() {
 
 // --- Export Inventory Excel ---
 window.exportInventoryExcel = async function() {
-    if (typeof XLSX === 'undefined') {
-        showAdminToast('Thư viện xuất Excel chưa sẵn sàng.', 'warning');
+    try {
+        if (typeof XLSX === 'undefined') {
+            if (typeof window.loadXLSX === 'function') {
+                showAdminToast('Đang tải thư viện xuất Excel...', 'info');
+                await window.loadXLSX();
+            } else {
+                showAdminToast('Thư viện xuất Excel chưa sẵn sàng.', 'warning');
+                return;
+            }
+        }
+    } catch(e) {
+        showAdminToast('Không tải được thư viện Excel.', 'error');
         return;
     }
     const { data } = await supabase.from('ingredients').select('*').eq('tenant_id', window.AdminState.tenantId).order('name');
@@ -588,8 +598,18 @@ async function checkLowStock() {
 }
 
 window.exportInventoryLogsExcel = async function() {
-    if (typeof XLSX === 'undefined') {
-        showAdminToast('Thư viện xuất Excel chưa sẵn sàng.', 'warning');
+    try {
+        if (typeof XLSX === 'undefined') {
+            if (typeof window.loadXLSX === 'function') {
+                showAdminToast('Đang tải thư viện xuất Excel...', 'info');
+                await window.loadXLSX();
+            } else {
+                showAdminToast('Thư viện xuất Excel chưa sẵn sàng.', 'warning');
+                return;
+            }
+        }
+    } catch(e) {
+        showAdminToast('Không tải được thư viện Excel.', 'error');
         return;
     }
     try {

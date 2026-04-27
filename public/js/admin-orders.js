@@ -655,10 +655,21 @@ window.printShiftSummary = function() {
     w.close();
 };
 
-// D6 — Export filtered orders as Excel (.xlsx) using SheetJS
-window.exportOrdersExcel = function() {
-    if (typeof XLSX === 'undefined') {
-        showAdminToast('Thu vien xuat Excel chua san sang.', 'warning');
+// D6 — Export filtered orders as Excel (.xlsx) using SheetJS (lazy-loaded)
+window.exportOrdersExcel = async function() {
+    try {
+        // Lazy-load XLSX library (300KB) only when user actually exports
+        if (typeof XLSX === 'undefined') {
+            if (typeof window.loadXLSX === 'function') {
+                showAdminToast('Đang tải thư viện xuất Excel...', 'info');
+                await window.loadXLSX();
+            } else {
+                showAdminToast('Thư viện xuất Excel chưa sẵn sàng.', 'warning');
+                return;
+            }
+        }
+    } catch(e) {
+        showAdminToast('Không tải được thư viện Excel. Vui lòng thử lại.', 'error');
         return;
     }
     const source = (typeof historyFilteredData !== 'undefined' && historyFilteredData.length > 0)
