@@ -1112,3 +1112,45 @@ function renderSmartPurchasing(startDate, endDate) {
         purchasingEl.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-slate-500"><i class="fa-solid fa-face-smile text-success fs-4 block mb-2"></i>Kho dồi dào. Chưa cần nhập thêm trong 7 ngày tới.</td></tr>';
     }
 }
+
+// =============================================
+// REALTIME DASHBOARD
+// =============================================
+let _dashboardRealtimeChannel = null;
+
+function startDashboardRealtime() {
+    if (_dashboardRealtimeChannel) return;
+    if (!window.AdminState?.tenantId) return;
+
+    _dashboardRealtimeChannel = supabase
+        .channel('dashboard-orders-realtime')
+        .on('postgres_changes', {
+            event: '*',
+            schema: 'public',
+            table: 'orders',
+            filter: `tenant_id=eq.${window.AdminState.tenantId}`
+        }, (payload) => {
+            const dashSection = document.getElementById('section-dashboard');
+            if (!dashSection || !dashSection.classList.contains('active')) return;
+
+            // Debounce rapid changes
+            if (window._dashRealtimeTimer) clearTimeout(window._dashRealtimeTimer);
+            window._dashRealtimeTimer = setTimeout(() => {
+                loadDashboard();
+                // Flash indicator
+                const indicator = document.getElementById('realtime-indicator');
+                if (indicator) {
+                    indicator.classList.add('pulse-live');
+                    setTimeout(() => indicator.classList.remove('pulse-live'), 2000);
+                }
+            }, 800);
+        })
+        .subscribe();
+}
+
+function stopDashboardRealtime() {
+    if (_dashboardRealtimeChannel) {
+        supabase.removeChannel(_dashboardRealtimeChannel);
+        _dashboardRealtimeChannel = null;
+    }
+}

@@ -2,6 +2,41 @@
 // ADMIN CORE - Shared State, Utils, Init, RBAC
 // =============================================
 
+// --- Theme System ---
+(function initTheme() {
+    const saved = localStorage.getItem('admin_theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = saved || (prefersDark ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', theme);
+})();
+
+function toggleAdminTheme() {
+    const current = document.documentElement.getAttribute('data-theme') || 'light';
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('admin_theme', next);
+    updateThemeToggleBtn(next);
+}
+
+function updateThemeToggleBtn(theme) {
+    const btn = document.getElementById('theme-toggle-btn');
+    if (!btn) return;
+    const icon = btn.querySelector('i');
+    const text = btn.querySelector('span');
+    if (theme === 'dark') {
+        icon.className = 'fa-solid fa-sun w-5 text-center';
+        if (text) text.textContent = 'Chế độ sáng';
+    } else {
+        icon.className = 'fa-solid fa-moon w-5 text-center';
+        if (text) text.textContent = 'Chế độ tối';
+    }
+}
+
+// Init toggle button state on DOM ready
+document.addEventListener('DOMContentLoaded', () => {
+    updateThemeToggleBtn(document.documentElement.getAttribute('data-theme') || 'light');
+});
+
 // --- Shared State (Global) ---
 window.AdminState = {
     tenantId: sessionStorage.getItem('tenant_id') || localStorage.getItem('tenant_id') || null
@@ -184,6 +219,13 @@ function switchTab(tabId) {
     
     const targetSection = document.getElementById(`section-${tabId}`);
     if (targetSection) targetSection.classList.add('active');
+
+    // Manage dashboard realtime subscription
+    if (tabId === 'dashboard') {
+        if (typeof startDashboardRealtime === 'function') startDashboardRealtime();
+    } else {
+        if (typeof stopDashboardRealtime === 'function') stopDashboardRealtime();
+    }
 
     if (tabId === 'dashboard') {
         if (typeof loadDashboard === 'function') loadDashboard();
