@@ -69,6 +69,11 @@ export function setupRealtimeSubscription() {
 // Place Order
 export async function placeOrder(method = 'cash') {
     state.currentPaymentMethod = method;
+    
+    // Phase 4.2: Request Push Notification Permission
+    if ('Notification' in window && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+        Notification.requestPermission();
+    }
 
     // GACHA: Resolve mystery box items BEFORE order placement
     let gachaResults = [];
@@ -113,7 +118,23 @@ export async function placeOrder(method = 'cash') {
         }
     });
 
-    const orderNote = document.getElementById('order-note') ? document.getElementById('order-note').value : '';
+    let orderNote = document.getElementById('order-note') ? document.getElementById('order-note').value : '';
+    
+    // Append Pickup Time if scheduled
+    const pickupSelect = document.getElementById('pickup-time-select');
+    if (pickupSelect && pickupSelect.value !== 'asap') {
+        let timeStr = '';
+        if (pickupSelect.value === '15min') timeStr = 'Sau 15 phút';
+        else if (pickupSelect.value === '30min') timeStr = 'Sau 30 phút';
+        else if (pickupSelect.value === 'custom') {
+            const d = document.getElementById('pickup-date').value;
+            const t = document.getElementById('pickup-time').value;
+            timeStr = `${t} (${d})`;
+        }
+        if (timeStr) {
+            orderNote = `[Hẹn giờ lấy: ${timeStr}] ` + orderNote;
+        }
+    }
     const earnedPts = Math.floor(Math.max(0, totalPrice) / 1000);
 
     const orderData = {
@@ -394,6 +415,33 @@ function playNotificationSound(type) {
     } catch(e) {}
 }
 
+// Push Notification Helper
+function sendPushNotification(title, body) {
+    if (!('Notification' in window)) return;
+    
+    if (Notification.permission === 'granted') {
+        if ('serviceWorker' in navigator && navigator.serviceWorker.ready) {
+            navigator.serviceWorker.ready.then(registration => {
+                try {
+                    registration.showNotification(title, {
+                        body: body,
+                        icon: '/images/bunny_logo.png',
+                        vibrate: [200, 100, 200, 100, 200],
+                        badge: '/images/bunny_logo.png'
+                    });
+                } catch(e) {
+                    new Notification(title, { body: body, icon: '/images/bunny_logo.png' });
+                }
+            });
+        } else {
+            new Notification(title, {
+                body: body,
+                icon: '/images/bunny_logo.png'
+            });
+        }
+    }
+}
+
 window.handleOrderStatusUpdate = function(updatedOrderData) {
     const updatedOrder = {
         ...updatedOrderData, 
@@ -412,12 +460,19 @@ window.handleOrderStatusUpdate = function(updatedOrderData) {
         }
     }
 
+    // Trigger Push Notifications
     if (updatedOrder.status === 'Cancelled') {
         playNotificationSound('error');
         customerAlert(`❌ Đơn hàng của bạn đã bị Hủy. Bạn có thể đặt món mới!`);
         renderMenu(getActiveCategory());
+        sendPushNotification('Đơn hàng đã bị hủy ❌', 'Đơn hàng của bạn đã bị hủy. Bạn có thể đặt lại món mới.');
+    } else if (updatedOrder.status === 'Preparing') {
+        const estMins = updatedOrder.estimated_minutes;
+        const timeText = estMins ? `Khoảng ${estMins} phút nữa sẽ xong.` : 'Bếp đang chuẩn bị món cho bạn.';
+        sendPushNotification('Đơn hàng đang làm 👨‍🍳', timeText);
     } else if (updatedOrder.status === 'Ready') {
         playNotificationSound('success');
+        sendPushNotification('Đồ uống đã sẵn sàng! ☕', 'Mời bạn tới quầy nhận đồ uống nhé!');
     }
 
     if (state.trackedOrderId === updatedOrder._id) {
