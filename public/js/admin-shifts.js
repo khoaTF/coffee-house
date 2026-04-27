@@ -85,6 +85,31 @@ async function initShiftsModule() {
                 </div>
             </div>
         </div>
+
+        <!-- Payroll Summary -->
+        <div class="card bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden mb-6">
+            <div class="card-body p-0">
+                <div class="p-4 border-b border-slate-200 flex justify-between items-center">
+                    <h3 class="font-bold text-[#F2E8D5] mb-0"><i class="fa-solid fa-coins text-[#C0A062] me-2"></i>Bảng lương tháng này</h3>
+                    <button class="btn btn-sm rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-500 hover:bg-slate-100" onclick="refreshPayrollSummary()"><i class="fa-solid fa-sync me-1"></i>Làm mới</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 border-0">
+                        <thead class="bg-[#e2e8f0] text-[#b45309]">
+                            <tr>
+                                <th class="border-0 py-3 px-4">Nhân viên</th>
+                                <th class="border-0 py-3 px-4 text-center">Số ca</th>
+                                <th class="border-0 py-3 px-4 text-center">Tổng giờ</th>
+                                <th class="border-0 py-3 px-4 text-end">Lương ước tính</th>
+                            </tr>
+                        </thead>
+                        <tbody id="payroll-summary-body">
+                            <tr><td colspan="4" class="text-center py-4 text-slate-500"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tính...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     `;
 
     await renderShiftStatusCard();
@@ -100,6 +125,9 @@ async function initShiftsModule() {
         if (tAction) tAction.innerHTML = '<span class="text-danger text-sm">Lỗi: Không tìm thấy ID nhân viên.</span>';
         if (tText) tText.innerHTML = 'Vui lòng đăng nhập lại.';
     }
+
+    // Payroll
+    await loadPayrollSummary();
 }
 
 async function renderShiftStatusCard() {
@@ -668,3 +696,70 @@ async function loadTimesheetsHistory() {
         tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Lỗi tải dữ liệu.</td></tr>';
     }
 }
+
+const HOURLY_RATE = 25000; // VND per hour, configurable
+
+async function loadPayrollSummary() {
+    const tbody = document.getElementById('payroll-summary-body');
+    if (!tbody) return;
+
+    try {
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString();
+
+        const { data, error } = await supabase
+            .from('vw_staff_timesheets')
+            .select('*')
+            .eq('tenant_id', window.AdminState.tenantId)
+            .gte('check_in', startOfMonth)
+            .lte('check_in', endOfMonth)
+            .not('check_out', 'is', null);
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-slate-500">Chưa có dữ liệu chấm công tháng này.</td></tr>';
+            return;
+        }
+
+        const staffMap = {};
+        data.forEach(t => {
+            const name = t.staff_name || 'Nhân viên';
+            const role = t.staff_role || '';
+            const key = t.staff_id || name;
+            if (!staffMap[key]) staffMap[key] = { name, role, shifts: 0, hours: 0 };
+            staffMap[key].shifts += 1;
+            staffMap[key].hours += (t.hours_worked || 0);
+        });
+
+        const staffList = Object.values(staffMap).sort((a, b) => b.hours - a.hours);
+        let totalSalary = 0;
+
+        tbody.innerHTML = staffList.map(s => {
+            const salary = Math.round(s.hours * HOURLY_RATE);
+            totalSalary += salary;
+            return `
+                <tr>
+                    <td>
+                        <div class="font-bold text-slate-800">${window.escapeHTML(s.name)}</div>
+                        <div class="text-[10px] uppercase text-slate-400 font-bold">${window.escapeHTML(s.role)}</div>
+                    </td>
+                    <td class="text-center font-bold text-slate-600">${s.shifts}</td>
+                    <td class="text-center font-bold text-[#C0A062]">${s.hours.toFixed(1)}h</td>
+                    <td class="text-end font-bold text-green-600">${salary.toLocaleString('vi-VN')} đ</td>
+                </tr>
+            `;
+        }).join('') + `
+            <tr class="bg-slate-50">
+                <td colspan="3" class="text-end font-bold text-slate-800 py-3 px-4">Tổng quỹ lương ước tính:</td>
+                <td class="text-end font-bold text-[#b45309] text-lg py-3 px-4">${totalSalary.toLocaleString('vi-VN')} đ</td>
+            </tr>
+        `;
+    } catch(e) {
+        console.error('Payroll summary error:', e);
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Lỗi tải dữ liệu lương.</td></tr>';
+    }
+}
+
+window.refreshPayrollSummary = loadPayrollSummary;
