@@ -466,20 +466,57 @@ window.updateOrderStatus = async (orderId, newStatus, btn) => {
             }
         }
 
-        // Prompt for estimated wait time
+        // Prompt for estimated wait time using custom modal (window.prompt is blocked on many browsers)
         async function promptEstimatedTime() {
             return new Promise((resolve) => {
-                const time = window.prompt("Nhập thời gian chuẩn bị dự kiến (phút):\n(Chọn Hủy nếu không muốn cập nhật trạng thái)", "15");
-                if (time !== null) {
-                    const mins = parseInt(time, 10);
+                const modal = document.getElementById('estimated-time-modal');
+                const input = document.getElementById('estimated-time-input');
+                const confirmBtn = document.getElementById('estimated-time-confirm');
+                const cancelBtn = document.getElementById('estimated-time-cancel');
+
+                if (!modal || !input) {
+                    // Fallback: skip prompt and use default 15 mins if modal not found
+                    return resolve(15);
+                }
+
+                input.value = '15';
+                modal.style.display = 'flex';
+
+                function cleanup() {
+                    modal.style.display = 'none';
+                    confirmBtn.removeEventListener('click', onConfirm);
+                    cancelBtn.removeEventListener('click', onCancel);
+                    modal.removeEventListener('click', onBackdrop);
+                }
+
+                function onConfirm() {
+                    const mins = parseInt(input.value, 10);
+                    cleanup();
                     if (!isNaN(mins) && mins >= 0) {
-                        return resolve(mins);
+                        resolve(mins);
                     } else {
-                        alert("Vui lòng nhập số phút hợp lệ.");
-                        return resolve(false);
+                        resolve(15); // Default
                     }
                 }
-                return resolve(false);
+
+                function onCancel() {
+                    cleanup();
+                    resolve(false);
+                }
+
+                function onBackdrop(e) {
+                    if (e.target === modal) {
+                        cleanup();
+                        resolve(false);
+                    }
+                }
+
+                confirmBtn.addEventListener('click', onConfirm);
+                cancelBtn.addEventListener('click', onCancel);
+                modal.addEventListener('click', onBackdrop);
+
+                // Auto-focus input
+                setTimeout(() => input.select(), 100);
             });
         }
 
