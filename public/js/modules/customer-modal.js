@@ -69,8 +69,7 @@ export function openOptionsModal(itemOrId) {
     if (!item) return;
 
     if (isComboItem(item)) {
-        // Combo modal — currently a stub (feature was referenced but not implemented)
-        console.warn('Combo modal not implemented for item:', item.name);
+        openComboSelectionModal(item);
         return;
     }
 
@@ -252,3 +251,95 @@ export function attachEventListeners() {
         });
     }
 }
+
+// --- Combo Selection Modal ---
+function openComboSelectionModal(item) {
+    state.currentComboItem = item;
+    state.currentComboSelections = {};
+    
+    const modal = document.getElementById('combo-selection-modal');
+    const titleEl = document.getElementById('combo-modal-title');
+    const container = document.getElementById('combo-items-container');
+    const confirmBtn = document.getElementById('confirm-combo-btn');
+    
+    if (!modal || !container) return;
+    
+    titleEl.textContent = item.name;
+    container.innerHTML = '';
+    
+    item.combo_items.forEach((group, groupIndex) => {
+        const groupDiv = document.createElement('div');
+        groupDiv.className = 'mb-4';
+        groupDiv.innerHTML = `
+            <h4 style="font-size:1rem;font-weight:700;color:var(--text-main);margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+                <span style="width:24px;height:24px;border-radius:50%;background:var(--primary);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;">${groupIndex + 1}</span>
+                ${window.escapeHTML(group.name)}
+            </h4>
+        `;
+        
+        group.items.forEach((cItem, itemIndex) => {
+            const menuItem = state.menuItems.find(m => m._id === cItem.id || m.id === cItem.id);
+            const displayName = menuItem ? menuItem.name : (cItem.name || 'Món ' + (itemIndex + 1));
+            const imgUrl = menuItem?.image_url || '';
+            const priceExtra = cItem.priceExtra || 0;
+            const isDefault = itemIndex === 0;
+            
+            if (isDefault) state.currentComboSelections[groupIndex] = { id: cItem.id, name: displayName, priceExtra, recipe: menuItem?.recipe || [] };
+            
+            const choiceEl = document.createElement('label');
+            choiceEl.style.cssText = 'display:flex;align-items:center;gap:12px;padding:12px;border:2px solid var(--border);border-radius:14px;margin-bottom:8px;cursor:pointer;transition:all 0.2s;';
+            choiceEl.innerHTML = `
+                <input type="radio" name="combo_group_${groupIndex}" value="${cItem.id}" ${isDefault ? 'checked' : ''} style="accent-color:var(--primary);width:18px;height:18px;flex-shrink:0;">
+                ${imgUrl ? `<img src="${window.escapeHTML(imgUrl)}" style="width:40px;height:40px;border-radius:10px;object-fit:cover;flex-shrink:0;" onerror="this.style.display='none'">` : ''}
+                <span style="flex:1;font-weight:600;font-size:0.9rem;color:var(--text-main);">${window.escapeHTML(displayName)}</span>
+                ${priceExtra > 0 ? `<span style="font-size:0.85rem;font-weight:700;color:var(--primary);white-space:nowrap;">+${priceExtra.toLocaleString('vi-VN')}đ</span>` : ''}
+            `;
+            
+            const radio = choiceEl.querySelector('input[type="radio"]');
+            radio.addEventListener('change', () => {
+                state.currentComboSelections[groupIndex] = { id: cItem.id, name: displayName, priceExtra, recipe: menuItem?.recipe || [] };
+                // Update active state visuals
+                groupDiv.querySelectorAll('label').forEach(l => l.style.borderColor = 'var(--border)');
+                choiceEl.style.borderColor = 'var(--primary)';
+            });
+            
+            if (isDefault) choiceEl.style.borderColor = 'var(--primary)';
+            groupDiv.appendChild(choiceEl);
+        });
+        
+        container.appendChild(groupDiv);
+    });
+    
+    modal.classList.add('active');
+    const fab = document.querySelector('.fab-container');
+    if (fab) fab.style.display = 'none';
+    
+    // Attach confirm
+    if (confirmBtn) {
+        confirmBtn.onclick = () => {
+            const selections = Object.values(state.currentComboSelections);
+            const selectedOptions = selections.map((sel, idx) => ({
+                optionName: item.combo_items[idx]?.name || `Nhóm ${idx + 1}`,
+                choiceName: sel.name,
+                priceExtra: sel.priceExtra || 0,
+                recipe: sel.recipe || []
+            }));
+            
+            const cartKey = generateCartKey(item._id || item.id, selectedOptions);
+            handleCartUpdate(cartKey, item, 1, selectedOptions);
+            
+            modal.classList.remove('active');
+            const fabEl = document.querySelector('.fab-container');
+            if (fabEl) fabEl.style.display = 'flex';
+            state.currentComboItem = null;
+            state.currentComboSelections = {};
+        };
+    }
+}
+
+window.closeComboModal = function() {
+    const modal = document.getElementById('combo-selection-modal');
+    if (modal) modal.classList.remove('active');
+    const fab = document.querySelector('.fab-container');
+    if (fab) fab.style.display = 'flex';
+};

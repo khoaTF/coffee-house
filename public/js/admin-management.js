@@ -376,6 +376,13 @@ async function fetchCustomers() {
     }
 }
 
+function getAdminVipTier(totalSpent) {
+    if (totalSpent >= 5000000) return { name: 'DIAMOND', icon: '💎', color: '#7C3AED', bg: '#EDE9FE', next: null, nextAmt: 0 };
+    if (totalSpent >= 2000000) return { name: 'GOLD', icon: '👑', color: '#D97706', bg: '#FEF3C7', next: 'DIAMOND', nextAmt: 5000000 };
+    if (totalSpent >= 500000) return { name: 'SILVER', icon: '🥈', color: '#6B7280', bg: '#F3F4F6', next: 'GOLD', nextAmt: 2000000 };
+    return { name: 'BRONZE', icon: '🥉', color: '#92400E', bg: '#FEF3C7', next: 'SILVER', nextAmt: 500000 };
+}
+
 function renderCustomersTable(data = null) {
     const tbody = document.getElementById('customers-table-body');
     tbody.replaceChildren();
@@ -385,13 +392,21 @@ function renderCustomersTable(data = null) {
         return;
     }
     list.forEach(c => {
-        const vipBadge = (c.total_spent || 0) >= 500000 ? '<span class="badge bg-warning text-dark ms-1"><i class="fa-solid fa-crown"></i> VIP</span>' : '';
+        const tier = getAdminVipTier(c.total_spent || 0);
+        const tierBadge = `<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:700;background:${tier.bg};color:${tier.color};">${tier.icon} ${tier.name}</span>`;
+        
+        let progressHtml = '';
+        if (tier.next) {
+            const pct = Math.min(100, Math.round(((c.total_spent || 0) / tier.nextAmt) * 100));
+            progressHtml = `<div style="width:60px;height:4px;background:#e5e7eb;border-radius:2px;margin-top:2px;" title="Tiến trình đến ${tier.next}: ${pct}%"><div style="width:${pct}%;height:100%;background:${tier.color};border-radius:2px;"></div></div>`;
+        }
+        
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td class="fw-bold">${window.escapeHTML(c.phone || '')}</td>
-            <td>${window.escapeHTML(c.name || '') || '<i>Khách vô danh</i>'}${vipBadge}</td>
+            <td>${window.escapeHTML(c.name || '') || '<i>Khách vô danh</i>'} ${tierBadge}</td>
             <td class="text-warning fw-bold"><i class="fa-solid fa-star"></i> ${c.current_points || 0}</td>
-            <td class="text-success">${(c.total_spent || 0).toLocaleString('vi-VN')} đ</td>
+            <td><span class="text-success">${(c.total_spent || 0).toLocaleString('vi-VN')} đ</span>${progressHtml}</td>
             <td>${c.created_at ? new Date(c.created_at).toLocaleDateString() : 'N/A'}</td>
             <td class="text-end">
                 <button class="action-btn edit-btn" title="Chỉnh sửa điểm" onclick="editCustomer('${window.escapeHTML(c.id || '')}')">
