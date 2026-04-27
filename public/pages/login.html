@@ -209,6 +209,17 @@
                 btn.innerHTML = '<i class="fa-solid fa-check me-2"></i>Thành công!';
                 btn.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
 
+                // Log đăng nhập vào audit_logs
+                const targetPage = data.role === 'admin' || data.role === 'manager' ? 'Admin' : data.role === 'kitchen' ? 'Bếp' : 'Thu ngân';
+                try {
+                    await supabase.from('audit_logs').insert([{
+                        tenant_id: data.tenant_id,
+                        admin_identifier: `${data.name || 'Nhân viên'} (${data.role})`,
+                        action: 'Đăng nhập',
+                        details: `Đăng nhập vào trang ${targetPage} lúc ${new Date().toLocaleString('vi-VN')}`
+                    }]);
+                } catch(e) { console.warn('Audit log error:', e); }
+
                 setTimeout(() => {
                     if (data.role === 'admin' || data.role === 'manager') window.location.href = '/admin';
                     else if (data.role === 'kitchen') window.location.href = '/kitchen';

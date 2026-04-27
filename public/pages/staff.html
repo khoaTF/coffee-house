@@ -191,6 +191,15 @@
         });
 
         document.getElementById('logout-btn').addEventListener('click', async () => {
+            // Log đăng xuất
+            try {
+                await supabase.from('audit_logs').insert([{
+                    tenant_id: sessionStorage.getItem('tenant_id') || localStorage.getItem('tenant_id'),
+                    admin_identifier: (sessionStorage.getItem('nohope_staff_name') || 'Nhân viên') + ' (' + (sessionStorage.getItem('cafe_role') || 'staff') + ')',
+                    action: 'Đăng xuất',
+                    details: 'Đăng xuất khỏi trang Thu ngân lúc ' + new Date().toLocaleString('vi-VN')
+                }]);
+            } catch(e) {}
             await supabase.auth.signOut();
             localStorage.clear(); sessionStorage.clear();
             window.location.href = '/login';
