@@ -196,15 +196,39 @@ async function fetchCashflowData() {
 function renderCashflowKPI(data) {
     let totalIncome = 0;
     let totalExpense = 0;
+    let expenseBySource = { manual: 0, restock: 0, refund: 0 };
 
     data.forEach(item => {
         if (item.type === 'income') totalIncome += item.amount;
-        else if (item.type === 'expense') totalExpense += item.amount;
+        else if (item.type === 'expense') {
+            totalExpense += item.amount;
+            if (item.source === 'restock') expenseBySource.restock += item.amount;
+            else if (item.source === 'refund') expenseBySource.refund += item.amount;
+            else expenseBySource.manual += item.amount;
+        }
     });
 
     const netProfit = totalIncome - totalExpense;
+    const margin = totalIncome > 0 ? Math.round((netProfit / totalIncome) * 100) : 0;
     let profitColor = netProfit >= 0 ? 'text-success' : 'text-danger';
     let profitIcon = netProfit >= 0 ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down';
+
+    // Build daily P&L data for mini sparkline
+    const dailyMap = {};
+    data.forEach(item => {
+        const dayKey = item.createdAt.toISOString().split('T')[0];
+        if (!dailyMap[dayKey]) dailyMap[dayKey] = { income: 0, expense: 0 };
+        if (item.type === 'income') dailyMap[dayKey].income += item.amount;
+        else dailyMap[dayKey].expense += item.amount;
+    });
+    const dailyKeys = Object.keys(dailyMap).sort();
+    const dailyProfits = dailyKeys.map(k => dailyMap[k].income - dailyMap[k].expense);
+    const maxAbs = Math.max(1, ...dailyProfits.map(Math.abs));
+    const sparkBars = dailyProfits.slice(-14).map(v => {
+        const h = Math.max(2, Math.round((Math.abs(v) / maxAbs) * 32));
+        const color = v >= 0 ? '#22c55e' : '#ef4444';
+        return `<div style="width:4px;height:${h}px;background:${color};border-radius:2px;flex-shrink:0;" title="${v >= 0 ? '+' : ''}${v.toLocaleString('vi-VN')}đ"></div>`;
+    }).join('');
 
     const kpiContainer = document.getElementById('cashflow-kpi-container');
     if (!kpiContainer) return;
@@ -233,20 +257,26 @@ function renderCashflowKPI(data) {
                     <i class="fa-solid fa-arrow-up text-danger"></i>
                 </div>
             </div>
-            <p class="text-xs text-slate-500 mb-0 mt-2">Bao gồm phiếu nhập hàng</p>
+            <div class="flex gap-2 mt-2 flex-wrap">
+                <span class="text-[10px] px-2 py-0.5 rounded-md bg-orange-100 text-orange-700 font-bold">NL: ${expenseBySource.restock.toLocaleString()}đ</span>
+                <span class="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 font-bold">TC: ${expenseBySource.manual.toLocaleString()}đ</span>
+                ${expenseBySource.refund > 0 ? `<span class="text-[10px] px-2 py-0.5 rounded-md bg-red-100 text-red-600 font-bold">HT: ${expenseBySource.refund.toLocaleString()}đ</span>` : ''}
+            </div>
         </div>
 
         <div class="card bg-white border border-slate-200 rounded-2xl p-4 shadow-soft relative overflow-hidden">
             <div class="flex justify-between items-start mb-2">
                 <div>
-                    <h6 class="text-slate-500 font-semibold text-sm mb-1">Thực Thu (Lợi Nhuận)</h6>
+                    <h6 class="text-slate-500 font-semibold text-sm mb-1">Lợi nhuận <span class="font-bold ${profitColor}">(${margin}%)</span></h6>
                     <h3 class="font-noto font-bold ${profitColor} text-2xl mb-0">${netProfit.toLocaleString()}đ</h3>
                 </div>
                 <div class="w-10 h-10 rounded-xl ${netProfit >= 0 ? 'bg-success/10' : 'bg-danger/10'} flex items-center justify-center">
                     <i class="fa-solid ${profitIcon} ${profitColor}"></i>
                 </div>
             </div>
-            <p class="text-xs text-slate-500 mb-0 mt-2">Đã trừ mọi khoản chi</p>
+            <div class="flex items-end gap-1 mt-2" style="height:36px;" title="Xu hướng lãi/lỗ hàng ngày">
+                ${sparkBars || '<span class="text-xs text-slate-400">Chưa có dữ liệu</span>'}
+            </div>
         </div>
     `;
 }
