@@ -324,6 +324,25 @@
                     <textarea id="order-note" class="cart-note-input input-glass px-4 py-2.5 rounded-xl text-sm" placeholder="Vd: Ít đường, nhiều đá..." rows="1" style="min-height: 44px;"></textarea>
                 </div>
 
+                <!-- Pre-order (Hẹn giờ) -->
+                <div class="scheduled-time-container m-0 bg-white/60 dark:bg-black/30 border border-outline-variant/30 rounded-2xl p-4 shrink-0 transition-all">
+                    <label class="font-bold mb-2 flex justify-between items-center text-main text-[0.95rem]">
+                        <span><i class="fa-solid fa-clock text-primary mr-2"></i> Thời gian lấy đồ</span>
+                    </label>
+                    <div class="flex gap-2">
+                        <select id="pickup-time-select" class="bg-surface-container-low rounded-xl px-4 py-2.5 flex-1 text-sm font-semibold focus:outline-none focus:ring-1 focus:ring-primary/30 border-0">
+                            <option value="asap">Lấy ngay (Sớm nhất có thể)</option>
+                            <option value="15min">Sau 15 phút</option>
+                            <option value="30min">Sau 30 phút</option>
+                            <option value="custom">Hẹn giờ khác...</option>
+                        </select>
+                    </div>
+                    <div id="custom-time-wrapper" class="hidden mt-2 flex gap-2">
+                        <input type="date" id="pickup-date" class="bg-surface-container-low rounded-xl px-3 py-2 text-sm flex-1 border-0 outline-none">
+                        <input type="time" id="pickup-time" class="bg-surface-container-low rounded-xl px-3 py-2 text-sm flex-1 border-0 outline-none">
+                    </div>
+                </div>
+
 
                 <div class="loyalty-section m-0 bg-[#F0EDEC] dark:bg-[#2A2B2B] rounded-2xl p-4 shrink-0 transition-all">
                     <label class="font-bold mb-2 flex items-center text-[#1b1c1b] dark:text-[#fcf9f8] text-[0.95rem]"><i class="fa-solid fa-crown text-[#FF7A00] mr-2"></i> Tích điểm / Thành viên</label>

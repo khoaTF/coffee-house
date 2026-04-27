@@ -243,6 +243,27 @@ export function attachEventListeners() {
     const closeCatModalBtn = document.getElementById('close-category-modal');
     if (closeCatModalBtn) closeCatModalBtn.addEventListener('click', closeCategoryModal);
 
+    // Pre-order Time Select
+    const pickupSelect = document.getElementById('pickup-time-select');
+    const customWrapper = document.getElementById('custom-time-wrapper');
+    if (pickupSelect && customWrapper) {
+        pickupSelect.addEventListener('change', (e) => {
+            if (e.target.value === 'custom') {
+                customWrapper.classList.remove('hidden');
+                // Set default date to today
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('pickup-date').value = today;
+                
+                // Set default time to now + 1 hour
+                const now = new Date();
+                now.setHours(now.getHours() + 1);
+                document.getElementById('pickup-time').value = now.toTimeString().slice(0, 5);
+            } else {
+                customWrapper.classList.add('hidden');
+            }
+        });
+    }
+
     // Promo Code
     const applyPromoBtn = document.getElementById('apply-promo-btn');
     if (applyPromoBtn) {
