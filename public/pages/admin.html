@@ -179,6 +179,9 @@
                         <span id="desktop-staff-name" class="text-slate-800 font-bold text-sm truncate">...</span>
                     </div>
                 </div>
+                <button class="theme-toggle-btn" onclick="toggleAdminTheme()" id="theme-toggle-btn">
+                    <i class="fa-solid fa-moon w-5 text-center"></i> <span>Chế độ tối</span>
+                </button>
                 <button class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-red-400 hover:bg-red-400/10 hover:text-red-300 transition-colors border-0 bg-transparent" onclick="(async()=>{ try { await supabase.from('audit_logs').insert([{ tenant_id: sessionStorage.getItem('tenant_id') || localStorage.getItem('tenant_id'), admin_identifier: (sessionStorage.getItem('nohope_staff_name')||'Ẩn danh') + ' (' + (sessionStorage.getItem('cafe_role')||'?') + ')', action: 'Đăng xuất', details: 'Đăng xuất khỏi trang Admin lúc ' + new Date().toLocaleString('vi-VN') }]); } catch(e){} supabase.auth.signOut().then(()=>{ localStorage.clear(); sessionStorage.clear(); window.location.href='/login.html'; }); })()">
                     <i class="fa-solid fa-sign-out-alt w-5 text-center"></i> Đăng xuất
                 </button>
