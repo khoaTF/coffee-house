@@ -86,7 +86,8 @@ window.submitFeedback = async (orderId) => {
                 table_number: TABLE_NUMBER.toString(),
                 rating: popupSelectedRating,
                 comment: comment,
-                customer_phone: window.currentCustomerPhone || null
+                customer_phone: window.currentCustomerPhone || null,
+                category_ratings: getCategoryRatings()
             }]);
             
             sessionStorage.setItem('feedback_' + orderId, 'true');
@@ -212,7 +213,7 @@ function showFeedbackPopup(orderId) {
     overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn 0.3s ease;backdrop-filter:blur(4px);';
     
     overlay.innerHTML = `
-        <div style="background:#fff;border-radius:24px;max-width:380px;width:100%;padding:32px;text-align:center;box-shadow:0 25px 60px rgba(0,0,0,0.3);animation:slideUp 0.4s ease;">
+        <div style="background:#fff;border-radius:24px;max-width:400px;width:100%;padding:32px;text-align:center;box-shadow:0 25px 60px rgba(0,0,0,0.3);animation:slideUp 0.4s ease;">
             <div style="font-size:48px;margin-bottom:12px;">☕</div>
             <h3 style="font-size:20px;font-weight:800;color:#1A1814;margin-bottom:8px;">Đánh giá trải nghiệm</h3>
             <p style="font-size:14px;color:#666;margin-bottom:20px;">Bạn cảm thấy thế nào về đơn hàng này?</p>
@@ -224,6 +225,28 @@ function showFeedbackPopup(orderId) {
                           onmouseenter="hoverFeedbackRating(${i})" 
                           onmouseleave="resetFeedbackHover()">★</span>
                 `).join('')}
+            </div>
+
+            <!-- Category Ratings -->
+            <div id="feedback-categories" style="display:flex;gap:8px;margin-bottom:16px;justify-content:center;">
+                <div class="fb-cat" data-cat="drinks" onclick="toggleFeedbackCat(this)" style="flex:1;padding:10px 6px;border-radius:14px;border:2px solid #eee;background:#fafafa;cursor:pointer;transition:all 0.2s;text-align:center;">
+                    <div style="font-size:24px;margin-bottom:4px;">🍹</div>
+                    <div style="font-size:11px;font-weight:700;color:#999;">Đồ uống</div>
+                    <div class="fb-cat-stars" style="font-size:12px;color:#ddd;margin-top:4px;">☆☆☆☆☆</div>
+                    <input type="hidden" name="cat-drinks" value="0">
+                </div>
+                <div class="fb-cat" data-cat="service" onclick="toggleFeedbackCat(this)" style="flex:1;padding:10px 6px;border-radius:14px;border:2px solid #eee;background:#fafafa;cursor:pointer;transition:all 0.2s;text-align:center;">
+                    <div style="font-size:24px;margin-bottom:4px;">🤝</div>
+                    <div style="font-size:11px;font-weight:700;color:#999;">Phục vụ</div>
+                    <div class="fb-cat-stars" style="font-size:12px;color:#ddd;margin-top:4px;">☆☆☆☆☆</div>
+                    <input type="hidden" name="cat-service" value="0">
+                </div>
+                <div class="fb-cat" data-cat="ambiance" onclick="toggleFeedbackCat(this)" style="flex:1;padding:10px 6px;border-radius:14px;border:2px solid #eee;background:#fafafa;cursor:pointer;transition:all 0.2s;text-align:center;">
+                    <div style="font-size:24px;margin-bottom:4px;">🏠</div>
+                    <div style="font-size:11px;font-weight:700;color:#999;">Không gian</div>
+                    <div class="fb-cat-stars" style="font-size:12px;color:#ddd;margin-top:4px;">☆☆☆☆☆</div>
+                    <input type="hidden" name="cat-ambiance" value="0">
+                </div>
             </div>
             
             <textarea id="feedback-comment" placeholder="Góp ý thêm (tùy chọn)..." 
@@ -266,6 +289,30 @@ window.resetFeedbackHover = function() {
 window.closeFeedbackPopup = function() {
     const overlay = document.getElementById('feedback-overlay');
     if (overlay) overlay.remove();
+};
+
+// Category rating toggle: each click cycles 0→1→2→3→4→5→0
+window.toggleFeedbackCat = function(el) {
+    const input = el.querySelector('input[type="hidden"]');
+    const starsDiv = el.querySelector('.fb-cat-stars');
+    let val = parseInt(input.value || 0);
+    val = val >= 5 ? 0 : val + 1;
+    input.value = val;
+    starsDiv.textContent = '★'.repeat(val) + '☆'.repeat(5 - val);
+    starsDiv.style.color = val > 0 ? '#D4AF37' : '#ddd';
+    el.style.borderColor = val > 0 ? '#D4AF37' : '#eee';
+    el.style.background = val > 0 ? '#FFFBF0' : '#fafafa';
+};
+
+// Helper to collect category ratings
+function getCategoryRatings() {
+    const cats = {};
+    document.querySelectorAll('.fb-cat').forEach(el => {
+        const cat = el.dataset.cat;
+        const val = parseInt(el.querySelector('input[type="hidden"]')?.value || 0);
+        if (val > 0) cats[cat] = val;
+    });
+    return Object.keys(cats).length > 0 ? cats : null;
 };
 
 // --- Staff Requests ---
