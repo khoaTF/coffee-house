@@ -354,29 +354,34 @@ async function initRevenueChart() {
 async function initActivityFeed() {
     const feedContainer = document.getElementById('activity-feed');
     try {
-        const { data, error } = await supabase.rpc('get_global_activity_logs', { owner_secret: ownerSecret, p_limit: 20 });
+        const { data, error } = await supabase.rpc('get_superadmin_audit_logs', { owner_secret: ownerSecret, limit_count: 50 });
         if (error) throw error;
 
         if (!data || data.length === 0) {
-            feedContainer.innerHTML = '<div class="text-center text-muted small mt-4">No recent activity.</div>';
+            feedContainer.innerHTML = '<div class="text-center text-muted small mt-4">Chưa có nhật ký hoạt động nào.</div>';
             return;
         }
 
         let html = '';
         data.forEach(log => {
             const time = new Date(log.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-            let icon = 'fa-circle-info text-info';
-            if (log.action.includes('CREATED')) icon = 'fa-plus text-success';
-            if (log.action.includes('SUSPENDED')) icon = 'fa-ban text-danger';
-            if (log.action.includes('EXTENDED')) icon = 'fa-bolt text-warning';
+            const date = new Date(log.created_at).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
+            let icon = 'fa-clipboard-list text-info';
+            if (log.action.includes('Thêm') || log.action.includes('Tạo')) icon = 'fa-plus text-success';
+            if (log.action.includes('Xóa') || log.action.includes('Hủy')) icon = 'fa-trash text-danger';
+            if (log.action.includes('Cập nhật') || log.action.includes('Sửa')) icon = 'fa-pen text-warning';
 
             html += `
                 <div class="d-flex align-items-start mb-3 border-bottom border-secondary pb-2">
                     <i class="fa-solid ${icon} mt-1 me-2" style="font-size: 0.9rem;"></i>
-                    <div>
-                        <div class="fw-bold" style="font-size: 0.85rem;">${escapeHtml(log.tenant_name)}</div>
-                        <div class="text-muted" style="font-size: 0.8rem;">${escapeHtml(log.action.replace(/_/g, ' '))}</div>
-                        <div class="text-muted mt-1" style="font-size: 0.7rem;"><i class="fa-regular fa-clock me-1"></i>${time}</div>
+                    <div style="flex-grow: 1;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="fw-bold" style="font-size: 0.85rem;">${escapeHtml(log.admin_identifier || 'Hệ thống')}</div>
+                            <div class="text-muted" style="font-size: 0.7rem;"><i class="fa-regular fa-clock me-1"></i>${time} ${date}</div>
+                        </div>
+                        <div class="text-white" style="font-size: 0.8rem;">${escapeHtml(log.action)}</div>
+                        <div class="text-muted mt-1" style="font-size: 0.75rem;">${escapeHtml(JSON.stringify(log.details))}</div>
+                        ${log.tenant_id ? `<div class="badge bg-secondary mt-1" style="font-size: 0.65rem;">Tenant: ${log.tenant_id.substring(0,8)}...</div>` : ''}
                     </div>
                 </div>
             `;

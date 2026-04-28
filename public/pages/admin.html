@@ -945,6 +945,38 @@
                         <div class="col-span-full text-center text-slate-500 py-10">Nhập số bàn và nhấn "Tạo Danh sách QR" để bắt đầu...</div>
                     </div>
                 </section>
+                <!-- Audit Logs Section -->
+                <section id="section-audit" class="content-section">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                        <div>
+                            <h2 class="font-noto text-2xl font-bold text-slate-900 mb-1 flex items-center gap-2"><i class="fa-solid fa-clipboard-list text-[#C0A062]"></i> Nhật ký hoạt động</h2>
+                            <p class="text-sm text-slate-500 mb-0">Theo dõi toàn bộ các thay đổi quan trọng trên hệ thống.</p>
+                        </div>
+                        <button class="btn btn-outline-secondary rounded-xl font-semibold shadow-soft" onclick="fetchAuditLogs()"><i class="fa-solid fa-rotate-right me-2"></i> Làm mới</button>
+                    </div>
+                    <div class="card bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden">
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0 border-0">
+                                    <thead class="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-widest font-bold">
+                                        <tr>
+                                            <th class="px-4 py-3 border-0">Thời gian</th>
+                                            <th class="px-4 py-3 border-0">Người thực hiện</th>
+                                            <th class="px-4 py-3 border-0">Hành động</th>
+                                            <th class="px-4 py-3 border-0">Chi tiết</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="audit-table-body" class="text-sm border-t border-slate-100">
+                                        <!-- Logs rendered here -->
+                                        <tr>
+                                            <td colspan="4" class="text-center py-8 text-slate-500"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tải dữ liệu...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
                 <!-- Store Settings Section -->
                 <section id="section-settings" class="content-section d-print-none">
