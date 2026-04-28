@@ -452,7 +452,7 @@ async function fetchCustomers() {
 }
 
 function getAdminVipTier(totalSpent) {
-    if (totalSpent >= 5000000) return { name: 'DIAMOND', icon: '💎', color: '#7C3AED', bg: '#EDE9FE', next: null, nextAmt: 0 };
+    if (totalSpent >= 5000000) return { name: 'DIAMOND', icon: '💎', color: '#0d9488', bg: '#CCFBF1', next: null, nextAmt: 0 };
     if (totalSpent >= 2000000) return { name: 'GOLD', icon: '👑', color: '#D97706', bg: '#FEF3C7', next: 'DIAMOND', nextAmt: 5000000 };
     if (totalSpent >= 500000) return { name: 'SILVER', icon: '🥈', color: '#6B7280', bg: '#F3F4F6', next: 'GOLD', nextAmt: 2000000 };
     return { name: 'BRONZE', icon: '🥉', color: '#92400E', bg: '#FEF3C7', next: 'SILVER', nextAmt: 500000 };
