@@ -1473,13 +1473,30 @@
                         </div>
         <div class="mb-2" id="staff-permissions-block">
             <label class="form-label text-slate-500 text-xs uppercase tracking-wider font-bold mb-3 d-block border-t border-slate-200 pt-3">Phân quyền siêu chi tiết thao tác</label>
+            <!-- Role Template Selector -->
+            <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-3 mb-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                <div class="flex items-center gap-2 text-sm font-bold text-amber-800 whitespace-nowrap">
+                    <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i>
+                    <span>Mẫu nhanh:</span>
+                </div>
+                <select id="role-template-select" class="form-select form-select-sm bg-white border-amber-200 text-slate-700 rounded-lg focus:border-amber-400 focus:ring-1 focus:ring-amber-400 flex-1 text-sm" onchange="applyRoleTemplate(this.value)">
+                    <option value="">— Chọn mẫu vai trò —</option>
+                    <option value="barista">🧑‍🍳 Pha chế (Barista)</option>
+                    <option value="cashier">💰 Thu ngân (Cashier)</option>
+                    <option value="shift_lead">🏪 Quản lý ca (Shift Lead)</option>
+                    <option value="accountant">📊 Kế toán (Accountant)</option>
+                    <option value="full_access">🔧 Toàn quyền (Full Access)</option>
+                </select>
+            </div>
             <div id="perms-checkbox-list" class="space-y-4 max-h-[450px] overflow-y-auto pr-2 custom-scrollbar">
                 
                 <!-- Nhóm 1: Thống Kê & Báo Cáo -->
-                <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
-                    <div class="flex items-center space-x-2 mb-3 pb-2 border-b border-slate-100">
+                <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm perm-group-card">
+                    <div class="flex items-center space-x-2 mb-3 pb-2 border-b border-slate-100 cursor-pointer group" onclick="toggleGroupPermissions(this)">
                         <i class="fa-solid fa-chart-line text-[#C0A062]"></i>
-                        <h6 class="text-sm font-bold text-slate-800 m-0">Thống Kê & Báo Cáo</h6>
+                        <h6 class="text-sm font-bold text-slate-800 m-0 flex-1">Thống Kê & Báo Cáo</h6>
+                        <span class="text-[10px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">Chọn/Bỏ tất cả</span>
+                        <i class="fa-solid fa-check-double text-slate-300 text-xs group-hover:text-[#C0A062] transition-colors"></i>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="analytics_dashboard"> <span>Xem Tổng quan</span></label>
@@ -1490,10 +1507,12 @@
                 </div>
 
                 <!-- Nhóm 2: Bán Hàng & Đơn Hàng -->
-                <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
-                    <div class="flex items-center space-x-2 mb-3 pb-2 border-b border-slate-100">
+                <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm perm-group-card">
+                    <div class="flex items-center space-x-2 mb-3 pb-2 border-b border-slate-100 cursor-pointer group" onclick="toggleGroupPermissions(this)">
                         <i class="fa-solid fa-cart-shopping text-[#C0A062]"></i>
-                        <h6 class="text-sm font-bold text-slate-800 m-0">Bán Hàng & Đơn Hàng</h6>
+                        <h6 class="text-sm font-bold text-slate-800 m-0 flex-1">Bán Hàng & Đơn Hàng</h6>
+                        <span class="text-[10px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">Chọn/Bỏ tất cả</span>
+                        <i class="fa-solid fa-check-double text-slate-300 text-xs group-hover:text-[#C0A062] transition-colors"></i>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="pos_create"> <span>Tạo đơn tại quầy (POS)</span></label>
@@ -1510,11 +1529,13 @@
                     </div>
                 </div>
 
-                <!-- Nhóm 3: Sơ Đồ Bàn Không Gian -->
-                <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
-                    <div class="flex items-center space-x-2 mb-3 pb-2 border-b border-slate-100">
+                <!-- Nhóm 3: Sơ Đồ Bàn -->
+                <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm perm-group-card">
+                    <div class="flex items-center space-x-2 mb-3 pb-2 border-b border-slate-100 cursor-pointer group" onclick="toggleGroupPermissions(this)">
                         <i class="fa-solid fa-table-cells text-[#C0A062]"></i>
-                        <h6 class="text-sm font-bold text-slate-800 m-0">Sơ Đồ Bàn</h6>
+                        <h6 class="text-sm font-bold text-slate-800 m-0 flex-1">Sơ Đồ Bàn</h6>
+                        <span class="text-[10px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">Chọn/Bỏ tất cả</span>
+                        <i class="fa-solid fa-check-double text-slate-300 text-xs group-hover:text-[#C0A062] transition-colors"></i>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="tables_view"> <span>Xem sơ đồ & trạng thái</span></label>
@@ -1526,10 +1547,12 @@
                 </div>
 
                 <!-- Nhóm 4: Thực Đơn -->
-                <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
-                    <div class="flex items-center space-x-2 mb-3 pb-2 border-b border-slate-100">
+                <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm perm-group-card">
+                    <div class="flex items-center space-x-2 mb-3 pb-2 border-b border-slate-100 cursor-pointer group" onclick="toggleGroupPermissions(this)">
                         <i class="fa-solid fa-bell-concierge text-[#C0A062]"></i>
-                        <h6 class="text-sm font-bold text-slate-800 m-0">Sản Phẩm & Thực Đơn</h6>
+                        <h6 class="text-sm font-bold text-slate-800 m-0 flex-1">Sản Phẩm & Thực Đơn</h6>
+                        <span class="text-[10px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">Chọn/Bỏ tất cả</span>
+                        <i class="fa-solid fa-check-double text-slate-300 text-xs group-hover:text-[#C0A062] transition-colors"></i>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="menu_view"> <span>Xem danh sách món</span></label>
@@ -1542,10 +1565,12 @@
                 </div>
 
                 <!-- Nhóm 5: Kho (Inventory) -->
-                <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
-                    <div class="flex items-center space-x-2 mb-3 pb-2 border-b border-slate-100">
+                <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm perm-group-card">
+                    <div class="flex items-center space-x-2 mb-3 pb-2 border-b border-slate-100 cursor-pointer group" onclick="toggleGroupPermissions(this)">
                         <i class="fa-solid fa-boxes-stacked text-[#C0A062]"></i>
-                        <h6 class="text-sm font-bold text-slate-800 m-0">Vật Tư & Tồn Kho</h6>
+                        <h6 class="text-sm font-bold text-slate-800 m-0 flex-1">Vật Tư & Tồn Kho</h6>
+                        <span class="text-[10px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">Chọn/Bỏ tất cả</span>
+                        <i class="fa-solid fa-check-double text-slate-300 text-xs group-hover:text-[#C0A062] transition-colors"></i>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="inventory_view"> <span>Xem Vật tư tồn kho</span></label>
@@ -1558,10 +1583,12 @@
                 </div>
 
                 <!-- Nhóm 6: Thu Chi & Tài Chính -->
-                <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
-                    <div class="flex items-center space-x-2 mb-3 pb-2 border-b border-slate-100">
+                <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm perm-group-card">
+                    <div class="flex items-center space-x-2 mb-3 pb-2 border-b border-slate-100 cursor-pointer group" onclick="toggleGroupPermissions(this)">
                         <i class="fa-solid fa-money-bill-transfer text-[#C0A062]"></i>
-                        <h6 class="text-sm font-bold text-slate-800 m-0">Thu Chi & Tài Chính</h6>
+                        <h6 class="text-sm font-bold text-slate-800 m-0 flex-1">Thu Chi & Tài Chính</h6>
+                        <span class="text-[10px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">Chọn/Bỏ tất cả</span>
+                        <i class="fa-solid fa-check-double text-slate-300 text-xs group-hover:text-[#C0A062] transition-colors"></i>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="cashflow_view"> <span>Xem sổ quỹ</span></label>
@@ -1573,10 +1600,12 @@
                 </div>
 
                 <!-- Nhóm 7: Nhân sự & Ca Trực -->
-                <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
-                    <div class="flex items-center space-x-2 mb-3 pb-2 border-b border-slate-100">
+                <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm perm-group-card">
+                    <div class="flex items-center space-x-2 mb-3 pb-2 border-b border-slate-100 cursor-pointer group" onclick="toggleGroupPermissions(this)">
                         <i class="fa-solid fa-id-card text-[#C0A062]"></i>
-                        <h6 class="text-sm font-bold text-slate-800 m-0">Nhân Sự & Ca Trực</h6>
+                        <h6 class="text-sm font-bold text-slate-800 m-0 flex-1">Nhân Sự & Ca Trực</h6>
+                        <span class="text-[10px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">Chọn/Bỏ tất cả</span>
+                        <i class="fa-solid fa-check-double text-slate-300 text-xs group-hover:text-[#C0A062] transition-colors"></i>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="shifts_view"> <span>Xem Lịch sử Ca trực</span></label>
@@ -1590,16 +1619,34 @@
                 </div>
 
                 <!-- Nhóm 8: Khách hàng & Cấu Hình -->
-                <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
-                    <div class="flex items-center space-x-2 mb-3 pb-2 border-b border-slate-100">
+                <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm perm-group-card">
+                    <div class="flex items-center space-x-2 mb-3 pb-2 border-b border-slate-100 cursor-pointer group" onclick="toggleGroupPermissions(this)">
                         <i class="fa-solid fa-gear text-[#C0A062]"></i>
-                        <h6 class="text-sm font-bold text-slate-800 m-0">Hệ thống & Khách hàng</h6>
+                        <h6 class="text-sm font-bold text-slate-800 m-0 flex-1">Hệ thống & Khách hàng</h6>
+                        <span class="text-[10px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">Chọn/Bỏ tất cả</span>
+                        <i class="fa-solid fa-check-double text-slate-300 text-xs group-hover:text-[#C0A062] transition-colors"></i>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="customers_view"> <span>Xem danh sách KH</span></label>
                         <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="customers_edit"> <span>Đổi điểm KH thủ công</span></label>
                         <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="settings_audit"> <span>Xem Nhật ký HĐ (Log)</span></label>
                         <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer text-danger"><input type="checkbox" class="form-checkbox border-slate-300 text-danger rounded focus:ring-0 perm-cb" value="settings_manage"> <span>Thiết lập Cấu hình Quán/Bank</span></label>
+                    </div>
+                </div>
+
+                <!-- Nhóm 9: Giao Hàng (Delivery) -->
+                <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm perm-group-card">
+                    <div class="flex items-center space-x-2 mb-3 pb-2 border-b border-slate-100 cursor-pointer group" onclick="toggleGroupPermissions(this)">
+                        <i class="fa-solid fa-truck-fast text-[#C0A062]"></i>
+                        <h6 class="text-sm font-bold text-slate-800 m-0 flex-1">Giao Hàng (Delivery)</h6>
+                        <span class="text-[10px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">Chọn/Bỏ tất cả</span>
+                        <i class="fa-solid fa-check-double text-slate-300 text-xs group-hover:text-[#C0A062] transition-colors"></i>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="delivery_view"> <span>Xem đơn giao hàng</span></label>
+                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="delivery_manage"> <span>Quản lý đơn giao</span></label>
+                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer"><input type="checkbox" class="form-checkbox border-slate-300 text-[#C0A062] rounded focus:ring-0 perm-cb" value="delivery_drivers"> <span>Quản lý Tài xế</span></label>
+                        <label class="flex items-center space-x-2 text-sm text-slate-700 cursor-pointer text-danger"><input type="checkbox" class="form-checkbox border-slate-300 text-danger rounded focus:ring-0 perm-cb" value="delivery_settings"> <span>Cấu hình Delivery</span></label>
                     </div>
                 </div>
 

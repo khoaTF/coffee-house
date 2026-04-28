@@ -5,6 +5,79 @@
 //               staffModalInstance, customerModalInstance, promoModalInstance,
 //               customConfirm, logAudit, showAdminToast, supabase)
 
+// --- Role Templates (Built-in Presets) ---
+const ROLE_TEMPLATES = {
+    barista: {
+        label: '🧑‍🍳 Pha chế (Barista)',
+        permissions: ['orders_view', 'orders_status', 'menu_view']
+    },
+    cashier: {
+        label: '💰 Thu ngân (Cashier)',
+        permissions: [
+            'pos_create', 'orders_view', 'orders_status', 'orders_discount',
+            'orders_payment', 'history_view', 'history_print', 'tables_view'
+        ]
+    },
+    shift_lead: {
+        label: '🏪 Quản lý ca (Shift Lead)',
+        permissions: [
+            'pos_create', 'orders_view', 'orders_status', 'orders_discount',
+            'orders_payment', 'orders_cancel', 'history_view', 'history_print',
+            'history_export', 'history_cancel', 'tables_view', 'tables_edit',
+            'menu_view', 'inventory_view', 'inventory_edit',
+            'restock_view', 'restock_create', 'cashflow_view',
+            'shifts_view', 'shifts_manage', 'staff_view',
+            'customers_view'
+        ]
+    },
+    accountant: {
+        label: '📊 Kế toán (Accountant)',
+        permissions: [
+            'analytics_dashboard', 'analytics_revenue', 'analytics_products', 'analytics_export',
+            'history_view', 'history_export',
+            'cashflow_view', 'cashflow_export', 'cashflow_create', 'cashflow_edit',
+            'customers_view', 'settings_audit'
+        ]
+    },
+    full_access: {
+        label: '🔧 Toàn quyền (Full Access)',
+        permissions: '__ALL__'
+    }
+};
+
+function applyRoleTemplate(templateKey) {
+    if (!templateKey) return;
+    const template = ROLE_TEMPLATES[templateKey];
+    if (!template) return;
+
+    const allCheckboxes = document.querySelectorAll('.perm-cb');
+
+    if (template.permissions === '__ALL__') {
+        allCheckboxes.forEach(cb => cb.checked = true);
+    } else {
+        allCheckboxes.forEach(cb => cb.checked = false);
+        template.permissions.forEach(perm => {
+            const cb = document.querySelector(`.perm-cb[value="${perm}"]`);
+            if (cb) cb.checked = true;
+        });
+    }
+
+    if (typeof showAdminToast === 'function') {
+        showAdminToast(`Đã áp dụng mẫu: ${template.label}`, 'success', 2000);
+    }
+    // Reset dropdown to placeholder
+    const sel = document.getElementById('role-template-select');
+    if (sel) sel.value = '';
+}
+
+function toggleGroupPermissions(headerEl) {
+    const group = headerEl.closest('.perm-group-card');
+    if (!group) return;
+    const checkboxes = group.querySelectorAll('.perm-cb');
+    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+    checkboxes.forEach(cb => cb.checked = !allChecked);
+}
+
 // --- Staff Management ---
 function initStaffModal() {
     const el = document.getElementById('staffModal');
