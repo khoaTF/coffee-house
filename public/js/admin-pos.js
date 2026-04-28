@@ -8,6 +8,7 @@ let posSelectedTable = 'POS';
 let posProductsList = [];
 let posCurrentOptionsItem = null;
 let posIngredientStock = {};
+let posAppliedVoucher = null;
 
 window.initPOS = async function() {
     const container = document.getElementById('pos-content');
@@ -81,6 +82,14 @@ window.initPOS = async function() {
                     </div>
 
                     <div class="border-t border-slate-200 p-4">
+                        <div class="mb-3 flex gap-2">
+                            <input id="pos-voucher-code" type="text" placeholder="Mã giảm giá (tuỳ chọn)" class="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-slate-800 placeholder-[#64748b] text-sm focus:outline-none focus:border-[#C0A062] uppercase">
+                            <button id="pos-apply-voucher-btn" class="px-4 py-2 rounded-xl text-sm font-bold text-white transition-colors bg-slate-800 hover:bg-slate-700 whitespace-nowrap" onclick="posApplyVoucher()">Áp dụng</button>
+                        </div>
+                        <div id="pos-voucher-info" class="text-sm text-green-600 font-semibold hidden mb-3 flex justify-between items-center bg-green-50 px-3 py-2 rounded-lg border border-green-200">
+                            <span id="pos-voucher-msg"></span>
+                            <button class="text-rose-500 hover:text-rose-600 border-none bg-transparent" onclick="posRemoveVoucher()"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
                         <div class="flex justify-between items-center mb-4">
                             <span class="text-slate-500 font-semibold">Tổng cộng:</span>
                             <span id="pos-cart-total" class="text-xl font-bold text-[#C0A062]">0 đ</span>
@@ -420,6 +429,51 @@ window.posClearCart = function() {
     posRenderCart();
 };
 
+window.posApplyVoucher = async function() {
+    const code = document.getElementById('pos-voucher-code')?.value.trim().toUpperCase();
+    if (!code) return;
+    
+    try {
+        const { data: voucher, error } = await supabase.from('vouchers')
+            .select('*')
+            .eq('code', code)
+            .eq('tenant_id', window.AdminState.tenantId)
+            .eq('is_active', true)
+            .single();
+            
+        if (error || !voucher) {
+            showAdminToast('Mã không hợp lệ hoặc đã tắt.', 'error');
+            return;
+        }
+        
+        const now = new Date();
+        if (voucher.start_date && new Date(voucher.start_date) > now) {
+            showAdminToast('Mã chưa đến thời gian áp dụng.', 'error');
+            return;
+        }
+        if (voucher.end_date && new Date(voucher.end_date) < now) {
+            showAdminToast('Mã đã hết hạn.', 'error');
+            return;
+        }
+        if (voucher.usage_limit && voucher.used_count >= voucher.usage_limit) {
+            showAdminToast('Mã đã hết lượt sử dụng.', 'error');
+            return;
+        }
+        
+        posAppliedVoucher = voucher;
+        document.getElementById('pos-voucher-code').value = '';
+        showAdminToast('Đã áp dụng mã giảm giá!', 'success');
+        posRenderCart();
+    } catch(err) {
+        showAdminToast('Lỗi khi kiểm tra mã giảm giá.', 'error');
+    }
+};
+
+window.posRemoveVoucher = function() {
+    posAppliedVoucher = null;
+    posRenderCart();
+};
+
 function posRenderCart() {
     const el = document.getElementById('pos-cart-items');
     const countEl = document.getElementById('pos-cart-count');
@@ -427,10 +481,39 @@ function posRenderCart() {
     if (!el) return;
 
     const totalQty = posCart.reduce((s, c) => s + c.quantity, 0);
-    const totalPrice = posCart.reduce((s, c) => {
+    const subtotal = posCart.reduce((s, c) => {
         const optionsPrice = (c.selectedOptions || []).reduce((sum, o) => sum + o.priceExtra, 0);
         return s + (c.price + optionsPrice) * c.quantity;
     }, 0);
+
+    let discount = 0;
+    const infoEl = document.getElementById('pos-voucher-info');
+    const msgEl = document.getElementById('pos-voucher-msg');
+    
+    if (posAppliedVoucher) {
+        if (posAppliedVoucher.min_order_value && subtotal < posAppliedVoucher.min_order_value) {
+            if (infoEl) infoEl.classList.add('hidden');
+        } else {
+            if (posAppliedVoucher.discount_type === 'percent') {
+                discount = subtotal * (posAppliedVoucher.discount_value / 100);
+                if (posAppliedVoucher.max_discount && discount > posAppliedVoucher.max_discount) {
+                    discount = posAppliedVoucher.max_discount;
+                }
+            } else {
+                discount = posAppliedVoucher.discount_value;
+            }
+            if (discount > subtotal) discount = subtotal;
+            
+            if (infoEl && msgEl) {
+                infoEl.classList.remove('hidden');
+                msgEl.textContent = `Giảm: ${discount.toLocaleString('vi-VN')} đ (${posAppliedVoucher.code})`;
+            }
+        }
+    } else {
+        if (infoEl) infoEl.classList.add('hidden');
+    }
+
+    const totalPrice = subtotal - discount;
 
     if (countEl) countEl.textContent = totalQty;
     if (totalEl) totalEl.textContent = totalPrice.toLocaleString('vi-VN') + ' đ';
@@ -523,6 +606,14 @@ async function syncOfflineOrders() {
                     const { data: newOrderId, error } = await supabase.rpc('place_order_and_deduct_inventory', { payload: order.payload });
                     if (!error) {
                         await supabase.from('orders').update({ is_paid: true, payment_status: 'paid' }).eq('id', newOrderId);
+                        
+                        // Audit log for offline synced orders
+                        const staffName = sessionStorage.getItem('nohope_staff_name') || localStorage.getItem('nohope_staff_name') || 'POS';
+                        logAudit('Đồng bộ Offline', `Đồng bộ đơn bàn ${order.payload.table_number} — ${order.payload.total_price.toLocaleString('vi-VN')}đ`);
+                        if (order.payload.discount_code && order.payload.discount_amount > 0) {
+                            logAudit('POS Giảm giá (Offline)', `Sử dụng mã ${order.payload.discount_code} giảm ${order.payload.discount_amount.toLocaleString('vi-VN')}đ cho Bàn ${order.payload.table_number} bởi ${staffName}`);
+                        }
+
                         // delete from IDB
                         const delTx = idb.transaction(storeName, "readwrite");
                         delTx.objectStore(storeName).delete(order.id);
@@ -610,10 +701,23 @@ window.posSubmitOrder = async function() {
     const btn = document.getElementById('pos-submit-btn');
     if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Đang gửi...'; }
 
-    const totalPrice = posCart.reduce((s, c) => {
+    const subtotal = posCart.reduce((s, c) => {
         const optionsPrice = (c.selectedOptions || []).reduce((sum, o) => sum + o.priceExtra, 0);
         return s + (c.price + optionsPrice) * c.quantity;
     }, 0);
+    
+    let discount = 0;
+    if (posAppliedVoucher && (!posAppliedVoucher.min_order_value || subtotal >= posAppliedVoucher.min_order_value)) {
+        if (posAppliedVoucher.discount_type === 'percent') {
+            discount = subtotal * (posAppliedVoucher.discount_value / 100);
+            if (posAppliedVoucher.max_discount && discount > posAppliedVoucher.max_discount) discount = posAppliedVoucher.max_discount;
+        } else {
+            discount = posAppliedVoucher.discount_value;
+        }
+        if (discount > subtotal) discount = subtotal;
+    }
+    
+    const totalPrice = subtotal - discount;
     const note = (document.getElementById('pos-order-note')?.value || '').trim();
     const staffName = sessionStorage.getItem('nohope_staff_name') || localStorage.getItem('nohope_staff_name') || 'POS';
 
@@ -647,6 +751,39 @@ window.posSubmitOrder = async function() {
             return;
         }
 
+        // Check voucher limit right before submission to prevent race conditions
+        if (posAppliedVoucher && discount > 0 && navigator.onLine) {
+            const { data: vCheck } = await supabase.from('vouchers')
+                .select('used_count, usage_limit, is_active, start_date, end_date')
+                .eq('code', posAppliedVoucher.code)
+                .eq('tenant_id', window.AdminState.tenantId)
+                .single();
+                
+            if (vCheck) {
+                if (!vCheck.is_active) {
+                    showAdminToast(`Mã giảm giá ${posAppliedVoucher.code} đã bị vô hiệu hóa!`, 'error');
+                    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Gửi đơn hàng'; }
+                    return;
+                }
+                const now = new Date();
+                if (vCheck.start_date && new Date(vCheck.start_date) > now) {
+                    showAdminToast(`Mã giảm giá ${posAppliedVoucher.code} chưa đến thời gian áp dụng!`, 'error');
+                    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Gửi đơn hàng'; }
+                    return;
+                }
+                if (vCheck.end_date && new Date(vCheck.end_date) < now) {
+                    showAdminToast(`Mã giảm giá ${posAppliedVoucher.code} đã hết hạn!`, 'error');
+                    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Gửi đơn hàng'; }
+                    return;
+                }
+                if (vCheck.usage_limit && vCheck.used_count >= vCheck.usage_limit) {
+                    showAdminToast(`Mã giảm giá ${posAppliedVoucher.code} đã hết lượt sử dụng!`, 'error');
+                    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Gửi đơn hàng'; }
+                    return;
+                }
+            }
+        }
+
         const orderPayload = {
             tenant_id: window.AdminState.tenantId,
             table_number: String(posSelectedTable),
@@ -654,6 +791,8 @@ window.posSubmitOrder = async function() {
             items: items,
             reductions: reductions,
             total_price: totalPrice,
+            discount_code: posAppliedVoucher && discount > 0 ? posAppliedVoucher.code : null,
+            discount_amount: discount > 0 ? discount : 0,
             order_note: note || null,
             status: 'Pending',     
             payment_method: paymentMethod,  
@@ -678,6 +817,9 @@ window.posSubmitOrder = async function() {
                     
                 if (updateErr) console.warn("Lỗi cập nhật trạng thái thanh toán POS:", updateErr);
                 logAudit('POS Đặt hàng', `Bàn ${posSelectedTable} — ${posCart.length} món — ${totalPrice.toLocaleString('vi-VN')}đ bởi ${staffName}`);
+                if (posAppliedVoucher && discount > 0) {
+                    logAudit('POS Giảm giá', `Sử dụng mã ${posAppliedVoucher.code} giảm ${discount.toLocaleString('vi-VN')}đ cho Bàn ${posSelectedTable} bởi ${staffName}`);
+                }
                 showAdminToast(`Đã gửi đơn bàn ${posSelectedTable} thành công! 🎉`, 'success');
             }
         } else {
@@ -685,11 +827,13 @@ window.posSubmitOrder = async function() {
             showAdminToast(`Mạng ngoại tuyến. LƯU OFFLINE đơn bàn ${posSelectedTable}! (Sẽ đồng bộ sau) 🟡`, 'warning');
         }
         
-        posPrintBill({ id: 'OFFLINE_PENDING_' + Date.now(), table_number: posSelectedTable, items: items, total_price: totalPrice, order_note: note });
+        posPrintBill({ id: 'OFFLINE_PENDING_' + Date.now(), table_number: posSelectedTable, items: items, total_price: totalPrice, order_note: note, discount_amount: discount > 0 ? discount : 0 });
         
         posCart = [];
+        posAppliedVoucher = null;
         posRenderCart();
         if (document.getElementById('pos-order-note')) document.getElementById('pos-order-note').value = '';
+        if (document.getElementById('pos-voucher-code')) document.getElementById('pos-voucher-code').value = '';
     } catch(e) {
         console.error('POS submit error:', e);
         showAdminToast(e.message || 'Lỗi gửi đơn hàng!', 'error');
@@ -749,6 +893,10 @@ window.posPrintBill = function(order) {
                     }).join('')}
                 </tbody>
             </table>
+            ${order.discount_amount > 0 ? `
+            <div class="divider" style="margin: 5px 0; border-bottom: 1px dashed #ddd;"></div>
+            <div style="text-align: right; font-size: 14px; margin-top: 5px; color: #555;">Giảm giá: -${(order.discount_amount || 0).toLocaleString('vi-VN')}đ</div>
+            ` : ''}
             <div class="divider"></div>
             <div class="total">Tổng cộng: ${(order.total_price || 0).toLocaleString('vi-VN')}đ</div>
             <div class="divider"></div>
