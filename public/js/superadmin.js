@@ -1,28 +1,48 @@
 // public/js/superadmin.js
 let ownerSecret = sessionStorage.getItem('nohope_owner_secret') || '';
 
-// Global utility: aggressively remove ALL modal backdrops and unlock body scroll
+// Global utility: remove ALL bootstrap backdrops + manage custom backdrop
 function forceCleanModals() {
+    // Kill any bootstrap backdrops that may have leaked
     document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
     document.body.classList.remove('modal-open');
     document.body.style.removeProperty('overflow');
     document.body.style.removeProperty('padding-right');
+    // Hide custom backdrop
+    const bd = document.getElementById('sa-backdrop');
+    if (bd) bd.classList.remove('active');
 }
 
-// Safe modal open: cleanup first, then show
+// Show custom backdrop
+function showBackdrop() {
+    const bd = document.getElementById('sa-backdrop');
+    if (bd) bd.classList.add('active');
+}
+
+// Hide custom backdrop
+function hideBackdrop() {
+    const bd = document.getElementById('sa-backdrop');
+    if (bd) bd.classList.remove('active');
+}
+
+// Safe modal open: cleanup bootstrap mess, show custom backdrop, open modal
 function safeShowModal(modalEl) {
-    // Dispose any lingering instance to prevent double-backdrop
+    // Dispose any lingering bootstrap instance
     const existing = bootstrap.Modal.getInstance(modalEl);
     if (existing) existing.dispose();
-    forceCleanModals();
-    const fresh = new bootstrap.Modal(modalEl);
+    // Kill all bootstrap backdrops 
+    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+    // Show our single custom backdrop
+    showBackdrop();
+    // Create fresh modal (backdrop: false already set in HTML)
+    const fresh = new bootstrap.Modal(modalEl, { backdrop: false });
     fresh.show();
     return fresh;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     
-    // SAFETY NET: Aggressive cleanup after any modal hides
+    // When ANY modal hides and no other modal is open, hide backdrop
     document.addEventListener('hidden.bs.modal', () => {
         setTimeout(() => {
             const openModals = document.querySelectorAll('.modal.show');
@@ -31,6 +51,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }, 100);
     });
+
+    // Clicking custom backdrop closes any open modal
+    const saBackdrop = document.getElementById('sa-backdrop');
+    if (saBackdrop) {
+        saBackdrop.addEventListener('click', () => {
+            document.querySelectorAll('.modal.show').forEach(m => {
+                const inst = bootstrap.Modal.getInstance(m);
+                if (inst) inst.hide();
+            });
+            forceCleanModals();
+        });
+    }
 
     // Auth flow
     if (ownerSecret) {

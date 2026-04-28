@@ -396,13 +396,34 @@
         }
         
         .toast-container {
-            z-index: 1060;
+            z-index: 1090 !important;
+        }
+
+        /* FORCE modal above backdrop — prevents stacking bug */
+        .modal {
+            z-index: 1055 !important;
+        }
+        .modal-backdrop {
+            z-index: 1050 !important;
+        }
+        /* Single custom backdrop managed by JS */
+        .sa-backdrop {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1050;
+            display: none;
+        }
+        .sa-backdrop.active {
+            display: block;
         }
 
     </style>
 </head>
 
 <body>
+    <div class="sa-backdrop" id="sa-backdrop"></div>
     <div class="ambient-glow"></div>
     <div class="ambient-glow-2"></div>
 
@@ -588,7 +609,7 @@
     </div>
 
     <!-- Create Tenant Modal -->
-    <div class="modal fade" id="createTenantModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="createTenantModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="false">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -630,7 +651,7 @@
     </div>
 
     <!-- Manage Tenant Modal -->
-    <div class="modal fade" id="manageTenantModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="manageTenantModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="false">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -724,8 +745,8 @@
         </div>
     </div>
 
-    <!-- Delete Confirmation Modal (replaces blocking prompt) -->
-    <div class="modal fade" id="deleteTenantConfirmModal" tabindex="-1" aria-hidden="true">
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteTenantConfirmModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="false">
         <div class="modal-dialog modal-dialog-centered modal-sm">
             <div class="modal-content border-danger">
                 <div class="modal-header border-danger bg-danger bg-opacity-10">
@@ -751,7 +772,7 @@
     </div>
 
     <!-- Reset PIN Modal -->
-    <div class="modal fade" id="resetPinModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal fade" id="resetPinModal" tabindex="-1" data-bs-backdrop="false">
         <div class="modal-dialog modal-dialog-centered modal-sm">
             <div class="modal-content bg-dark border border-warning border-opacity-50 text-white">
                 <div class="modal-header border-0 pb-0">
@@ -790,6 +811,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="/js/supabase-config.js"></script>
     <script src="/js/i18n-pages.js"></script>
-    <script src="/js/superadmin.js"></script>
+    <script src="/js/superadmin.js?v=20260428"></script>
 </body>
 </html>
