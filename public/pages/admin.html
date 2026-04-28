@@ -741,38 +741,80 @@
                 <!-- CRM & Marketing Section -->
                 <section id="section-crm" class="content-section">
                     <div class="mb-6">
-                        <h2 class="font-noto text-2xl font-bold text-slate-900 mb-1 flex items-center gap-2"><i class="fa-solid fa-bullseye text-[#C0A062]"></i> Marketing & CRM (RFM)</h2>
-                        <p class="text-sm text-slate-500 mb-0">Phân loại tệp khách hàng theo RFM và kích hoạt chiến dịch Marketing.</p>
+                        <h2 class="font-noto text-2xl font-bold text-slate-900 mb-1 flex items-center gap-2"><i class="fa-solid fa-bullseye text-[#C0A062]"></i> Marketing & CRM</h2>
+                        <p class="text-sm text-slate-500 mb-0">Phân tích khách hàng, retention, và phân khúc RFM.</p>
                     </div>
                     
-                    <!-- KPI Cards for RFM -->
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6" id="crm-kpi-container">
-                        <div class="card bg-white border border-slate-200 rounded-2xl p-4 shadow-soft text-center"><div class="text-slate-500">Đang phân tích...</div></div>
-                        <div class="card bg-white border border-slate-200 rounded-2xl p-4 shadow-soft text-center"><div class="text-slate-500">Đang phân tích...</div></div>
-                        <div class="card bg-white border border-slate-200 rounded-2xl p-4 shadow-soft text-center"><div class="text-slate-500">Đang phân tích...</div></div>
-                        <div class="card bg-white border border-slate-200 rounded-2xl p-4 shadow-soft text-center"><div class="text-slate-500">Đang phân tích...</div></div>
+                    <!-- 8A: KPI Cards -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6" id="crm-kpi-container">
+                        <div class="card bg-white border border-slate-200 rounded-2xl p-4 shadow-soft text-center"><div class="text-slate-500"><i class="fa-solid fa-spinner fa-spin me-1"></i>Đang phân tích...</div></div>
+                        <div class="card bg-white border border-slate-200 rounded-2xl p-4 shadow-soft text-center"><div class="text-slate-500"><i class="fa-solid fa-spinner fa-spin me-1"></i>Đang phân tích...</div></div>
+                        <div class="card bg-white border border-slate-200 rounded-2xl p-4 shadow-soft text-center"><div class="text-slate-500"><i class="fa-solid fa-spinner fa-spin me-1"></i>Đang phân tích...</div></div>
+                        <div class="card bg-white border border-slate-200 rounded-2xl p-4 shadow-soft text-center"><div class="text-slate-500"><i class="fa-solid fa-spinner fa-spin me-1"></i>Đang phân tích...</div></div>
                     </div>
 
+                    <!-- 8B + 8C: Charts Row -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <!-- Segment Distribution Doughnut -->
+                        <div class="card bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden">
+                            <div class="card-header bg-slate-50 border-b border-slate-200 p-4">
+                                <h6 class="mb-0 font-noto font-bold text-slate-800"><i class="fa-solid fa-chart-pie text-[#C0A062] me-2"></i>Phân bố Phân khúc Khách hàng</h6>
+                            </div>
+                            <div class="card-body p-4" style="height: 300px;">
+                                <canvas id="crm-segment-chart"></canvas>
+                            </div>
+                        </div>
+                        <!-- Customer Growth Line -->
+                        <div class="card bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden">
+                            <div class="card-header bg-slate-50 border-b border-slate-200 p-4">
+                                <h6 class="mb-0 font-noto font-bold text-slate-800"><i class="fa-solid fa-chart-line text-emerald-500 me-2"></i>Khách hàng mới (6 tháng)</h6>
+                            </div>
+                            <div class="card-body p-4" style="height: 300px;">
+                                <canvas id="crm-growth-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 8D: Enhanced Table -->
                     <div class="card bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden">
-                        <div class="card-header bg-slate-100 border-b border-slate-200 p-4 flex justify-between items-center">
-                            <h5 class="mb-0 font-noto font-bold text-slate-800"><i class="fa-solid fa-users-viewfinder text-[#C0A062] me-2"></i> Danh sách Khách hàng theo Phân khúc</h5>
-                            <button class="btn btn-sm btn-primary font-bold rounded-xl bg-[#C0A062] border-0 text-slate-900 px-3" onclick="alert('Tính năng gửi Zalo ZNS / SMS hàng loạt đang được phát triển')"><i class="fa-brands fa-whatsapp me-1"></i> Gửi Broadcast</button>
+                        <div class="card-header bg-slate-50 border-b border-slate-200 p-4">
+                            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                                <h5 class="mb-0 font-noto font-bold text-slate-800"><i class="fa-solid fa-users-viewfinder text-[#C0A062] me-2"></i>Danh sách Khách hàng</h5>
+                                <div class="flex flex-wrap gap-2 items-center">
+                                    <!-- Segment Filter -->
+                                    <select id="crm-filter-segment" class="form-select form-select-sm rounded-lg border-slate-300 text-sm font-semibold" onchange="filterCrmTable()" style="width: auto;">
+                                        <option value="all">📊 Tất cả phân khúc</option>
+                                        <option value="VVIP">💎 VVIP</option>
+                                        <option value="Loyal">🤝 Loyal</option>
+                                        <option value="Regular">📋 Regular</option>
+                                        <option value="At Risk">⚠️ At Risk</option>
+                                        <option value="New">🆕 New</option>
+                                    </select>
+                                    <!-- Search -->
+                                    <div class="relative">
+                                        <input type="text" id="crm-search-input" class="form-control form-control-sm rounded-lg border-slate-300 text-sm ps-8" placeholder="Tìm SĐT, tên..." oninput="filterCrmTable()" style="width: 180px;">
+                                        <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div class="card-body p-0">
                             <div class="table-responsive">
                                 <table class="table table-hover align-middle mb-0 border-0">
                                     <thead class="bg-white text-slate-500 text-xs uppercase tracking-wider">
                                         <tr>
-                                            <th class="border-0 font-semibold py-3 px-4">Số điện thoại</th>
+                                            <th class="border-0 font-semibold py-3 px-4">Tên</th>
+                                            <th class="border-0 font-semibold py-3 px-4">SĐT</th>
                                             <th class="border-0 font-semibold py-3 px-4">Phân khúc</th>
+                                            <th class="border-0 font-semibold py-3 px-4 text-center">Hạng VIP</th>
+                                            <th class="border-0 font-semibold py-3 px-4 text-center">Điểm</th>
                                             <th class="border-0 font-semibold py-3 px-4 text-center">Tổng Đơn</th>
                                             <th class="border-0 font-semibold py-3 px-4 text-end">Tổng Chi Tiêu</th>
-                                            <th class="border-0 font-semibold py-3 px-4">Lần cuối mua</th>
-                                            <th class="border-0 font-semibold py-3 px-4 text-end">Hành động</th>
+                                            <th class="border-0 font-semibold py-3 px-4 text-center">Lần mua cuối</th>
                                         </tr>
                                     </thead>
                                     <tbody id="crm-table-body" class="border-transparent text-slate-800">
-                                        <tr><td colspan="6" class="text-center py-6 text-slate-500">Đang tải phân tích CRM...</td></tr>
+                                        <tr><td colspan="8" class="text-center py-6 text-slate-500"><i class="fa-solid fa-spinner fa-spin me-1"></i>Đang tải phân tích CRM...</td></tr>
                                     </tbody>
                                 </table>
                             </div>
