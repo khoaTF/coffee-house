@@ -45,7 +45,7 @@ window.AdminState = {
 if (!window.AdminState.tenantId) {
     console.error("Missing tenantId in admin panel! Redirecting to login.");
     if (!window.location.pathname.includes('/login')) {
-        window.location.href = '/login.html';
+        window.location.href = '/login';
     }
 }
 
@@ -433,7 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <i class="fa-solid fa-lock text-[#ef4444] text-7xl mb-6"></i>
                 <h1 class="text-3xl font-bold mb-3">Tài khoản đã hết hạn</h1>
                 <p class="text-lg text-gray-300 max-w-lg mb-6">Gói phần mềm của bạn đã hết hạn bảo trì vào ngày ${expireDate.toLocaleDateString('vi-VN')}. Vui lòng liên hệ Super Admin Nohope để gia hạn ngay lập tức.</p>
-                <button onclick="window.location.href='/login.html'" class="px-6 py-2 bg-[#C0A062] rounded-lg text-white font-medium hover:bg-[#A08042] transition-colors">Quay lại Đăng nhập</button>
+                <button onclick="window.location.href='/login'" class="px-6 py-2 bg-[#C0A062] rounded-lg text-white font-medium hover:bg-[#A08042] transition-colors">Quay lại Đăng nhập</button>
             `;
             document.body.appendChild(overlay);
             const mainW = document.querySelector('.main-wrapper');
