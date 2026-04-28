@@ -1,4 +1,5 @@
 const supabase = require('../config/supabase');
+const notificationService = require('../services/notification.service');
 
 const handlePaymentWebhook = async (req, res) => {
     if (!supabase) {
@@ -56,7 +57,11 @@ const handlePaymentWebhook = async (req, res) => {
                             
                         if (!updateErr) {
                             processedCount++;
-                            // Thích hợp để tích điểm Loyalty lúc này
+                            // Send external notification (Telegram/Webhook)
+                            notificationService.notifyPaymentConfirmed(
+                                { id: order.id, table_number: '', total_price: order.total_price },
+                                req.query.tenant_id
+                            ).catch(e => console.warn('[Notify] Payment notification failed:', e.message));
                         } else {
                             console.error("Webhook Update Error:", updateErr);
                         }
