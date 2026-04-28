@@ -811,5 +811,83 @@
     <script src="/js/supabase-config.js"></script>
     <script src="/js/i18n-pages.js"></script>
     <script src="/js/superadmin.js?v=20260428"></script>
+    <script src="/js/tutorial.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initiate Super Admin Tutorial
+            setTimeout(function() {
+                var superadminTutorial = new NohopeTutorial({
+                    storageKey: 'nohope_tutorial_superadmin_done',
+                    theme: 'admin',
+                    welcomeEmoji: '👑',
+                    welcomeTitle: 'Super Admin OS',
+                    welcomeDesc: 'Hệ thống điều khiển trung tâm (SaaS Command Center). Nơi bạn quản lý tất cả các cửa hàng đang sử dụng hệ thống.',
+                    completeTitle: 'Làm chủ hệ thống!',
+                    completeDesc: 'Bạn đã sẵn sàng để vận hành và mở rộng mạng lưới khách hàng.',
+                    steps: [
+                        {
+                            element: '.stats',
+                            title: 'Tổng Quan Hệ Thống (KPI)',
+                            description: 'Xem tổng doanh thu toàn hệ thống, số lượng cửa hàng (Tenants) đang hoạt động và tổng số nhân viên.',
+                            icon: 'fa-solid fa-gauge-high',
+                            position: 'bottom',
+                            padding: 8
+                        },
+                        {
+                            element: '[data-bs-target="#createTenantModal"]',
+                            title: 'Tạo Khách Hàng Mới (Onboard)',
+                            description: 'Bấm vào đây để cấp phát một không gian làm việc (Tenant) mới cho khách hàng đăng ký sử dụng SaaS.',
+                            icon: 'fa-solid fa-plus',
+                            position: 'bottom',
+                            padding: 8
+                        },
+                        {
+                            element: '#revenueChart',
+                            title: 'Biểu Đồ Doanh Thu',
+                            description: 'Phân tích xu hướng dòng tiền chảy qua toàn bộ hệ thống của bạn trong 7 ngày gần nhất.',
+                            icon: 'fa-solid fa-chart-line',
+                            position: 'bottom',
+                            padding: 8
+                        },
+                        {
+                            element: '#activity-feed',
+                            title: 'Hoạt Động Gần Đây',
+                            description: 'Giám sát theo thời gian thực (Realtime) các hành động quan trọng từ mọi cửa hàng như: tạo mới món, thay đổi cài đặt...',
+                            icon: 'fa-solid fa-bolt',
+                            position: 'left',
+                            padding: 8
+                        },
+                        {
+                            element: '#broadcast-message',
+                            title: 'Phát Sóng Toàn Cầu (Broadcast)',
+                            description: 'Gửi thông báo hệ thống (bảo trì, cập nhật tính năng mới...) đến tất cả cửa hàng cùng một lúc. Nó sẽ hiển thị popup ở trang Admin của họ.',
+                            icon: 'fa-solid fa-bullhorn',
+                            position: 'top',
+                            padding: 8
+                        },
+                        {
+                            element: '#tenants-grid',
+                            title: 'Quản Lý Cửa Hàng (Tenants)',
+                            description: 'Danh sách các chi nhánh. Bạn có thể <strong>Đăng nhập giả danh (Impersonate)</strong>, chỉnh sửa gói cước, hoặc gia hạn thời gian sử dụng.',
+                            icon: 'fa-solid fa-server',
+                            position: 'top',
+                            padding: 8
+                        },
+                        {
+                            element: '#audit-logs-tab',
+                            title: 'Nhật Ký Kiểm Toán (Audit)',
+                            description: 'Truy vết chi tiết mọi thao tác nhạy cảm trên hệ thống (bao gồm cả các hành động do bạn thực hiện) để đảm bảo bảo mật tuyệt đối.',
+                            icon: 'fa-solid fa-clipboard-list',
+                            position: 'bottom',
+                            padding: 8
+                        }
+                    ]
+                });
+                
+                // For superadmin, we delay start a bit longer to let dashboard load
+                superadminTutorial.autoStart(2500);
+            }, 1000);
+        });
+    </script>
 </body>
 </html>
