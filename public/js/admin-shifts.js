@@ -1,765 +1,418 @@
+/**
+ * Quản lý Ca Làm Việc & Dòng Tiền (Shift & Cash Management)
+ * Yêu cầu: window.supabase
+ */
+
+// State
+window.currentShift = null;
 let currentShift = null;
 
-async function initShiftsModule() {
-    const container = document.getElementById('shifts-tab-content');
-    if (!container) return;
-
-    container.innerHTML = `
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-            <div>
-                <h2 class="font-noto text-2xl font-bold text-[#F2E8D5] mb-1 flex items-center gap-2"><i class="fa-solid fa-business-time text-[#C0A062]"></i> Ca làm việc</h2>
-                <p class="text-sm text-slate-500 mb-0">Quản lý mở/đóng ca và xem lịch sử các ca làm việc.</p>
-            </div>
-            <div id="shift-main-action-btn"></div>
-        </div>
-
-        <!-- Current shift status card -->
-        <div id="shift-status-card" class="card bg-white border border-slate-200 rounded-2xl shadow-soft p-6 mb-6">
-            <div class="text-center text-slate-500"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang kiểm tra ca...</div>
-        </div>
-
-        <!-- Timesheets Quick Actions -->
-        <div class="card bg-white border border-slate-200 rounded-2xl shadow-soft p-6 mb-6">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-                <div>
-                    <h3 class="font-bold text-[#F2E8D5] mb-1 flex items-center gap-2">
-                        <i class="fa-solid fa-user-clock text-[#C0A062]"></i> Chấm công cá nhân
-                    </h3>
-                    <p class="text-sm text-slate-500 mb-0" id="timesheet-status-text">Kiểm tra trạng thái chấm công của bạn.</p>
-                </div>
-                <div id="timesheet-action-btn">
-                    <button class="btn btn-secondary rounded-xl font-bold py-2 px-5 text-sm" disabled><i class="fa-solid fa-spinner fa-spin"></i></button>
-                </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-md-6 mb-6">
-                <!-- Shift history -->
-                <div class="card bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden h-100">
-                    <div class="card-body p-0">
-                        <div class="p-4 border-b border-slate-200">
-                            <h3 class="font-bold text-[#F2E8D5] mb-0"><i class="fa-solid fa-history me-2 text-[#C0A062]"></i>Lịch sử ca</h3>
-                        </div>
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0 border-0">
-                                <thead class="bg-[#e2e8f0] text-[#b45309]">
-                                    <tr>
-                                        <th class="border-0 py-3 px-4">Người mở</th>
-                                        <th class="border-0 py-3 px-4">Mở lúc</th>
-                                        <th class="border-0 py-3 px-4">Đóng lúc</th>
-                                        <th class="border-0 py-3 px-4">Trạng thái</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="shifts-history-body">
-                                    <tr><td colspan="4" class="text-center py-4 text-slate-500"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tải...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 mb-6">
-                <!-- Timesheet history -->
-                <div class="card bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden h-100">
-                    <div class="card-body p-0">
-                        <div class="p-4 border-b border-slate-200">
-                            <h3 class="font-bold text-[#F2E8D5] mb-0"><i class="fa-solid fa-users text-[#C0A062]"></i>Lịch sử Chấm công</h3>
-                        </div>
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0 border-0">
-                                <thead class="bg-[#e2e8f0] text-[#b45309]">
-                                    <tr>
-                                        <th class="border-0 py-3 px-4">Nhân sự</th>
-                                        <th class="border-0 py-3 px-4">Giờ vào</th>
-                                        <th class="border-0 py-3 px-4">Giờ ra</th>
-                                        <th class="border-0 py-3 px-4 w-24 text-end">Tổng (h)</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="timesheets-history-body">
-                                    <tr><td colspan="4" class="text-center py-4 text-slate-500"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tải...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Payroll Summary -->
-        <div class="card bg-white border border-slate-200 rounded-2xl shadow-soft overflow-hidden mb-6">
-            <div class="card-body p-0">
-                <div class="p-4 border-b border-slate-200 flex justify-between items-center">
-                    <h3 class="font-bold text-[#F2E8D5] mb-0"><i class="fa-solid fa-coins text-[#C0A062] me-2"></i>Bảng lương tháng này</h3>
-                    <button class="btn btn-sm rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-500 hover:bg-slate-100" onclick="refreshPayrollSummary()"><i class="fa-solid fa-sync me-1"></i>Làm mới</button>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0 border-0">
-                        <thead class="bg-[#e2e8f0] text-[#b45309]">
-                            <tr>
-                                <th class="border-0 py-3 px-4">Nhân viên</th>
-                                <th class="border-0 py-3 px-4 text-center">Số ca</th>
-                                <th class="border-0 py-3 px-4 text-center">Tổng giờ</th>
-                                <th class="border-0 py-3 px-4 text-end">Lương ước tính</th>
-                            </tr>
-                        </thead>
-                        <tbody id="payroll-summary-body">
-                            <tr><td colspan="4" class="text-center py-4 text-slate-500"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tính...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    `;
-
-    await renderShiftStatusCard();
-    await loadShiftsHistory();
-    
-    // Timesheet
-    if (window.AdminState.staffId) {
-        await checkTimesheetStatus();
-        await loadTimesheetsHistory();
-    } else {
-        const tAction = document.getElementById('timesheet-action-btn');
-        const tText = document.getElementById('timesheet-status-text');
-        if (tAction) tAction.innerHTML = '<span class="text-danger text-sm">Lỗi: Không tìm thấy ID nhân viên.</span>';
-        if (tText) tText.innerHTML = 'Vui lòng đăng nhập lại.';
-    }
-
-    // Payroll
-    await loadPayrollSummary();
-}
-
-async function renderShiftStatusCard() {
-    await checkCurrentShift();
-    const card = document.getElementById('shift-status-card');
-    const actionBtn = document.getElementById('shift-main-action-btn');
-    if (!card) return;
-
-    if (currentShift) {
-        const openedAt = new Date(currentShift.opened_at);
-        const durationMs = new Date() - openedAt;
-        const hours = Math.floor(durationMs / 3600000);
-        const mins = Math.floor((durationMs % 3600000) / 60000);
-
-        card.innerHTML = `
-            <div class="flex flex-col md:flex-row gap-6 items-start">
-                <div class="flex-1">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-12 h-12 rounded-full bg-green-400/20 flex items-center justify-center">
-                            <i class="fa-solid fa-lock-open text-green-400 text-xl"></i>
-                        </div>
-                        <div>
-                            <div class="font-bold text-[#F2E8D5] text-lg">Ca đang mở</div>
-                            <div class="text-sm text-green-400">Bởi: ${window.escapeHTML(currentShift.opened_by || '')}</div>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-slate-100 rounded-xl p-3">
-                            <div class="text-xs text-slate-500 mb-1">Mở lúc</div>
-                            <div class="font-bold text-slate-800">${openedAt.toLocaleTimeString('vi-VN', {hour:'2-digit',minute:'2-digit'})}</div>
-                        </div>
-                        <div class="bg-slate-100 rounded-xl p-3">
-                            <div class="text-xs text-slate-500 mb-1">Thời gian</div>
-                            <div class="font-bold text-slate-800">${hours}h ${mins}m</div>
-                        </div>
-                        <div class="bg-slate-100 rounded-xl p-3">
-                            <div class="text-xs text-slate-500 mb-1">Vốn đầu ca</div>
-                            <div class="font-bold text-[#C0A062]">${(currentShift.start_balance || 0).toLocaleString('vi-VN')} đ</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        if (actionBtn) {
-            actionBtn.innerHTML = `<button class="btn rounded-xl font-bold py-2 px-5 text-sm text-white" style="background:#ef4444;" onclick="openCloseShiftModal()"><i class="fa-solid fa-moon me-2"></i>Kết ca</button>`;
-        }
-    } else {
-        card.innerHTML = `
-            <div class="flex flex-col items-center justify-center py-8 text-center">
-                <div class="w-16 h-16 rounded-full bg-[#e2e8f0] flex items-center justify-center mb-4">
-                    <i class="fa-solid fa-lock text-slate-500 text-2xl"></i>
-                </div>
-                <div class="font-bold text-[#F2E8D5] text-lg mb-1">Chưa mở ca</div>
-                <div class="text-sm text-slate-500">Bấm "Mở ca" để bắt đầu ca làm việc mới.</div>
-            </div>
-        `;
-        if (actionBtn) {
-            actionBtn.innerHTML = `<button class="btn rounded-xl font-bold py-2 px-5 text-sm" style="background:#C0A062;color:#f1f5f9;" onclick="openStartShiftModal()"><i class="fa-solid fa-sun me-2"></i>Mở ca</button>`;
-        }
-    }
-}
-
-async function loadShiftsHistory() {
-    const tbody = document.getElementById('shifts-history-body');
-    if (!tbody) return;
-
-    try {
-        const { data, error } = await supabase
-            .from('shifts')
-            .select('*')
-            .eq('tenant_id', window.AdminState.tenantId)
-            .order('opened_at', { ascending: false })
-            .limit(30);
-
-        if (error) throw error;
-
-        if (!data || data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-slate-500">Chưa có lịch sử ca.</td></tr>';
-            return;
-        }
-
-        tbody.innerHTML = data.map(s => {
-            const isOpen = s.status === 'open';
-            const openedAt = new Date(s.opened_at).toLocaleString('vi-VN');
-            const closedAt = s.closed_at ? new Date(s.closed_at).toLocaleString('vi-VN') : '—';
-            const revenue = (s.total_revenue || 0).toLocaleString('vi-VN');
-            const badge = isOpen
-                ? '<span class="badge bg-success">Đang mở</span>'
-                : '<span class="badge bg-secondary">Đã đóng</span>';
-            return `
-                <tr>
-                    <td class="font-bold text-slate-800">${window.escapeHTML(s.opened_by || '—')}</td>
-                    <td class="text-slate-500 text-sm">${openedAt}</td>
-                    <td class="text-slate-500 text-sm">${closedAt}</td>
-                    <td class="text-[#C0A062] font-bold">${isOpen ? '—' : revenue + ' đ'}</td>
-                    <td>${badge}</td>
-                </tr>
-            `;
-        }).join('');
-    } catch(e) {
-        console.error('Shifts history error:', e);
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Lỗi tải lịch sử.</td></tr>';
-    }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    checkCurrentShift();
-});
-
+// Kiểm tra ca hiện tại
 async function checkCurrentShift() {
     try {
+        const tenantId = sessionStorage.getItem('tenant_id') || localStorage.getItem('tenant_id');
+        if (!tenantId) return null;
+
         const { data, error } = await supabase
             .from('shifts')
             .select('*')
-            .eq('tenant_id', window.AdminState.tenantId)
+            .eq('tenant_id', tenantId)
             .eq('status', 'open')
-            .order('opened_at', { ascending: false })
-            .limit(1);
-
-        if (error) throw error;
-
-        if (data && data.length > 0) {
-            currentShift = data[0];
-            updateShiftUI(true, currentShift.opened_by, new Date(currentShift.opened_at));
-        } else {
-            currentShift = null;
-            updateShiftUI(false);
-        }
-    } catch (err) {
-        console.error('Lỗi khi kiểm tra ca:', err);
-        updateShiftUI(false);
-    }
-}
-
-function updateShiftUI(isOpen, openedBy = '', openedAt = null) {
-    const shiftBadge = document.getElementById('shift-status-badge');
-    
-    if (shiftBadge) {
-        if (isOpen) {
-            shiftBadge.className = 'badge bg-[#C0A062]/20 text-[#C0A062] px-2 py-1 rounded-md text-[10px] font-bold tracking-wider';
-            shiftBadge.innerHTML = `<i class="fa-solid fa-lock-open me-1"></i>CA: ${window.escapeHTML(openedBy)}`;
-        } else {
-            shiftBadge.className = 'badge bg-[#e2e8f0] text-slate-500 px-2 py-1 rounded-md text-[10px] font-bold tracking-wider';
-            shiftBadge.innerHTML = `<i class="fa-solid fa-lock me-1"></i>CHƯA MỞ CA`;
-        }
-    }
-
-    // This specifically targets the sidebar button
-    const toggleBtnDesktop = document.getElementById('toggle-shift-btn-desktop');
-    if (toggleBtnDesktop) {
-        updateSidebarShiftButton(toggleBtnDesktop, isOpen);
-    }
-    
-    const toggleBtnMobile = document.getElementById('toggle-shift-btn-mobile');
-    if (toggleBtnMobile) {
-        updateSidebarShiftButton(toggleBtnMobile, isOpen);
-    }
-}
-
-function updateSidebarShiftButton(btn, isOpen) {
-    if (isOpen) {
-        btn.innerHTML = `<i class="fa-solid fa-moon w-5 text-center"></i> Kết ca`;
-        btn.className = 'nav-link bg-red-400/10 text-red-400 border-0 w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 hover:bg-red-400/20';
-        btn.onclick = () => { openCloseShiftModal(); if(typeof closeSidebarMobile === 'function') closeSidebarMobile(); };
-    } else {
-        btn.innerHTML = `<i class="fa-solid fa-sun w-5 text-center"></i> Mở ca`;
-        btn.className = 'nav-link bg-green-400/10 text-green-400 border-0 w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 hover:bg-green-400/20';
-        btn.onclick = () => { openStartShiftModal(); if(typeof closeSidebarMobile === 'function') closeSidebarMobile(); };
-    }
-}
-
-function openStartShiftModal() {
-    const staffName = sessionStorage.getItem('nohope_staff_name') || localStorage.getItem('nohope_staff_name') || 'Nhân viên';
-    
-    const html = `
-        <div class="mb-3">
-            <label class="form-label text-slate-500 text-xs uppercase font-bold mb-1">Người mở ca</label>
-            <input type="text" class="form-control bg-slate-100 border-slate-200 text-slate-800 rounded-xl" value="${staffName}" disabled>
-        </div>
-        <div class="mb-3">
-            <label class="form-label text-slate-500 text-xs uppercase font-bold mb-1">Số dư đầu ca (Tiền mặt tại quầy)</label>
-            <div class="input-group">
-                <input type="number" id="shift-start-balance" class="form-control bg-slate-100 border-slate-200 text-slate-800 rounded-xl focus:border-[#C0A062] border-end-0" value="0" min="0" step="1000">
-                <span class="input-group-text bg-slate-100 border-slate-200 text-slate-500 rounded-xl font-bold">VNĐ</span>
-            </div>
-        </div>
-        <div class="mb-3">
-            <label class="form-label text-slate-500 text-xs uppercase font-bold mb-1">Ghi chú thêm (Nếu có)</label>
-            <textarea id="shift-start-notes" class="form-control bg-slate-100 border-slate-200 text-slate-800 rounded-xl focus:border-[#C0A062]" rows="2" placeholder="Tình trạng quầy, tiền lẻ..."></textarea>
-        </div>
-    `;
-
-    document.getElementById('shiftActionModalLabel').innerText = 'Bắt đầu ca mới';
-    document.getElementById('shiftActionModalBody').innerHTML = html;
-    
-    const submitBtn = document.getElementById('shiftActionSubmitBtn');
-    submitBtn.innerText = 'Xác nhận Bắt đầu';
-    submitBtn.className = 'btn rounded-xl font-bold py-2 px-4 shadow-soft text-[#f1f5f9]';
-    submitBtn.style.backgroundColor = '#C0A062';
-    submitBtn.style.cssText += 'color: #f1f5f9 !important; border: none;';
-    submitBtn.onclick = submitStartShift;
-
-    const modal = new bootstrap.Modal(document.getElementById('shiftActionModal'));
-    modal.show();
-}
-
-async function submitStartShift() {
-    const btn = document.getElementById('shiftActionSubmitBtn');
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Đang mở...';
-
-    const staffName = sessionStorage.getItem('nohope_staff_name') || localStorage.getItem('nohope_staff_name') || 'Nhân viên';
-    const startBalance = parseFloat(document.getElementById('shift-start-balance').value) || 0;
-    const notes = document.getElementById('shift-start-notes').value.trim();
-
-    try {
-        const { data, error } = await supabase
-            .from('shifts')
-            .insert([{
-                tenant_id: window.AdminState.tenantId,
-                opened_by: staffName,
-                start_balance: startBalance,
-                notes: notes,
-                status: 'open'
-            }])
-            .select()
             .single();
 
-        if (error) throw error;
-
-        currentShift = data;
-        updateShiftUI(true, data.opened_by, new Date(data.opened_at));
-        
-        if (typeof window.logAudit === 'function') {
-            window.logAudit('MỞ CA', `Ca được mở bởi ${staffName}. Tiền đầu ca: ${startBalance.toLocaleString()}đ`);
+        if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned"
+            console.error('Error fetching current shift:', error);
+            return null;
         }
 
-        bootstrap.Modal.getInstance(document.getElementById('shiftActionModal')).hide();
-        showAlert('Đã mở ca làm việc!', 'success');
-        
-    } catch (err) {
-        console.error('Lỗi khi mở ca:', err);
-        showAlert('Lỗi: ' + err.message, 'danger');
-    } finally {
-        btn.disabled = false;
-        btn.innerText = 'Xác nhận Bắt đầu';
+        currentShift = data || null;
+        window.currentShift = currentShift;
+        updateShiftUI();
+        return currentShift;
+    } catch (e) {
+        console.error('Exception checkCurrentShift:', e);
+        return null;
     }
 }
 
-async function openCloseShiftModal() {
-    if (!currentShift) return;
-
-    try {
-        const { data: allOrders, error } = await supabase
-            .from('orders')
-            .select('*')
-            .eq('tenant_id', window.AdminState.tenantId)
-            .gte('created_at', currentShift.opened_at);
-
-        if (error) throw error;
-
-        const orders = allOrders.filter(o => o.payment_status === 'paid' && o.status !== 'Cancelled' && o.status !== 'cancelled');
-
-        const totalRevenue = orders.reduce((s, o) => s + (o.total_price || 0), 0);
-        const cashRevenue = orders.filter(o => o.payment_method === 'cash' || !o.payment_method).reduce((s, o) => s + (o.total_price || 0), 0);
-        const transferRevenue = orders.filter(o => o.payment_method === 'transfer').reduce((s, o) => s + (o.total_price || 0), 0);
-        const cardRevenue = orders.filter(o => o.payment_method === 'card').reduce((s, o) => s + (o.total_price || 0), 0);
-        
-        const expectedEndBalance = currentShift.start_balance + cashRevenue;
-
-        const staffName = sessionStorage.getItem('nohope_staff_name') || localStorage.getItem('nohope_staff_name') || 'Nhân viên';
-        const startStr = new Date(currentShift.opened_at).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
-
-        const html = `
-            <div class="row g-3 text-sm mb-4">
-                <div class="col-6">
-                    <div class="p-3 bg-slate-100 rounded-xl border border-slate-200 text-center h-100 flex flex-col justify-center">
-                        <span class="text-slate-500 block mb-1 text-xs uppercase font-bold">Giờ vào</span>
-                        <strong class="text-slate-800 text-lg">${startStr}</strong>
-                    </div>
-                </div>
-                <div class="col-6">
-                    <div class="p-3 bg-slate-100 rounded-xl border border-slate-200 text-center h-100 flex flex-col justify-center">
-                        <span class="text-slate-500 block mb-1 text-xs uppercase font-bold">Người ca trước</span>
-                        <strong class="text-[#C0A062] text-sm">${window.escapeHTML(currentShift.opened_by)}</strong>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-slate-100 p-4 rounded-xl border border-slate-200 mb-4 text-sm shadow-inner">
-                <div class="d-flex justify-content-between mb-3 border-b border-slate-200 pb-2">
-                    <span class="text-slate-500">Sẵn có đầu ca:</span>
-                    <strong class="text-slate-800">${currentShift.start_balance.toLocaleString('vi-VN')} đ</strong>
-                </div>
-                <div class="d-flex justify-content-between mb-2">
-                    <span class="text-slate-500">Thu tiền mặt (Đơn):</span>
-                    <strong class="text-green-400">+ ${cashRevenue.toLocaleString('vi-VN')} đ</strong>
-                </div>
-                <div class="d-flex justify-content-between mb-2">
-                    <span class="text-slate-500">Thu thẻ (POS):</span>
-                    <strong class="text-cyan-400">+ ${cardRevenue.toLocaleString('vi-VN')} đ</strong>
-                </div>
-                <div class="d-flex justify-content-between mb-3 border-b border-slate-200 pb-3">
-                    <span class="text-slate-500">Thu chuyển khoản:</span>
-                    <strong class="text-blue-400">+ ${transferRevenue.toLocaleString('vi-VN')} đ</strong>
-                </div>
-                <div class="d-flex justify-content-between mt-3 mb-1">
-                    <span class="text-slate-500 text-xs uppercase font-bold">Doanh thu ca:</span>
-                    <strong class="text-[#b45309] text-lg">${totalRevenue.toLocaleString('vi-VN')} đ</strong>
-                </div>
-                <div class="d-flex justify-content-between mt-3 pt-3 border-t border-slate-200">
-                    <span class="text-slate-800 font-bold">Tiền mặt dự kiến tại két:</span>
-                    <strong class="text-warning text-xl">${expectedEndBalance.toLocaleString('vi-VN')} đ</strong>
-                </div>
-            </div>
-
-            <div class="mb-4 bg-white p-3 rounded-xl border border-slate-200">
-                <label class="form-label text-slate-800 text-sm font-bold mb-2">Nhập thực tế kiểm được <span class="text-danger">*</span></label>
-                <div class="input-group input-group-lg">
-                    <input type="number" id="shift-end-actual" class="form-control bg-slate-100 border-slate-200 text-2xl font-black text-[#b45309] text-center rounded-xl border-end-0 focus:border-[#C0A062]" value="${expectedEndBalance}" min="0" step="1000">
-                    <span class="input-group-text bg-slate-100 border-slate-200 text-slate-500 rounded-xl font-bold">VNĐ</span>
-                </div>
-                <div id="shift-diff-notice" class="mt-2 text-sm text-center font-semibold"></div>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label text-slate-500 text-xs uppercase font-bold mb-1">Người nhận bàn giao</label>
-                <input type="text" id="shift-closed-by" class="form-control bg-slate-100 border-slate-200 text-slate-800 rounded-xl mb-3" value="${staffName}">
-                
-                <label class="form-label text-slate-500 text-xs uppercase font-bold mb-1">Giải trình (chênh lệch/sự cố)</label>
-                <textarea id="shift-end-notes" class="form-control bg-slate-100 border-slate-200 text-slate-800 rounded-xl focus:border-[#C0A062]" rows="2" placeholder="Lý do lệch tiền..."></textarea>
-            </div>
-            
-            <input type="hidden" id="shift-total-revenue" value="${totalRevenue}">
-            <input type="hidden" id="shift-expected-balance" value="${expectedEndBalance}">
-        `;
-
-        document.getElementById('shiftActionModalLabel').innerText = 'Kết Thúc Ca Làm Việc';
-        document.getElementById('shiftActionModalBody').innerHTML = html;
-        
-        document.getElementById('shift-end-actual').addEventListener('input', function() {
-            const actual = parseFloat(this.value) || 0;
-            const diff = actual - expectedEndBalance;
-            const diffNotice = document.getElementById('shift-diff-notice');
-            if (diff === 0) {
-                diffNotice.innerHTML = '<span class="text-success"><i class="fa-solid fa-check-circle me-1"></i>Két khớp chuẩn</span>';
-            } else if (diff > 0) {
-                diffNotice.innerHTML = `<span class="text-success"><i class="fa-solid fa-arrow-up me-1"></i>Dư ${diff.toLocaleString('vi-VN')} đ</span>`;
-            } else {
-                diffNotice.innerHTML = `<span class="text-danger"><i class="fa-solid fa-arrow-down me-1"></i>Hụt ${Math.abs(diff).toLocaleString('vi-VN')} đ (Bắt buộc giải trình)</span>`;
-            }
-        });
-
-        document.getElementById('shift-end-actual').dispatchEvent(new Event('input'));
-
-        const submitBtn = document.getElementById('shiftActionSubmitBtn');
-        submitBtn.innerText = 'Xác nhận Kết ca';
-        submitBtn.className = 'btn btn-danger rounded-xl font-bold py-2 px-4 shadow-soft';
-        submitBtn.style.cssText = ''; 
-        submitBtn.onclick = submitCloseShift;
-
-        const modal = new bootstrap.Modal(document.getElementById('shiftActionModal'));
-        modal.show();
-
-    } catch (err) {
-        console.error('Lỗi tính toán doanh thu:', err);
-        showAlert('Không thể tải dữ liệu ca', 'danger');
+// Cập nhật giao diện theo trạng thái ca
+function updateShiftUI() {
+    const shiftIndicator = document.getElementById('shift-status-indicator');
+    const toggleShiftBtn = document.getElementById('toggle-shift-btn-desktop');
+    
+    if (currentShift) {
+        if (shiftIndicator) {
+            shiftIndicator.innerHTML = `<span class="relative flex h-3 w-3 mr-2">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+            </span> Đang trong ca`;
+        }
+        if (toggleShiftBtn) {
+            toggleShiftBtn.innerHTML = `<i class="fa-solid fa-moon w-5 text-center"></i> Kết ca`;
+            toggleShiftBtn.onclick = () => showCloseShiftModal();
+        }
+    } else {
+        if (shiftIndicator) {
+            shiftIndicator.innerHTML = `<span class="relative flex h-3 w-3 mr-2">
+                <span class="relative inline-flex rounded-full h-3 w-3 bg-slate-400"></span>
+            </span> Chưa mở ca`;
+        }
+        if (toggleShiftBtn) {
+            toggleShiftBtn.innerHTML = `<i class="fa-solid fa-sun w-5 text-center text-amber-500"></i> Mở ca`;
+            toggleShiftBtn.onclick = () => showOpenShiftModal();
+        }
     }
 }
 
-async function submitCloseShift() {
-    const btn = document.getElementById('shiftActionSubmitBtn');
+// ==========================================
+// MODAL QUẢN LÝ CA
+// ==========================================
+
+function showOpenShiftModal() {
+    const staffName = sessionStorage.getItem('nohope_staff_name') || 'Nhân viên';
     
-    const actualBalance = parseFloat(document.getElementById('shift-end-actual').value) || 0;
-    const expectedBalance = parseFloat(document.getElementById('shift-expected-balance').value) || 0;
-    const notes = document.getElementById('shift-end-notes').value.trim();
+    const modalHtml = `
+        <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-opacity" id="open-shift-modal">
+            <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate__animated animate__zoomIn animate__faster">
+                <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-amber-50">
+                    <h3 class="text-xl font-bold text-amber-800 flex items-center gap-2">
+                        <i class="fa-solid fa-sun"></i> Mở Ca Mới
+                    </h3>
+                    <button onclick="document.getElementById('open-shift-modal').remove()" class="text-slate-400 hover:text-slate-600">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
+                <div class="p-6">
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Nhân viên nhận ca</label>
+                        <input type="text" class="w-full px-4 py-2 border border-slate-200 rounded-lg bg-slate-50 text-slate-600" value="${staffName}" disabled>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Số dư tiền mặt đầu ca (VNĐ) <span class="text-red-500">*</span></label>
+                        <input type="number" id="shift-start-balance" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none" placeholder="VD: 500000" value="0">
+                        <p class="text-xs text-slate-500 mt-1">Đếm kỹ tiền xu / tiền lẻ trong két trước khi nhận ca.</p>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Ghi chú (Tùy chọn)</label>
+                        <textarea id="shift-open-notes" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none" rows="2" placeholder="Tình trạng két, đồ dùng..."></textarea>
+                    </div>
+                    
+                    <button onclick="submitOpenShift()" class="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold transition-colors flex justify-center items-center gap-2">
+                        <i class="fa-solid fa-play"></i> Bắt đầu làm việc
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
     
-    if (actualBalance !== expectedBalance && notes === '') {
-        showAlert('Vui lòng điền lý do giải trình khi có chênh lệch két', 'warning');
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+async function submitOpenShift() {
+    const startBalance = document.getElementById('shift-start-balance').value;
+    const notes = document.getElementById('shift-open-notes').value;
+    const tenantId = sessionStorage.getItem('tenant_id') || localStorage.getItem('tenant_id');
+    const staffName = sessionStorage.getItem('nohope_staff_name') || 'Nhân viên';
+
+    if (startBalance === '') {
+        showAlert('Vui lòng nhập số dư đầu ca', 'warning');
         return;
     }
 
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Đang đóng...';
-
-    const totalRevenue = parseFloat(document.getElementById('shift-total-revenue').value) || 0;
-    const closedBy = document.getElementById('shift-closed-by').value.trim();
-
     try {
-        const { error } = await supabase
-            .from('shifts')
-            .update({
-                end_balance_expected: expectedBalance,
-                end_balance_actual: actualBalance,
-                total_revenue: totalRevenue,
-                closed_at: new Date().toISOString(),
-                status: 'closed',
-                closed_by: closedBy,
-                notes: notes
-            })
-            .eq('id', currentShift.id)
-            .eq('tenant_id', window.AdminState.tenantId);
+        const { data, error } = await supabase.rpc('open_shift', {
+            p_tenant_id: tenantId,
+            p_opened_by: staffName,
+            p_start_balance: parseFloat(startBalance),
+            p_notes: notes ? 'Mở ca: ' + notes : null
+        });
 
         if (error) throw error;
 
-        // Automatically log discrepancy to cashflow
-        const diff = actualBalance - expectedBalance;
-        if (diff !== 0) {
-            const isLoss = diff < 0;
-            const cashflowCat = isLoss ? 'Thất thoát' : 'Khác';
-            const cashflowNotes = `[Chênh lệnh chốt ca] ${notes}`;
-            
-            await supabase.from('cash_transactions').insert([{
-                tenant_id: window.AdminState.tenantId,
-                amount: Math.abs(diff),
-                type: isLoss ? 'expense' : 'income',
-                category: cashflowCat,
-                notes: cashflowNotes,
-                created_by: closedBy
-            }]);
+        showAlert('Đã mở ca thành công!', 'success');
+        document.getElementById('open-shift-modal').remove();
+        
+        // Ghi log
+        if (window.logAdminAction) {
+            logAdminAction('Mở ca', \`Số dư đầu: \${formatCurrency(startBalance)}\`);
         }
 
-        if (typeof window.logAudit === 'function') {
-            window.logAudit('ĐÓNG CA', `Ca được đóng bởi ${closedBy}. Doanh thu: ${totalRevenue.toLocaleString()}đ, Lệch: ${diff.toLocaleString()}đ`);
+        await checkCurrentShift();
+
+        // Refresh POS if we are on POS page
+        if (window.location.pathname.includes('pos')) {
+            window.location.reload();
+        }
+    } catch (e) {
+        console.error('Error opening shift:', e);
+        showAlert('Lỗi khi mở ca: ' + e.message, 'danger');
+    }
+}
+
+async function showCloseShiftModal() {
+    if (!currentShift) return showAlert('Chưa có ca nào đang mở!', 'warning');
+    
+    const staffName = sessionStorage.getItem('nohope_staff_name') || 'Nhân viên';
+    
+    // Fetch summary for this shift
+    let cashIn = 0;
+    let cashOut = 0;
+    let cashRevenue = 0;
+
+    try {
+        // Fetch transactions
+        const { data: txs } = await supabase.from('cash_transactions').select('amount, transaction_type').eq('shift_id', currentShift.id);
+        if (txs) {
+            cashIn = txs.filter(t => t.transaction_type === 'in').reduce((s, t) => s + parseFloat(t.amount), 0);
+            cashOut = txs.filter(t => t.transaction_type === 'out').reduce((s, t) => s + parseFloat(t.amount), 0);
+        }
+
+        // Fetch revenue
+        const { data: orders } = await supabase.from('orders')
+            .select('total_price')
+            .eq('tenant_id', currentShift.tenant_id)
+            .eq('is_paid', true)
+            .eq('payment_method', 'cash')
+            .gte('created_at', currentShift.opened_at);
+            
+        if (orders) {
+            cashRevenue = orders.reduce((s, o) => s + parseFloat(o.total_price), 0);
+        }
+    } catch (e) {
+        console.error('Error calculating shift summary:', e);
+    }
+
+    const startBalance = parseFloat(currentShift.start_balance || 0);
+    const expectedBalance = startBalance + cashIn - cashOut + cashRevenue;
+
+    const modalHtml = \`
+        <div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-opacity" id="close-shift-modal">
+            <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate__animated animate__zoomIn animate__faster flex flex-col md:flex-row">
+                <!-- Cột trái: Tóm tắt -->
+                <div class="p-6 bg-slate-50 border-r border-slate-100 w-full md:w-1/2">
+                    <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2 mb-6">
+                        <i class="fa-solid fa-moon text-indigo-500"></i> Báo Cáo Két (Z-Read)
+                    </h3>
+                    
+                    <div class="space-y-4 text-sm text-slate-600">
+                        <div class="flex justify-between border-b border-slate-200 pb-2">
+                            <span>Giờ mở ca:</span>
+                            <span class="font-semibold text-slate-800">\${new Date(currentShift.opened_at).toLocaleString('vi-VN')}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Số dư đầu ca:</span>
+                            <span class="font-semibold text-slate-800">\${formatCurrency(startBalance)}</span>
+                        </div>
+                        <div class="flex justify-between text-emerald-600">
+                            <span>Thu tiền mặt (Đơn hàng):</span>
+                            <span class="font-semibold">+\${formatCurrency(cashRevenue)}</span>
+                        </div>
+                        <div class="flex justify-between text-blue-500">
+                            <span>Nạp thêm tiền mặt:</span>
+                            <span class="font-semibold">+\${formatCurrency(cashIn)}</span>
+                        </div>
+                        <div class="flex justify-between text-rose-500 border-b border-slate-200 pb-2">
+                            <span>Chi tiêu tiền mặt:</span>
+                            <span class="font-semibold">-\${formatCurrency(cashOut)}</span>
+                        </div>
+                        <div class="flex justify-between text-lg pt-2">
+                            <span class="font-bold text-slate-800">Tiền mặt dự kiến:</span>
+                            <span class="font-black text-indigo-600" id="expected-balance-display">\${formatCurrency(expectedBalance)}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cột phải: Nhập liệu -->
+                <div class="p-6 w-full md:w-1/2 flex flex-col justify-center">
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Người chốt ca</label>
+                        <input type="text" class="w-full px-4 py-2 border border-slate-200 rounded-lg bg-slate-50 text-slate-600" value="\${staffName}" disabled>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Số tiền đếm được thực tế (VNĐ) <span class="text-red-500">*</span></label>
+                        <input type="number" id="shift-end-actual" class="w-full px-4 py-3 text-lg font-bold border-2 border-slate-200 rounded-lg focus:ring-0 focus:border-indigo-500 outline-none text-center" placeholder="Đếm tiền trong két và nhập vào đây">
+                        <div id="balance-diff" class="text-center text-sm font-bold mt-2"></div>
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Ghi chú kết ca</label>
+                        <textarea id="shift-close-notes" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none" rows="2" placeholder="Giải trình chênh lệch (nếu có)..."></textarea>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        <button onclick="document.getElementById('close-shift-modal').remove()" class="flex-1 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl font-bold transition-colors">
+                            Hủy
+                        </button>
+                        <button onclick="submitCloseShift(\${expectedBalance})" class="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition-colors flex justify-center items-center gap-2">
+                            <i class="fa-solid fa-check-double"></i> Chốt ca
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    \`;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+    // Xử lý logic hiển thị chênh lệch
+    const actualInput = document.getElementById('shift-end-actual');
+    const diffDisplay = document.getElementById('balance-diff');
+    actualInput.addEventListener('input', (e) => {
+        const actual = parseFloat(e.target.value) || 0;
+        const diff = actual - expectedBalance;
+        if (diff === 0) {
+            diffDisplay.innerHTML = '<span class="text-emerald-500"><i class="fa-solid fa-check-circle"></i> Khớp số tiền</span>';
+        } else if (diff > 0) {
+            diffDisplay.innerHTML = \`<span class="text-blue-500"><i class="fa-solid fa-arrow-trend-up"></i> Dư \${formatCurrency(diff)}</span>\`;
+        } else {
+            diffDisplay.innerHTML = \`<span class="text-rose-500"><i class="fa-solid fa-arrow-trend-down"></i> Thiếu \${formatCurrency(Math.abs(diff))}</span>\`;
+        }
+    });
+}
+
+async function submitCloseShift(expectedBalance) {
+    const actualBalance = document.getElementById('shift-end-actual').value;
+    const notes = document.getElementById('shift-close-notes').value;
+    const tenantId = sessionStorage.getItem('tenant_id') || localStorage.getItem('tenant_id');
+    const staffName = sessionStorage.getItem('nohope_staff_name') || 'Nhân viên';
+
+    if (actualBalance === '') {
+        showAlert('Vui lòng đếm và nhập số tiền thực tế', 'warning');
+        return;
+    }
+
+    try {
+        const { data, error } = await supabase.rpc('close_shift', {
+            p_tenant_id: tenantId,
+            p_shift_id: currentShift.id,
+            p_closed_by: staffName,
+            p_end_balance_actual: parseFloat(actualBalance),
+            p_notes: notes ? 'Kết ca: ' + notes : null
+        });
+
+        if (error) throw error;
+
+        showAlert('Đã kết ca thành công!', 'success');
+        document.getElementById('close-shift-modal').remove();
+        
+        // Ghi log
+        if (window.logAdminAction) {
+            const diff = parseFloat(actualBalance) - expectedBalance;
+            logAdminAction('Kết ca', \`Chênh lệch: \${diff !== 0 ? formatCurrency(diff) : '0đ'}\`);
         }
 
         currentShift = null;
-        updateShiftUI(false);
-        
-        bootstrap.Modal.getInstance(document.getElementById('shiftActionModal')).hide();
-        showAlert('Đã kết thúc ca làm việc!', 'success');
-        
-    } catch (err) {
-        console.error('Lỗi khi đóng ca:', err);
-        showAlert('Lỗi: ' + err.message, 'danger');
-    } finally {
-        btn.disabled = false;
-        btn.innerText = 'Xác nhận Kết ca';
+        window.currentShift = null;
+        updateShiftUI();
+
+    } catch (e) {
+        console.error('Error closing shift:', e);
+        showAlert('Lỗi khi kết ca: ' + e.message, 'danger');
     }
 }
 
-/* ==============================================================
-   TIMESHEET LOGIC
-   ============================================================== */
+// ==========================================
+// THU / CHI TRONG CA
+// ==========================================
+window.showCashTransactionModal = function(type = 'out') {
+    if (!window.currentShift) {
+        showAlert('Vui lòng mở ca làm việc trước khi thực hiện thu/chi!', 'warning');
+        return;
+    }
+    
+    const isCashIn = type === 'in';
+    const title = isCashIn ? 'Nạp Tiền Vào Két' : 'Chi Tiền Khỏi Két';
+    const icon = isCashIn ? 'fa-arrow-down text-blue-500' : 'fa-arrow-up text-rose-500';
+    const btnColor = isCashIn ? 'bg-blue-600 hover:bg-blue-700' : 'bg-rose-600 hover:bg-rose-700';
 
-async function checkTimesheetStatus() {
-    const tAction = document.getElementById('timesheet-action-btn');
-    const tText = document.getElementById('timesheet-status-text');
-    if (!tAction || !tText) return;
+    const modalHtml = `
+        <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[70] flex items-center justify-center p-4 transition-opacity" id="cash-tx-modal">
+            <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate__animated animate__zoomIn animate__faster">
+                <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                    <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid ${icon}"></i> ${title}
+                    </h3>
+                    <button onclick="document.getElementById('cash-tx-modal').remove()" class="text-slate-400 hover:text-slate-600">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
+                <div class="p-6">
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Số tiền (VNĐ) <span class="text-red-500">*</span></label>
+                        <input type="number" id="cash-tx-amount" class="w-full px-4 py-3 text-lg font-bold border-2 border-slate-200 rounded-lg focus:ring-0 focus:border-slate-500 outline-none" placeholder="VD: 100000">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Lý do / Diễn giải <span class="text-red-500">*</span></label>
+                        <textarea id="cash-tx-reason" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500 outline-none" rows="2" placeholder="${isCashIn ? 'VD: Nạp thêm tiền lẻ...' : 'VD: Mua đá, mua ly...'}"></textarea>
+                    </div>
+                    
+                    <button onclick="submitCashTransaction('${type}')" class="w-full py-3 ${btnColor} text-white rounded-xl font-bold transition-colors flex justify-center items-center gap-2">
+                        <i class="fa-solid fa-check"></i> Xác nhận
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+};
+
+window.submitCashTransaction = async function(type) {
+    const amount = document.getElementById('cash-tx-amount').value;
+    const reason = document.getElementById('cash-tx-reason').value;
+    const tenantId = sessionStorage.getItem('tenant_id') || localStorage.getItem('tenant_id');
+    const staffName = sessionStorage.getItem('nohope_staff_name') || 'Nhân viên';
+
+    if (!amount || parseFloat(amount) <= 0) {
+        showAlert('Vui lòng nhập số tiền hợp lệ', 'warning');
+        return;
+    }
+    if (!reason.trim()) {
+        showAlert('Vui lòng nhập lý do/diễn giải', 'warning');
+        return;
+    }
 
     try {
-        const { data, error } = await supabase
-            .from('staff_timesheets')
-            .select('*')
-            .eq('tenant_id', window.AdminState.tenantId)
-            .eq('staff_id', window.AdminState.staffId)
-            .is('check_out', null)
-            .order('check_in', { ascending: false })
-            .limit(1);
+        const { error } = await supabase.from('cash_transactions').insert([{
+            tenant_id: tenantId,
+            shift_id: window.currentShift.id,
+            transaction_type: type,
+            amount: parseFloat(amount),
+            reason: reason,
+            created_by: staffName
+        }]);
 
         if (error) throw error;
 
-        if (data && data.length > 0) {
-            const checkInTime = new Date(data[0].check_in).toLocaleTimeString('vi-VN', {hour:'2-digit',minute:'2-digit'});
-            tText.innerHTML = `Bạn đã VÀO CA lúc <strong class="text-green-500">${checkInTime}</strong>. Đừng quên ra ca khi xong việc.`;
-            tAction.innerHTML = `<button class="btn rounded-xl font-bold py-2 px-5 text-sm text-white shadow-soft" style="background:#ef4444;" onclick="submitCheckOut()"><i class="fa-solid fa-sign-out-alt me-2"></i>Ra ca (Check-out)</button>`;
-        } else {
-            tText.innerHTML = `Bạn chưa chấm công vào ca. Hãy bắt đầu ngay!`;
-            tAction.innerHTML = `<button class="btn rounded-xl font-bold py-2 px-5 text-sm shadow-soft" style="background:#10b981;color:#fff;" onclick="submitCheckIn()"><i class="fa-solid fa-sign-in-alt me-2"></i>Vào ca (Check-in)</button>`;
+        showAlert('Đã ghi nhận giao dịch thành công!', 'success');
+        document.getElementById('cash-tx-modal').remove();
+        
+        // Ghi log
+        if (window.logAdminAction) {
+            logAdminAction(type === 'in' ? 'Nạp tiền vào két' : 'Chi tiền từ két', `${formatCurrency(amount)} - ${reason}`);
         }
-    } catch(e) {
-        console.error('Timesheet status error:', e);
-        tText.innerHTML = '<span class="text-danger">Lỗi tải trạng thái chấm công.</span>';
-        tAction.innerHTML = '';
+    } catch (e) {
+        console.error('Error submitting cash transaction:', e);
+        showAlert('Lỗi: ' + e.message, 'danger');
     }
 }
 
-async function submitCheckIn() {
-    if (!window.AdminState.staffId) return;
-    try {
-        const { data, error } = await supabase.rpc('staff_check_in', {
-            p_staff_id: window.AdminState.staffId,
-            p_tenant_id: window.AdminState.tenantId
-        });
-        
-        if (error) throw error;
-        
-        if (data) {
-            showAdminToast('Chấm công VÀO CA thành công!', 'success');
-        } else {
-            showAdminToast('Bạn đã vào ca trước đó rồi!', 'warning');
-        }
-        
-        await checkTimesheetStatus();
-        await loadTimesheetsHistory();
-    } catch(e) {
-        console.error('Check-in error:', e);
-        showAdminToast('Lỗi chấm công vào ca!', 'error');
-    }
+// Function helper để format tiền tệ (nếu chưa có global)
+function formatCurrency(amount) {
+    if(isNaN(amount)) return '0đ';
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
 }
 
-async function submitCheckOut() {
-    if (!window.AdminState.staffId) return;
-    try {
-        const { data, error } = await supabase.rpc('staff_check_out', {
-            p_staff_id: window.AdminState.staffId,
-            p_tenant_id: window.AdminState.tenantId
-        });
-        
-        if (error) throw error;
-        
-        if (data) {
-            showAdminToast('Chấm công RA CA thành công!', 'success');
-        } else {
-            showAdminToast('Bạn chưa có ca làm việc nào đang mở!', 'warning');
+// Khởi chạy khi load
+document.addEventListener('DOMContentLoaded', () => {
+    // Đợi Supabase khởi tạo
+    setTimeout(() => {
+        if (window.supabase) {
+            checkCurrentShift();
         }
-        
-        await checkTimesheetStatus();
-        await loadTimesheetsHistory();
-    } catch(e) {
-        console.error('Check-out error:', e);
-        showAdminToast('Lỗi chấm công ra ca!', 'error');
-    }
-}
+    }, 1000);
+});
 
-async function loadTimesheetsHistory() {
-    const tbody = document.getElementById('timesheets-history-body');
-    if (!tbody) return;
-
-    try {
-        const { data, error } = await supabase
-            .from('vw_staff_timesheets')
-            .select('*')
-            .eq('tenant_id', window.AdminState.tenantId)
-            .order('check_in', { ascending: false })
-            .limit(30);
-
-        if (error) throw error;
-
-        if (!data || data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-slate-500">Chưa có dữ liệu chấm công.</td></tr>';
-            return;
-        }
-
-        tbody.innerHTML = data.map(t => {
-            const isWorking = !t.check_out;
-            const inTime = new Date(t.check_in).toLocaleString('vi-VN', {hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit'});
-            const outTime = isWorking ? '—' : new Date(t.check_out).toLocaleString('vi-VN', {hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit'});
-            const hours = isWorking ? '<span class="badge bg-success">Đang làm</span>' : (t.hours_worked || 0).toFixed(2);
-            
-            return `
-                <tr>
-                    <td>
-                        <div class="font-bold text-slate-800">${window.escapeHTML(t.staff_name || 'Nhân viên')}</div>
-                        <div class="text-[10px] uppercase text-slate-400 font-bold">${window.escapeHTML(t.staff_role || '')}</div>
-                    </td>
-                    <td class="text-slate-500 text-sm whitespace-nowrap">${inTime}</td>
-                    <td class="text-slate-500 text-sm whitespace-nowrap">${outTime}</td>
-                    <td class="text-end font-bold text-[#b45309]">${hours}</td>
-                </tr>
-            `;
-        }).join('');
-    } catch(e) {
-        console.error('loadTimesheetsHistory error:', e);
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Lỗi tải dữ liệu.</td></tr>';
-    }
-}
-
-const HOURLY_RATE = 25000; // VND per hour, configurable
-
-async function loadPayrollSummary() {
-    const tbody = document.getElementById('payroll-summary-body');
-    if (!tbody) return;
-
-    try {
-        const now = new Date();
-        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString();
-
-        const { data, error } = await supabase
-            .from('vw_staff_timesheets')
-            .select('*')
-            .eq('tenant_id', window.AdminState.tenantId)
-            .gte('check_in', startOfMonth)
-            .lte('check_in', endOfMonth)
-            .not('check_out', 'is', null);
-
-        if (error) throw error;
-
-        if (!data || data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-slate-500">Chưa có dữ liệu chấm công tháng này.</td></tr>';
-            return;
-        }
-
-        const staffMap = {};
-        data.forEach(t => {
-            const name = t.staff_name || 'Nhân viên';
-            const role = t.staff_role || '';
-            const key = t.staff_id || name;
-            if (!staffMap[key]) staffMap[key] = { name, role, shifts: 0, hours: 0 };
-            staffMap[key].shifts += 1;
-            staffMap[key].hours += (t.hours_worked || 0);
-        });
-
-        const staffList = Object.values(staffMap).sort((a, b) => b.hours - a.hours);
-        let totalSalary = 0;
-
-        tbody.innerHTML = staffList.map(s => {
-            const salary = Math.round(s.hours * HOURLY_RATE);
-            totalSalary += salary;
-            return `
-                <tr>
-                    <td>
-                        <div class="font-bold text-slate-800">${window.escapeHTML(s.name)}</div>
-                        <div class="text-[10px] uppercase text-slate-400 font-bold">${window.escapeHTML(s.role)}</div>
-                    </td>
-                    <td class="text-center font-bold text-slate-600">${s.shifts}</td>
-                    <td class="text-center font-bold text-[#C0A062]">${s.hours.toFixed(1)}h</td>
-                    <td class="text-end font-bold text-green-600">${salary.toLocaleString('vi-VN')} đ</td>
-                </tr>
-            `;
-        }).join('') + `
-            <tr class="bg-slate-50">
-                <td colspan="3" class="text-end font-bold text-slate-800 py-3 px-4">Tổng quỹ lương ước tính:</td>
-                <td class="text-end font-bold text-[#b45309] text-lg py-3 px-4">${totalSalary.toLocaleString('vi-VN')} đ</td>
-            </tr>
-        `;
-    } catch(e) {
-        console.error('Payroll summary error:', e);
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Lỗi tải dữ liệu lương.</td></tr>';
-    }
-}
-
-window.refreshPayrollSummary = loadPayrollSummary;
+// Expose to window
+window.checkCurrentShift = checkCurrentShift;
+window.showOpenShiftModal = showOpenShiftModal;
+window.showCloseShiftModal = showCloseShiftModal;

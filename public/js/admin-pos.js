@@ -591,6 +591,14 @@ async function posCheckOnlineStock(reductions) {
 }
 
 window.posSubmitOrder = async function() {
+    if (typeof window.checkCurrentShift === 'function' && !window.currentShift) {
+        showAdminToast('Vui lòng mở ca làm việc trước khi tạo đơn hàng!', 'warning');
+        if (typeof window.showOpenShiftModal === 'function') {
+            window.showOpenShiftModal();
+        }
+        return;
+    }
+
     if (posCart.length === 0) {
         showAdminToast('Giỏ hàng trống!', 'warning');
         return;
