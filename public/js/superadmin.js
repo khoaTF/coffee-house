@@ -3,6 +3,18 @@ let ownerSecret = sessionStorage.getItem('nohope_owner_secret') || '';
 
 document.addEventListener('DOMContentLoaded', () => {
     
+    // SAFETY NET: Clean up orphaned modal backdrops after any modal hides
+    document.addEventListener('hidden.bs.modal', () => {
+        // If no modal is currently open, clean up everything
+        const openModals = document.querySelectorAll('.modal.show');
+        if (openModals.length === 0) {
+            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.removeProperty('overflow');
+            document.body.style.removeProperty('padding-right');
+        }
+    });
+
     // Auth flow
     if (ownerSecret) {
         showDashboard();
@@ -599,7 +611,8 @@ function openManageModal(btnEl) {
         document.getElementById('manage-tenant-zns').value = t.integrations?.zns_webhook || '';
         
         const modalEl = document.getElementById('manageTenantModal');
-        const modal = new bootstrap.Modal(modalEl);
+        // FIX: Reuse existing instance to prevent duplicate backdrops
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
         modal.show();
     } catch(e) {
         console.error("Error opening manage modal:", e);
@@ -647,10 +660,22 @@ async function resetTenantPin() {
         errorEl.style.display = v.length > 0 && !valid ? 'block' : 'none';
     };
 
-    // Show modal (non-blocking)
-    const pinModal = new bootstrap.Modal(document.getElementById('resetPinModal'));
-    pinModal.show();
-    setTimeout(() => input.focus(), 300);
+    // FIX: Close Manage modal first, then open PIN modal after transition completes
+    const manageModalEl = document.getElementById('manageTenantModal');
+    const manageModal = bootstrap.Modal.getInstance(manageModalEl);
+    
+    const showPinModal = () => {
+        const pinModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('resetPinModal'));
+        pinModal.show();
+        setTimeout(() => input.focus(), 300);
+    };
+
+    if (manageModal && manageModalEl.classList.contains('show')) {
+        manageModalEl.addEventListener('hidden.bs.modal', showPinModal, { once: true });
+        manageModal.hide();
+    } else {
+        showPinModal();
+    }
 }
 
 async function confirmResetPin() {
@@ -674,7 +699,9 @@ async function confirmResetPin() {
 
         await logSuperadminAction('FORCE_RESET_PIN', { new_pin_length: newPin.length }, tenantId);
 
-        bootstrap.Modal.getInstance(document.getElementById('resetPinModal'))?.hide();
+        const pinModalEl = document.getElementById('resetPinModal');
+        const pinModalInst = bootstrap.Modal.getInstance(pinModalEl);
+        if (pinModalInst) pinModalInst.hide();
         showToast('Admin PIN reset successfully!', 'success');
     } catch(err) {
         console.error(err);
@@ -689,11 +716,7 @@ async function deleteTenant() {
     const tenantId = document.getElementById('manage-tenant-id').value;
     const tenantName = document.getElementById('manage-tenant-name-display').innerText;
 
-    // Hide manage modal first, then show delete confirmation modal
-    const manageModal = bootstrap.Modal.getInstance(document.getElementById('manageTenantModal'));
-    if (manageModal) manageModal.hide();
-
-    // Setup delete confirmation modal
+    // Setup delete confirmation modal content
     document.getElementById('delete-confirm-tenant-name').innerText = tenantName;
     document.getElementById('delete-confirm-input').value = '';
     document.getElementById('delete-confirm-error').style.display = 'none';
@@ -750,12 +773,22 @@ async function deleteTenant() {
     confirmBtn._deleteClickHandler = clickHandler;
     confirmBtn.addEventListener('click', clickHandler);
 
-    // Show the confirmation modal (non-blocking)
-    setTimeout(() => {
-        const deleteConfirmModal = new bootstrap.Modal(document.getElementById('deleteTenantConfirmModal'));
+    // FIX: Properly sequence modal transition — wait for Manage to fully close before opening Delete
+    const manageModalEl = document.getElementById('manageTenantModal');
+    const manageModal = bootstrap.Modal.getInstance(manageModalEl);
+    
+    const showDeleteModal = () => {
+        const deleteConfirmModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('deleteTenantConfirmModal'));
         deleteConfirmModal.show();
-        inputEl.focus();
-    }, 300);
+        setTimeout(() => inputEl.focus(), 300);
+    };
+
+    if (manageModal && manageModalEl.classList.contains('show')) {
+        manageModalEl.addEventListener('hidden.bs.modal', showDeleteModal, { once: true });
+        manageModal.hide();
+    } else {
+        showDeleteModal();
+    }
 }
 
 async function quickExtendTenant(tenantId) {
