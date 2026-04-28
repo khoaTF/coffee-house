@@ -286,7 +286,7 @@ function renderCrmTable(data) {
 
         return `
             <tr class="align-middle hover:bg-slate-50 transition-colors">
-                <td class="fw-semibold px-4 py-3">${escapeHTML(name)}</td>
+                <td class="fw-semibold px-4 py-3">${_crmEscapeHTML(name)}</td>
                 <td class="px-4 py-3 text-slate-600">${phone}</td>
                 <td class="px-4 py-3"><span class="badge ${badgeClass} rounded-pill px-3 py-1.5 text-xs font-bold">${seg}</span></td>
                 <td class="px-4 py-3 text-center">${tierBadge}</td>
@@ -299,13 +299,14 @@ function renderCrmTable(data) {
     }).join('');
 }
 
-// Helper: escape HTML
-function escapeHTML(str) {
-    if (typeof window.escapeHTML === 'function') return window.escapeHTML(str);
+// Helper: escape HTML — uses global window.escapeHTML from supabase-config.js
+// DO NOT redeclare as function (hoisting overwrites window.escapeHTML → infinite recursion)
+const _crmEscapeHTML = (str) => {
+    if (typeof str !== 'string') return '';
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
-}
+};
 
 /**
  * Filter CRM table by segment dropdown and search input.
