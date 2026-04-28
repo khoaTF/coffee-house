@@ -456,6 +456,85 @@
                         </div>
                     </div>
 
+                    <!-- 7D: ABC Analysis -->
+                    <div class="card bg-white border border-slate-200 rounded-2xl shadow-soft mb-6 overflow-hidden">
+                        <div class="card-header bg-slate-100 border-b border-slate-200 p-4 flex justify-between items-center">
+                            <h5 class="font-noto font-bold text-slate-800 mb-0 flex items-center gap-2"><i class="fa-solid fa-layer-group text-blue-500"></i> Phân Tích ABC (Best Sellers vs Dead Stock)</h5>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs text-slate-500 font-semibold bg-white px-2 py-1 rounded-lg border border-slate-200" title="A: 80% Doanh thu | B: 15% | C: 5% (Cần xem xét loại bỏ)">Quy tắc 80/15/5</span>
+                                <button class="btn btn-outline-info btn-sm rounded-lg border-2 font-semibold text-[#0984e3] border-[#0984e3] hover:bg-[#0984e3] hover:text-white" onclick="exportABCAnalysisExcel()"><i class="fa-solid fa-file-excel"></i> Xuất ABC</button>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover text-slate-800 mb-0 border-0">
+                                    <thead class="bg-white text-slate-500 text-xs uppercase tracking-wider">
+                                        <tr>
+                                            <th class="border-0 px-4 py-3 font-semibold w-16 text-center">Phân Hạng</th>
+                                            <th class="border-0 px-4 py-3 font-semibold">Sản phẩm</th>
+                                            <th class="border-0 px-4 py-3 font-semibold text-center">SL Bán</th>
+                                            <th class="border-0 px-4 py-3 font-semibold text-end">Doanh Thu</th>
+                                            <th class="border-0 px-4 py-3 font-semibold text-end">% Đóng Góp Lũy Kế</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="abc-analysis-body" class="border-transparent">
+                                        <tr><td colspan="5" class="text-center py-4 text-slate-500">Đang tính toán phân loại ABC...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hourly Revenue Breakdown & Customer Retention Row -->
+                    <div class="row g-4 mb-6">
+                        <!-- 7E: Hourly Revenue -->
+                        <div class="col-xl-7">
+                            <div class="card bg-white border border-slate-200 rounded-2xl shadow-soft h-100">
+                                <div class="card-body p-5">
+                                    <div class="flex justify-between items-center mb-4">
+                                        <h5 class="font-noto font-bold text-slate-800 mb-0 flex items-center gap-2"><i class="fa-solid fa-clock text-[#C0A062]"></i> Phân Tích Doanh Thu Theo Khung Giờ</h5>
+                                        <button class="btn btn-outline-info btn-sm rounded-lg border-2 font-semibold text-[#0984e3] border-[#0984e3] hover:bg-[#0984e3] hover:text-white" onclick="exportHourlyRevenueExcel()"><i class="fa-solid fa-file-excel"></i> Xuất Excel</button>
+                                    </div>
+                                    <div style="height: 300px; width: 100%;">
+                                        <canvas id="hourlyRevenueChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 7F: Customer Retention -->
+                        <div class="col-xl-5">
+                            <div class="card bg-white border border-slate-200 rounded-2xl shadow-soft h-100">
+                                <div class="card-header bg-transparent border-b border-slate-200 p-4 flex justify-between items-center">
+                                    <h5 class="font-noto font-bold text-slate-800 mb-0 flex items-center gap-2"><i class="fa-solid fa-users-arrows-turn-right text-[#27ae60]"></i> Tỷ Lệ Giữ Chân Khách Hàng</h5>
+                                    <button class="btn btn-outline-info btn-sm rounded-lg border-2 font-semibold text-[#0984e3] border-[#0984e3] hover:bg-[#0984e3] hover:text-white" onclick="exportCustomerRetentionExcel()"><i class="fa-solid fa-file-excel"></i> Xuất Excel</button>
+                                </div>
+                                <div class="card-body p-4 flex flex-col justify-center">
+                                    <div class="grid grid-cols-2 gap-4 mb-4">
+                                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 text-center">
+                                            <div class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Khách Mới</div>
+                                            <div class="text-2xl font-black text-slate-800" id="retention-new-customers">0</div>
+                                        </div>
+                                        <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100 text-center">
+                                            <div class="text-xs text-[#27ae60] uppercase font-bold tracking-wider mb-1">Khách Quay Lại</div>
+                                            <div class="text-2xl font-black text-[#27ae60]" id="retention-returning-customers">0</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm text-center">
+                                        <div class="text-sm text-slate-500 mb-2">Tỷ lệ khách hàng quay lại (Retention Rate)</div>
+                                        <div class="flex items-center justify-center gap-3">
+                                            <div class="w-full bg-slate-200 rounded-full h-3">
+                                                <div class="bg-[#27ae60] h-3 rounded-full" id="retention-progress-bar" style="width: 0%"></div>
+                                            </div>
+                                            <div class="font-bold text-lg text-slate-800" id="retention-percentage">0%</div>
+                                        </div>
+                                    </div>
+                                    <p class="text-xs text-slate-400 mt-3 text-center">Dựa trên thông tin số điện thoại khách hàng cung cấp khi đặt hàng.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- 7B: Profit Margins -->
                     <div class="card bg-white border border-slate-200 rounded-2xl shadow-soft mb-6 overflow-hidden">
                         <div class="card-header bg-slate-100 border-b border-slate-200 p-4 flex justify-between items-center">

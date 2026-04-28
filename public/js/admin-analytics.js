@@ -1,5 +1,5 @@
-// =============================================
-// ADMIN-ANALYTICS — Charts, Feedback, Dashboard KPI
+﻿// =============================================
+// ADMIN-ANALYTICS â€” Charts, Feedback, Dashboard KPI
 // =============================================
 // Dependencies: admin-core.js (orderHistory, products, supabase, showAdminToast)
 
@@ -57,7 +57,7 @@ function renderAnalytics() {
             if (o.items && Array.isArray(o.items)) {
                 o.items.forEach(item => {
                     const prod = typeof products !== 'undefined' ? products.find(p => p._id === item.productId || p.id === item.productId) : null;
-                    const cat = prod ? prod.category : 'Khác';
+                    const cat = prod ? prod.category : 'KhÃ¡c';
                     const itemRev = (item.price * item.quantity);
                     categoryTotals[cat] = (categoryTotals[cat] || 0) + itemRev;
 
@@ -86,7 +86,7 @@ function renderAnalytics() {
         data: {
             labels: dateLabels.map(d => d.display),
             datasets: [{
-                label: 'Doanh thu (VNĐ)',
+                label: 'Doanh thu (VNÄ)',
                 data: dateLabels.map(d => d.revenue),
                 borderColor: '#d4a76a',
                 backgroundColor: 'rgba(212,167,106,0.2)',
@@ -113,7 +113,7 @@ function renderAnalytics() {
     revenueCategoryChartInstance = new Chart(ctxCat, {
         type: 'doughnut',
         data: {
-            labels: Object.keys(categoryTotals).length ? Object.keys(categoryTotals) : ['Chưa có dữ liệu'],
+            labels: Object.keys(categoryTotals).length ? Object.keys(categoryTotals) : ['ChÆ°a cÃ³ dá»¯ liá»‡u'],
             datasets: [{
                 data: Object.keys(categoryTotals).length ? Object.values(categoryTotals) : [1],
                 backgroundColor: ['#d4a76a', '#3498db', '#e74c3c', '#2ecc71', '#9b59b6', '#f1c40f'],
@@ -147,19 +147,19 @@ function renderAnalytics() {
         trendCategoryChartInstance = new Chart(ctxTrend.getContext('2d'), {
             type: 'line',
             data: {
-                labels: Object.keys(trendCategoryData).length ? dateLabels.map(l => l.display) : ['Chưa có dữ liệu'],
-                datasets: datasets.length ? datasets : [{ label: 'Không có', data: dateLabels.map(() => 0), borderColor: '#c9d1d9' }]
+                labels: Object.keys(trendCategoryData).length ? dateLabels.map(l => l.display) : ['ChÆ°a cÃ³ dá»¯ liá»‡u'],
+                datasets: datasets.length ? datasets : [{ label: 'KhÃ´ng cÃ³', data: dateLabels.map(() => 0), borderColor: '#c9d1d9' }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 scales: {
                     x: { ticks: { color: '#8b949e' }, grid: { display: false } },
-                    y: { ticks: { color: '#8b949e', callback: v => v.toLocaleString('vi-VN') + 'đ' }, grid: { color: 'rgba(139,148,158,0.1)' } }
+                    y: { ticks: { color: '#8b949e', callback: v => v.toLocaleString('vi-VN') + 'Ä‘' }, grid: { color: 'rgba(139,148,158,0.1)' } }
                 },
                 plugins: {
                     legend: { position: 'bottom', labels: { color: '#c9d1d9' } },
-                    tooltip: { callbacks: { label: function(c) { return c.dataset.label + ': ' + c.raw.toLocaleString('vi-VN') + ' đ'; } } }
+                    tooltip: { callbacks: { label: function(c) { return c.dataset.label + ': ' + c.raw.toLocaleString('vi-VN') + ' Ä‘'; } } }
                 }
             }
         });
@@ -175,15 +175,15 @@ function renderAnalytics() {
             .slice(0, 5);
 
         if (sortedItems.length === 0) {
-            topItemsEl.innerHTML = '<tr><td colspan="3" class="text-center py-3 text-muted">Chưa có giao dịch nào trong thời gian này.</td></tr>';
+            topItemsEl.innerHTML = '<tr><td colspan="3" class="text-center py-3 text-muted">ChÆ°a cÃ³ giao dá»‹ch nÃ o trong thá»i gian nÃ y.</td></tr>';
         } else {
             sortedItems.forEach((item, index) => {
                 const tr = document.createElement('tr');
                 const badgeClass = index === 0 ? 'bg-danger' : (index === 1 ? 'bg-warning' : (index === 2 ? 'bg-success' : 'bg-secondary'));
                 tr.innerHTML = `
                     <td><span class="badge ${badgeClass} me-2">#${index+1}</span> ${item.name}</td>
-                    <td class="text-center font-bold text-slate-800">${item.qty} đv</td>
-                    <td class="text-end text-success">${item.rev.toLocaleString('vi-VN')} đ</td>
+                    <td class="text-center font-bold text-slate-800">${item.qty} Ä‘v</td>
+                    <td class="text-end text-success">${item.rev.toLocaleString('vi-VN')} Ä‘</td>
                 `;
                 topItemsEl.appendChild(tr);
             });
@@ -197,6 +197,9 @@ function renderAnalytics() {
     renderPeriodComparison(startDate, endDate);
     renderProfitMargins(startDate, endDate);
     renderStaffPerformance(startDate, endDate);
+    renderABCAnalysis(startDate, endDate);
+    renderHourlyRevenueBreakdown(startDate, endDate);
+    renderCustomerRetention(startDate, endDate);
 }
 
 // --- Feedback Stats ---
@@ -213,7 +216,7 @@ async function fetchFeedbackStats() {
         const mappedData = data.map(f => ({ ...f, createdAt: f.created_at, tableNumber: f.table_number }));
 
         document.getElementById('fb-avg-rating').innerText = average;
-        document.getElementById('fb-total-count').innerText = `${count} lượt đánh giá`;
+        document.getElementById('fb-total-count').innerText = `${count} lÆ°á»£t Ä‘Ã¡nh giÃ¡`;
 
         const avgStars = document.getElementById('fb-avg-stars');
         avgStars.replaceChildren();
@@ -229,7 +232,7 @@ async function fetchFeedbackStats() {
             listEl.replaceChildren();
             const emptyDiv = document.createElement('div');
             emptyDiv.className = 'p-4 text-center text-muted';
-            emptyDiv.textContent = 'Chưa có đánh giá nào.';
+            emptyDiv.textContent = 'ChÆ°a cÃ³ Ä‘Ã¡nh giÃ¡ nÃ o.';
             listEl.appendChild(emptyDiv);
         } else {
             listEl.replaceChildren();
@@ -259,7 +262,7 @@ async function fetchFeedbackStats() {
 
                 const tableInfo = document.createElement('div');
                 tableInfo.className = 'fw-bold small text-slate-800';
-                tableInfo.textContent = `Bàn số: ${f.tableNumber || '?'}`;
+                tableInfo.textContent = `BÃ n sá»‘: ${f.tableNumber || '?'}`;
 
                 const commentDiv = document.createElement('div');
                 commentDiv.className = 'text-slate-800 small mt-1';
@@ -269,7 +272,7 @@ async function fetchFeedbackStats() {
                 } else {
                     const em = document.createElement('i');
                     em.className = 'text-muted';
-                    em.textContent = 'Không có bình luận';
+                    em.textContent = 'KhÃ´ng cÃ³ bÃ¬nh luáº­n';
                     commentDiv.appendChild(em);
                 }
 
@@ -296,7 +299,7 @@ function animateCountUp(element, targetValue, duration = 800, isCurrency = false
         const currentValue = Math.round(startValue + (targetValue - startValue) * eased);
 
         if (isCurrency) {
-            element.textContent = currentValue.toLocaleString('vi-VN') + ' đ';
+            element.textContent = currentValue.toLocaleString('vi-VN') + ' Ä‘';
         } else {
             element.textContent = currentValue.toLocaleString('vi-VN');
         }
@@ -344,7 +347,7 @@ async function renderDashboardStats() {
                             <i class="fa-solid fa-hourglass-half text-orange-500 text-xl"></i>
                         </div>
                         <div class="kpi-body">
-                            <div class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Đơn đang xử lý</div>
+                            <div class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">ÄÆ¡n Ä‘ang xá»­ lÃ½</div>
                             <div class="text-xl font-bold text-slate-800" id="kpi-pending">${pending}</div>
                         </div>
                     </div>
@@ -353,7 +356,7 @@ async function renderDashboardStats() {
                             <i class="fa-solid fa-chair text-blue-500 text-xl"></i>
                         </div>
                         <div class="kpi-body">
-                            <div class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Bàn đang phục vụ</div>
+                            <div class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">BÃ n Ä‘ang phá»¥c vá»¥</div>
                             <div class="text-xl font-bold text-slate-800" id="kpi-active-tables">${activeTables}</div>
                         </div>
                     </div>
@@ -366,28 +369,28 @@ async function renderDashboardStats() {
                         <div class="kpi-icon"><i class="fa-solid fa-receipt"></i></div>
                         <div class="kpi-body">
                             <div class="kpi-value" id="kpi-total-orders">${total}</div>
-                            <div class="kpi-label">Đơn hàng hôm nay</div>
+                            <div class="kpi-label">ÄÆ¡n hÃ ng hÃ´m nay</div>
                         </div>
                     </div>
                     <div class="kpi-card kpi-revenue">
                         <div class="kpi-icon"><i class="fa-solid fa-coins"></i></div>
                         <div class="kpi-body">
-                            <div class="kpi-value" id="kpi-revenue">${revenue.toLocaleString('vi-VN')}đ</div>
-                            <div class="kpi-label">Doanh thu hôm nay</div>
+                            <div class="kpi-value" id="kpi-revenue">${revenue.toLocaleString('vi-VN')}Ä‘</div>
+                            <div class="kpi-label">Doanh thu hÃ´m nay</div>
                         </div>
                     </div>
                     <div class="kpi-card kpi-pending">
                         <div class="kpi-icon"><i class="fa-solid fa-hourglass-half"></i></div>
                         <div class="kpi-body">
                             <div class="kpi-value" id="kpi-pending">${pending}</div>
-                            <div class="kpi-label">Đơn đang xử lý</div>
+                            <div class="kpi-label">ÄÆ¡n Ä‘ang xá»­ lÃ½</div>
                         </div>
                     </div>
                     <div class="kpi-card kpi-tables">
                         <div class="kpi-icon"><i class="fa-solid fa-chair"></i></div>
                         <div class="kpi-body">
                             <div class="kpi-value" id="kpi-active-tables">${activeTables}</div>
-                            <div class="kpi-label">Bàn đang phục vụ</div>
+                            <div class="kpi-label">BÃ n Ä‘ang phá»¥c vá»¥</div>
                         </div>
                     </div>
                 </div>
@@ -409,13 +412,13 @@ async function renderDashboardStats() {
 }
 
 // =============================================
-// B1 — DASHBOARD TỔNG QUAN
+// B1 â€” DASHBOARD Tá»”NG QUAN
 // =============================================
 async function loadDashboard() {
     const container = document.getElementById('dashboard-content');
     if (!container) return;
 
-    container.innerHTML = `<div class="text-center py-16 text-slate-500"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tải...</div>`;
+    container.innerHTML = `<div class="text-center py-16 text-slate-500"><i class="fa-solid fa-spinner fa-spin me-2"></i>Äang táº£i...</div>`;
 
     try {
         const role = sessionStorage.getItem('cafe_role') || localStorage.getItem('cafe_role');
@@ -438,21 +441,21 @@ async function loadDashboard() {
              container.innerHTML = `
                  <div class="card bg-white border border-slate-200 rounded-2xl overflow-hidden mb-6">
                      <div class="p-4 border-b border-slate-200 justify-between items-center hidden md:flex">
-                         <h5 class="font-bold text-slate-800 mb-0"><i class="fa-solid fa-list-check me-2 text-[#C0A062]"></i>Công việc cần làm (Đơn mới cập nhật)</h5>
-                         <button class="btn btn-sm btn-outline-primary" onclick="switchTab('orders')">Tới trang Xử lý đơn</button>
+                         <h5 class="font-bold text-slate-800 mb-0"><i class="fa-solid fa-list-check me-2 text-[#C0A062]"></i>CÃ´ng viá»‡c cáº§n lÃ m (ÄÆ¡n má»›i cáº­p nháº­t)</h5>
+                         <button class="btn btn-sm btn-outline-primary" onclick="switchTab('orders')">Tá»›i trang Xá»­ lÃ½ Ä‘Æ¡n</button>
                      </div>
                      <div class="p-4 border-b border-slate-200 md:hidden">
-                         <h5 class="font-bold text-slate-800 mb-3"><i class="fa-solid fa-list-check me-2 text-[#C0A062]"></i>Công việc cần làm</h5>
-                         <button class="btn btn-sm btn-outline-primary w-full" onclick="switchTab('orders')">Tới trang Xử lý đơn</button>
+                         <h5 class="font-bold text-slate-800 mb-3"><i class="fa-solid fa-list-check me-2 text-[#C0A062]"></i>CÃ´ng viá»‡c cáº§n lÃ m</h5>
+                         <button class="btn btn-sm btn-outline-primary w-full" onclick="switchTab('orders')">Tá»›i trang Xá»­ lÃ½ Ä‘Æ¡n</button>
                      </div>
                      <div class="table-responsive">
                          <table class="table table-hover mb-0 min-w-full">
-                             <thead class="bg-slate-100 text-slate-600"><tr><th class="border-0 py-3 px-4">Bàn</th><th class="border-0 py-3 px-4 w-32">Giờ đặt</th><th class="border-0 py-3 px-4 w-40 text-center">Trạng thái</th></tr></thead>
+                             <thead class="bg-slate-100 text-slate-600"><tr><th class="border-0 py-3 px-4">BÃ n</th><th class="border-0 py-3 px-4 w-32">Giá» Ä‘áº·t</th><th class="border-0 py-3 px-4 w-40 text-center">Tráº¡ng thÃ¡i</th></tr></thead>
                              <tbody>
-                                 ${recentPending.length === 0 ? '<tr><td colspan="3" class="text-center py-6 text-slate-500 font-medium">Hiện không có đơn nào đang chờ xử lý.</td></tr>' :
+                                 ${recentPending.length === 0 ? '<tr><td colspan="3" class="text-center py-6 text-slate-500 font-medium">Hiá»‡n khÃ´ng cÃ³ Ä‘Æ¡n nÃ o Ä‘ang chá» xá»­ lÃ½.</td></tr>' :
                                      recentPending.map(o => {
                                          const statusColors = { Pending:'bg-warning text-dark', Preparing:'bg-primary' };
-                                         const statusVI = { Pending:'Đang chờ', Preparing:'Đang chuẩn bị' };
+                                         const statusVI = { Pending:'Äang chá»', Preparing:'Äang chuáº©n bá»‹' };
                                          const time = new Date(o.created_at).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
                                          return `<tr>
                                              <td class="py-3 px-4 text-slate-800 font-bold">${window.escapeHTML(o.table_number || '?')}</td>
@@ -467,7 +470,7 @@ async function loadDashboard() {
                  </div>
                  
                  <div class="text-center">
-                    <p class="text-slate-500 italic mb-4">Các báo cáo và thông tin mật được giới hạn hiển thị đối với tài khoản nhân viên.</p>
+                    <p class="text-slate-500 italic mb-4">CÃ¡c bÃ¡o cÃ¡o vÃ  thÃ´ng tin máº­t Ä‘Æ°á»£c giá»›i háº¡n hiá»ƒn thá»‹ Ä‘á»‘i vá»›i tÃ i khoáº£n nhÃ¢n viÃªn.</p>
                  </div>
              `;
              return;
@@ -516,8 +519,8 @@ async function loadDashboard() {
                         <i class="fa-solid fa-coins text-amber-400 text-xl"></i>
                     </div>
                     <div>
-                        <div class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Doanh thu hôm nay</div>
-                        <div class="text-xl font-bold text-[#C0A062]">${revenueToday.toLocaleString('vi-VN')} đ</div>
+                        <div class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Doanh thu hÃ´m nay</div>
+                        <div class="text-xl font-bold text-[#C0A062]">${revenueToday.toLocaleString('vi-VN')} Ä‘</div>
                     </div>
                 </div>
                 <div class="card bg-white border border-slate-200 rounded-2xl p-5 flex items-center gap-4">
@@ -525,7 +528,7 @@ async function loadDashboard() {
                         <i class="fa-solid fa-receipt text-green-400 text-xl"></i>
                     </div>
                     <div>
-                        <div class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Đơn hôm nay</div>
+                        <div class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">ÄÆ¡n hÃ´m nay</div>
                         <div class="text-xl font-bold text-[#F2E8D5]">${orderCountToday}</div>
                     </div>
                 </div>
@@ -534,7 +537,7 @@ async function loadDashboard() {
                         <i class="fa-solid fa-fire text-red-400 text-xl"></i>
                     </div>
                     <div>
-                        <div class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Đang xử lý</div>
+                        <div class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Äang xá»­ lÃ½</div>
                         <div class="text-xl font-bold text-red-400">${pendingCount}</div>
                     </div>
                 </div>
@@ -543,7 +546,7 @@ async function loadDashboard() {
                         <i class="fa-solid fa-triangle-exclamation text-orange-400 text-xl"></i>
                     </div>
                     <div>
-                        <div class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Kho sắp hết</div>
+                        <div class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Kho sáº¯p háº¿t</div>
                         <div class="text-xl font-bold text-orange-400">${lowItems.length}</div>
                     </div>
                 </div>
@@ -557,12 +560,12 @@ async function loadDashboard() {
                             <i class="fa-solid fa-compass text-[#C0A062] text-lg"></i>
                         </div>
                         <div>
-                            <h5 class="font-bold text-slate-800 mb-0 text-base">Trung tâm Điều hướng</h5>
-                            <p class="text-xs text-slate-500 mb-0">Truy cập nhanh tất cả chức năng quản trị</p>
+                            <h5 class="font-bold text-slate-800 mb-0 text-base">Trung tÃ¢m Äiá»u hÆ°á»›ng</h5>
+                            <p class="text-xs text-slate-500 mb-0">Truy cáº­p nhanh táº¥t cáº£ chá»©c nÄƒng quáº£n trá»‹</p>
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
-                        <span class="text-xs text-slate-400 font-medium hidden sm:inline">Thu gọn / Mở rộng</span>
+                        <span class="text-xs text-slate-400 font-medium hidden sm:inline">Thu gá»n / Má»Ÿ rá»™ng</span>
                         <i id="nav-hub-chevron" class="fa-solid fa-chevron-down text-slate-400 transition-transform duration-300"></i>
                     </div>
                 </div>
@@ -572,15 +575,15 @@ async function loadDashboard() {
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                <!-- Chart 7 ngày -->
+                <!-- Chart 7 ngÃ y -->
                 <div class="lg:col-span-2 card bg-white border border-slate-200 rounded-2xl p-5">
-                    <h5 class="font-bold text-[#C0A062] mb-4 flex items-center gap-2"><i class="fa-solid fa-chart-line"></i> Doanh thu 7 ngày qua</h5>
+                    <h5 class="font-bold text-[#C0A062] mb-4 flex items-center gap-2"><i class="fa-solid fa-chart-line"></i> Doanh thu 7 ngÃ y qua</h5>
                     <div style="height:220px"><canvas id="dash-revenue-chart"></canvas></div>
                 </div>
-                <!-- Top 5 món -->
+                <!-- Top 5 mÃ³n -->
                 <div class="card bg-white border border-slate-200 rounded-2xl p-5">
-                    <h5 class="font-bold text-[#C0A062] mb-4 flex items-center gap-2"><i class="fa-solid fa-trophy"></i> Top 5 món (7 ngày)</h5>
-                    ${top5.length === 0 ? '<p class="text-slate-500 text-sm">Chưa có dữ liệu.</p>' : top5.map(([name, qty], i) => `
+                    <h5 class="font-bold text-[#C0A062] mb-4 flex items-center gap-2"><i class="fa-solid fa-trophy"></i> Top 5 mÃ³n (7 ngÃ y)</h5>
+                    ${top5.length === 0 ? '<p class="text-slate-500 text-sm">ChÆ°a cÃ³ dá»¯ liá»‡u.</p>' : top5.map(([name, qty], i) => `
                         <div class="flex items-center justify-between py-2 border-b border-slate-200 last:border-0">
                             <div class="flex items-center gap-2">
                                 <span class="w-6 h-6 rounded-full bg-[#e2e8f0] text-[#C0A062] text-xs font-bold flex items-center justify-center">${i+1}</span>
@@ -593,19 +596,19 @@ async function loadDashboard() {
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- 5 đơn gần nhất hôm nay -->
+                <!-- 5 Ä‘Æ¡n gáº§n nháº¥t hÃ´m nay -->
                 <div class="card bg-white border border-slate-200 rounded-2xl overflow-hidden">
-                    <div class="p-4 border-b border-slate-200"><h5 class="font-bold text-[#F2E8D5] mb-0"><i class="fa-solid fa-clock-rotate-left me-2 text-[#C0A062]"></i>5 đơn gần nhất hôm nay</h5></div>
+                    <div class="p-4 border-b border-slate-200"><h5 class="font-bold text-[#F2E8D5] mb-0"><i class="fa-solid fa-clock-rotate-left me-2 text-[#C0A062]"></i>5 Ä‘Æ¡n gáº§n nháº¥t hÃ´m nay</h5></div>
                     <table class="table table-hover mb-0">
-                        <thead class="bg-[#e2e8f0] text-[#b45309]"><tr><th class="border-0 py-2 px-4 text-xs">Bàn</th><th class="border-0 py-2 px-4 text-xs">Tổng</th><th class="border-0 py-2 px-4 text-xs">Trạng thái</th></tr></thead>
+                        <thead class="bg-[#e2e8f0] text-[#b45309]"><tr><th class="border-0 py-2 px-4 text-xs">BÃ n</th><th class="border-0 py-2 px-4 text-xs">Tá»•ng</th><th class="border-0 py-2 px-4 text-xs">Tráº¡ng thÃ¡i</th></tr></thead>
                         <tbody>
-                            ${recentOrders.length === 0 ? '<tr><td colspan="3" class="text-center py-4 text-slate-500 text-sm">Chưa có đơn hôm nay.</td></tr>' :
+                            ${recentOrders.length === 0 ? '<tr><td colspan="3" class="text-center py-4 text-slate-500 text-sm">ChÆ°a cÃ³ Ä‘Æ¡n hÃ´m nay.</td></tr>' :
                                 recentOrders.map(o => {
                                     const statusColors = { Pending:'bg-warning text-dark', Preparing:'bg-primary', Ready:'bg-info text-dark', Completed:'bg-success', Cancelled:'bg-danger' };
-                                    const statusVI = { Pending:'Chờ', Preparing:'Đang làm', Ready:'Sẵn', Completed:'Hoàn thành', Cancelled:'Hủy' };
+                                    const statusVI = { Pending:'Chá»', Preparing:'Äang lÃ m', Ready:'Sáºµn', Completed:'HoÃ n thÃ nh', Cancelled:'Há»§y' };
                                     return `<tr>
-                                        <td class="py-2 px-4 text-sm text-slate-800">Bàn ${window.escapeHTML(o.table_number || '?')}</td>
-                                        <td class="py-2 px-4 text-sm text-[#C0A062] font-bold">${(o.total_price||0).toLocaleString('vi-VN')} đ</td>
+                                        <td class="py-2 px-4 text-sm text-slate-800">BÃ n ${window.escapeHTML(o.table_number || '?')}</td>
+                                        <td class="py-2 px-4 text-sm text-[#C0A062] font-bold">${(o.total_price||0).toLocaleString('vi-VN')} Ä‘</td>
                                         <td class="py-2 px-4"><span class="badge ${statusColors[o.status]||'bg-secondary'} text-xs">${statusVI[o.status]||o.status}</span></td>
                                     </tr>`;
                                 }).join('')
@@ -613,13 +616,13 @@ async function loadDashboard() {
                         </tbody>
                     </table>
                 </div>
-                <!-- Kho sắp hết -->
+                <!-- Kho sáº¯p háº¿t -->
                 <div class="card bg-white border border-slate-200 rounded-2xl overflow-hidden">
-                    <div class="p-4 border-b border-slate-200"><h5 class="font-bold text-[#F2E8D5] mb-0"><i class="fa-solid fa-triangle-exclamation me-2 text-orange-400"></i>Nguyên liệu sắp hết</h5></div>
+                    <div class="p-4 border-b border-slate-200"><h5 class="font-bold text-[#F2E8D5] mb-0"><i class="fa-solid fa-triangle-exclamation me-2 text-orange-400"></i>NguyÃªn liá»‡u sáº¯p háº¿t</h5></div>
                     <table class="table table-hover mb-0">
-                        <thead class="bg-[#e2e8f0] text-[#b45309]"><tr><th class="border-0 py-2 px-4 text-xs">Nguyên liệu</th><th class="border-0 py-2 px-4 text-xs">Tồn kho</th></tr></thead>
+                        <thead class="bg-[#e2e8f0] text-[#b45309]"><tr><th class="border-0 py-2 px-4 text-xs">NguyÃªn liá»‡u</th><th class="border-0 py-2 px-4 text-xs">Tá»“n kho</th></tr></thead>
                         <tbody>
-                            ${lowItems.length === 0 ? '<tr><td colspan="2" class="text-center py-4 text-green-400 text-sm"><i class="fa-solid fa-check me-1"></i>Kho đầy đủ!</td></tr>' :
+                            ${lowItems.length === 0 ? '<tr><td colspan="2" class="text-center py-4 text-green-400 text-sm"><i class="fa-solid fa-check me-1"></i>Kho Ä‘áº§y Ä‘á»§!</td></tr>' :
                                 lowItems.slice(0,8).map(ing => `<tr>
                                     <td class="py-2 px-4 text-sm text-slate-800">${window.escapeHTML(ing.name)}</td>
                                     <td class="py-2 px-4"><span class="badge bg-danger text-xs">${ing.stock || 0} / ${ing.low_stock_threshold || 50}</span></td>
@@ -639,7 +642,7 @@ async function loadDashboard() {
                 data: {
                     labels: dayLabels,
                     datasets: [{
-                        label: 'Doanh thu (đ)',
+                        label: 'Doanh thu (Ä‘)',
                         data: dayRevenue,
                         backgroundColor: 'rgba(192,160,98,0.6)',
                         borderColor: '#C0A062',
@@ -663,7 +666,7 @@ async function loadDashboard() {
 
     } catch(e) {
         console.error('loadDashboard error:', e);
-        container.innerHTML = '<div class="text-center py-16 text-red-400"><i class="fa-solid fa-circle-xmark me-2"></i>Lỗi tải Dashboard.</div>';
+        container.innerHTML = '<div class="text-center py-16 text-red-400"><i class="fa-solid fa-circle-xmark me-2"></i>Lá»—i táº£i Dashboard.</div>';
     }
 }
 
@@ -673,51 +676,51 @@ function renderNavHub() {
 
     const navGroups = [
         {
-            title: 'Vận hành',
+            title: 'Váº­n hÃ nh',
             icon: 'fa-solid fa-bolt',
             color: '#C0A062',
             items: [
-                { tab: 'orders', icon: 'fa-solid fa-cash-register', title: 'Bán hàng (POS)', desc: 'Tạo đơn, xử lý thanh toán' },
-                { tab: 'history', icon: 'fa-solid fa-clock-rotate-left', title: 'Lịch sử đơn', desc: 'Tra cứu đơn hàng đã hoàn thành' },
-                { tab: 'delivery', icon: 'fa-solid fa-motorcycle', title: 'Giao hàng', desc: 'Quản lý đơn giao, shipper' },
-                { tab: 'shifts', icon: 'fa-solid fa-user-clock', title: 'Ca làm việc', desc: 'Mở / đóng ca, giao ca thu ngân' },
+                { tab: 'orders', icon: 'fa-solid fa-cash-register', title: 'BÃ¡n hÃ ng (POS)', desc: 'Táº¡o Ä‘Æ¡n, xá»­ lÃ½ thanh toÃ¡n' },
+                { tab: 'history', icon: 'fa-solid fa-clock-rotate-left', title: 'Lá»‹ch sá»­ Ä‘Æ¡n', desc: 'Tra cá»©u Ä‘Æ¡n hÃ ng Ä‘Ã£ hoÃ n thÃ nh' },
+                { tab: 'delivery', icon: 'fa-solid fa-motorcycle', title: 'Giao hÃ ng', desc: 'Quáº£n lÃ½ Ä‘Æ¡n giao, shipper' },
+                { tab: 'shifts', icon: 'fa-solid fa-user-clock', title: 'Ca lÃ m viá»‡c', desc: 'Má»Ÿ / Ä‘Ã³ng ca, giao ca thu ngÃ¢n' },
             ]
         },
         {
-            title: 'Quản lý',
+            title: 'Quáº£n lÃ½',
             icon: 'fa-solid fa-folder-open',
             color: '#3498db',
             items: [
-                { tab: 'menu', icon: 'fa-solid fa-utensils', title: 'Thực đơn', desc: 'Thêm, sửa, xoá món ăn & đồ uống' },
-                { tab: 'inventory', icon: 'fa-solid fa-boxes-stacked', title: 'Kho nguyên liệu', desc: 'Tồn kho, cảnh báo hết hàng' },
-                { tab: 'restock', icon: 'fa-solid fa-truck-ramp-box', title: 'Nhập hàng', desc: 'Tạo phiếu nhập kho từ nhà cung cấp' },
-                { tab: 'promo', icon: 'fa-solid fa-tags', title: 'Khuyến mãi', desc: 'Tạo mã giảm giá, chương trình ưu đãi' },
-                { tab: 'staff', icon: 'fa-solid fa-users-gear', title: 'Nhân viên', desc: 'Phân quyền, quản lý tài khoản NV' },
-                { tab: 'customers', icon: 'fa-solid fa-people-group', title: 'Khách hàng', desc: 'Danh sách khách, lịch sử mua hàng' },
-                { tab: 'crm', icon: 'fa-solid fa-heart', title: 'CRM & Loyalty', desc: 'Chăm sóc khách hàng, tích điểm' },
+                { tab: 'menu', icon: 'fa-solid fa-utensils', title: 'Thá»±c Ä‘Æ¡n', desc: 'ThÃªm, sá»­a, xoÃ¡ mÃ³n Äƒn & Ä‘á»“ uá»‘ng' },
+                { tab: 'inventory', icon: 'fa-solid fa-boxes-stacked', title: 'Kho nguyÃªn liá»‡u', desc: 'Tá»“n kho, cáº£nh bÃ¡o háº¿t hÃ ng' },
+                { tab: 'restock', icon: 'fa-solid fa-truck-ramp-box', title: 'Nháº­p hÃ ng', desc: 'Táº¡o phiáº¿u nháº­p kho tá»« nhÃ  cung cáº¥p' },
+                { tab: 'promo', icon: 'fa-solid fa-tags', title: 'Khuyáº¿n mÃ£i', desc: 'Táº¡o mÃ£ giáº£m giÃ¡, chÆ°Æ¡ng trÃ¬nh Æ°u Ä‘Ã£i' },
+                { tab: 'staff', icon: 'fa-solid fa-users-gear', title: 'NhÃ¢n viÃªn', desc: 'PhÃ¢n quyá»n, quáº£n lÃ½ tÃ i khoáº£n NV' },
+                { tab: 'customers', icon: 'fa-solid fa-people-group', title: 'KhÃ¡ch hÃ ng', desc: 'Danh sÃ¡ch khÃ¡ch, lá»‹ch sá»­ mua hÃ ng' },
+                { tab: 'crm', icon: 'fa-solid fa-heart', title: 'CRM & Loyalty', desc: 'ChÄƒm sÃ³c khÃ¡ch hÃ ng, tÃ­ch Ä‘iá»ƒm' },
             ]
         },
         {
-            title: 'Cửa hàng & Báo cáo',
+            title: 'Cá»­a hÃ ng & BÃ¡o cÃ¡o',
             icon: 'fa-solid fa-store',
             color: '#2ecc71',
             items: [
-                { tab: 'analytics', icon: 'fa-solid fa-chart-pie', title: 'Thống kê', desc: 'Biểu đồ doanh thu, top sản phẩm' },
-                { tab: 'cashflow', icon: 'fa-solid fa-money-bill-trend-up', title: 'Dòng tiền', desc: 'Thu chi, lợi nhuận theo ngày' },
-                { tab: 'tables', icon: 'fa-solid fa-chair', title: 'Sơ đồ bàn', desc: 'Cấu hình bàn, trạng thái phục vụ' },
-                { tab: 'qr', icon: 'fa-solid fa-qrcode', title: 'Mã QR', desc: 'In mã QR cho từng bàn' },
-                { tab: 'audit', icon: 'fa-solid fa-shield-halved', title: 'Nhật ký', desc: 'Lịch sử thao tác hệ thống' },
-                { tab: 'settings', icon: 'fa-solid fa-gear', title: 'Cài đặt', desc: 'Logo, tên quán, cấu hình chung' },
+                { tab: 'analytics', icon: 'fa-solid fa-chart-pie', title: 'Thá»‘ng kÃª', desc: 'Biá»ƒu Ä‘á»“ doanh thu, top sáº£n pháº©m' },
+                { tab: 'cashflow', icon: 'fa-solid fa-money-bill-trend-up', title: 'DÃ²ng tiá»n', desc: 'Thu chi, lá»£i nhuáº­n theo ngÃ y' },
+                { tab: 'tables', icon: 'fa-solid fa-chair', title: 'SÆ¡ Ä‘á»“ bÃ n', desc: 'Cáº¥u hÃ¬nh bÃ n, tráº¡ng thÃ¡i phá»¥c vá»¥' },
+                { tab: 'qr', icon: 'fa-solid fa-qrcode', title: 'MÃ£ QR', desc: 'In mÃ£ QR cho tá»«ng bÃ n' },
+                { tab: 'audit', icon: 'fa-solid fa-shield-halved', title: 'Nháº­t kÃ½', desc: 'Lá»‹ch sá»­ thao tÃ¡c há»‡ thá»‘ng' },
+                { tab: 'settings', icon: 'fa-solid fa-gear', title: 'CÃ i Ä‘áº·t', desc: 'Logo, tÃªn quÃ¡n, cáº¥u hÃ¬nh chung' },
             ]
         }
     ];
 
     // External pages
     const externalPages = [
-        { url: '/pages/staff.html', icon: 'fa-solid fa-headset', title: 'Trang Nhân viên', desc: 'Giao diện xử lý đơn cho NV', color: '#e17055' },
-        { url: '/pages/kitchen.html', icon: 'fa-solid fa-fire-burner', title: 'Trang Bếp', desc: 'Màn hình hiển thị đơn cho bếp', color: '#00b894' },
-        { url: '/pages/delivery.html', icon: 'fa-solid fa-truck-fast', title: 'Trang Giao hàng', desc: 'Bản đồ & quản lý shipper', color: '#0984e3' },
-        { url: '/pages/tv.html', icon: 'fa-solid fa-tv', title: 'Màn hình TV', desc: 'Hiển thị trạng thái đơn cho khách', color: '#6c5ce7' },
+        { url: '/pages/staff.html', icon: 'fa-solid fa-headset', title: 'Trang NhÃ¢n viÃªn', desc: 'Giao diá»‡n xá»­ lÃ½ Ä‘Æ¡n cho NV', color: '#e17055' },
+        { url: '/pages/kitchen.html', icon: 'fa-solid fa-fire-burner', title: 'Trang Báº¿p', desc: 'MÃ n hÃ¬nh hiá»ƒn thá»‹ Ä‘Æ¡n cho báº¿p', color: '#00b894' },
+        { url: '/pages/delivery.html', icon: 'fa-solid fa-truck-fast', title: 'Trang Giao hÃ ng', desc: 'Báº£n Ä‘á»“ & quáº£n lÃ½ shipper', color: '#0984e3' },
+        { url: '/pages/tv.html', icon: 'fa-solid fa-tv', title: 'MÃ n hÃ¬nh TV', desc: 'Hiá»ƒn thá»‹ tráº¡ng thÃ¡i Ä‘Æ¡n cho khÃ¡ch', color: '#6c5ce7' },
     ];
 
     let html = '';
@@ -754,7 +757,7 @@ function renderNavHub() {
         <div class="mb-2">
             <div class="flex items-center gap-2 mb-3">
                 <i class="fa-solid fa-arrow-up-right-from-square" style="color:#636e72"></i>
-                <span class="font-bold text-sm text-slate-700 uppercase tracking-wider">Trang ngoài</span>
+                <span class="font-bold text-sm text-slate-700 uppercase tracking-wider">Trang ngoÃ i</span>
                 <span class="text-xs text-slate-400">(${externalPages.length})</span>
             </div>
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
@@ -800,14 +803,14 @@ function initNavHubState() {
     } catch(e) {}
 }
 
-// --- Heatmap (Bản đồ nhiệt) ---
+// --- Heatmap (Báº£n Ä‘á»“ nhiá»‡t) ---
 function renderHeatmap(startDate, endDate) {
     const heatmapEl = document.getElementById('heatmap-container');
     if (!heatmapEl) return;
 
     heatmapEl.innerHTML = ''; // Clear old
 
-    // Logic: Khởi tạo mảng đếm 7 ngày, 24 giờ
+    // Logic: Khá»Ÿi táº¡o máº£ng Ä‘áº¿m 7 ngÃ y, 24 giá»
     const counts = Array(7).fill(0).map(() => Array(24).fill(0));
     let maxCount = 0;
 
@@ -828,7 +831,7 @@ function renderHeatmap(startDate, endDate) {
 
     const days = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
     
-    // Header row (Hours 6-22) - Giả sử quán mở từ 6h sáng đến 10h tối
+    // Header row (Hours 6-22) - Giáº£ sá»­ quÃ¡n má»Ÿ tá»« 6h sÃ¡ng Ä‘áº¿n 10h tá»‘i
     const headerRow = document.createElement('div');
     headerRow.className = 'heatmap-row heatmap-header';
     headerRow.innerHTML = '<div class="heatmap-cell label-cell"></div>' + 
@@ -853,7 +856,7 @@ function renderHeatmap(startDate, endDate) {
             row.innerHTML += `
             <div class="heatmap-cell intensity-${intensity} relative group cursor-pointer">
                 <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 pointer-events-none shadow-lg">
-                    Khung giờ ${h}h-${h+1}h ${dayLabel}: ${count} đơn
+                    Khung giá» ${h}h-${h+1}h ${dayLabel}: ${count} Ä‘Æ¡n
                     <svg class="absolute text-slate-800 h-2 w-full left-0 top-full" x="0px" y="0px" viewBox="0 0 255 255" xml:space="preserve"><polygon class="fill-current" points="0,0 127.5,127.5 255,0"/></svg>
                 </div>
             </div>`;
@@ -933,7 +936,7 @@ function renderForecast() {
             labels: allLabels,
             datasets: [
                 {
-                    label: 'Thực tế',
+                    label: 'Thá»±c táº¿',
                     data: actualData,
                     borderColor: '#C0A062',
                     backgroundColor: 'rgba(192,160,98,0.1)',
@@ -945,7 +948,7 @@ function renderForecast() {
                     spanGaps: false
                 },
                 {
-                    label: 'Dự báo (AI)',
+                    label: 'Dá»± bÃ¡o (AI)',
                     data: forecastData,
                     borderColor: '#e17055',
                     backgroundColor: 'rgba(225,112,85,0.08)',
@@ -967,7 +970,7 @@ function renderForecast() {
                 legend: { position: 'top', labels: { font: { family: 'Manrope', weight: '600' }, usePointStyle: true } },
                 tooltip: {
                     callbacks: {
-                        label: ctx => ctx.dataset.label + ': ' + (ctx.parsed.y || 0).toLocaleString('vi-VN') + ' đ'
+                        label: ctx => ctx.dataset.label + ': ' + (ctx.parsed.y || 0).toLocaleString('vi-VN') + ' Ä‘'
                     }
                 }
             },
@@ -1000,7 +1003,7 @@ function renderForecast() {
     const fPeak = document.getElementById('forecast-peak-day');
     const fConf = document.getElementById('forecast-confidence');
 
-    if (fNextWeek) fNextWeek.textContent = forecastTotal.toLocaleString('vi-VN') + 'đ';
+    if (fNextWeek) fNextWeek.textContent = forecastTotal.toLocaleString('vi-VN') + 'Ä‘';
     if (fTrend) {
         const isUp = trendPercent >= 0;
         fTrend.innerHTML = `<i class="fa-solid fa-arrow-${isUp ? 'up' : 'down'} text-${isUp ? '[#27ae60]' : 'red-500'} mr-1"></i><span class="text-${isUp ? '[#27ae60]' : 'red-500'}">${isUp ? '+' : ''}${trendPercent}%</span>`;
@@ -1011,15 +1014,15 @@ function renderForecast() {
     }
 }
 
-// --- Smart Purchasing (Dự báo nhập hàng thông minh) ---
+// --- Smart Purchasing (Dá»± bÃ¡o nháº­p hÃ ng thÃ´ng minh) ---
 function renderSmartPurchasing(startDate, endDate) {
     const purchasingEl = document.getElementById('smart-purchasing-body');
     if (!purchasingEl) return;
     
-    // Bước 1: Tính toán tổng mức tiêu thụ của từng nguyên liệu từ các đơn hàng.
+    // BÆ°á»›c 1: TÃ­nh toÃ¡n tá»•ng má»©c tiÃªu thá»¥ cá»§a tá»«ng nguyÃªn liá»‡u tá»« cÃ¡c Ä‘Æ¡n hÃ ng.
     const consumption = {}; // { ingredient_id: total_consumed_amount }
     
-    // Tính tổng số ngày trong khoảng thời gian lọc (chọn tối thiểu 1 ngày)
+    // TÃ­nh tá»•ng sá»‘ ngÃ y trong khoáº£ng thá»i gian lá»c (chá»n tá»‘i thiá»ƒu 1 ngÃ y)
     let daysDiff = 1;
     if (startDate && endDate) {
         daysDiff = Math.max(1, Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)));
@@ -1034,11 +1037,11 @@ function renderSmartPurchasing(startDate, endDate) {
         if (startDate && d < startDate) return;
         if (endDate && d > endDate) return;
 
-        if (order.status !== 'Completed' && order.status !== 'Ready') return; // Chỉ tính đơn đã bán
+        if (order.status !== 'Completed' && order.status !== 'Ready') return; // Chá»‰ tÃ­nh Ä‘Æ¡n Ä‘Ã£ bÃ¡n
         
         if (order.items) {
             order.items.forEach(item => {
-                // Kiểm tra xem item có lưu sẵn recipe không (hỗ trợ combo và options)
+                // Kiá»ƒm tra xem item cÃ³ lÆ°u sáºµn recipe khÃ´ng (há»— trá»£ combo vÃ  options)
                 if (item.recipe && Array.isArray(item.recipe) && item.recipe.length > 0) {
                     item.recipe.forEach(ri => {
                         const iId = ri.ingredientId || ri.ingredient_id;
@@ -1048,7 +1051,7 @@ function renderSmartPurchasing(startDate, endDate) {
                         consumption[iId] += qty * item.quantity;
                     });
                 } else {
-                    // Fallback tương thích cũ: Tìm product gốc
+                    // Fallback tÆ°Æ¡ng thÃ­ch cÅ©: TÃ¬m product gá»‘c
                     const prodId = item.productId || item.product_id || item.id;
                     const product = typeof products !== 'undefined' ? products.find(p => p._id === prodId || p.id === prodId) : null;
                     if (product && product.recipe && !product.is_combo) {
@@ -1069,7 +1072,7 @@ function renderSmartPurchasing(startDate, endDate) {
     
     let hasAlerts = false;
 
-    // Xem ingredient nào cần mua
+    // Xem ingredient nÃ o cáº§n mua
     ingredients.forEach(ing => {
         const totalConsumed = consumption[ing.id] || consumption[ing._id] || 0;
         const avgDaily = totalConsumed / daysDiff;
@@ -1081,11 +1084,11 @@ function renderSmartPurchasing(startDate, endDate) {
         
         if (avgDaily > 0) {
             daysUntilEmpty = Math.floor(ing.stock / avgDaily);
-            // Cảnh báo nếu số ngày còn lại <= 3 HOẶC tồn kho thấp hơn ngưỡng
+            // Cáº£nh bÃ¡o náº¿u sá»‘ ngÃ y cÃ²n láº¡i <= 3 HOáº¶C tá»“n kho tháº¥p hÆ¡n ngÆ°á»¡ng
             if (daysUntilEmpty <= 3 || ing.stock <= threshold) {
                 requiresAction = true;
                 hasAlerts = true;
-                // Mua đảm bảo đủ 7 ngày hoặc ít nhất là gấp đôi ngưỡng tối thiểu
+                // Mua Ä‘áº£m báº£o Ä‘á»§ 7 ngÃ y hoáº·c Ã­t nháº¥t lÃ  gáº¥p Ä‘Ã´i ngÆ°á»¡ng tá»‘i thiá»ƒu
                 let buyFor7Days = (avgDaily * 7) - ing.stock;
                 let buyForThreshold = (threshold * 2) - ing.stock;
                 suggestedBuy = Math.max(buyFor7Days, buyForThreshold);
@@ -1103,21 +1106,21 @@ function renderSmartPurchasing(startDate, endDate) {
             tr.innerHTML = `
                 <td class="py-3"><span class="fw-bold text-slate-800">${window.escapeHTML(ing.name)}</span></td>
                 <td class="py-3 text-center"><span class="${ing.stock <= threshold ? 'text-danger font-bold' : 'text-slate-600'}">${ing.stock} ${ing.unit}</span></td>
-                <td class="py-3 text-center font-bold text-orange-500">${avgDaily > 0 ? avgDaily.toFixed(1) : 0} ${ing.unit}/ngày</td>
-                <td class="py-3 text-center">${daysUntilEmpty === 'N/A' || daysUntilEmpty > 999 ? '-' : '<span class="badge bg-danger">' + daysUntilEmpty + ' ngày</span>'}</td>
-                <td class="py-3 text-end fw-bold text-[#27ae60]"><i class="fa-solid fa-cart-plus me-1"></i>Nhập ${Math.ceil(suggestedBuy)} ${ing.unit}</td>
+                <td class="py-3 text-center font-bold text-orange-500">${avgDaily > 0 ? avgDaily.toFixed(1) : 0} ${ing.unit}/ngÃ y</td>
+                <td class="py-3 text-center">${daysUntilEmpty === 'N/A' || daysUntilEmpty > 999 ? '-' : '<span class="badge bg-danger">' + daysUntilEmpty + ' ngÃ y</span>'}</td>
+                <td class="py-3 text-end fw-bold text-[#27ae60]"><i class="fa-solid fa-cart-plus me-1"></i>Nháº­p ${Math.ceil(suggestedBuy)} ${ing.unit}</td>
             `;
             purchasingEl.appendChild(tr);
         }
     });
 
     if (!hasAlerts) {
-        purchasingEl.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-slate-500"><i class="fa-solid fa-face-smile text-success fs-4 block mb-2"></i>Kho dồi dào. Chưa cần nhập thêm trong 7 ngày tới.</td></tr>';
+        purchasingEl.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-slate-500"><i class="fa-solid fa-face-smile text-success fs-4 block mb-2"></i>Kho dá»“i dÃ o. ChÆ°a cáº§n nháº­p thÃªm trong 7 ngÃ y tá»›i.</td></tr>';
     }
 }
 
 // =============================================
-// 7A — PERIOD COMPARISON (So sánh khoảng thời gian)
+// 7A â€” PERIOD COMPARISON (So sÃ¡nh khoáº£ng thá»i gian)
 // =============================================
 let periodComparisonChartInstance = null;
 
@@ -1156,7 +1159,7 @@ function renderPeriodComparison(startDate, endDate) {
 
     const renderKPI = (label, current, prev, change, isCurrency = false) => {
         const isUp = change >= 0;
-        const fmt = v => isCurrency ? v.toLocaleString('vi-VN') + 'đ' : v.toLocaleString('vi-VN');
+        const fmt = v => isCurrency ? v.toLocaleString('vi-VN') + 'Ä‘' : v.toLocaleString('vi-VN');
         return `
             <div class="flex-1 bg-white rounded-xl border border-slate-200 p-4 text-center">
                 <div class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-2">${label}</div>
@@ -1172,7 +1175,7 @@ function renderPeriodComparison(startDate, endDate) {
     container.innerHTML = `
         <div class="flex flex-col sm:flex-row gap-3 mb-4">
             ${renderKPI('Doanh thu', currentRevenue, prevRevenue, revChange, true)}
-            ${renderKPI('Số đơn', currentOrders, prevOrders, orderChange)}
+            ${renderKPI('Sá»‘ Ä‘Æ¡n', currentOrders, prevOrders, orderChange)}
             ${renderKPI('Ticket TB', currentTicket, prevTicket, ticketChange, true)}
         </div>
         <div style="height:220px"><canvas id="periodComparisonChart"></canvas></div>`;
@@ -1210,8 +1213,8 @@ function renderPeriodComparison(startDate, endDate) {
             data: {
                 labels,
                 datasets: [
-                    { label: 'Khoảng hiện tại', data: currentDaily, backgroundColor: 'rgba(192,160,98,0.7)', borderRadius: 6 },
-                    { label: 'Khoảng trước', data: prevDaily, backgroundColor: 'rgba(148,163,184,0.4)', borderRadius: 6 }
+                    { label: 'Khoáº£ng hiá»‡n táº¡i', data: currentDaily, backgroundColor: 'rgba(192,160,98,0.7)', borderRadius: 6 },
+                    { label: 'Khoáº£ng trÆ°á»›c', data: prevDaily, backgroundColor: 'rgba(148,163,184,0.4)', borderRadius: 6 }
                 ]
             },
             options: {
@@ -1227,7 +1230,7 @@ function renderPeriodComparison(startDate, endDate) {
 }
 
 // =============================================
-// 7B — PROFIT MARGINS (Biên lợi nhuận sản phẩm)
+// 7B â€” PROFIT MARGINS (BiÃªn lá»£i nhuáº­n sáº£n pháº©m)
 // =============================================
 function renderProfitMargins(startDate, endDate) {
     const tbody = document.getElementById('profit-margins-body');
@@ -1242,7 +1245,7 @@ function renderProfitMargins(startDate, endDate) {
 
         (o.items || []).forEach(item => {
             const prodId = item.productId || item.product_id || item.id;
-            const name = item.name || 'Không rõ';
+            const name = item.name || 'KhÃ´ng rÃµ';
             const price = item.price || 0;
             const qty = item.quantity || 1;
 
@@ -1281,7 +1284,7 @@ function renderProfitMargins(startDate, endDate) {
     tbody.innerHTML = '';
 
     if (sorted.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-slate-500">Chưa có dữ liệu trong khoảng thời gian này.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-slate-500">ChÆ°a cÃ³ dá»¯ liá»‡u trong khoáº£ng thá»i gian nÃ y.</td></tr>';
         return;
     }
 
@@ -1299,22 +1302,22 @@ function renderProfitMargins(startDate, endDate) {
                 </div>
             </td>
             <td class="py-3 px-4 text-center text-slate-600">${p.qty}</td>
-            <td class="py-3 px-4 text-end text-slate-700">${p.revenue.toLocaleString('vi-VN')}đ</td>
-            <td class="py-3 px-4 text-end ${hasCost ? 'text-red-500' : 'text-slate-400'}">${hasCost ? p.cost.toLocaleString('vi-VN') + 'đ' : 'N/A'}</td>
-            <td class="py-3 px-4 text-end font-bold ${hasCost ? 'text-[#27ae60]' : 'text-slate-400'}">${hasCost ? p.profit.toLocaleString('vi-VN') + 'đ' : 'N/A'}</td>
+            <td class="py-3 px-4 text-end text-slate-700">${p.revenue.toLocaleString('vi-VN')}Ä‘</td>
+            <td class="py-3 px-4 text-end ${hasCost ? 'text-red-500' : 'text-slate-400'}">${hasCost ? p.cost.toLocaleString('vi-VN') + 'Ä‘' : 'N/A'}</td>
+            <td class="py-3 px-4 text-end font-bold ${hasCost ? 'text-[#27ae60]' : 'text-slate-400'}">${hasCost ? p.profit.toLocaleString('vi-VN') + 'Ä‘' : 'N/A'}</td>
             <td class="py-3 px-4 text-center">
                 ${hasCost ? `
                     <div class="flex items-center gap-2 justify-center">
                         <div class="w-16 h-2 bg-slate-200 rounded-full overflow-hidden"><div class="${marginBg} h-full rounded-full" style="width:${Math.min(100, p.margin)}%"></div></div>
                         <span class="text-xs font-bold ${marginColor}">${p.margin.toFixed(1)}%</span>
-                    </div>` : '<span class="text-slate-400 text-xs">Chưa có giá NL</span>'}
+                    </div>` : '<span class="text-slate-400 text-xs">ChÆ°a cÃ³ giÃ¡ NL</span>'}
             </td>`;
         tbody.appendChild(tr);
     });
 }
 
 // =============================================
-// 7C — STAFF PERFORMANCE (Hiệu suất nhân viên)
+// 7C â€” STAFF PERFORMANCE (Hiá»‡u suáº¥t nhÃ¢n viÃªn)
 // =============================================
 function renderStaffPerformance(startDate, endDate) {
     const tbody = document.getElementById('staff-performance-body');
@@ -1327,7 +1330,7 @@ function renderStaffPerformance(startDate, endDate) {
         const d = new Date(o.createdAt);
         if (d < startDate || d > endDate) return;
 
-        const staffName = o.created_by || o.createdBy || 'Khách đặt online';
+        const staffName = o.created_by || o.createdBy || 'KhÃ¡ch Ä‘áº·t online';
         if (!staffStats[staffName]) {
             staffStats[staffName] = { name: staffName, orders: 0, revenue: 0 };
         }
@@ -1342,11 +1345,11 @@ function renderStaffPerformance(startDate, endDate) {
     tbody.innerHTML = '';
 
     if (sorted.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-slate-500">Chưa có dữ liệu trong khoảng thời gian này.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-slate-500">ChÆ°a cÃ³ dá»¯ liá»‡u trong khoáº£ng thá»i gian nÃ y.</td></tr>';
         return;
     }
 
-    const medals = ['🥇', '🥈', '🥉'];
+    const medals = ['ðŸ¥‡', 'ðŸ¥ˆ', 'ðŸ¥‰'];
     sorted.forEach((s, i) => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -1357,12 +1360,243 @@ function renderStaffPerformance(startDate, endDate) {
                 </div>
             </td>
             <td class="py-3 px-4 text-center">
-                <span class="bg-slate-100 px-2 py-1 rounded-lg text-sm font-bold text-slate-700">${s.orders} đơn</span>
+                <span class="bg-slate-100 px-2 py-1 rounded-lg text-sm font-bold text-slate-700">${s.orders} Ä‘Æ¡n</span>
             </td>
-            <td class="py-3 px-4 text-end font-bold text-[#C0A062]">${s.revenue.toLocaleString('vi-VN')}đ</td>
-            <td class="py-3 px-4 text-end text-slate-600">${s.avgTicket.toLocaleString('vi-VN')}đ</td>`;
+            <td class="py-3 px-4 text-end font-bold text-[#C0A062]">${s.revenue.toLocaleString('vi-VN')}Ä‘</td>
+            <td class="py-3 px-4 text-end text-slate-600">${s.avgTicket.toLocaleString('vi-VN')}Ä‘</td>`;
         tbody.appendChild(tr);
     });
+}
+
+// =============================================
+// 7D â€” ABC ANALYSIS (Best Sellers vs Dead Stock)
+// =============================================
+function renderABCAnalysis(startDate, endDate) {
+    const tbody = document.getElementById('abc-analysis-body');
+    if (!tbody) return;
+
+    const productStats = {};
+    let totalRevenue = 0;
+
+    orderHistory.forEach(o => {
+        if (o.paymentStatus !== 'paid' || o.status === 'Cancelled') return;
+        const d = new Date(o.createdAt);
+        if (startDate && d < startDate) return;
+        if (endDate && d > endDate) return;
+
+        (o.items || []).forEach(item => {
+            const prodId = item.productId || item.product_id || item.id;
+            const name = item.name || 'KhÃ´ng rÃµ';
+            const price = item.price || 0;
+            const qty = item.quantity || 1;
+            const revenue = price * qty;
+
+            if (!productStats[name]) {
+                productStats[name] = { prodId, name, qty: 0, revenue: 0 };
+            }
+            productStats[name].qty += qty;
+            productStats[name].revenue += revenue;
+            totalRevenue += revenue;
+        });
+    });
+
+    const sorted = Object.values(productStats).sort((a, b) => b.revenue - a.revenue);
+    
+    tbody.innerHTML = '';
+    if (sorted.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-slate-500">ChÆ°a cÃ³ dá»¯ liá»‡u trong khoáº£ng thá»i gian nÃ y.</td></tr>';
+        return;
+    }
+
+    let cumulativeRevenue = 0;
+    sorted.forEach((p, i) => {
+        cumulativeRevenue += p.revenue;
+        const cumulativePercent = totalRevenue > 0 ? (cumulativeRevenue / totalRevenue * 100) : 0;
+        
+        let abcClass = 'C';
+        let badgeColor = 'bg-slate-200 text-slate-600';
+        if (cumulativePercent <= 80 || (cumulativePercent > 80 && cumulativePercent - (p.revenue/totalRevenue*100) < 80)) {
+            abcClass = 'A';
+            badgeColor = 'bg-[#27ae60] text-white';
+        } else if (cumulativePercent <= 95 || (cumulativePercent > 95 && cumulativePercent - (p.revenue/totalRevenue*100) < 95)) {
+            abcClass = 'B';
+            badgeColor = 'bg-[#f39c12] text-white';
+        }
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="py-3 px-4 text-center">
+                <span class="w-8 h-8 rounded-full ${badgeColor} text-sm font-bold flex items-center justify-center mx-auto">${abcClass}</span>
+            </td>
+            <td class="py-3 px-4 font-bold text-slate-800">${window.escapeHTML(p.name)}</td>
+            <td class="py-3 px-4 text-center text-slate-600">${p.qty}</td>
+            <td class="py-3 px-4 text-end text-slate-700">${p.revenue.toLocaleString('vi-VN')}Ä‘</td>
+            <td class="py-3 px-4 text-end font-bold text-blue-600">${cumulativePercent.toFixed(1)}%</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+// =============================================
+// 7E â€” HOURLY REVENUE BREAKDOWN
+// =============================================
+let hourlyRevenueChartInstance = null;
+
+function renderHourlyRevenueBreakdown(startDate, endDate) {
+    const ctx = document.getElementById('hourlyRevenueChart');
+    if (!ctx) return;
+
+    const hourlyRevenue = Array(24).fill(0);
+    const hourlyOrders = Array(24).fill(0);
+
+    orderHistory.forEach(o => {
+        if (o.paymentStatus !== 'paid' || o.status === 'Cancelled') return;
+        const d = new Date(o.createdAt);
+        if (startDate && d < startDate) return;
+        if (endDate && d > endDate) return;
+
+        const hour = d.getHours();
+        hourlyRevenue[hour] += (o.totalPrice || 0);
+        hourlyOrders[hour]++;
+    });
+
+    // Filter to show hours 6 to 22
+    const labels = [];
+    const revenueData = [];
+    const orderData = [];
+    for (let i = 6; i <= 22; i++) {
+        labels.push(i + 'h');
+        revenueData.push(hourlyRevenue[i]);
+        orderData.push(hourlyOrders[i]);
+    }
+
+    if (hourlyRevenueChartInstance) hourlyRevenueChartInstance.destroy();
+    
+    if (typeof Chart === 'undefined') return;
+    
+    hourlyRevenueChartInstance = new Chart(ctx.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Doanh thu',
+                    data: revenueData,
+                    backgroundColor: 'rgba(192, 160, 98, 0.7)',
+                    borderColor: '#C0A062',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Sá»‘ Ä‘Æ¡n',
+                    data: orderData,
+                    type: 'line',
+                    borderColor: '#e17055',
+                    backgroundColor: '#e17055',
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    tension: 0.3,
+                    yAxisID: 'y1'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { position: 'top', labels: { font: { family: 'Manrope', weight: '600' }, usePointStyle: true } },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) label += ': ';
+                            if (context.datasetIndex === 0) {
+                                label += context.parsed.y.toLocaleString('vi-VN') + ' Ä‘';
+                            } else {
+                                label += context.parsed.y + ' Ä‘Æ¡n';
+                            }
+                            return label;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: { grid: { display: false } },
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    ticks: { callback: v => (v / 1000).toFixed(0) + 'K' }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    grid: { drawOnChartArea: false },
+                    ticks: { stepSize: 1 }
+                }
+            }
+        }
+    });
+}
+
+// =============================================
+// 7F â€” CUSTOMER RETENTION COHORT
+// =============================================
+function renderCustomerRetention(startDate, endDate) {
+    const elNew = document.getElementById('retention-new-customers');
+    const elRet = document.getElementById('retention-returning-customers');
+    const elPct = document.getElementById('retention-percentage');
+    const elBar = document.getElementById('retention-progress-bar');
+    if (!elNew) return;
+
+    const customersInPeriod = new Set();
+    const allCustomersBeforePeriod = new Set();
+    let newCustomers = 0;
+    let returningCustomers = 0;
+
+    // PhÃ¢n tÃ­ch toÃ n bá»™ order history
+    // Láº¥y nhá»¯ng ngÆ°á»i cÃ³ SÄT
+    const validOrders = orderHistory.filter(o => o.paymentStatus === 'paid' && o.status !== 'Cancelled' && o.customer_phone);
+
+    validOrders.forEach(o => {
+        const d = new Date(o.createdAt);
+        const phone = o.customer_phone;
+        
+        if (startDate && d < startDate) {
+            allCustomersBeforePeriod.add(phone);
+        }
+    });
+
+    validOrders.forEach(o => {
+        const d = new Date(o.createdAt);
+        const phone = o.customer_phone;
+
+        if ((!startDate || d >= startDate) && (!endDate || d <= endDate)) {
+            // Customer is in the target period
+            if (!customersInPeriod.has(phone)) {
+                customersInPeriod.add(phone);
+                // Check if returning
+                if (allCustomersBeforePeriod.has(phone)) {
+                    returningCustomers++;
+                } else {
+                    newCustomers++;
+                    // Also add to before period to handle multiple orders within the same period as "New" for the first, and not double counting
+                    allCustomersBeforePeriod.add(phone);
+                }
+            }
+        }
+    });
+
+    const totalPeriodCustomers = newCustomers + returningCustomers;
+    const retentionRate = totalPeriodCustomers > 0 ? (returningCustomers / totalPeriodCustomers * 100).toFixed(1) : 0;
+
+    elNew.textContent = newCustomers.toLocaleString('vi-VN');
+    elRet.textContent = returningCustomers.toLocaleString('vi-VN');
+    elPct.textContent = retentionRate + '%';
+    elBar.style.width = retentionRate + '%';
 }
 
 // =============================================
@@ -1405,4 +1639,3 @@ function stopDashboardRealtime() {
         supabase.removeChannel(_dashboardRealtimeChannel);
         _dashboardRealtimeChannel = null;
     }
-}
