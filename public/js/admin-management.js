@@ -184,6 +184,7 @@ async function saveStaff() {
             if (!data || data.length === 0) {
                 throw new Error("Không thể cập nhật dữ liệu. Có thể do lỗi phân quyền (RLS) hoặc nhân viên không tồn tại.");
             }
+            if (typeof logAudit === 'function') logAudit('Sửa nhân viên', `Tên: ${payload.name}, Vai trò: ${payload.role}`);
             // Sync avatar if user updates themselves
             const currentStaffName = sessionStorage.getItem('nohope_staff_name') || localStorage.getItem('nohope_staff_name');
             if (data[0].name === currentStaffName && data[0].avatar_url) {
@@ -200,6 +201,7 @@ async function saveStaff() {
         } else {
             const { error } = await supabase.from('users').insert([{...payload, tenant_id: AdminState.tenantId}]);
             if (error) throw error;
+            if (typeof logAudit === 'function') logAudit('Thêm nhân viên mới', `Tên: ${payload.name}, Vai trò: ${payload.role}`);
         }
         if (window.staffModalInstance) {
             window.staffModalInstance.hide();

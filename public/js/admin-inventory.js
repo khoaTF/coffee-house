@@ -228,6 +228,7 @@ async function saveIngredient() {
         if (id) {
             const { error } = await supabase.from('ingredients').update(payload).eq('id', id).eq('tenant_id', window.AdminState.tenantId);
             if (error) throw error;
+            if (typeof logAudit === 'function') logAudit('Sửa nguyên liệu', `Tên: ${payload.name}, Tồn: ${payload.stock} ${payload.unit}`);
 
             if (stock !== oldStock) {
                 const diff = stock - oldStock;
@@ -246,6 +247,7 @@ async function saveIngredient() {
             payload.tenant_id = window.AdminState.tenantId;
             const { data, error } = await supabase.from('ingredients').insert([payload]).select();
             if (error) throw error;
+            if (typeof logAudit === 'function') logAudit('Thêm nguyên liệu', `Tên: ${payload.name}, Tồn ban đầu: ${payload.stock} ${payload.unit}`);
 
             if (stock > 0 && data && data.length > 0) {
                 await supabase.from('inventory_logs').insert([{
@@ -278,6 +280,7 @@ async function deleteIngredient(id, stock) {
     try {
         const { error } = await supabase.from('ingredients').delete().eq('id', id).eq('tenant_id', window.AdminState.tenantId);
         if (error) throw error;
+        if (typeof logAudit === 'function') logAudit('Xóa nguyên liệu', `ID: ${id}`);
         fetchIngredients();
     } catch (e) {
         console.error(e);
