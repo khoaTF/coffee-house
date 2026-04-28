@@ -48,7 +48,7 @@ app.get('/ping', (req, res) => res.status(200).send('pong'));
 app.use(express.static(path.join(__dirname, '../public')));
 
 // Explicit HTML Page Routes to support Clean URLs locally and on Vercel
-const pages = ['login', 'admin', 'kitchen', 'staff', 'tv', 'delivery', 'driver', 'tracking', 'guide', 'superadmin'];
+const pages = ['login', 'admin', 'kitchen', 'staff', 'tv', 'delivery', 'driver', 'tracking', 'guide', 'superadmin', 'offline'];
 pages.forEach(page => {
     app.get(`/${page}`, (req, res) => {
         res.sendFile(path.join(__dirname, `../public/pages/${page}.html`));

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nohope Coffee — Offline</title>
+    <link rel="icon" type="image/png" href="/images/bunny_logo.png">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap');
+        body {
+            font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0d1117 0%, #1a1a2e 50%, #16213e 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            text-align: center;
+        }
+        .offline-container {
+            max-width: 420px;
+            width: 100%;
+        }
+        .offline-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 32px;
+            background: rgba(212, 167, 106, 0.1);
+            border: 2px solid rgba(212, 167, 106, 0.2);
+            border-radius: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            animation: floatY 3s ease-in-out infinite;
+        }
+        @keyframes floatY {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        h1 {
+            font-size: 28px;
+            font-weight: 800;
+            color: #d4a76a;
+            margin-bottom: 12px;
+        }
+        p {
+            font-size: 15px;
+            color: #94a3b8;
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+        .retry-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 32px;
+            background: linear-gradient(135deg, #d4a76a 0%, #c0a062 100%);
+            color: #0d1117;
+            font-weight: 700;
+            font-size: 15px;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 16px rgba(212, 167, 106, 0.3);
+        }
+        .retry-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(212, 167, 106, 0.4);
+        }
+        .retry-btn:active {
+            transform: translateY(0);
+        }
+        .status-bar {
+            margin-top: 40px;
+            padding: 12px 20px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            font-size: 12px;
+            color: #64748b;
+        }
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ef4444;
+            margin-right: 6px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        .cached-hint {
+            margin-top: 20px;
+            font-size: 13px;
+            color: #475569;
+        }
+        .cached-hint a {
+            color: #d4a76a;
+            text-decoration: none;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon">☕</div>
+        <h1>Không có kết nối</h1>
+        <p>Bạn đang ngoại tuyến. Vui lòng kiểm tra kết nối Internet và thử lại. Hệ thống sẽ tự động phục hồi khi có mạng trở lại.</p>
+        <button class="retry-btn" onclick="window.location.reload()">
+            🔄 Thử lại
+        </button>
+        <div class="status-bar">
+            <span class="status-dot"></span> Đang chờ kết nối...
+        </div>
+        <div class="cached-hint">
+            <p>Một số trang có thể đã được lưu trữ offline.<br>
+            Thử truy cập <a href="/">Trang chủ</a> hoặc <a href="/admin">Admin</a></p>
+        </div>
+    </div>
+
+    <script>
+        // Auto-retry when back online
+        window.addEventListener('online', () => {
+            window.location.reload();
+        });
+
+        // Check every 5 seconds
+        setInterval(() => {
+            fetch('/', { method: 'HEAD', cache: 'no-store' })
+                .then(() => window.location.reload())
+                .catch(() => {});
+        }, 5000);
+    </script>
+</body>
+</html>
