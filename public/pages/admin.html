@@ -3324,8 +3324,8 @@
                 steps: [
                     {
                         element: '#admin-main-nav',
-                        title: 'Thanh Điều Hướng (Sidebar)',
-                        description: 'Tất cả chức năng quản lý nằm tại đây. Nhấn vào từng mục để chuyển tab. <strong>Quyền truy cập</strong> được phân theo vai trò.',
+                        title: 'Thanh Điều Hướng',
+                        description: 'Tất cả chức năng quản lý nằm tại đây. Phân quyền truy cập sẽ tự động ẩn/hiện chức năng tùy theo vai trò nhân viên.',
                         icon: 'fa-solid fa-bars',
                         position: 'right',
                         padding: 4
@@ -3333,7 +3333,7 @@
                     {
                         element: '#tab-dashboard',
                         title: 'Dashboard Tổng Quan',
-                        description: 'Xem <strong>KPI doanh thu</strong>, số đơn hàng, món bán chạy và biểu đồ phân tích ngay trên một màn hình.',
+                        description: 'Xem <strong>KPI doanh thu</strong>, số đơn hàng, món bán chạy và biểu đồ phân tích nhanh trong ngày.',
                         icon: 'fa-solid fa-gauge-high',
                         position: 'right',
                         padding: 4,
@@ -3342,7 +3342,7 @@
                     {
                         element: '#tab-pos',
                         title: 'POS Bán Hàng',
-                        description: 'Tạo đơn bán trực tiếp cho khách vãng lai hoặc mang đi. Hỗ trợ <strong>in hóa đơn nhiệt</strong> và thanh toán nhanh.',
+                        description: 'Giao diện tạo đơn bán trực tiếp tại quầy hoặc mang đi. Hỗ trợ <strong>in hóa đơn</strong> và thanh toán mã QR.',
                         icon: 'fa-solid fa-cash-register',
                         position: 'right',
                         padding: 4,
@@ -3350,8 +3350,8 @@
                     },
                     {
                         element: '#tab-menu',
-                        title: 'Quản Lý Thực Đơn',
-                        description: 'Thêm/sửa/xóa món, thiết lập <strong>combo</strong>, topping, giá theo size. Điều khiển công thức kho liên kết tự động.',
+                        title: 'Thực Đơn & Công Thức',
+                        description: 'Thêm/sửa món, topping. Đặc biệt, thiết lập <strong>định lượng nguyên liệu</strong> để tự động trừ kho khi bán.',
                         icon: 'fa-solid fa-book-open',
                         position: 'right',
                         padding: 4,
@@ -3360,17 +3360,53 @@
                     {
                         element: '#tab-inventory',
                         title: 'Quản Lý Kho',
-                        description: 'Theo dõi tồn kho nguyên liệu theo <strong>thời gian thực</strong>. Kho tự động trừ khi Bếp làm món và hoàn khi huỷ đơn.',
+                        description: 'Theo dõi tồn kho nguyên liệu <strong>thời gian thực</strong>, cảnh báo sắp hết hàng và quản lý nhà cung cấp.',
                         icon: 'fa-solid fa-boxes-stacked',
                         position: 'right',
                         padding: 4,
                         borderRadius: '12px'
                     },
                     {
+                        element: '#tab-restock',
+                        title: 'Nhập Hàng',
+                        description: 'Ghi nhận phiếu nhập kho, cộng số lượng nguyên liệu và lưu trữ lịch sử nhập hàng để đối soát.',
+                        icon: 'fa-solid fa-truck-ramp-box',
+                        position: 'right',
+                        padding: 4,
+                        borderRadius: '12px'
+                    },
+                    {
+                        element: '#tab-promo',
+                        title: 'Khuyến Mãi',
+                        description: 'Tạo và quản lý <strong>Mã giảm giá (Voucher)</strong> theo % hoặc số tiền cố định cho khách hàng.',
+                        icon: 'fa-solid fa-ticket',
+                        position: 'right',
+                        padding: 4,
+                        borderRadius: '12px'
+                    },
+                    {
                         element: '#tab-history',
-                        title: 'Đơn Hàng & Lịch Sử',
-                        description: 'Xem toàn bộ đơn hàng, lọc theo ngày/trạng thái. Hỗ trợ <strong>in bill</strong>, xuất Excel và quản lý thanh toán.',
+                        title: 'Quản Lý Đơn Hàng',
+                        description: 'Xem toàn bộ lịch sử đơn hàng, trạng thái xử lý, hỗ trợ <strong>in bill lại</strong> hoặc hủy đơn.',
                         icon: 'fa-solid fa-clock-rotate-left',
+                        position: 'right',
+                        padding: 4,
+                        borderRadius: '12px'
+                    },
+                    {
+                        element: '#tab-shifts',
+                        title: 'Ca Làm Việc',
+                        description: 'Nhân viên chốt ca, kiểm đếm tiền mặt thực tế và bàn giao. Hệ thống tự động tính <strong>chênh lệch doanh thu</strong>.',
+                        icon: 'fa-solid fa-business-time',
+                        position: 'right',
+                        padding: 4,
+                        borderRadius: '12px'
+                    },
+                    {
+                        element: '#tab-delivery',
+                        title: 'Giao Hàng (Ship)',
+                        description: 'Quản lý các đơn khách đặt qua web/app để giao tận nơi. Theo dõi trạng thái tài xế và phí ship.',
+                        icon: 'fa-solid fa-motorcycle',
                         position: 'right',
                         padding: 4,
                         borderRadius: '12px'
@@ -3378,17 +3414,62 @@
                     {
                         element: '#tab-analytics',
                         title: 'Báo Cáo & Thống Kê',
-                        description: 'Phân tích <strong>doanh thu</strong>, món bán chạy, xu hướng khách hàng. Xuất báo cáo <strong>Excel/CSV</strong> cho kế toán.',
+                        description: 'Phân tích tài chính chuyên sâu, xu hướng bán hàng. Hỗ trợ xuất file <strong>Excel/CSV</strong>.',
                         icon: 'fa-solid fa-chart-pie',
                         position: 'right',
                         padding: 4,
                         borderRadius: '12px'
                     },
                     {
+                        element: '#tab-cashflow',
+                        title: 'Sổ Quỹ Thu Chi',
+                        description: 'Ghi chép các khoản <strong>thu ngoài</strong> hoặc <strong>chi phí</strong> (nhập hàng, điện nước, trả lương) để tính lợi nhuận ròng.',
+                        icon: 'fa-solid fa-wallet',
+                        position: 'right',
+                        padding: 4,
+                        borderRadius: '12px'
+                    },
+                    {
+                        element: '#tab-tables',
+                        title: 'Quản Lý Bàn',
+                        description: 'Tạo mã QR cho từng bàn, sửa tên bàn hoặc tải xuống mã QR để in dán lên bàn cho khách tự quét.',
+                        icon: 'fa-solid fa-table-cells',
+                        position: 'right',
+                        padding: 4,
+                        borderRadius: '12px'
+                    },
+                    {
+                        element: '#tab-customers',
+                        title: 'Khách Hàng',
+                        description: 'Quản lý hạng thành viên (Đồng, Bạc, Vàng), điểm tích lũy và lịch sử chi tiêu của từng khách.',
+                        icon: 'fa-solid fa-users',
+                        position: 'right',
+                        padding: 4,
+                        borderRadius: '12px'
+                    },
+                    {
+                        element: '#tab-crm',
+                        title: 'Marketing & CRM',
+                        description: 'Phân tích RFM (khách mới, trung thành, sắp rời bỏ) và gửi tin nhắn CSKH hoặc khuyến mãi tự động qua <strong>Zalo ZNS</strong>.',
+                        icon: 'fa-solid fa-bullseye',
+                        position: 'right',
+                        padding: 4,
+                        borderRadius: '12px'
+                    },
+                    {
                         element: '#tab-staff',
-                        title: 'Quản Lý Nhân Viên',
-                        description: 'Thêm nhân viên, phân quyền chi tiết từng chức năng. Cập nhật quyền <strong>realtime</strong> không cần reload.',
+                        title: 'Nhân Viên & Phân Quyền',
+                        description: 'Thêm tài khoản nhân viên, đặt mã PIN bảo mật và cấp quyền truy cập chi tiết (Bếp, Thu ngân, Quản lý).',
                         icon: 'fa-solid fa-user-tie',
+                        position: 'right',
+                        padding: 4,
+                        borderRadius: '12px'
+                    },
+                    {
+                        element: '#tab-audit',
+                        title: 'Nhật Ký Hoạt Động',
+                        description: 'Lưu vết mọi thao tác của nhân viên (xóa đơn, hủy món, chốt ca...) để <strong>kiểm toán chống gian lận</strong>.',
+                        icon: 'fa-solid fa-clipboard-list',
                         position: 'right',
                         padding: 4,
                         borderRadius: '12px'
@@ -3396,7 +3477,7 @@
                     {
                         element: '#tab-settings',
                         title: 'Cài Đặt Cửa Hàng',
-                        description: 'Thay đổi tên quán, logo, màu sắc, thông tin thanh toán và các cài đặt hệ thống khác.',
+                        description: 'Tùy chỉnh thông tin quán, logo, màu sắc chủ đạo, bật/tắt nhận đơn và cấu hình thanh toán ngân hàng.',
                         icon: 'fa-solid fa-gear',
                         position: 'right',
                         padding: 4,

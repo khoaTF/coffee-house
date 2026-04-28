@@ -915,8 +915,8 @@ document.addEventListener('DOMContentLoaded', async function() {
             steps: [
                 {
                     element: '#tab-tables',
-                    title: 'Sơ Đồ Bàn',
-                    description: 'Xem trạng thái tất cả các bàn: <strong>Trống</strong>, <strong>Đang dùng</strong>, <strong>Chờ thanh toán</strong>. Nhấn vào bàn để xem chi tiết đơn hàng.',
+                    title: 'Sơ Đồ Bàn (Mặc định)',
+                    description: 'Xem trạng thái bàn thực tế (Trống, Đang dùng, Chờ thanh toán). Bấm vào bàn để <strong>Thêm món</strong>, <strong>Gộp/Đổi bàn</strong> hoặc <strong>Thanh toán</strong>.',
                     icon: 'fa-solid fa-chair',
                     position: 'bottom',
                     padding: 6
@@ -924,7 +924,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 {
                     element: '#tab-orders',
                     title: 'Đơn Hàng & Món',
-                    description: 'Theo dõi đơn hàng dạng <strong>Kanban</strong>: Chờ nhận → Đang làm → Hoàn tất. Nhấn tích để đánh dấu từng món đã xong.',
+                    description: 'Bảng theo dõi bếp (Kanban). Quản lý luồng công việc từ <strong>Chờ xử lý</strong> → <strong>Đang chuẩn bị</strong> → <strong>Sẵn sàng</strong> để giao cho khách.',
                     icon: 'fa-solid fa-list-check',
                     position: 'bottom',
                     padding: 6
@@ -932,16 +932,24 @@ document.addEventListener('DOMContentLoaded', async function() {
                 {
                     element: '#tab-requests',
                     title: 'Yêu Cầu Hỗ Trợ',
-                    description: 'Khi khách nhấn nút gọi nhân viên, yêu cầu sẽ hiện tại đây kèm <strong>thông báo âm thanh</strong>. Nhấn để xác nhận đã hỗ trợ.',
+                    description: 'Khi khách quét QR gọi phục vụ hoặc gọi tính tiền, thông báo sẽ hiển thị tại đây kèm <strong>âm thanh cảnh báo</strong>.',
                     icon: 'fa-solid fa-bell-concierge',
                     position: 'bottom',
                     padding: 6
                 },
                 {
                     element: '#refresh-btn',
-                    title: 'Làm Mới Dữ Liệu',
-                    description: 'Dữ liệu tự đồng cập nhật qua <strong>Realtime</strong>. Nhưng nếu cần, nhấn nút này để tải lại dữ liệu mới nhất.',
+                    title: 'Làm Mới (F5)',
+                    description: 'Hệ thống tự động cập nhật qua Realtime. Tuy nhiên nếu mạng yếu hoặc mất kết nối, hãy bấm nút này để đồng bộ dữ liệu mới nhất.',
                     icon: 'fa-solid fa-rotate-right',
+                    position: 'bottom',
+                    padding: 6
+                },
+                {
+                    element: '#logout-btn',
+                    title: 'Đăng Xuất & Chốt Ca',
+                    description: 'Kết thúc ca làm việc, hãy nhớ <strong>Đăng xuất</strong> để hệ thống ghi nhận nhật ký hoạt động (Audit log) một cách chính xác.',
+                    icon: 'fa-solid fa-right-from-bracket',
                     position: 'bottom',
                     padding: 6
                 }
