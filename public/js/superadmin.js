@@ -379,9 +379,15 @@ async function initActivityFeed() {
             const time = new Date(log.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
             const date = new Date(log.created_at).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
             let icon = 'fa-clipboard-list text-info';
-            if (log.action.includes('Thêm') || log.action.includes('Tạo')) icon = 'fa-plus text-success';
-            if (log.action.includes('Xóa') || log.action.includes('Hủy')) icon = 'fa-trash text-danger';
-            if (log.action.includes('Cập nhật') || log.action.includes('Sửa')) icon = 'fa-pen text-warning';
+            const act = (log.action || '').toUpperCase();
+            if (act.includes('CREATE') || act.includes('Thêm') || act.includes('Tạo')) icon = 'fa-plus text-success';
+            else if (act.includes('DELETE') || act.includes('Xóa') || act.includes('Hủy')) icon = 'fa-trash text-danger';
+            else if (act.includes('UPDATE') || act.includes('RESET') || act.includes('EXTEND') || act.includes('Cập nhật') || act.includes('Sửa')) icon = 'fa-pen text-warning';
+            else if (act.includes('BROADCAST')) icon = 'fa-bullhorn text-warning';
+            else if (act.includes('SUSPEND')) icon = 'fa-ban text-danger';
+            else if (act.includes('ACTIVATE')) icon = 'fa-check-circle text-success';
+
+            const tenantIdStr = log.tenant_id ? String(log.tenant_id) : '';
 
             html += `
                 <div class="d-flex align-items-start mb-3 border-bottom border-secondary pb-2">
@@ -393,7 +399,7 @@ async function initActivityFeed() {
                         </div>
                         <div class="text-white" style="font-size: 0.8rem;">${escapeHtml(log.action)}</div>
                         <div class="text-muted mt-1" style="font-size: 0.75rem;">${escapeHtml(JSON.stringify(log.details))}</div>
-                        ${log.tenant_id ? `<div class="badge bg-secondary mt-1" style="font-size: 0.65rem;">Tenant: ${log.tenant_id.substring(0,8)}...</div>` : ''}
+                        ${tenantIdStr ? `<div class="badge bg-secondary mt-1" style="font-size: 0.65rem;">Tenant: ${tenantIdStr.substring(0,8)}...</div>` : ''}
                     </div>
                 </div>
             `;
@@ -813,6 +819,85 @@ async function quickExtendTenant(tenantId) {
     }
 }
 
+// ====================================================
+// Global Audit Logs Tab
+// ====================================================
+let auditLogOffset = 0;
+const AUDIT_PAGE_SIZE = 50;
+
+async function loadFullAuditLogs(loadMore = false) {
+    const tbody = document.getElementById('global-audit-table-body');
+    const loadMoreBtn = document.getElementById('load-more-audit-btn');
+
+    if (!loadMore) {
+        auditLogOffset = 0;
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted"><i class="fa-solid fa-spinner fa-spin me-2"></i> Loading logs...</td></tr>';
+    }
+
+    try {
+        const { data, error } = await supabase.rpc('get_superadmin_audit_logs', {
+            owner_secret: ownerSecret,
+            limit_count: AUDIT_PAGE_SIZE
+        });
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            if (!loadMore) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted">Không có nhật ký nào.</td></tr>';
+            }
+            loadMoreBtn.style.display = 'none';
+            return;
+        }
+
+        let html = '';
+        data.forEach(log => {
+            const ts = new Date(log.created_at).toLocaleString('vi-VN', {
+                day: '2-digit', month: '2-digit', year: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+            });
+            const act = (log.action || '').toUpperCase();
+            let actionBadge = 'bg-info';
+            if (act.includes('DELETE')) actionBadge = 'bg-danger';
+            else if (act.includes('CREATE')) actionBadge = 'bg-success';
+            else if (act.includes('UPDATE') || act.includes('RESET') || act.includes('EXTEND')) actionBadge = 'bg-warning text-dark';
+            else if (act.includes('BROADCAST')) actionBadge = 'bg-warning text-dark';
+            else if (act.includes('SUSPEND')) actionBadge = 'bg-danger';
+
+            const tenantIdStr = log.tenant_id ? String(log.tenant_id) : '';
+            const detailsStr = log.details ? JSON.stringify(log.details) : '';
+            const shortDetails = detailsStr.length > 100 ? detailsStr.substring(0, 100) + '...' : detailsStr;
+
+            html += `
+                <tr>
+                    <td class="py-3 px-4 text-muted" style="font-size: 0.8rem; white-space: nowrap;">${ts}</td>
+                    <td class="py-3 px-4" style="font-size: 0.8rem;">
+                        ${tenantIdStr ? `<span class="badge bg-secondary" style="font-size: 0.7rem; cursor: pointer;" onclick="copyTenantId('${tenantIdStr}')" title="Click to copy">${tenantIdStr.substring(0, 8)}...</span>` : '<span class="text-muted">—</span>'}
+                    </td>
+                    <td class="py-3 px-4" style="font-size: 0.8rem;">${escapeHtml(log.admin_identifier || 'System')}</td>
+                    <td class="py-3 px-4"><span class="badge ${actionBadge} rounded-pill" style="font-size: 0.75rem;">${escapeHtml(log.action)}</span></td>
+                    <td class="py-3 px-4 text-muted" style="font-size: 0.75rem; max-width: 350px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(detailsStr)}">${escapeHtml(shortDetails)}</td>
+                </tr>
+            `;
+        });
+
+        if (loadMore) {
+            tbody.insertAdjacentHTML('beforeend', html);
+        } else {
+            tbody.innerHTML = html;
+        }
+
+        auditLogOffset += data.length;
+        loadMoreBtn.style.display = data.length >= AUDIT_PAGE_SIZE ? 'inline-block' : 'none';
+    } catch (e) {
+        console.error('Failed to load audit logs:', e);
+        if (!loadMore) {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center py-5 text-danger"><i class="fa-solid fa-triangle-exclamation me-2"></i>${escapeHtml(e.message)}</td></tr>`;
+        } else {
+            showToast('Lỗi tải thêm logs: ' + e.message, 'danger');
+        }
+        loadMoreBtn.style.display = 'none';
+    }
+}
 
 function showToast(message, type = 'success') {
     const toastEl = document.getElementById('actionToast');
