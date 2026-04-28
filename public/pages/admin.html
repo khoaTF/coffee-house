@@ -3300,108 +3300,18 @@
 
 <script src="/js/tutorial.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        setTimeout(function () {
-            var adminTutorial = new NohopeTutorial({
-                storageKey: 'nohope_tutorial_admin_done',
-                theme: 'admin',
-                welcomeEmoji: '📊',
-                welcomeTitle: 'Chào mừng Admin!',
-                welcomeDesc: 'Hãy khám phá các công cụ quản trị mạnh mẽ của Nohope Coffee trong vài bước đơn giản.',
-                completeTitle: 'Hoàn tất hướng dẫn!',
-                completeDesc: 'Bạn đã nắm được các chức năng chính. Chúc bạn quản lý hiệu quả!',
-                steps: [
-                    {
-                        element: '#admin-main-nav',
-                        title: 'Thanh Điều Hướng (Sidebar)',
-                        description: 'Tất cả chức năng quản lý nằm tại đây. Nhấn vào từng mục để chuyển tab. <strong>Quyền truy cập</strong> được phân theo vai trò.',
-                        icon: 'fa-solid fa-bars',
-                        position: 'right',
-                        padding: 4
-                    },
-                    {
-                        element: '#tab-dashboard',
-                        title: 'Dashboard Tổng Quan',
-                        description: 'Xem <strong>KPI doanh thu</strong>, số đơn hàng, món bán chạy và biểu đồ phân tích ngay trên một màn hình.',
-                        icon: 'fa-solid fa-gauge-high',
-                        position: 'right',
-                        padding: 4,
-                        borderRadius: '12px'
-                    },
-                    {
-                        element: '#tab-pos',
-                        title: 'POS Bán Hàng',
-                        description: 'Tạo đơn bán trực tiếp cho khách vãng lai hoặc mang đi. Hỗ trợ <strong>in hóa đơn nhiệt</strong> và thanh toán nhanh.',
-                        icon: 'fa-solid fa-cash-register',
-                        position: 'right',
-                        padding: 4,
-                        borderRadius: '12px'
-                    },
-                    {
-                        element: '#tab-menu',
-                        title: 'Quản Lý Thực Đơn',
-                        description: 'Thêm/sửa/xóa món, thiết lập <strong>combo</strong>, topping, giá theo size. Điều khiển công thức kho liên kết tự động.',
-                        icon: 'fa-solid fa-book-open',
-                        position: 'right',
-                        padding: 4,
-                        borderRadius: '12px'
-                    },
-                    {
-                        element: '#tab-inventory',
-                        title: 'Quản Lý Kho',
-                        description: 'Theo dõi tồn kho nguyên liệu theo <strong>thời gian thực</strong>. Kho tự động trừ khi Bếp làm món và hoàn khi huỷ đơn.',
-                        icon: 'fa-solid fa-boxes-stacked',
-                        position: 'right',
-                        padding: 4,
-                        borderRadius: '12px'
-                    },
-                    {
-                        element: '#tab-history',
-                        title: 'Đơn Hàng & Lịch Sử',
-                        description: 'Xem toàn bộ đơn hàng, lọc theo ngày/trạng thái. Hỗ trợ <strong>in bill</strong>, xuất Excel và quản lý thanh toán.',
-                        icon: 'fa-solid fa-clock-rotate-left',
-                        position: 'right',
-                        padding: 4,
-                        borderRadius: '12px'
-                    },
-                    {
-                        element: '#tab-analytics',
-                        title: 'Báo Cáo & Thống Kê',
-                        description: 'Phân tích <strong>doanh thu</strong>, món bán chạy, xu hướng khách hàng. Xuất báo cáo <strong>Excel/CSV</strong> cho kế toán.',
-                        icon: 'fa-solid fa-chart-pie',
-                        position: 'right',
-                        padding: 4,
-                        borderRadius: '12px'
-                    },
-                    {
-                        element: '#tab-staff',
-                        title: 'Quản Lý Nhân Viên',
-                        description: 'Thêm nhân viên, phân quyền chi tiết từng chức năng. Cập nhật quyền <strong>realtime</strong> không cần reload.',
-                        icon: 'fa-solid fa-user-tie',
-                        position: 'right',
-                        padding: 4,
-                        borderRadius: '12px'
-                    },
-                    {
-                        element: '#tab-settings',
-                        title: 'Cài Đặt Cửa Hàng',
-                        description: 'Thay đổi tên quán, logo, màu sắc, thông tin thanh toán và các cài đặt hệ thống khác.',
-                        icon: 'fa-solid fa-gear',
-                        position: 'right',
-                        padding: 4,
-                        borderRadius: '12px'
-                    }
-                ]
-            });
-            adminTutorial.autoStart(2500);
-            window._adminTutorial = adminTutorial;
-        }, 1500);
-    });
-</script>
+    document.addEventListener('DOMContentLoaded', async function () {
+        // Tự động bỏ qua tutorial trên thiết bị mới nếu quán đã hoạt động (đã có món trên menu)
+        try {
+            const tenantId = sessionStorage.getItem('tenant_id') || localStorage.getItem('tenant_id');
+            if (tenantId && !localStorage.getItem('nohope_tutorial_admin_done')) {
+                const { count } = await window.supabase.from('products').select('*', { count: 'exact', head: true }).eq('tenant_id', tenantId);
+                if (count && count > 0) {
+                    localStorage.setItem('nohope_tutorial_admin_done', '1');
+                }
+            }
+        } catch(e) {}
 
-<script src="/js/tutorial.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
         setTimeout(function () {
             var adminTutorial = new NohopeTutorial({
                 storageKey: 'nohope_tutorial_admin_done',
@@ -3499,3 +3409,4 @@
         }, 1500);
     });
 </script>
+

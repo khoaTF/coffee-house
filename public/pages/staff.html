@@ -892,7 +892,18 @@
     </script>
 <script src="/js/tutorial.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
+    // Tự động bỏ qua tutorial trên thiết bị mới nếu quán đã hoạt động (đã có món trên menu)
+    try {
+        const tenantId = sessionStorage.getItem('tenant_id') || localStorage.getItem('tenant_id');
+        if (tenantId && !localStorage.getItem('nohope_tutorial_staff_done')) {
+            const { count } = await window.supabase.from('products').select('*', { count: 'exact', head: true }).eq('tenant_id', tenantId);
+            if (count && count > 0) {
+                localStorage.setItem('nohope_tutorial_staff_done', '1');
+            }
+        }
+    } catch(e) {}
+
     setTimeout(function() {
         var staffTutorial = new NohopeTutorial({
             storageKey: 'nohope_tutorial_staff_done',
