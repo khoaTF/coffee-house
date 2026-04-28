@@ -135,6 +135,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
                 
+                await logSuperadminAction('CREATE_TENANT', { client_name: clientName, tier: tier }, data?.tenant_id);
+
                 // Close modal safely
                 const createModal = bootstrap.Modal.getInstance(document.getElementById('createTenantModal'));
                 if (createModal) createModal.hide();
@@ -211,6 +213,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 showToast('Tenant updated successfully', 'success');
                 
+                await logSuperadminAction('UPDATE_TENANT_INFO', { 
+                    status: newStatus, 
+                    expiry: newExpiry,
+                    max_staff: newMaxStaff,
+                    max_items: newMaxItems,
+                    domain: newDomain
+                }, tenantId);
+                
                 // Close modal safely
                 const manageModal = bootstrap.Modal.getInstance(document.getElementById('manageTenantModal'));
                 if (manageModal) manageModal.hide();
@@ -247,6 +257,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(error) throw error;
                 showToast('Broadcast sent globally!', 'success');
                 document.getElementById('broadcast-message').value = '';
+                
+                await logSuperadminAction('BROADCAST_MESSAGE', { message: msg, type: type });
             } catch(e) {
                 showToast(e.message, 'danger');
             } finally {
@@ -256,6 +268,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+async function logSuperadminAction(action, details, targetTenantId = null) {
+    try {
+        await supabase.rpc('log_superadmin_action', {
+            owner_secret: ownerSecret,
+            p_action: action,
+            p_details: details,
+            p_target_tenant_id: targetTenantId
+        });
+    } catch (e) {
+        console.error("Failed to log superadmin action:", e);
+    }
+}
 
 let revenueChartInstance = null;
 
@@ -642,6 +667,8 @@ async function confirmResetPin() {
         
         if (error) throw error;
 
+        await logSuperadminAction('FORCE_RESET_PIN', { new_pin_length: newPin.length }, tenantId);
+
         bootstrap.Modal.getInstance(document.getElementById('resetPinModal'))?.hide();
         showToast('Admin PIN reset successfully!', 'success');
     } catch(err) {
@@ -696,6 +723,8 @@ async function deleteTenant() {
             });
             if (error) throw error;
 
+            await logSuperadminAction('DELETE_TENANT', { tenant_name: tenantName }, tenantId);
+
             showToast('Chi nhánh đã bị xoá vĩnh viễn.', 'success');
 
             const delModal = bootstrap.Modal.getInstance(document.getElementById('deleteTenantConfirmModal'));
@@ -734,6 +763,8 @@ async function quickExtendTenant(tenantId) {
             p_days: 30
         });
         if (error) throw error;
+
+        await logSuperadminAction('QUICK_EXTEND_TENANT', { extended_days: 30 }, tenantId);
 
         showToast('Đã gia hạn thêm 30 ngày thành công!', 'success');
         await fetchAndRenderTenants();
