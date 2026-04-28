@@ -304,6 +304,16 @@
                         </div>
                     </div>
 
+                    <!-- 7A: Period Comparison -->
+                    <div class="card bg-gradient-to-r from-slate-50 to-amber-50/30 border border-slate-200 rounded-2xl shadow-soft mb-6 overflow-hidden">
+                        <div class="card-header bg-transparent border-b border-slate-200 p-4">
+                            <h5 class="font-noto font-bold text-slate-800 mb-0 flex items-center gap-2"><i class="fa-solid fa-scale-balanced text-[#C0A062]"></i> So sánh với Khoảng Trước <span class="text-xs text-slate-400 font-normal ms-2">(tự động so với khoảng tương đương trước đó)</span></h5>
+                        </div>
+                        <div class="card-body p-4" id="period-comparison-container">
+                            <div class="text-center py-6 text-slate-500">Chọn khoảng ngày và bấm "Lọc dữ liệu" để xem so sánh...</div>
+                        </div>
+                    </div>
+
                     <div class="row g-4 mb-6">
                         <div class="col-xl-8">
                             <div class="card bg-white border border-slate-200 rounded-2xl shadow-soft h-100">
@@ -434,6 +444,57 @@
                                     </thead>
                                     <tbody id="top-selling-body" class="border-transparent">
                                         <tr><td colspan="3" class="text-center py-4 text-slate-500">Đang tải biểu mẫu...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 7B: Profit Margins -->
+                    <div class="card bg-white border border-slate-200 rounded-2xl shadow-soft mb-6 overflow-hidden">
+                        <div class="card-header bg-slate-100 border-b border-slate-200 p-4 flex justify-between items-center">
+                            <h5 class="font-noto font-bold text-slate-800 mb-0 flex items-center gap-2"><i class="fa-solid fa-hand-holding-dollar text-[#27ae60]"></i> Biên Lợi Nhuận Sản Phẩm</h5>
+                            <span class="text-xs text-slate-500 font-semibold bg-white px-2 py-1 rounded-lg border border-slate-200">Giá bán - Chi phí NL = Lợi nhuận</span>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover text-slate-800 mb-0 border-0">
+                                    <thead class="bg-white text-slate-500 text-xs uppercase tracking-wider">
+                                        <tr>
+                                            <th class="border-0 px-4 py-3 font-semibold">Sản phẩm</th>
+                                            <th class="border-0 px-4 py-3 font-semibold text-center">SL bán</th>
+                                            <th class="border-0 px-4 py-3 font-semibold text-end">Doanh thu</th>
+                                            <th class="border-0 px-4 py-3 font-semibold text-end text-red-500">Chi phí NL</th>
+                                            <th class="border-0 px-4 py-3 font-semibold text-end text-[#27ae60]">Lợi nhuận</th>
+                                            <th class="border-0 px-4 py-3 font-semibold text-center">Margin %</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="profit-margins-body" class="border-transparent">
+                                        <tr><td colspan="6" class="text-center py-4 text-slate-500">Đang phân tích biên lợi nhuận...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 7C: Staff Performance -->
+                    <div class="card bg-white border border-slate-200 rounded-2xl shadow-soft mb-6 overflow-hidden">
+                        <div class="card-header bg-slate-100 border-b border-slate-200 p-4">
+                            <h5 class="font-noto font-bold text-slate-800 mb-0 flex items-center gap-2"><i class="fa-solid fa-ranking-star text-[#C0A062]"></i> Hiệu Suất Nhân Viên <span class="text-xs text-slate-400 font-normal ms-2">(theo đơn đã thanh toán)</span></h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover text-slate-800 mb-0 border-0">
+                                    <thead class="bg-white text-slate-500 text-xs uppercase tracking-wider">
+                                        <tr>
+                                            <th class="border-0 px-4 py-3 font-semibold">Nhân viên</th>
+                                            <th class="border-0 px-4 py-3 font-semibold text-center">Số đơn xử lý</th>
+                                            <th class="border-0 px-4 py-3 font-semibold text-end">Tổng doanh thu</th>
+                                            <th class="border-0 px-4 py-3 font-semibold text-end">Ticket TB / Đơn</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="staff-performance-body" class="border-transparent">
+                                        <tr><td colspan="4" class="text-center py-4 text-slate-500">Đang tải hiệu suất nhân viên...</td></tr>
                                     </tbody>
                                 </table>
                             </div>

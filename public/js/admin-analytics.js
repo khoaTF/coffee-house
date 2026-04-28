@@ -194,6 +194,9 @@ function renderAnalytics() {
     renderHeatmap(startDate, endDate);
     renderSmartPurchasing(startDate, endDate);
     renderForecast();
+    renderPeriodComparison(startDate, endDate);
+    renderProfitMargins(startDate, endDate);
+    renderStaffPerformance(startDate, endDate);
 }
 
 // --- Feedback Stats ---
@@ -1111,6 +1114,255 @@ function renderSmartPurchasing(startDate, endDate) {
     if (!hasAlerts) {
         purchasingEl.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-slate-500"><i class="fa-solid fa-face-smile text-success fs-4 block mb-2"></i>Kho dồi dào. Chưa cần nhập thêm trong 7 ngày tới.</td></tr>';
     }
+}
+
+// =============================================
+// 7A — PERIOD COMPARISON (So sánh khoảng thời gian)
+// =============================================
+let periodComparisonChartInstance = null;
+
+function renderPeriodComparison(startDate, endDate) {
+    const container = document.getElementById('period-comparison-container');
+    if (!container) return;
+
+    const periodMs = endDate - startDate;
+    const prevStart = new Date(startDate.getTime() - periodMs);
+    const prevEnd = new Date(startDate.getTime() - 1);
+
+    let currentRevenue = 0, currentOrders = 0;
+    let prevRevenue = 0, prevOrders = 0;
+
+    orderHistory.forEach(o => {
+        if (o.paymentStatus !== 'paid' || o.status === 'Cancelled') return;
+        const d = new Date(o.createdAt);
+        const rev = o.totalPrice || 0;
+
+        if (d >= startDate && d <= endDate) {
+            currentRevenue += rev;
+            currentOrders++;
+        } else if (d >= prevStart && d <= prevEnd) {
+            prevRevenue += rev;
+            prevOrders++;
+        }
+    });
+
+    const currentTicket = currentOrders > 0 ? Math.round(currentRevenue / currentOrders) : 0;
+    const prevTicket = prevOrders > 0 ? Math.round(prevRevenue / prevOrders) : 0;
+
+    const calcChange = (curr, prev) => prev > 0 ? ((curr - prev) / prev * 100).toFixed(1) : (curr > 0 ? 100 : 0);
+    const revChange = calcChange(currentRevenue, prevRevenue);
+    const orderChange = calcChange(currentOrders, prevOrders);
+    const ticketChange = calcChange(currentTicket, prevTicket);
+
+    const renderKPI = (label, current, prev, change, isCurrency = false) => {
+        const isUp = change >= 0;
+        const fmt = v => isCurrency ? v.toLocaleString('vi-VN') + 'đ' : v.toLocaleString('vi-VN');
+        return `
+            <div class="flex-1 bg-white rounded-xl border border-slate-200 p-4 text-center">
+                <div class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-2">${label}</div>
+                <div class="text-2xl font-black text-slate-800 mb-1">${fmt(current)}</div>
+                <div class="flex items-center justify-center gap-1 text-sm">
+                    <i class="fa-solid fa-arrow-${isUp ? 'up' : 'down'} text-${isUp ? '[#27ae60]' : 'red-500'} text-xs"></i>
+                    <span class="font-bold text-${isUp ? '[#27ae60]' : 'red-500'}">${isUp ? '+' : ''}${change}%</span>
+                    <span class="text-slate-400 text-xs">vs ${fmt(prev)}</span>
+                </div>
+            </div>`;
+    };
+
+    container.innerHTML = `
+        <div class="flex flex-col sm:flex-row gap-3 mb-4">
+            ${renderKPI('Doanh thu', currentRevenue, prevRevenue, revChange, true)}
+            ${renderKPI('Số đơn', currentOrders, prevOrders, orderChange)}
+            ${renderKPI('Ticket TB', currentTicket, prevTicket, ticketChange, true)}
+        </div>
+        <div style="height:220px"><canvas id="periodComparisonChart"></canvas></div>`;
+
+    // Build daily comparison chart
+    const days = Math.max(1, Math.ceil(periodMs / (1000 * 60 * 60 * 24)));
+    const currentDaily = Array(days).fill(0);
+    const prevDaily = Array(days).fill(0);
+    const labels = [];
+
+    for (let i = 0; i < days; i++) {
+        const d = new Date(startDate); d.setDate(d.getDate() + i);
+        labels.push(d.toLocaleDateString('vi-VN', { month: '2-digit', day: '2-digit' }));
+    }
+
+    orderHistory.forEach(o => {
+        if (o.paymentStatus !== 'paid' || o.status === 'Cancelled') return;
+        const d = new Date(o.createdAt);
+        const rev = o.totalPrice || 0;
+
+        if (d >= startDate && d <= endDate) {
+            const idx = Math.floor((d - startDate) / (1000 * 60 * 60 * 24));
+            if (idx >= 0 && idx < days) currentDaily[idx] += rev;
+        } else if (d >= prevStart && d <= prevEnd) {
+            const idx = Math.floor((d - prevStart) / (1000 * 60 * 60 * 24));
+            if (idx >= 0 && idx < days) prevDaily[idx] += rev;
+        }
+    });
+
+    const ctx = document.getElementById('periodComparisonChart');
+    if (ctx && typeof Chart !== 'undefined') {
+        if (periodComparisonChartInstance) periodComparisonChartInstance.destroy();
+        periodComparisonChartInstance = new Chart(ctx.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [
+                    { label: 'Khoảng hiện tại', data: currentDaily, backgroundColor: 'rgba(192,160,98,0.7)', borderRadius: 6 },
+                    { label: 'Khoảng trước', data: prevDaily, backgroundColor: 'rgba(148,163,184,0.4)', borderRadius: 6 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { position: 'top', labels: { font: { family: 'Manrope', weight: '600' }, usePointStyle: true } } },
+                scales: {
+                    y: { ticks: { callback: v => (v / 1000).toFixed(0) + 'K' }, grid: { color: '#f1f5f9' } },
+                    x: { grid: { display: false }, ticks: { maxTicksLimit: 10 } }
+                }
+            }
+        });
+    }
+}
+
+// =============================================
+// 7B — PROFIT MARGINS (Biên lợi nhuận sản phẩm)
+// =============================================
+function renderProfitMargins(startDate, endDate) {
+    const tbody = document.getElementById('profit-margins-body');
+    if (!tbody) return;
+
+    const productStats = {};
+
+    orderHistory.forEach(o => {
+        if (o.paymentStatus !== 'paid' || o.status === 'Cancelled') return;
+        const d = new Date(o.createdAt);
+        if (d < startDate || d > endDate) return;
+
+        (o.items || []).forEach(item => {
+            const prodId = item.productId || item.product_id || item.id;
+            const name = item.name || 'Không rõ';
+            const price = item.price || 0;
+            const qty = item.quantity || 1;
+
+            if (!productStats[name]) {
+                productStats[name] = { prodId, name, price, qty: 0, revenue: 0, cost: 0 };
+            }
+            productStats[name].qty += qty;
+            productStats[name].revenue += price * qty;
+
+            // Calculate ingredient cost
+            const product = typeof products !== 'undefined' ? products.find(p => p._id === prodId || p.id === prodId) : null;
+            if (product && product.recipe && Array.isArray(product.recipe)) {
+                let itemCost = 0;
+                product.recipe.forEach(ri => {
+                    const ingId = ri.ingredient_id || ri.ingredientId;
+                    const amount = ri.amount || ri.quantity || 0;
+                    const ing = typeof ingredients !== 'undefined' ? ingredients.find(i => i.id === ingId || i._id === ingId) : null;
+                    if (ing && ing.cost_price) {
+                        itemCost += (ing.cost_price * amount);
+                    }
+                });
+                productStats[name].cost += itemCost * qty;
+            }
+        });
+    });
+
+    const sorted = Object.values(productStats)
+        .map(p => ({
+            ...p,
+            profit: p.revenue - p.cost,
+            margin: p.revenue > 0 ? ((p.revenue - p.cost) / p.revenue * 100) : 0
+        }))
+        .sort((a, b) => b.profit - a.profit)
+        .slice(0, 15);
+
+    tbody.innerHTML = '';
+
+    if (sorted.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-slate-500">Chưa có dữ liệu trong khoảng thời gian này.</td></tr>';
+        return;
+    }
+
+    sorted.forEach((p, i) => {
+        const marginColor = p.margin >= 60 ? 'text-[#27ae60]' : (p.margin >= 30 ? 'text-[#b45309]' : 'text-red-500');
+        const marginBg = p.margin >= 60 ? 'bg-[#27ae60]' : (p.margin >= 30 ? 'bg-[#b45309]' : 'bg-red-500');
+        const hasCost = p.cost > 0;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="py-3 px-4">
+                <div class="flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-full ${i < 3 ? 'bg-[#C0A062] text-white' : 'bg-slate-200 text-slate-600'} text-xs font-bold flex items-center justify-center flex-shrink-0">${i + 1}</span>
+                    <span class="font-bold text-slate-800 truncate max-w-[180px]">${window.escapeHTML(p.name)}</span>
+                </div>
+            </td>
+            <td class="py-3 px-4 text-center text-slate-600">${p.qty}</td>
+            <td class="py-3 px-4 text-end text-slate-700">${p.revenue.toLocaleString('vi-VN')}đ</td>
+            <td class="py-3 px-4 text-end ${hasCost ? 'text-red-500' : 'text-slate-400'}">${hasCost ? p.cost.toLocaleString('vi-VN') + 'đ' : 'N/A'}</td>
+            <td class="py-3 px-4 text-end font-bold ${hasCost ? 'text-[#27ae60]' : 'text-slate-400'}">${hasCost ? p.profit.toLocaleString('vi-VN') + 'đ' : 'N/A'}</td>
+            <td class="py-3 px-4 text-center">
+                ${hasCost ? `
+                    <div class="flex items-center gap-2 justify-center">
+                        <div class="w-16 h-2 bg-slate-200 rounded-full overflow-hidden"><div class="${marginBg} h-full rounded-full" style="width:${Math.min(100, p.margin)}%"></div></div>
+                        <span class="text-xs font-bold ${marginColor}">${p.margin.toFixed(1)}%</span>
+                    </div>` : '<span class="text-slate-400 text-xs">Chưa có giá NL</span>'}
+            </td>`;
+        tbody.appendChild(tr);
+    });
+}
+
+// =============================================
+// 7C — STAFF PERFORMANCE (Hiệu suất nhân viên)
+// =============================================
+function renderStaffPerformance(startDate, endDate) {
+    const tbody = document.getElementById('staff-performance-body');
+    if (!tbody) return;
+
+    const staffStats = {};
+
+    orderHistory.forEach(o => {
+        if (o.paymentStatus !== 'paid' || o.status === 'Cancelled') return;
+        const d = new Date(o.createdAt);
+        if (d < startDate || d > endDate) return;
+
+        const staffName = o.created_by || o.createdBy || 'Khách đặt online';
+        if (!staffStats[staffName]) {
+            staffStats[staffName] = { name: staffName, orders: 0, revenue: 0 };
+        }
+        staffStats[staffName].orders++;
+        staffStats[staffName].revenue += (o.totalPrice || 0);
+    });
+
+    const sorted = Object.values(staffStats)
+        .map(s => ({ ...s, avgTicket: s.orders > 0 ? Math.round(s.revenue / s.orders) : 0 }))
+        .sort((a, b) => b.revenue - a.revenue);
+
+    tbody.innerHTML = '';
+
+    if (sorted.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-slate-500">Chưa có dữ liệu trong khoảng thời gian này.</td></tr>';
+        return;
+    }
+
+    const medals = ['🥇', '🥈', '🥉'];
+    sorted.forEach((s, i) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="py-3 px-4">
+                <div class="flex items-center gap-2">
+                    ${i < 3 ? `<span class="text-lg">${medals[i]}</span>` : `<span class="w-6 h-6 rounded-full bg-slate-200 text-slate-600 text-xs font-bold flex items-center justify-center flex-shrink-0">${i + 1}</span>`}
+                    <span class="font-bold text-slate-800">${window.escapeHTML(s.name)}</span>
+                </div>
+            </td>
+            <td class="py-3 px-4 text-center">
+                <span class="bg-slate-100 px-2 py-1 rounded-lg text-sm font-bold text-slate-700">${s.orders} đơn</span>
+            </td>
+            <td class="py-3 px-4 text-end font-bold text-[#C0A062]">${s.revenue.toLocaleString('vi-VN')}đ</td>
+            <td class="py-3 px-4 text-end text-slate-600">${s.avgTicket.toLocaleString('vi-VN')}đ</td>`;
+        tbody.appendChild(tr);
+    });
 }
 
 // =============================================
