@@ -1,4 +1,4 @@
-﻿// =============================================
+// =============================================
 // ADMIN-ANALYTICS â€” Charts, Feedback, Dashboard KPI
 // =============================================
 // Dependencies: admin-core.js (orderHistory, products, supabase, showAdminToast)
@@ -1639,3 +1639,4 @@ function stopDashboardRealtime() {
         supabase.removeChannel(_dashboardRealtimeChannel);
         _dashboardRealtimeChannel = null;
     }
+}
