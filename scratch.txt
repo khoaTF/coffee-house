@@ -1,8 +1,0 @@
-Tôi đã tạo bản kế hoạch thiết kế chi tiết (Implementation Plan) cho **Phase 6.1: Audit Logging (Nhật ký hệ thống)**.
-
-Tính năng này sẽ giúp hệ thống của bạn minh bạch hơn và an toàn hơn khi có nhiều nhân viên quản lý. Bạn có thể xem file `implementation_plan.md` vừa được cập nhật ở bên cạnh để biết chi tiết.
-
-Trước khi bắt tay vào code, tôi có 2 câu hỏi nhỏ cần bạn quyết định (bạn xem trong phần **Open Questions** của bản kế hoạch nhé):
-
-1. **Thời gian lưu trữ dữ liệu:** Bạn muốn lưu toàn bộ Audit Logs vĩnh viễn, hay tự động xóa các log cũ hơn (ví dụ: 90 ngày) để tối ưu dung lượng Database?
-<truncated 406 bytes>
