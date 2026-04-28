@@ -1,18 +1,35 @@
 // public/js/superadmin.js
 let ownerSecret = sessionStorage.getItem('nohope_owner_secret') || '';
 
+// Global utility: aggressively remove ALL modal backdrops and unlock body scroll
+function forceCleanModals() {
+    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+    document.body.classList.remove('modal-open');
+    document.body.style.removeProperty('overflow');
+    document.body.style.removeProperty('padding-right');
+}
+
+// Safe modal open: cleanup first, then show
+function safeShowModal(modalEl) {
+    // Dispose any lingering instance to prevent double-backdrop
+    const existing = bootstrap.Modal.getInstance(modalEl);
+    if (existing) existing.dispose();
+    forceCleanModals();
+    const fresh = new bootstrap.Modal(modalEl);
+    fresh.show();
+    return fresh;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     
-    // SAFETY NET: Clean up orphaned modal backdrops after any modal hides
+    // SAFETY NET: Aggressive cleanup after any modal hides
     document.addEventListener('hidden.bs.modal', () => {
-        // If no modal is currently open, clean up everything
-        const openModals = document.querySelectorAll('.modal.show');
-        if (openModals.length === 0) {
-            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-            document.body.classList.remove('modal-open');
-            document.body.style.removeProperty('overflow');
-            document.body.style.removeProperty('padding-right');
-        }
+        setTimeout(() => {
+            const openModals = document.querySelectorAll('.modal.show');
+            if (openModals.length === 0) {
+                forceCleanModals();
+            }
+        }, 100);
     });
 
     // Auth flow
@@ -617,9 +634,7 @@ function openManageModal(btnEl) {
         document.getElementById('manage-tenant-zns').value = t.integrations?.zns_webhook || '';
         
         const modalEl = document.getElementById('manageTenantModal');
-        // FIX: Reuse existing instance to prevent duplicate backdrops
-        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-        modal.show();
+        safeShowModal(modalEl);
     } catch(e) {
         console.error("Error opening manage modal:", e);
     }
@@ -666,19 +681,19 @@ async function resetTenantPin() {
         errorEl.style.display = v.length > 0 && !valid ? 'block' : 'none';
     };
 
-    // FIX: Close Manage modal first, then open PIN modal after transition completes
+    // Close manage modal, cleanup, then open PIN modal
     const manageModalEl = document.getElementById('manageTenantModal');
     const manageModal = bootstrap.Modal.getInstance(manageModalEl);
     
     const showPinModal = () => {
-        const pinModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('resetPinModal'));
-        pinModal.show();
+        forceCleanModals();
+        safeShowModal(document.getElementById('resetPinModal'));
         setTimeout(() => input.focus(), 300);
     };
 
     if (manageModal && manageModalEl.classList.contains('show')) {
-        manageModalEl.addEventListener('hidden.bs.modal', showPinModal, { once: true });
         manageModal.hide();
+        manageModalEl.addEventListener('hidden.bs.modal', showPinModal, { once: true });
     } else {
         showPinModal();
     }
@@ -779,19 +794,19 @@ async function deleteTenant() {
     confirmBtn._deleteClickHandler = clickHandler;
     confirmBtn.addEventListener('click', clickHandler);
 
-    // FIX: Properly sequence modal transition — wait for Manage to fully close before opening Delete
+    // Close manage modal, cleanup, then open delete confirmation modal
     const manageModalEl = document.getElementById('manageTenantModal');
     const manageModal = bootstrap.Modal.getInstance(manageModalEl);
     
     const showDeleteModal = () => {
-        const deleteConfirmModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('deleteTenantConfirmModal'));
-        deleteConfirmModal.show();
+        forceCleanModals();
+        safeShowModal(document.getElementById('deleteTenantConfirmModal'));
         setTimeout(() => inputEl.focus(), 300);
     };
 
     if (manageModal && manageModalEl.classList.contains('show')) {
-        manageModalEl.addEventListener('hidden.bs.modal', showDeleteModal, { once: true });
         manageModal.hide();
+        manageModalEl.addEventListener('hidden.bs.modal', showDeleteModal, { once: true });
     } else {
         showDeleteModal();
     }
