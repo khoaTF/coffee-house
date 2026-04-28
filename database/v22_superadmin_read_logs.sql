@@ -7,17 +7,11 @@ CREATE OR REPLACE FUNCTION public.get_superadmin_audit_logs(
 ) RETURNS SETOF public.audit_logs
 LANGUAGE plpgsql
 SECURITY DEFINER
-AS $$
-DECLARE
-    v_valid boolean;
+AS $fn$
 BEGIN
-    -- Verify owner secret
-    SELECT EXISTS (
-        SELECT 1 FROM owner_secrets WHERE secret_key = owner_secret
-    ) INTO v_valid;
-
-    IF NOT v_valid THEN
-        RAISE EXCEPTION 'Invalid owner secret';
+    -- Verify owner secret (consistent with get_all_tenants pattern)
+    IF owner_secret != 'nohope_admin_999' THEN
+        RAISE EXCEPTION 'Invalid owner secret' USING ERRCODE = 'P0001';
     END IF;
 
     -- Return logs, ordering by newest first
@@ -26,4 +20,4 @@ BEGIN
     ORDER BY created_at DESC 
     LIMIT limit_count;
 END;
-$$;
+$fn$;
