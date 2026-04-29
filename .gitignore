@@ -21,3 +21,14 @@ diff.txt
 .obsidian/workspace-mobile.json
 .env*.local
 .env.vercel
+
+# Security: utility scripts with hardcoded tokens
+run_sql.js
+fix_old_orders.js
+*.secret.js
+*.secret.ts
+
+# Prevent accidental credential leaks
+*.pem
+*.key
+.env.production
