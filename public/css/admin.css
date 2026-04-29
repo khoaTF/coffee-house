@@ -119,6 +119,7 @@
 [data-theme="dark"] .bg-slate-400 { background-color: #4b5563 !important; }
 
 /* Border overrides */
+[data-theme="dark"] .border-slate-100,
 [data-theme="dark"] .border-slate-200,
 [data-theme="dark"] .border-slate-300 { border-color: var(--border-default) !important; }
 
