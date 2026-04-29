@@ -15,10 +15,16 @@ if (!supabaseUrl || !supabaseKey) {
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 const defaultUsers = [
-  { email: 'admin@nohope.cafe', password: 'AdminPassword!2024', role: 'admin' },
-  { email: 'kitchen@nohope.cafe', password: 'SharedKitchenPwd#123', role: 'kitchen' },
-  { email: 'staff@nohope.cafe', password: 'SharedStaffPwd#123', role: 'staff' }
-];
+  { email: 'admin@nohope.cafe', password: process.env.ADMIN_PASSWORD, role: 'admin' },
+  { email: 'kitchen@nohope.cafe', password: process.env.KITCHEN_PASSWORD, role: 'kitchen' },
+  { email: 'staff@nohope.cafe', password: process.env.STAFF_PASSWORD, role: 'staff' }
+].filter(user => {
+  if (!user.password) {
+    console.warn(`⚠️ Bỏ qua tài khoản ${user.email} vì chưa cấu hình biến môi trường mật khẩu tương ứng (ví dụ: ADMIN_PASSWORD).`);
+    return false;
+  }
+  return true;
+});
 
 async function setupUsers() {
   for (const user of defaultUsers) {
