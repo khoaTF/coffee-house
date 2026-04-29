@@ -429,10 +429,10 @@ async function loadDashboard() {
         const weekStart = new Date(); weekStart.setDate(weekStart.getDate() - 6); weekStart.setHours(0,0,0,0);
 
         const [{ data: todayOrders }, { data: weekOrders }, { data: lowStock }, { data: pendingOrders }] = await Promise.all([
-            supabase.from('orders').select('*').eq('tenant_id', window.AdminState.tenantId).gte('created_at', todayStart.toISOString()).lte('created_at', todayEnd.toISOString()),
-            supabase.from('orders').select('*').eq('tenant_id', window.AdminState.tenantId).gte('created_at', weekStart.toISOString()).eq('payment_status', 'paid').neq('status', 'Cancelled'),
-            supabase.from('ingredients').select('name, stock, low_stock_threshold').eq('tenant_id', window.AdminState.tenantId).lt('stock', supabase.raw ? 1 : Number.MAX_SAFE_INTEGER),
-            supabase.from('orders').select('*').eq('tenant_id', window.AdminState.tenantId).in('status', ['Pending', 'Preparing'])
+            supabase.from('orders').select('*').eq('tenant_id', window.AdminState.tenantId).gte('created_at', todayStart.toISOString()).lte('created_at', todayEnd.toISOString()).order('created_at', { ascending: false }),
+            supabase.from('orders').select('*').eq('tenant_id', window.AdminState.tenantId).gte('created_at', weekStart.toISOString()).eq('payment_status', 'paid').neq('status', 'Cancelled').order('created_at', { ascending: false }),
+            supabase.from('ingredients').select('name, stock, low_stock_threshold').eq('tenant_id', window.AdminState.tenantId).lt('stock', supabase.raw ? 1 : Number.MAX_SAFE_INTEGER).order('stock', { ascending: true }),
+            supabase.from('orders').select('*').eq('tenant_id', window.AdminState.tenantId).in('status', ['Pending', 'Preparing']).order('created_at', { ascending: false })
         ]);
 
         if (isStaff) {
@@ -442,11 +442,11 @@ async function loadDashboard() {
                  <div class="card bg-white border border-slate-200 rounded-2xl overflow-hidden mb-6">
                      <div class="p-4 border-b border-slate-200 justify-between items-center hidden md:flex">
                          <h5 class="font-bold text-slate-800 mb-0"><i class="fa-solid fa-list-check me-2 text-[#C0A062]"></i>Công việc cần làm (Đơn mới cập nhật)</h5>
-                         <button class="btn btn-sm btn-outline-primary" onclick="switchTab('orders')">Tới trang Xử lý đơn</button>
+                         <button class="btn btn-sm btn-outline-primary" onclick="switchTab('history')">Tới trang Xử lý đơn</button>
                      </div>
                      <div class="p-4 border-b border-slate-200 md:hidden">
                          <h5 class="font-bold text-slate-800 mb-3"><i class="fa-solid fa-list-check me-2 text-[#C0A062]"></i>Công việc cần làm</h5>
-                         <button class="btn btn-sm btn-outline-primary w-full" onclick="switchTab('orders')">Tới trang Xử lý đơn</button>
+                         <button class="btn btn-sm btn-outline-primary w-full" onclick="switchTab('history')">Tới trang Xử lý đơn</button>
                      </div>
                      <div class="table-responsive">
                          <table class="table table-hover mb-0 min-w-full">
@@ -680,7 +680,7 @@ function renderNavHub() {
             icon: 'fa-solid fa-bolt',
             color: '#C0A062',
             items: [
-                { tab: 'orders', icon: 'fa-solid fa-cash-register', title: 'Bán hàng (POS)', desc: 'Tạo đơn, xử lý thanh toán' },
+                { tab: 'pos', icon: 'fa-solid fa-cash-register', title: 'Bán hàng (POS)', desc: 'Tạo đơn, xử lý thanh toán' },
                 { tab: 'history', icon: 'fa-solid fa-clock-rotate-left', title: 'Lịch sử đơn', desc: 'Tra cứu đơn hàng đã hoàn thành' },
                 { tab: 'delivery', icon: 'fa-solid fa-motorcycle', title: 'Giao hàng', desc: 'Quản lý đơn giao, shipper' },
                 { tab: 'shifts', icon: 'fa-solid fa-user-clock', title: 'Ca làm việc', desc: 'Mở / đóng ca, giao ca thu ngân' },

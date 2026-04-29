@@ -43,6 +43,11 @@ Timeline các phase từ MVP → Production.
 Định hướng phát triển AI, Đa kênh, và Quản trị chuỗi (Phase 8+).
 👉 [[09_Future_Expansion]]
 
+## 🛠 10. Phân Tích Chuyên Sâu Tính Năng & Thuật Toán
+Giải phẫu kỹ thuật: Kiến trúc Multi-tenant, thuật toán trừ kho nguyên tử, fingerprint khóa bàn, và các giải thuật khắc phục lỗi hệ thống.
+👉 [[10_Detailed_Features_Algorithms]]
+
+
 ---
 
 ## 🗺 Sơ Đồ Mạng Lưới Trang Web

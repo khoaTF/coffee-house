@@ -649,7 +649,8 @@ window.posSubmitOrder = async function () {
             order_note: note || null,
             status: 'Pending',
             payment_method: paymentMethod,
-            payment_status: 'paid'
+            payment_status: 'paid',
+            order_source: 'pos_counter'
         };
 
         if (navigator.onLine) {

@@ -584,6 +584,10 @@ function copyTenantId(id) {
 }
 
 function openManageModal(btnEl) {
+    if (btnEl.disabled) return;
+    btnEl.disabled = true;
+    setTimeout(() => { btnEl.disabled = false; }, 1000); // Prevent double click
+
     try {
         const tenantDataStr = btnEl.getAttribute('data-tenant');
         if (!tenantDataStr) return;
@@ -601,15 +605,23 @@ function openManageModal(btnEl) {
                 dateObj.setMinutes(dateObj.getMinutes() - dateObj.getTimezoneOffset());
                 document.getElementById('manage-tenant-expiry').value = dateObj.toISOString().slice(0, 16);
             }
+        } else {
+            document.getElementById('manage-tenant-expiry').value = '';
         }
-        document.getElementById('manage-tenant-max-staff').value = t.max_staff;
-        document.getElementById('manage-tenant-max-items').value = t.max_items;
+        document.getElementById('manage-tenant-max-staff').value = t.max_staff || 5;
+        document.getElementById('manage-tenant-max-items').value = t.max_items || 50;
 
         document.getElementById('manage-tenant-domain').value = t.custom_domain || '';
         document.getElementById('manage-tenant-color').value = t.primary_color || '#c084fc';
         document.getElementById('manage-tenant-logo').value = t.logo_url || '';
         document.getElementById('manage-tenant-zns').value = t.integrations?.zns_webhook || '';
         
+        // Remove any old backdrops to be safe
+        const openBackdrops = document.querySelectorAll('.modal-backdrop');
+        if (openBackdrops.length > 0 && !document.querySelector('.modal.show')) {
+            openBackdrops.forEach(el => el.remove());
+        }
+
         const modalEl = document.getElementById('manageTenantModal');
         // FIX: Reuse existing instance to prevent duplicate backdrops
         const modal = bootstrap.Modal.getOrCreateInstance(modalEl);

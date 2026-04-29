@@ -187,7 +187,21 @@ export async function placeOrder(method = 'cash') {
             }
         }
 
-        const { data: newOrderId, error } = await supabase.rpc('place_order_and_deduct_inventory', { payload: orderData });
+        const rpcPromise = supabase.rpc('place_order_and_deduct_inventory', { payload: orderData });
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT_ERROR')), 15000));
+        
+        let newOrderId, error;
+        try {
+            const result = await Promise.race([rpcPromise, timeoutPromise]);
+            newOrderId = result.data;
+            error = result.error;
+        } catch (e) {
+            if (e.message === 'TIMEOUT_ERROR') {
+                throw new Error('Kết nối mạng không ổn định hoặc máy chủ phản hồi chậm. Vui lòng thử lại sau.');
+            }
+            throw e;
+        }
+
         if (error) throw error;
         
         const savedOrder = { ...orderData, id: newOrderId, _id: newOrderId, createdAt: new Date().toISOString(), totalPrice: orderData.total_price, orderNote: orderData.order_note };

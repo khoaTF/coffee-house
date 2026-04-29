@@ -207,10 +207,22 @@ export function attachEventListeners() {
             if (state.activeOrderId && state.currentPaymentMethod === 'transfer') {
                 supabase.from('orders').update({ payment_status: 'paid' }).eq('tenant_id', state.tenantId).eq('id', state.activeOrderId).then(() => {
                     const orderToConfirm = state.sessionOrders.find(o => o.id === state.activeOrderId || o._id === state.activeOrderId) || state.sessionOrders[0];
-                    import('./customer-order.js').then(m => m.handleOrderConfirmed(orderToConfirm));
+                    import('./customer-order.js').then(m => m.handleOrderConfirmed(orderToConfirm)).catch(err => {
+                        console.error('Failed to load module:', err);
+                        btnConfirmPayment.innerHTML = '<i class="fa-solid fa-check-circle"></i> Tôi đã chuyển khoản xong';
+                        btnConfirmPayment.disabled = false;
+                    });
+                }).catch(err => {
+                    console.error('Update payment_status error:', err);
+                    btnConfirmPayment.innerHTML = '<i class="fa-solid fa-check-circle"></i> Tôi đã chuyển khoản xong';
+                    btnConfirmPayment.disabled = false;
                 });
             } else {
-                import('./customer-order.js').then(m => m.placeOrder('transfer'));
+                import('./customer-order.js').then(m => m.placeOrder('transfer')).catch(err => {
+                    console.error('Failed to load module:', err);
+                    btnConfirmPayment.innerHTML = '<i class="fa-solid fa-check-circle"></i> Tôi đã chuyển khoản xong';
+                    btnConfirmPayment.disabled = false;
+                });
             }
         });
     }
@@ -221,7 +233,12 @@ export function attachEventListeners() {
             dom.checkoutCashBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...';
             if (dom.checkoutTransferBtn) dom.checkoutTransferBtn.disabled = true;
             requestAnimationFrame(() => setTimeout(() => {
-                import('./customer-order.js').then(m => m.placeOrder('cash'));
+                import('./customer-order.js').then(m => m.placeOrder('cash')).catch(err => {
+                    console.error('Failed to load module:', err);
+                    dom.checkoutCashBtn.disabled = false;
+                    dom.checkoutCashBtn.innerHTML = '<i class="fa-solid fa-money-bill-wave"></i> Thanh toán tại quầy';
+                    if (dom.checkoutTransferBtn) dom.checkoutTransferBtn.disabled = false;
+                });
             }, 0));
         });
     }
@@ -232,7 +249,12 @@ export function attachEventListeners() {
             dom.checkoutTransferBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang tạo mã QR...';
             if (dom.checkoutCashBtn) dom.checkoutCashBtn.disabled = true;
             requestAnimationFrame(() => setTimeout(() => {
-                import('./customer-order.js').then(m => m.placeOrder('transfer'));
+                import('./customer-order.js').then(m => m.placeOrder('transfer')).catch(err => {
+                    console.error('Failed to load module:', err);
+                    dom.checkoutTransferBtn.disabled = false;
+                    dom.checkoutTransferBtn.innerHTML = '<i class="fa-solid fa-qrcode"></i> Chuyển khoản (Duyệt TĐ)';
+                    if (dom.checkoutCashBtn) dom.checkoutCashBtn.disabled = false;
+                });
             }, 0));
         });
     }
