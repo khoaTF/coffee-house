@@ -8,10 +8,18 @@ let posSelectedTable = 'POS';
 let posProductsList = [];
 let posCurrentOptionsItem = null;
 let posIngredientStock = {};
+let posSelectedCustomer = null;
+let posStockRefreshTimer = null;
+let posLastStockFetchTime = 0;
+let posKeydownHandler = null;
+let posCustomerSearchTimer = null;
 
 window.initPOS = async function () {
     const container = document.getElementById('pos-content');
     if (!container) return;
+
+    posInjectAnimationCSS();
+    posSetupKeyboardShortcuts();
 
     // Render layout first
     container.innerHTML = `
@@ -20,6 +28,7 @@ window.initPOS = async function () {
                 <h2 class="font-noto text-2xl font-bold text-[#F2E8D5] mb-1 flex items-center gap-2">
                     <i class="fa-solid fa-cash-register text-[#C0A062]"></i> POS Bán hàng
                     <span id="pos-offline-badge" class="${navigator.onLine ? 'hidden' : ''} bg-warning text-dark text-xs px-2 py-1 rounded ms-2 font-bold"><i class="fa-solid fa-wifi-slash"></i> OFFLINE</span>
+                    <span id="pos-pending-badge" class="hidden bg-blue-500 text-white text-xs px-2 py-1 rounded ms-2 font-bold"><i class="fa-solid fa-clock"></i> <span id="pos-pending-count">0</span> đơn chờ</span>
                 </h2>
                 <p class="text-sm text-slate-500 mb-0">Đặt hàng nhanh thay khách từ quầy thu ngân.</p>
             </div>
@@ -72,8 +81,25 @@ window.initPOS = async function () {
                             <span id="pos-cart-count" class="text-xs font-bold bg-slate-100 bg-[#C0A062] rounded-full px-2 py-0.5" style="background-color: #C0A062;">0</span>
                         </h5>
                         <button class="text-xs text-slate-500 hover:text-red-400 transition-colors border-0 bg-transparent" onclick="posClearCart()">
-                            <i class="fa-solid fa-trash"></i> Xóa
+                            <i class="fa-solid fa-trash"></i> Xóa <span class="pos-shortcut-hint">F8</span>
                         </button>
+                    </div>
+
+                    <div class="px-4 py-3 border-b border-slate-200">
+                        <div class="relative">
+                            <i class="fa-solid fa-user-tag absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                            <input id="pos-customer-search" type="text" placeholder="SĐT khách hàng (tích điểm)..."
+                                class="w-full pl-8 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 text-sm focus:outline-none focus:border-[#C0A062]"
+                                oninput="posSearchCustomer(this.value)">
+                            <div id="pos-customer-dropdown" class="pos-customer-dropdown hidden"></div>
+                        </div>
+                        <div id="pos-customer-selected" class="hidden mt-2 flex items-center justify-between bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-star text-amber-500 text-xs"></i>
+                                <span id="pos-customer-info" class="text-sm text-slate-700 font-semibold"></span>
+                            </div>
+                            <button class="text-slate-400 hover:text-red-400 bg-transparent border-0 text-xs" onclick="posClearCustomer()"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
                     </div>
 
                     <div id="pos-cart-items" class="p-4 space-y-3 max-h-[320px] overflow-y-auto custom-scrollbar">
@@ -89,7 +115,10 @@ window.initPOS = async function () {
                             <input id="pos-order-note" type="text" placeholder="Ghi chú đơn hàng (nếu có)..." class="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-slate-800 placeholder-[#64748b] text-sm focus:outline-none focus:border-[#C0A062]">
                         </div>
                         <button id="pos-submit-btn" class="w-full py-3 rounded-xl font-bold text-[#f1f5f9] text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2" style="background:#C0A062;" onclick="posSubmitOrder()">
-                            <i class="fa-solid fa-paper-plane"></i> Gửi đơn hàng
+                            <i class="fa-solid fa-paper-plane"></i> Gửi đơn hàng <span class="pos-shortcut-hint">F2</span>
+                        </button>
+                        <button id="pos-sync-btn" class="hidden w-full py-2 mt-2 rounded-xl font-semibold text-xs text-blue-600 bg-blue-50 border border-blue-200 hover:bg-blue-100 transition-colors flex items-center justify-center gap-2" onclick="posManualSync()">
+                            <i class="fa-solid fa-rotate"></i> Đồng bộ đơn Offline
                         </button>
                     </div>
                 </div>
@@ -119,6 +148,11 @@ window.initPOS = async function () {
     `;
 
     await posLoadProducts();
+    posUpdateOfflineBadge();
+
+    if (posStockRefreshTimer) clearInterval(posStockRefreshTimer);
+    posStockRefreshTimer = setInterval(posRefreshStock, 60000);
+    posLastStockFetchTime = Date.now();
 };
 
 async function posLoadProducts() {
@@ -134,6 +168,7 @@ async function posLoadProducts() {
         posIngredientStock = {};
         if (stockRes.data) {
             stockRes.data.forEach(i => posIngredientStock[i.id] = i.stock);
+            posLastStockFetchTime = Date.now();
         }
 
         posRenderCategories();
@@ -180,14 +215,17 @@ function posRenderProducts(list) {
     }
     grid.innerHTML = list.map(p => {
         const price = p.promotional_price && isPromoActive(p) ? p.promotional_price : p.price;
-        const canAddMore = posGetAvailableToAdd(p) > 0;
+        const availableToAdd = posGetAvailableToAdd(p);
+        const canAddMore = availableToAdd > 0;
         const isOutOfStock = !canAddMore;
+        const isLowStock = !isOutOfStock && availableToAdd <= 3 && availableToAdd < 999;
 
         return `
-            <div class="card bg-white border border-slate-200 rounded-2xl overflow-hidden cursor-pointer hover:border-[#C0A062] transition-all active:scale-95 group ${isOutOfStock ? 'opacity-50 saturate-50' : ''}" onclick="posAddToCart('${p.id}')">
+            <div class="card bg-white border border-slate-200 rounded-2xl overflow-hidden cursor-pointer hover:border-[#C0A062] transition-all active:scale-95 group ${isOutOfStock ? 'opacity-50 saturate-50' : ''}" data-product-id="${p.id}" onclick="posAddToCart('${p.id}')">
                 <div class="relative w-full h-24 bg-[#e2e8f0] flex items-center justify-center">
                     ${p.image_url ? `<img src="${window.escapeHTML(p.image_url)}" alt="" class="w-full h-full object-cover" onerror="this.onerror=null; this.outerHTML='<i class=\\'fa-solid fa-mug-hot text-slate-500 text-2xl\\'></i>';">` : '<i class="fa-solid fa-mug-hot text-slate-500 text-2xl"></i>'}
                     ${isOutOfStock ? '<div class="absolute inset-0 bg-black/50 flex items-center justify-center z-10"><span class="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">Hết hàng</span></div>' : ''}
+                    ${isLowStock ? `<div class="absolute top-1 right-1 z-10"><span class="bg-amber-500 text-white px-2 py-0.5 rounded-full text-[10px] font-bold shadow">Còn ${availableToAdd}</span></div>` : ''}
                 </div>
                 <div class="p-3">
                     <div class="text-sm font-bold text-slate-800 line-clamp-1 group-hover:text-[#C0A062] transition-colors">${window.escapeHTML(p.name)}</div>
@@ -272,6 +310,9 @@ window.posAddToCart = function (productId) {
         posCart.push({ id: p.id, cartKey, name: p.name, price, quantity: 1, recipe: p.recipe || [], selectedOptions: [] });
     }
     posRenderCart();
+    posTriggerCartPulse();
+    posTriggerCardFlash(productId);
+    posShowQuickAddToast(p.name);
 };
 
 window.posGenerateCartKey = function (id, options) {
@@ -404,7 +445,12 @@ window.posConfirmOptions = function () {
     }
 
     posRenderCart();
+    const _addedName = posCurrentOptionsItem ? posCurrentOptionsItem.name : '';
+    const _addedId = posCurrentOptionsItem ? posCurrentOptionsItem.id : '';
     posCloseOptionsModal();
+    posTriggerCartPulse();
+    posTriggerCardFlash(_addedId);
+    posShowQuickAddToast(_addedName);
 };
 
 window.posUpdateQty = function (cartKey, delta) {
@@ -650,7 +696,8 @@ window.posSubmitOrder = async function () {
             status: 'Pending',
             payment_method: paymentMethod,
             payment_status: 'paid',
-            order_source: 'pos_counter'
+            order_source: 'pos_counter',
+            customer_phone: posSelectedCustomer ? posSelectedCustomer.phone : null
         };
 
         if (navigator.onLine) {
@@ -683,6 +730,8 @@ window.posSubmitOrder = async function () {
         posCart = [];
         posRenderCart();
         if (document.getElementById('pos-order-note')) document.getElementById('pos-order-note').value = '';
+        posClearCustomer();
+        posUpdateOfflineBadge();
     } catch (e) {
         console.error('POS submit error:', e);
         showAdminToast(e.message || 'Lỗi gửi đơn hàng!', 'error');
@@ -757,3 +806,226 @@ window.posPrintBill = function (order) {
     printWindow.document.write(html);
     printWindow.document.close();
 };
+
+// =============================================
+// PHASE 1: CSS Animation Injection
+// =============================================
+function posInjectAnimationCSS() {
+    if (document.getElementById('pos-animation-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'pos-animation-styles';
+    style.textContent = `
+        @keyframes pos-pulse { 0% { transform: scale(1); } 50% { transform: scale(1.35); } 100% { transform: scale(1); } }
+        @keyframes pos-flash { 0% { box-shadow: 0 0 0 0 rgba(192,160,98,0.7); } 70% { box-shadow: 0 0 0 10px rgba(192,160,98,0); } 100% { box-shadow: 0 0 0 0 rgba(192,160,98,0); } }
+        .pos-pulse-anim { animation: pos-pulse 0.3s ease; }
+        .pos-flash-anim { animation: pos-flash 0.4s ease; border-color: #C0A062 !important; }
+        .pos-shortcut-hint { font-size: 10px; opacity: 0.5; margin-left: 4px; background: rgba(0,0,0,0.12); padding: 1px 5px; border-radius: 4px; font-weight: normal; }
+        .pos-customer-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); z-index: 50; max-height: 200px; overflow-y: auto; }
+        .pos-customer-item { padding: 10px 14px; cursor: pointer; border-bottom: 1px solid #f1f5f9; transition: background 0.15s; }
+        .pos-customer-item:hover { background: #f8fafc; }
+        .pos-customer-item:last-child { border-bottom: none; }
+    `;
+    document.head.appendChild(style);
+}
+
+// =============================================
+// PHASE 1: Keyboard Shortcuts
+// =============================================
+function posSetupKeyboardShortcuts() {
+    if (posKeydownHandler) document.removeEventListener('keydown', posKeydownHandler);
+    posKeydownHandler = function (e) {
+        const posSection = document.getElementById('section-pos');
+        if (!posSection || !posSection.classList.contains('active')) return;
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+            if (e.key === 'Escape') { e.target.blur(); return; }
+            return;
+        }
+        switch (e.key) {
+            case 'F2':
+                e.preventDefault();
+                posSubmitOrder();
+                break;
+            case 'F4':
+                e.preventDefault();
+                const searchInput = document.getElementById('pos-search');
+                if (searchInput) searchInput.focus();
+                break;
+            case 'Escape':
+                e.preventDefault();
+                posCloseOptionsModal();
+                break;
+            case 'F8':
+                e.preventDefault();
+                posClearCart();
+                break;
+        }
+    };
+    document.addEventListener('keydown', posKeydownHandler);
+}
+
+// =============================================
+// PHASE 2: Micro-animations
+// =============================================
+function posTriggerCartPulse() {
+    const badge = document.getElementById('pos-cart-count');
+    if (!badge) return;
+    badge.classList.remove('pos-pulse-anim');
+    void badge.offsetWidth;
+    badge.classList.add('pos-pulse-anim');
+    setTimeout(() => badge.classList.remove('pos-pulse-anim'), 350);
+}
+
+function posTriggerCardFlash(productId) {
+    if (!productId) return;
+    const card = document.querySelector(`[data-product-id="${productId}"]`);
+    if (!card) return;
+    card.classList.remove('pos-flash-anim');
+    void card.offsetWidth;
+    card.classList.add('pos-flash-anim');
+    setTimeout(() => card.classList.remove('pos-flash-anim'), 450);
+}
+
+function posShowQuickAddToast(name) {
+    if (!name) return;
+    let container = document.getElementById('pos-quick-toast');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'pos-quick-toast';
+        container.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:9999;pointer-events:none;';
+        document.body.appendChild(container);
+    }
+    const toast = document.createElement('div');
+    toast.style.cssText = 'background:#C0A062;color:#fff;padding:8px 18px;border-radius:20px;font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,0.2);animation:slideInRight 0.25s ease;white-space:nowrap;';
+    toast.textContent = `✓ ${name}`;
+    container.appendChild(toast);
+    setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.3s'; setTimeout(() => toast.remove(), 300); }, 1800);
+}
+
+// =============================================
+// PHASE 3: Customer Lookup / Loyalty
+// =============================================
+window.posSearchCustomer = function (query) {
+    clearTimeout(posCustomerSearchTimer);
+    const dropdown = document.getElementById('pos-customer-dropdown');
+    if (!dropdown) return;
+
+    const q = (query || '').replace(/\s/g, '');
+    if (q.length < 4) {
+        dropdown.classList.add('hidden');
+        dropdown.innerHTML = '';
+        return;
+    }
+
+    posCustomerSearchTimer = setTimeout(async () => {
+        try {
+            const { data, error } = await supabase.from('customers')
+                .select('id, name, phone, loyalty_points')
+                .eq('tenant_id', window.AdminState.tenantId)
+                .ilike('phone', `%${q}%`)
+                .limit(5);
+
+            if (error || !data || data.length === 0) {
+                dropdown.innerHTML = '<div class="pos-customer-item text-slate-400 text-sm text-center">Không tìm thấy</div>';
+                dropdown.classList.remove('hidden');
+                return;
+            }
+
+            dropdown.innerHTML = data.map(c => `
+                <div class="pos-customer-item" onclick="posSelectCustomer(${JSON.stringify(c).replace(/"/g, '&quot;')})">
+                    <div class="text-sm font-semibold text-slate-800">${window.escapeHTML(c.name || 'Khách hàng')}</div>
+                    <div class="flex justify-between items-center mt-1">
+                        <span class="text-xs text-slate-500">${window.escapeHTML(c.phone)}</span>
+                        <span class="text-xs font-bold text-amber-600"><i class="fa-solid fa-star text-amber-400"></i> ${c.loyalty_points || 0} điểm</span>
+                    </div>
+                </div>
+            `).join('');
+            dropdown.classList.remove('hidden');
+        } catch (e) {
+            console.error('Customer search error:', e);
+        }
+    }, 500);
+};
+
+window.posSelectCustomer = function (customer) {
+    posSelectedCustomer = customer;
+    const dropdown = document.getElementById('pos-customer-dropdown');
+    const selectedDiv = document.getElementById('pos-customer-selected');
+    const infoSpan = document.getElementById('pos-customer-info');
+    const searchInput = document.getElementById('pos-customer-search');
+
+    if (dropdown) dropdown.classList.add('hidden');
+    if (searchInput) searchInput.value = '';
+    if (selectedDiv) selectedDiv.classList.remove('hidden');
+    if (infoSpan) infoSpan.textContent = `${customer.name || 'Khách'} — ${customer.phone} (${customer.loyalty_points || 0} điểm)`;
+};
+
+window.posClearCustomer = function () {
+    posSelectedCustomer = null;
+    const selectedDiv = document.getElementById('pos-customer-selected');
+    const searchInput = document.getElementById('pos-customer-search');
+    if (selectedDiv) selectedDiv.classList.add('hidden');
+    if (searchInput) searchInput.value = '';
+};
+
+// =============================================
+// PHASE 4: Offline Queue Badge & Manual Sync
+// =============================================
+async function posUpdateOfflineBadge() {
+    try {
+        if (!idb) await initIndexedDB();
+        const tx = idb.transaction(storeName, 'readonly');
+        const store = tx.objectStore(storeName);
+        const countReq = store.count();
+        countReq.onsuccess = () => {
+            const count = countReq.result;
+            const badge = document.getElementById('pos-pending-badge');
+            const countEl = document.getElementById('pos-pending-count');
+            const syncBtn = document.getElementById('pos-sync-btn');
+            if (badge) {
+                if (count > 0) {
+                    badge.classList.remove('hidden');
+                    if (countEl) countEl.textContent = count;
+                    if (syncBtn) syncBtn.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                    if (syncBtn) syncBtn.classList.add('hidden');
+                }
+            }
+        };
+    } catch (e) {
+        console.error('Offline badge error:', e);
+    }
+}
+
+window.posManualSync = async function () {
+    if (!navigator.onLine) {
+        showAdminToast('Hiện đang mất mạng, không thể đồng bộ!', 'warning');
+        return;
+    }
+    const btn = document.getElementById('pos-sync-btn');
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang đồng bộ...'; }
+    await syncOfflineOrders();
+    posUpdateOfflineBadge();
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-rotate"></i> Đồng bộ đơn Offline'; }
+};
+
+// =============================================
+// PHASE 5: Real-time Stock Refresh
+// =============================================
+async function posRefreshStock() {
+    if (!navigator.onLine) return;
+    try {
+        const { data, error } = await supabase.from('ingredients')
+            .select('id, stock')
+            .eq('tenant_id', window.AdminState.tenantId);
+        if (!error && data) {
+            data.forEach(i => posIngredientStock[i.id] = i.stock);
+            posLastStockFetchTime = Date.now();
+            const searchVal = document.getElementById('pos-search')?.value || '';
+            const filtered = searchVal ? posProductsList.filter(p => p.name.toLowerCase().includes(searchVal.toLowerCase())) : posProductsList;
+            posRenderProducts(filtered);
+        }
+    } catch (e) {
+        console.error('Stock refresh error:', e);
+    }
+}
