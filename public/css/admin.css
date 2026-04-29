@@ -670,6 +670,146 @@ h3 { color: #d4a76a; font-size: 1.1rem; margin-bottom: 15px; }
     50% { background: #fbbf24; transform: scale(1.5); }
 }
 
+/* ===== POS SECTION — DARK MODE OVERRIDES ===== */
+/* Header info bar */
+[data-theme="dark"] #pos-content .bg-slate-100 { background-color: var(--bg-surface-alt) !important; }
+[data-theme="dark"] #pos-content .text-slate-800 { color: var(--text-primary) !important; }
+[data-theme="dark"] #pos-content .text-slate-700 { color: var(--text-secondary) !important; }
+[data-theme="dark"] #pos-content .text-slate-500 { color: var(--text-muted) !important; }
+[data-theme="dark"] #pos-content .text-slate-400 { color: var(--text-faint) !important; }
+[data-theme="dark"] #pos-content .border-slate-200 { border-color: var(--border-default) !important; }
+
+/* Table selector & Search input */
+[data-theme="dark"] #pos-content select,
+[data-theme="dark"] #pos-content input[type="search"],
+[data-theme="dark"] #pos-content input[type="text"] {
+    background-color: var(--bg-surface-input) !important;
+    border-color: var(--border-default) !important;
+    color: var(--text-primary) !important;
+}
+[data-theme="dark"] #pos-content select option {
+    background-color: var(--bg-surface) !important;
+    color: var(--text-primary) !important;
+}
+[data-theme="dark"] #pos-content input::placeholder {
+    color: var(--text-faint) !important;
+}
+[data-theme="dark"] #pos-content input:focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 2px rgba(212,167,106,0.2) !important;
+}
+
+/* Category buttons */
+[data-theme="dark"] .pos-cat-btn {
+    background-color: var(--bg-surface) !important;
+    border-color: var(--border-default) !important;
+    color: var(--text-muted) !important;
+}
+[data-theme="dark"] .pos-cat-btn:hover {
+    color: var(--text-primary) !important;
+}
+
+/* Product cards */
+[data-theme="dark"] #pos-products-grid .card {
+    background-color: var(--bg-surface) !important;
+    border-color: var(--border-default) !important;
+}
+[data-theme="dark"] #pos-products-grid .card:hover {
+    border-color: var(--accent) !important;
+}
+[data-theme="dark"] #pos-products-grid .bg-\[\#e2e8f0\] {
+    background-color: var(--bg-surface-alt) !important;
+}
+
+/* Cart panel */
+[data-theme="dark"] #pos-content .bg-white {
+    background-color: var(--bg-surface) !important;
+}
+[data-theme="dark"] #pos-content .bg-slate-50 {
+    background-color: var(--bg-surface-input) !important;
+}
+
+/* Cart item quantity buttons */
+[data-theme="dark"] #pos-cart-items .bg-\[\#e2e8f0\] {
+    background-color: var(--bg-surface-alt) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Customer search selected */
+[data-theme="dark"] #pos-customer-selected {
+    background-color: rgba(212,167,106,0.12) !important;
+    border-color: rgba(212,167,106,0.25) !important;
+}
+[data-theme="dark"] .pos-customer-dropdown {
+    background-color: var(--bg-surface) !important;
+    border-color: var(--border-default) !important;
+}
+[data-theme="dark"] .pos-customer-item {
+    border-color: var(--border-default) !important;
+}
+[data-theme="dark"] .pos-customer-item:hover {
+    background-color: var(--bg-surface-hover) !important;
+}
+
+/* Options modal */
+[data-theme="dark"] #pos-options-modal > div {
+    background-color: var(--bg-surface) !important;
+    border-color: var(--border-default) !important;
+}
+[data-theme="dark"] #pos-options-modal .border-slate-200 {
+    border-color: var(--border-default) !important;
+}
+[data-theme="dark"] #pos-options-modal .text-slate-800 {
+    color: var(--text-primary) !important;
+}
+[data-theme="dark"] #pos-options-modal .text-slate-500 {
+    color: var(--text-muted) !important;
+}
+[data-theme="dark"] #pos-options-modal .bg-slate-100 {
+    background-color: var(--bg-surface-alt) !important;
+}
+[data-theme="dark"] #pos-options-modal label {
+    border-color: var(--border-default) !important;
+}
+[data-theme="dark"] #pos-options-modal label:hover {
+    border-color: var(--accent) !important;
+}
+
+/* Offline sync button dark */
+[data-theme="dark"] #pos-sync-btn {
+    background-color: rgba(59,130,246,0.1) !important;
+    border-color: rgba(59,130,246,0.25) !important;
+    color: #60a5fa !important;
+}
+
+/* POS quick add toast */
+[data-theme="dark"] #pos-quick-toast div {
+    background: var(--accent) !important;
+}
+
+/* Shortcut hints */
+[data-theme="dark"] .pos-shortcut-hint {
+    background: rgba(255,255,255,0.1) !important;
+    color: var(--text-faint) !important;
+}
+
+/* ===== POS SECTION — LIGHT MODE FIXES ===== */
+/* Fix: POS title 'POS Bán hàng' uses text-[#F2E8D5] which is too light on white bg */
+#pos-content .text-\[\#F2E8D5\] {
+    color: #111827 !important;
+}
+[data-theme="dark"] #pos-content .text-\[\#F2E8D5\] {
+    color: #F2E8D5 !important;
+}
+
+/* Fix: Cart header title "Giỏ hàng" */
+#pos-content h5.text-\[\#F2E8D5\] {
+    color: #111827 !important;
+}
+[data-theme="dark"] #pos-content h5.text-\[\#F2E8D5\] {
+    color: #F2E8D5 !important;
+}
+
 /* ===== THEME TRANSITION ===== */
 html[data-theme] * {
     transition: background-color 0.25s ease, border-color 0.25s ease, color 0.15s ease, box-shadow 0.25s ease;
