@@ -50,7 +50,8 @@
                 <div class="form-group">
                     <label class="login-pin-label">Tên đăng nhập</label>
                     <div class="input-icon-wrapper">
-                        <input type="text" id="staff-name" placeholder="Nhập tên nhân viên" autocomplete="off" class="login-pin-input">
+                        <input type="text" id="staff-name" placeholder="Nhập tên nhân viên" autocomplete="off"
+                            class="login-pin-input">
                         <i class="fa-solid fa-user login-pin-icon"></i>
                     </div>
                 </div>
@@ -60,23 +61,25 @@
                     <div class="form-group">
                         <label class="login-pin-label">Mã PIN Bí mật</label>
                         <div class="input-icon-wrapper">
-                            <input type="password" id="staff-pin" placeholder="••••••" inputmode="numeric" autocomplete="off" class="login-pin-input">
+                            <input type="password" id="staff-pin" placeholder="••••••" inputmode="numeric"
+                                autocomplete="off" class="login-pin-input">
                             <i class="fa-solid fa-key login-pin-icon"></i>
                         </div>
                     </div>
                 </div>
-                
+
                 <button type="submit" class="login-btn" id="login-btn">
                     <i class="fa-solid fa-right-to-bracket me-2"></i>Đăng nhập
                 </button>
-                
+
                 <div class="error-msg" id="error-msg">
-                    <i class="fa-solid fa-circle-exclamation me-1"></i> <span id="error-text">Mã PIN không hợp lệ!</span>
+                    <i class="fa-solid fa-circle-exclamation me-1"></i> <span id="error-text">Mã PIN không hợp
+                        lệ!</span>
                 </div>
             </form>
 
             <p class="footer-text">
-                Powered by <a href="/">Nohope Coffee System</a>
+                Powered by <a href="/">KhoaTF</a>
             </p>
         </div>
     </div>
@@ -171,7 +174,7 @@
                 // Phase 6 SaaS: Dynamic Individual Auth using UUID and typed PIN
                 const authEmail = 'staff_' + data.id + '@nohope.cafe';
                 const authPass = typedPin;
-                
+
                 const authRes = await supabase.auth.signInWithPassword({
                     email: authEmail,
                     password: authPass
@@ -200,7 +203,7 @@
                 if (data.max_items !== undefined) {
                     sessionStorage.setItem('max_items', data.max_items);
                 }
-                
+
                 // Sync essential auth info to localStorage for cross-tab access (kitchen, tv)
                 localStorage.setItem('cafe_role', data.role);
                 localStorage.setItem('nohope_staff_auth', 'true');
@@ -218,7 +221,7 @@
                         action: 'Đăng nhập',
                         details: `Đăng nhập vào trang ${targetPage} lúc ${new Date().toLocaleString('vi-VN')}`
                     }]);
-                } catch(e) { console.warn('Audit log error:', e); }
+                } catch (e) { console.warn('Audit log error:', e); }
 
                 setTimeout(() => {
                     if (data.role === 'admin' || data.role === 'manager') window.location.href = '/admin';
