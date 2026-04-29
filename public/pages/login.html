@@ -203,6 +203,9 @@
                 if (data.max_items !== undefined) {
                     sessionStorage.setItem('max_items', data.max_items);
                 }
+                if (data.allowed_modules) {
+                    sessionStorage.setItem('nohope_allowed_modules', JSON.stringify(data.allowed_modules));
+                }
 
                 // Sync essential auth info to localStorage for cross-tab access (kitchen, tv)
                 localStorage.setItem('cafe_role', data.role);

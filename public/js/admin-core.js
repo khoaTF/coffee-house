@@ -200,6 +200,15 @@ window.canAccessTab = function(tabId) {
 };
 
 function switchTab(tabId) {
+    // Tenant-level module check (superadmin feature permissions)
+    const allowedModules = JSON.parse(sessionStorage.getItem('nohope_allowed_modules') || '[]');
+    if (allowedModules.length > 0 && !allowedModules.includes(tabId)) {
+        if (typeof showAdminToast === 'function') {
+            showAdminToast('Module này chưa được kích hoạt cho cửa hàng. Liên hệ nhà cung cấp.', 'warning');
+        }
+        return;
+    }
+
     if (!window.canAccessTab(tabId)) {
         if (typeof showAdminToast === 'function') {
             showAdminToast('Bạn không có quyền truy cập chức năng này', 'error');
@@ -574,13 +583,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const allTabsId = ['dashboard', 'orders', 'pos', 'history', 'tables', 'menu', 'inventory', 'restock', 'promo', 'customers', 'staff', 'analytics', 'audit', 'cashflow', 'shifts', 'qr', 'delivery', 'crm', 'settings'];
     let defaultTab = '';
+
+    // Tenant-level module enforcement (superadmin feature permissions)
+    const allowedModules = JSON.parse(sessionStorage.getItem('nohope_allowed_modules') || '[]');
+    if (allowedModules.length > 0) {
+        allTabsId.forEach(tab => {
+            if (!allowedModules.includes(tab)) {
+                const el = document.getElementById(`tab-${tab}`);
+                const navEl = document.getElementById(`nav-${tab}`);
+                if (el) el.style.display = 'none';
+                if (navEl) navEl.style.display = 'none';
+            }
+        });
+    }
     
     if (role !== 'admin') {
         allTabsId.forEach(tab => {
             const el = document.getElementById(`tab-${tab}`);
             const navEl = document.getElementById(`nav-${tab}`);
             if (el) {
-                if (!window.canAccessTab(tab)) {
+                const tenantBlocked = allowedModules.length > 0 && !allowedModules.includes(tab);
+                if (tenantBlocked || !window.canAccessTab(tab)) {
                     el.style.display = 'none';
                     if (navEl) navEl.style.display = 'none';
                 } else {
@@ -670,10 +693,20 @@ document.addEventListener('DOMContentLoaded', () => {
         allTabsId.forEach(tab => {
             const el = document.getElementById(`tab-${tab}`);
             const navEl = document.getElementById(`nav-${tab}`);
-            if (el) el.style.display = '';
-            if (navEl) navEl.style.display = '';
+            // Respect tenant-level module restrictions even for admin
+            if (allowedModules.length > 0 && !allowedModules.includes(tab)) {
+                if (el) el.style.display = 'none';
+                if (navEl) navEl.style.display = 'none';
+            } else {
+                if (el) el.style.display = '';
+                if (navEl) navEl.style.display = '';
+            }
         });
-        switchTab('dashboard');
+        // Find first allowed module for default tab
+        const adminDefault = allowedModules.length > 0 
+            ? (allowedModules.includes('dashboard') ? 'dashboard' : allowedModules[0]) 
+            : 'dashboard';
+        switchTab(adminDefault);
     }
 
     // Quick Promo Modal event listeners

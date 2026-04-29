@@ -710,6 +710,45 @@
                         </div>
                     </div>
                     
+                    <h6 class="mt-4 mb-3 text-danger border-bottom border-secondary pb-2"><i class="fa-solid fa-shield-halved me-2"></i> Phân Quyền Tính Năng (Feature Modules)</h6>
+                    
+                    <div class="mb-2 d-flex gap-2 flex-wrap">
+                        <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3" onclick="setModulePreset('trial')">
+                            <i class="fa-solid fa-flask me-1"></i>Trial
+                        </button>
+                        <button type="button" class="btn btn-outline-info btn-sm rounded-pill px-3" onclick="setModulePreset('basic')">
+                            <i class="fa-solid fa-cube me-1"></i>Basic
+                        </button>
+                        <button type="button" class="btn btn-outline-warning btn-sm rounded-pill px-3" onclick="setModulePreset('premium')">
+                            <i class="fa-solid fa-crown me-1"></i>Premium
+                        </button>
+                        <button type="button" class="btn btn-outline-light btn-sm rounded-pill px-3" onclick="setModulePreset('all')">
+                            <i class="fa-solid fa-check-double me-1"></i>Tất cả
+                        </button>
+                        <span class="badge bg-secondary align-self-center ms-auto" id="module-count-badge">0/18</span>
+                    </div>
+                    
+                    <div class="row g-2 mb-3" id="module-checkboxes-container">
+                        <div class="col-6 col-md-4"><div class="form-check"><input class="form-check-input module-checkbox" type="checkbox" value="dashboard" id="mod-dashboard" checked><label class="form-check-label small" for="mod-dashboard"><i class="fa-solid fa-chart-pie text-info me-1"></i>Dashboard</label></div></div>
+                        <div class="col-6 col-md-4"><div class="form-check"><input class="form-check-input module-checkbox" type="checkbox" value="pos" id="mod-pos" checked><label class="form-check-label small" for="mod-pos"><i class="fa-solid fa-cash-register text-success me-1"></i>POS</label></div></div>
+                        <div class="col-6 col-md-4"><div class="form-check"><input class="form-check-input module-checkbox" type="checkbox" value="menu" id="mod-menu" checked><label class="form-check-label small" for="mod-menu"><i class="fa-solid fa-utensils text-warning me-1"></i>Menu</label></div></div>
+                        <div class="col-6 col-md-4"><div class="form-check"><input class="form-check-input module-checkbox" type="checkbox" value="inventory" id="mod-inventory" checked><label class="form-check-label small" for="mod-inventory"><i class="fa-solid fa-boxes-stacked text-primary me-1"></i>Kho</label></div></div>
+                        <div class="col-6 col-md-4"><div class="form-check"><input class="form-check-input module-checkbox" type="checkbox" value="restock" id="mod-restock" checked><label class="form-check-label small" for="mod-restock"><i class="fa-solid fa-truck-ramp-box text-info me-1"></i>Nhập hàng</label></div></div>
+                        <div class="col-6 col-md-4"><div class="form-check"><input class="form-check-input module-checkbox" type="checkbox" value="promo" id="mod-promo" checked><label class="form-check-label small" for="mod-promo"><i class="fa-solid fa-tags text-danger me-1"></i>Khuyến mãi</label></div></div>
+                        <div class="col-6 col-md-4"><div class="form-check"><input class="form-check-input module-checkbox" type="checkbox" value="history" id="mod-history" checked><label class="form-check-label small" for="mod-history"><i class="fa-solid fa-clock-rotate-left text-secondary me-1"></i>Lịch sử</label></div></div>
+                        <div class="col-6 col-md-4"><div class="form-check"><input class="form-check-input module-checkbox" type="checkbox" value="shifts" id="mod-shifts" checked><label class="form-check-label small" for="mod-shifts"><i class="fa-solid fa-business-time text-warning me-1"></i>Ca làm</label></div></div>
+                        <div class="col-6 col-md-4"><div class="form-check"><input class="form-check-input module-checkbox" type="checkbox" value="delivery" id="mod-delivery"><label class="form-check-label small" for="mod-delivery"><i class="fa-solid fa-motorcycle text-success me-1"></i>Delivery</label></div></div>
+                        <div class="col-6 col-md-4"><div class="form-check"><input class="form-check-input module-checkbox" type="checkbox" value="analytics" id="mod-analytics" checked><label class="form-check-label small" for="mod-analytics"><i class="fa-solid fa-chart-line text-primary me-1"></i>Phân tích</label></div></div>
+                        <div class="col-6 col-md-4"><div class="form-check"><input class="form-check-input module-checkbox" type="checkbox" value="cashflow" id="mod-cashflow" checked><label class="form-check-label small" for="mod-cashflow"><i class="fa-solid fa-money-bill-trend-up text-success me-1"></i>Thu chi</label></div></div>
+                        <div class="col-6 col-md-4"><div class="form-check"><input class="form-check-input module-checkbox" type="checkbox" value="tables" id="mod-tables" checked><label class="form-check-label small" for="mod-tables"><i class="fa-solid fa-chair text-info me-1"></i>Bàn</label></div></div>
+                        <div class="col-6 col-md-4"><div class="form-check"><input class="form-check-input module-checkbox" type="checkbox" value="customers" id="mod-customers" checked><label class="form-check-label small" for="mod-customers"><i class="fa-solid fa-user-group text-warning me-1"></i>Khách hàng</label></div></div>
+                        <div class="col-6 col-md-4"><div class="form-check"><input class="form-check-input module-checkbox" type="checkbox" value="crm" id="mod-crm"><label class="form-check-label small" for="mod-crm"><i class="fa-solid fa-bullseye text-danger me-1"></i>CRM</label></div></div>
+                        <div class="col-6 col-md-4"><div class="form-check"><input class="form-check-input module-checkbox" type="checkbox" value="staff" id="mod-staff" checked><label class="form-check-label small" for="mod-staff"><i class="fa-solid fa-id-badge text-primary me-1"></i>Nhân viên</label></div></div>
+                        <div class="col-6 col-md-4"><div class="form-check"><input class="form-check-input module-checkbox" type="checkbox" value="audit" id="mod-audit" checked><label class="form-check-label small" for="mod-audit"><i class="fa-solid fa-clipboard-list text-secondary me-1"></i>Audit</label></div></div>
+                        <div class="col-6 col-md-4"><div class="form-check"><input class="form-check-input module-checkbox" type="checkbox" value="qr" id="mod-qr" checked><label class="form-check-label small" for="mod-qr"><i class="fa-solid fa-qrcode text-info me-1"></i>QR Code</label></div></div>
+                        <div class="col-6 col-md-4"><div class="form-check"><input class="form-check-input module-checkbox" type="checkbox" value="settings" id="mod-settings" checked><label class="form-check-label small" for="mod-settings"><i class="fa-solid fa-gear text-muted me-1"></i>Cài đặt</label></div></div>
+                    </div>
+
                     <h6 class="mt-4 mb-3 text-info border-bottom border-secondary pb-2"><i class="fa-solid fa-paint-roller me-2"></i> <span data-i18n="superadmin.branding_title">Branding & Infrastructure</span></h6>
                     
                     <div class="mb-3">

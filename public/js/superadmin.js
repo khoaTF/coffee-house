@@ -272,6 +272,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 if(errBrand) throw errBrand;
 
+                // Update Feature Modules
+                const checkedModules = Array.from(document.querySelectorAll('.module-checkbox:checked')).map(cb => cb.value);
+                const { error: errModules } = await supabase.rpc('update_tenant_modules', {
+                    owner_secret: ownerSecret,
+                    p_tenant_id: tenantId,
+                    p_allowed_modules: checkedModules
+                });
+                if(errModules) throw errModules;
+
                 showToast('Tenant updated successfully', 'success');
                 
                 await logSuperadminAction('UPDATE_TENANT_INFO', { 
@@ -279,7 +288,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     expiry: newExpiry,
                     max_staff: newMaxStaff,
                     max_items: newMaxItems,
-                    domain: newDomain
+                    domain: newDomain,
+                    allowed_modules: checkedModules
                 }, tenantId);
                 
                 // Close modal safely
@@ -561,6 +571,10 @@ function renderTenants(tenants) {
             if (diffDays <= 7) isExpiringSoon = true;
         }
 
+        const allModulesDefault = ['dashboard','pos','menu','inventory','restock','promo','history','shifts','delivery','analytics','cashflow','tables','customers','crm','staff','audit','qr','settings'];
+        const tenantModules = Array.isArray(t.allowed_modules) ? t.allowed_modules : allModulesDefault;
+        const moduleCount = tenantModules.length;
+
         const safeObjStr = JSON.stringify({
             id: t.id,
             name: t.name,
@@ -571,7 +585,8 @@ function renderTenants(tenants) {
             custom_domain: t.custom_domain || '',
             primary_color: t.primary_color || '#c084fc',
             logo_url: t.logo_url || '',
-            integrations: t.integrations || {}
+            integrations: t.integrations || {},
+            allowed_modules: tenantModules
         }).replace(/"/g, '&quot;');
 
         html += `
@@ -599,6 +614,10 @@ function renderTenants(tenants) {
                     <div class="metric" style="width: 45%;">
                         <i class="fa-solid fa-hourglass-end ${isExpired ? 'text-danger' : ''}"></i>
                         <span class="${isExpired ? 'text-danger' : ''}">${expiryDateStr}</span>
+                    </div>
+                    <div class="metric" style="width: 45%;">
+                        <i class="fa-solid fa-cubes ${moduleCount < 10 ? 'text-warning' : 'text-info'}"></i>
+                        <span>${moduleCount}/18 Modules</span>
                     </div>
                 </div>
                 
@@ -665,6 +684,15 @@ function openManageModal(btnEl) {
         }
         document.getElementById('manage-tenant-max-staff').value = t.max_staff || 5;
         document.getElementById('manage-tenant-max-items').value = t.max_items || 50;
+
+        // Load Feature Module checkboxes
+        const allModules = ['dashboard','pos','menu','inventory','restock','promo','history','shifts','delivery','analytics','cashflow','tables','customers','crm','staff','audit','qr','settings'];
+        const enabledModules = Array.isArray(t.allowed_modules) ? t.allowed_modules : allModules;
+        allModules.forEach(mod => {
+            const cb = document.getElementById(`mod-${mod}`);
+            if (cb) cb.checked = enabledModules.includes(mod);
+        });
+        updateModuleCount();
 
         document.getElementById('manage-tenant-domain').value = t.custom_domain || '';
         document.getElementById('manage-tenant-color').value = t.primary_color || '#c084fc';
@@ -969,3 +997,39 @@ function showToast(message, type = 'success') {
     const toast = new bootstrap.Toast(toastEl);
     toast.show();
 }
+
+// --- Feature Module Preset Management ---
+const MODULE_PRESETS = {
+    trial: ['dashboard','pos','menu','inventory','history','tables','customers','staff','qr','settings'],
+    basic: ['dashboard','pos','menu','inventory','restock','promo','history','shifts','analytics','cashflow','tables','customers','staff','audit','qr','settings'],
+    premium: ['dashboard','pos','menu','inventory','restock','promo','history','shifts','delivery','analytics','cashflow','tables','customers','crm','staff','audit','qr','settings'],
+    all: ['dashboard','pos','menu','inventory','restock','promo','history','shifts','delivery','analytics','cashflow','tables','customers','crm','staff','audit','qr','settings']
+};
+
+function setModulePreset(presetName) {
+    const preset = MODULE_PRESETS[presetName];
+    if (!preset) return;
+    
+    const allModules = ['dashboard','pos','menu','inventory','restock','promo','history','shifts','delivery','analytics','cashflow','tables','customers','crm','staff','audit','qr','settings'];
+    allModules.forEach(mod => {
+        const cb = document.getElementById(`mod-${mod}`);
+        if (cb) cb.checked = preset.includes(mod);
+    });
+    updateModuleCount();
+}
+
+function updateModuleCount() {
+    const checked = document.querySelectorAll('.module-checkbox:checked').length;
+    const badge = document.getElementById('module-count-badge');
+    if (badge) {
+        badge.textContent = `${checked}/18`;
+        badge.className = `badge align-self-center ms-auto ${checked < 10 ? 'bg-warning' : checked < 18 ? 'bg-info' : 'bg-success'}`;
+    }
+}
+
+// Listen for checkbox changes to update count badge
+document.addEventListener('change', (e) => {
+    if (e.target.classList.contains('module-checkbox')) {
+        updateModuleCount();
+    }
+});
