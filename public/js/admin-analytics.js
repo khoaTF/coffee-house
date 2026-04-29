@@ -673,6 +673,7 @@ async function loadDashboard() {
 // --- Quick Navigation Hub ---
 function renderNavHub() {
     const canAccess = window.canAccessTab || (() => true);
+    const allowedModules = JSON.parse(sessionStorage.getItem('nohope_allowed_modules') || '[]');
 
     const navGroups = [
         {
@@ -726,8 +727,11 @@ function renderNavHub() {
     let html = '';
 
     navGroups.forEach(group => {
-        // Filter items by permission
-        const visibleItems = group.items.filter(item => canAccess(item.tab));
+        // Filter items by BOTH user permissions AND tenant module restrictions
+        const visibleItems = group.items.filter(item => {
+            const tenantAllowed = allowedModules.length === 0 || allowedModules.includes(item.tab);
+            return tenantAllowed && canAccess(item.tab);
+        });
         if (visibleItems.length === 0) return;
 
         html += `

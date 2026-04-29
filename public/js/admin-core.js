@@ -585,30 +585,20 @@ document.addEventListener('DOMContentLoaded', () => {
     let defaultTab = '';
 
     // Tenant-level module enforcement (superadmin feature permissions)
+    // Uses classList.add('hidden') because Tailwind's `flex` class has !important
+    // which overrides inline style.display = 'none'. Tailwind's `hidden` class
+    // uses `display: none !important` which wins the specificity battle.
     const allowedModules = JSON.parse(sessionStorage.getItem('nohope_allowed_modules') || '[]');
-    if (allowedModules.length > 0) {
-        allTabsId.forEach(tab => {
-            if (!allowedModules.includes(tab)) {
-                const el = document.getElementById(`tab-${tab}`);
-                const navEl = document.getElementById(`nav-${tab}`);
-                if (el) el.style.display = 'none';
-                if (navEl) navEl.style.display = 'none';
-            }
-        });
-    }
     
     if (role !== 'admin') {
         allTabsId.forEach(tab => {
             const el = document.getElementById(`tab-${tab}`);
-            const navEl = document.getElementById(`nav-${tab}`);
             if (el) {
                 const tenantBlocked = allowedModules.length > 0 && !allowedModules.includes(tab);
                 if (tenantBlocked || !window.canAccessTab(tab)) {
-                    el.style.display = 'none';
-                    if (navEl) navEl.style.display = 'none';
+                    el.classList.add('hidden');
                 } else {
-                    el.style.display = '';
-                    if (navEl) navEl.style.display = '';
+                    el.classList.remove('hidden');
                     if (!defaultTab) defaultTab = tab;
                 }
             }
@@ -631,7 +621,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const els = document.querySelectorAll(rule.query);
             els.forEach(el => {
                 if (!permissions.includes(rule.perm)) {
-                    el.style.display = 'none';
+                    el.classList.add('hidden');
                 }
             });
         });
@@ -690,16 +680,15 @@ document.addEventListener('DOMContentLoaded', () => {
             mainContent.innerHTML = '<div class="flex items-center justify-center h-full"><div class="text-center"><i class="fa-solid fa-lock text-slate-500 text-6xl mb-4"></i><h2 class="text-2xl text-slate-800">Bạn chưa được cấp quyền truy cập</h2><p class="text-slate-500 mt-2">Vui lòng liên hệ Quản trị viên</p></div></div>';
         }
     } else {
+        // Admin role: still respect tenant-level module restrictions
         allTabsId.forEach(tab => {
             const el = document.getElementById(`tab-${tab}`);
-            const navEl = document.getElementById(`nav-${tab}`);
-            // Respect tenant-level module restrictions even for admin
-            if (allowedModules.length > 0 && !allowedModules.includes(tab)) {
-                if (el) el.style.display = 'none';
-                if (navEl) navEl.style.display = 'none';
-            } else {
-                if (el) el.style.display = '';
-                if (navEl) navEl.style.display = '';
+            if (el) {
+                if (allowedModules.length > 0 && !allowedModules.includes(tab)) {
+                    el.classList.add('hidden');
+                } else {
+                    el.classList.remove('hidden');
+                }
             }
         });
         // Find first allowed module for default tab
