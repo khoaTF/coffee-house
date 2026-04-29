@@ -3,6 +3,7 @@ node_modules/
 .DS_Store
 .vercel
 .agent/
+supabase/.temp/
 
 # Debug outputs
 *.log

@@ -1,19 +1,68 @@
 // public/js/superadmin.js
 let ownerSecret = sessionStorage.getItem('nohope_owner_secret') || '';
 
+// Global utility: remove ALL bootstrap backdrops + manage custom backdrop
+function forceCleanModals() {
+    // Kill any bootstrap backdrops that may have leaked
+    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+    document.body.classList.remove('modal-open');
+    document.body.style.removeProperty('overflow');
+    document.body.style.removeProperty('padding-right');
+    // Hide custom backdrop
+    const bd = document.getElementById('sa-backdrop');
+    if (bd) bd.classList.remove('active');
+}
+
+// Show custom backdrop
+function showBackdrop() {
+    const bd = document.getElementById('sa-backdrop');
+    if (bd) bd.classList.add('active');
+}
+
+// Hide custom backdrop
+function hideBackdrop() {
+    const bd = document.getElementById('sa-backdrop');
+    if (bd) bd.classList.remove('active');
+}
+
+// Safe modal open: cleanup bootstrap mess, show custom backdrop, open modal
+function safeShowModal(modalEl) {
+    // Dispose any lingering bootstrap instance
+    const existing = bootstrap.Modal.getInstance(modalEl);
+    if (existing) existing.dispose();
+    // Kill all bootstrap backdrops 
+    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+    // Show our single custom backdrop
+    showBackdrop();
+    // Create fresh modal (backdrop: false already set in HTML)
+    const fresh = new bootstrap.Modal(modalEl, { backdrop: false });
+    fresh.show();
+    return fresh;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     
-    // SAFETY NET: Clean up orphaned modal backdrops after any modal hides
+    // When ANY modal hides and no other modal is open, hide backdrop
     document.addEventListener('hidden.bs.modal', () => {
-        // If no modal is currently open, clean up everything
-        const openModals = document.querySelectorAll('.modal.show');
-        if (openModals.length === 0) {
-            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-            document.body.classList.remove('modal-open');
-            document.body.style.removeProperty('overflow');
-            document.body.style.removeProperty('padding-right');
-        }
+        setTimeout(() => {
+            const openModals = document.querySelectorAll('.modal.show');
+            if (openModals.length === 0) {
+                forceCleanModals();
+            }
+        }, 100);
     });
+
+    // Clicking custom backdrop closes any open modal
+    const saBackdrop = document.getElementById('sa-backdrop');
+    if (saBackdrop) {
+        saBackdrop.addEventListener('click', () => {
+            document.querySelectorAll('.modal.show').forEach(m => {
+                const inst = bootstrap.Modal.getInstance(m);
+                if (inst) inst.hide();
+            });
+            forceCleanModals();
+        });
+    }
 
     // Auth flow
     if (ownerSecret) {
@@ -379,9 +428,15 @@ async function initActivityFeed() {
             const time = new Date(log.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
             const date = new Date(log.created_at).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
             let icon = 'fa-clipboard-list text-info';
-            if (log.action.includes('Thêm') || log.action.includes('Tạo')) icon = 'fa-plus text-success';
-            if (log.action.includes('Xóa') || log.action.includes('Hủy')) icon = 'fa-trash text-danger';
-            if (log.action.includes('Cập nhật') || log.action.includes('Sửa')) icon = 'fa-pen text-warning';
+            const act = (log.action || '').toUpperCase();
+            if (act.includes('CREATE') || act.includes('Thêm') || act.includes('Tạo')) icon = 'fa-plus text-success';
+            else if (act.includes('DELETE') || act.includes('Xóa') || act.includes('Hủy')) icon = 'fa-trash text-danger';
+            else if (act.includes('UPDATE') || act.includes('RESET') || act.includes('EXTEND') || act.includes('Cập nhật') || act.includes('Sửa')) icon = 'fa-pen text-warning';
+            else if (act.includes('BROADCAST')) icon = 'fa-bullhorn text-warning';
+            else if (act.includes('SUSPEND')) icon = 'fa-ban text-danger';
+            else if (act.includes('ACTIVATE')) icon = 'fa-check-circle text-success';
+
+            const tenantIdStr = log.tenant_id ? String(log.tenant_id) : '';
 
             html += `
                 <div class="d-flex align-items-start mb-3 border-bottom border-secondary pb-2">
@@ -393,7 +448,7 @@ async function initActivityFeed() {
                         </div>
                         <div class="text-white" style="font-size: 0.8rem;">${escapeHtml(log.action)}</div>
                         <div class="text-muted mt-1" style="font-size: 0.75rem;">${escapeHtml(JSON.stringify(log.details))}</div>
-                        ${log.tenant_id ? `<div class="badge bg-secondary mt-1" style="font-size: 0.65rem;">Tenant: ${log.tenant_id.substring(0,8)}...</div>` : ''}
+                        ${tenantIdStr ? `<div class="badge bg-secondary mt-1" style="font-size: 0.65rem;">Tenant: ${tenantIdStr.substring(0,8)}...</div>` : ''}
                     </div>
                 </div>
             `;
@@ -623,9 +678,7 @@ function openManageModal(btnEl) {
         }
 
         const modalEl = document.getElementById('manageTenantModal');
-        // FIX: Reuse existing instance to prevent duplicate backdrops
-        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-        modal.show();
+        safeShowModal(modalEl);
     } catch(e) {
         console.error("Error opening manage modal:", e);
     }
@@ -672,19 +725,19 @@ async function resetTenantPin() {
         errorEl.style.display = v.length > 0 && !valid ? 'block' : 'none';
     };
 
-    // FIX: Close Manage modal first, then open PIN modal after transition completes
+    // Close manage modal, cleanup, then open PIN modal
     const manageModalEl = document.getElementById('manageTenantModal');
     const manageModal = bootstrap.Modal.getInstance(manageModalEl);
     
     const showPinModal = () => {
-        const pinModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('resetPinModal'));
-        pinModal.show();
+        forceCleanModals();
+        safeShowModal(document.getElementById('resetPinModal'));
         setTimeout(() => input.focus(), 300);
     };
 
     if (manageModal && manageModalEl.classList.contains('show')) {
-        manageModalEl.addEventListener('hidden.bs.modal', showPinModal, { once: true });
         manageModal.hide();
+        manageModalEl.addEventListener('hidden.bs.modal', showPinModal, { once: true });
     } else {
         showPinModal();
     }
@@ -785,19 +838,19 @@ async function deleteTenant() {
     confirmBtn._deleteClickHandler = clickHandler;
     confirmBtn.addEventListener('click', clickHandler);
 
-    // FIX: Properly sequence modal transition — wait for Manage to fully close before opening Delete
+    // Close manage modal, cleanup, then open delete confirmation modal
     const manageModalEl = document.getElementById('manageTenantModal');
     const manageModal = bootstrap.Modal.getInstance(manageModalEl);
     
     const showDeleteModal = () => {
-        const deleteConfirmModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('deleteTenantConfirmModal'));
-        deleteConfirmModal.show();
+        forceCleanModals();
+        safeShowModal(document.getElementById('deleteTenantConfirmModal'));
         setTimeout(() => inputEl.focus(), 300);
     };
 
     if (manageModal && manageModalEl.classList.contains('show')) {
-        manageModalEl.addEventListener('hidden.bs.modal', showDeleteModal, { once: true });
         manageModal.hide();
+        manageModalEl.addEventListener('hidden.bs.modal', showDeleteModal, { once: true });
     } else {
         showDeleteModal();
     }
@@ -825,6 +878,85 @@ async function quickExtendTenant(tenantId) {
     }
 }
 
+// ====================================================
+// Global Audit Logs Tab
+// ====================================================
+let auditLogOffset = 0;
+const AUDIT_PAGE_SIZE = 50;
+
+async function loadFullAuditLogs(loadMore = false) {
+    const tbody = document.getElementById('global-audit-table-body');
+    const loadMoreBtn = document.getElementById('load-more-audit-btn');
+
+    if (!loadMore) {
+        auditLogOffset = 0;
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted"><i class="fa-solid fa-spinner fa-spin me-2"></i> Loading logs...</td></tr>';
+    }
+
+    try {
+        const { data, error } = await supabase.rpc('get_superadmin_audit_logs', {
+            owner_secret: ownerSecret,
+            limit_count: AUDIT_PAGE_SIZE
+        });
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            if (!loadMore) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted">Không có nhật ký nào.</td></tr>';
+            }
+            loadMoreBtn.style.display = 'none';
+            return;
+        }
+
+        let html = '';
+        data.forEach(log => {
+            const ts = new Date(log.created_at).toLocaleString('vi-VN', {
+                day: '2-digit', month: '2-digit', year: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+            });
+            const act = (log.action || '').toUpperCase();
+            let actionBadge = 'bg-info';
+            if (act.includes('DELETE')) actionBadge = 'bg-danger';
+            else if (act.includes('CREATE')) actionBadge = 'bg-success';
+            else if (act.includes('UPDATE') || act.includes('RESET') || act.includes('EXTEND')) actionBadge = 'bg-warning text-dark';
+            else if (act.includes('BROADCAST')) actionBadge = 'bg-warning text-dark';
+            else if (act.includes('SUSPEND')) actionBadge = 'bg-danger';
+
+            const tenantIdStr = log.tenant_id ? String(log.tenant_id) : '';
+            const detailsStr = log.details ? JSON.stringify(log.details) : '';
+            const shortDetails = detailsStr.length > 100 ? detailsStr.substring(0, 100) + '...' : detailsStr;
+
+            html += `
+                <tr>
+                    <td class="py-3 px-4 text-muted" style="font-size: 0.8rem; white-space: nowrap;">${ts}</td>
+                    <td class="py-3 px-4" style="font-size: 0.8rem;">
+                        ${tenantIdStr ? `<span class="badge bg-secondary" style="font-size: 0.7rem; cursor: pointer;" onclick="copyTenantId('${tenantIdStr}')" title="Click to copy">${tenantIdStr.substring(0, 8)}...</span>` : '<span class="text-muted">—</span>'}
+                    </td>
+                    <td class="py-3 px-4" style="font-size: 0.8rem;">${escapeHtml(log.admin_identifier || 'System')}</td>
+                    <td class="py-3 px-4"><span class="badge ${actionBadge} rounded-pill" style="font-size: 0.75rem;">${escapeHtml(log.action)}</span></td>
+                    <td class="py-3 px-4 text-muted" style="font-size: 0.75rem; max-width: 350px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(detailsStr)}">${escapeHtml(shortDetails)}</td>
+                </tr>
+            `;
+        });
+
+        if (loadMore) {
+            tbody.insertAdjacentHTML('beforeend', html);
+        } else {
+            tbody.innerHTML = html;
+        }
+
+        auditLogOffset += data.length;
+        loadMoreBtn.style.display = data.length >= AUDIT_PAGE_SIZE ? 'inline-block' : 'none';
+    } catch (e) {
+        console.error('Failed to load audit logs:', e);
+        if (!loadMore) {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center py-5 text-danger"><i class="fa-solid fa-triangle-exclamation me-2"></i>${escapeHtml(e.message)}</td></tr>`;
+        } else {
+            showToast('Lỗi tải thêm logs: ' + e.message, 'danger');
+        }
+        loadMoreBtn.style.display = 'none';
+    }
+}
 
 function showToast(message, type = 'success') {
     const toastEl = document.getElementById('actionToast');

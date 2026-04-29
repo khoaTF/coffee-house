@@ -432,8 +432,11 @@ document.addEventListener('DOMContentLoaded', () => {
             overlay.innerHTML = `
                 <i class="fa-solid fa-lock text-[#ef4444] text-7xl mb-6"></i>
                 <h1 class="text-3xl font-bold mb-3">Tài khoản đã hết hạn</h1>
-                <p class="text-lg text-gray-300 max-w-lg mb-6">Gói phần mềm của bạn đã hết hạn bảo trì vào ngày ${expireDate.toLocaleDateString('vi-VN')}. Vui lòng liên hệ Super Admin Nohope để gia hạn ngay lập tức.</p>
-                <button onclick="window.location.href='/login'" class="px-6 py-2 bg-[#C0A062] rounded-lg text-white font-medium hover:bg-[#A08042] transition-colors">Quay lại Đăng nhập</button>
+                <p class="text-lg text-gray-300 max-w-lg mb-4">Gói phần mềm của bạn đã hết hạn bảo trì vào ngày ${expireDate.toLocaleDateString('vi-VN')}. Vui lòng liên hệ hỗ trợ kỹ thuật qua Hotline <strong class="text-white">0825.198.718</strong> để gia hạn dịch vụ.</p>
+                <div class="flex gap-4 mt-4">
+                    <button onclick="window.location.href='/pages/renew.html'" class="px-6 py-3 bg-[#C0A062] rounded-lg text-white font-medium hover:bg-[#A08042] transition-colors"><i class="fa-solid fa-headset me-2"></i>Liên hệ Gia hạn</button>
+                    <button onclick="window.location.href='/login'" class="px-6 py-3 border border-[#C0A062] text-[#C0A062] rounded-lg font-medium hover:bg-[rgba(192,160,98,0.1)] transition-colors">Đăng nhập khác</button>
+                </div>
             `;
             document.body.appendChild(overlay);
             const mainW = document.querySelector('.main-wrapper');

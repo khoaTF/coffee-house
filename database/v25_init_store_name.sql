@@ -1,11 +1,8 @@
 -- ====================================================
--- v17b_unique_tenant_name.sql - Prevent duplicate tenant names
+-- v25_init_store_name.sql - Tự động cập nhật tên quán khi tạo chi nhánh
 -- ====================================================
 
--- 1. Add UNIQUE constraint on tenant name
-ALTER TABLE public.tenants ADD CONSTRAINT tenants_name_key UNIQUE (name);
-
--- 2. Update create_new_client to check for duplicate names before inserting
+-- Cập nhật hàm create_new_client để lấy tên chi nhánh (client_name) lưu vào store_name
 CREATE OR REPLACE FUNCTION public.create_new_client(client_name TEXT, admin_pin TEXT, owner_secret TEXT)
 RETURNS JSONB
 LANGUAGE plpgsql
@@ -35,7 +32,7 @@ BEGIN
     VALUES (client_name, new_slug, 'active')
     RETURNING id INTO new_tenant_id;
 
-    -- Create default store settings
+    -- Create default store settings WITH store_name
     INSERT INTO public.store_settings (tenant_id, store_name, is_open_override, wifi_pass)
     VALUES (new_tenant_id, client_name, true, '12345678');
 
@@ -54,3 +51,5 @@ BEGIN
     RETURN result;
 END;
 $$;
+
+GRANT EXECUTE ON FUNCTION public.create_new_client(TEXT, TEXT, TEXT) TO anon, authenticated;
