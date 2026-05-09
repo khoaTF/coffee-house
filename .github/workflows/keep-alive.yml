@@ -1,0 +1,16 @@
+name: Keep Supabase Alive
+
+on:
+  schedule:
+    - cron: '0 0 */3 * *' # Chạy tự động lúc 00:00 mỗi 3 ngày một lần
+  workflow_dispatch: # Cho phép bạn bấm chạy thủ công từ tab Actions trên Github
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase API
+        run: |
+          curl -X GET "https://xvghmwfmjxramrsptxfh.supabase.co/rest/v1/" \
+          -H "apikey: sb_publishable_DWoSSz1TRKd_UBvfE_5FoQ_qnJxLScL" \
+          -H "Authorization: Bearer sb_publishable_DWoSSz1TRKd_UBvfE_5FoQ_qnJxLScL"
